@@ -7,16 +7,72 @@ Created on Tue May  4 16:42:37 2021
 
 import urllib.request
 import requests
+import browser_cookie3
+from bs4 import BeautifulSoup as bs
 
-opener = urllib.request.build_opener()
-opener.addheaders = [('Accept', 'application/vnd.crossref.unixsd+xml')]
-r = opener.open('https://doi.org/10.1177/0022242921991798')
-print (r.info()['Link'])
+# FUNCTIONS
+
+def scrape_article(url, cookies): 
+    '''
+    extracts text and meta data of journal article from DOI
+    
+    input:
+        url to article - string
+        cookies - browser cookies to be able to download restricted articles
+    output:
+        scraped meta info and text - dataframe
+    '''
+    # request article
+    try:
+        response = requests.get(url, cookies=cookies)
+        response.raise_for_status()
+    except requests.HTTPError as exception:
+        print(exception) # or save to logfile together with url
+        return
+    
+    # parse xml content
+    soup = bs(response.content, "xml")
+    
+    # information to crosscheck with scopus data to confirm we have correct data
+    # use title 
+    title = soup.find_all("article-title")[0]
+    # or use doi
+    doi = soup.find_all("article-id")[0]
+    
+    # get body of text
+    body = soup.body    
+
+    # extract author notes
+    author_notes = soup.find_all("author-notes")
+
+    # get abstract
+    abstract = soup.find_all("abstract")
+
+    # extract keywords
+    keywords = soup.find_all("kwd-group")
+
+    # extract acknowledgements
+    acknowledge = soup.find_all("ack")
+
+    # ref list 
+    ref_list = soup.find_all("ref-list")
+
+    # fn group (associate editor, declaration of conflicting interest, funding, online supplement)
+    fngroup = soup.find_all("fn-group")
+    
+    return title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup
+    # eventually we could just add a row to the dataframe and save output directly
+    
+ 
+# get cookies from firefox or chrome to be able to access articles
+# for chrome use .chrome() or uncomment if it works for you without cookie transfer
+cj = browser_cookie3.firefox() 
+
+title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup = scrape_article('https://journals.sagepub.com/doi/full-xml/10.1177/0022242921991798', cj)
 
 
-response= requests.get('http://journals.sagepub.com/doi/full-xml/10.1177/0022242921991798')
-response.raise_for_status()
-response.content
+# NOTES
+# extract all references to be able to build a network? or just get total number of references from crossref?
 
-data = response.json()
-print(data)
+# scrape fields of referenced papers? e.g. to see if marketing references other fields? not sure how
+# to get the field though? maybe from the journal name of the referenced paper? check them against scopus or sth?
