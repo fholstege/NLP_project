@@ -9,10 +9,10 @@
 5. Prediction
 6. Advanced word embedding
 
-## Journals of interest
-* Journal of Marketing (JM)
-* Journal of Marketing Research (JMR)                         
-* Journal of Consumer Research (JCR)      
-* Journal of the Academy of Marketing Science (JAMS)
-* Marketing Science (MkS)
-* Journal of Consumer Psychology (JCP)   
+## Journals of interest (X = exists on SAGE)
+* Journal of Marketing (JM) X
+* Journal of Marketing Research (JMR) X                       
+* Journal of Consumer Research (JCR)  OUP
+* Journal of the Academy of Marketing Science (JAMS) Springer
+* Marketing Science (MkS) Informs
+* Journal of Consumer Psychology (JCP)
