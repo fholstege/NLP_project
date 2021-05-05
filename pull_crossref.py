@@ -18,20 +18,27 @@ def scrape_article(url, cookies):
     
     input:
         url to article - string
+        add_cookies - boolean, if want to use cookies
         cookies - browser cookies to be able to download restricted articles
     output:
         scraped meta info and text - dataframe
     '''
     # request article
+    
+    
+    
     try:
+        
         response = requests.get(url, cookies=cookies)
         response.raise_for_status()
+
     except requests.HTTPError as exception:
         print(exception) # or save to logfile together with url
         return
     
     # parse xml content
     soup = bs(response.content, "xml")
+    print(soup)
     
     # information to crosscheck with scopus data to confirm we have correct data
     # use title 
@@ -66,9 +73,13 @@ def scrape_article(url, cookies):
  
 # get cookies from firefox or chrome to be able to access articles
 # for chrome use .chrome() or uncomment if it works for you without cookie transfer
-cj = browser_cookie3.firefox() 
+cj = browser_cookie3.chrome() 
 
-title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup = scrape_article('https://journals.sagepub.com/doi/full-xml/10.1177/0022242921991798', cj)
+
+url = 'https://journals-sagepub-com.eur.idm.oclc.org/doi/full-xml/10.1177/00222429211003690'
+
+
+title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup = scrape_article(url, cj)
 
 
 # NOTES
