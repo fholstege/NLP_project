@@ -67,18 +67,18 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
             # extract data from url
             url = urls[index_url]
             
+            # return list with items for dataframe
+            result_scrape = scrape_func(url, cookies) 
             
             # TODO: change output scrape functions
-            if  scrape_func(url, cookies) == "NA":
+            if  result_scrape == "NA":
                 dict_missed['total_missed'] += 1
                 dict_missed['indexes_missed'].append(index_url)
                 
                 continue 
-            else:
-                title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup = scrape_func(url, cookies)
             
             # putt data in row and add to df
-            row_entry = [title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup]
+            row_entry = result_scrape
             df_data.iloc[index_url] = row_entry
             
             # sleep to make sure we are not recognized as DoS attack
