@@ -149,9 +149,6 @@ def create_dataset_wiley(csv_location, cookies):
     # column names for df to be filled
     col_df = ['title', 'DOI' , 'body', 'author_notes', 'abstract', 'keywords', 'acknowledge', 'ref_list', 'fngroup']
     
-    # list of dfs with data from SAGE
-    list_wiley_data_per_journals = []
-    
     # save dict with stats on what was missed
     dict_missed = {'total_missed': 0,
                    'indexes_missed': []}
