@@ -156,11 +156,6 @@ def create_dataset_wiley(csv_location, cookies):
     dict_missed = {'total_missed': 0,
                    'indexes_missed': []}
     
-    
-    # temporary
-    from pathlib import Path
-    csv_location = Path(os.getcwd()).parent/'data/raw/journalofconsumerpsych_WoS.csv'
-    
     # get DOI list
     df_WoS = pd.read_csv(csv_location)
     list_DOI = list(df_WoS['DOI'])
@@ -202,4 +197,9 @@ cj = browser_cookie3.firefox()
 
 
 df_journal_of_consumer_psych = create_dataset_wiley('data/raw/journalofconsumerpsych_WoS.csv', cj)
-df_journal_of_consumer_psych.to_csv('Data/Raw/journalofconsumerpsych_data.csv')
+df_journal_of_consumer_psych.to_csv('data/scraped/journalofconsumerpsych_data.csv')
+
+
+# set working directory to github repo root
+# import os
+# os.chdir('..')
