@@ -18,12 +18,6 @@ from helpfunctions_preprocessing import create_list_urls, check_items_from_soup_
 
 
 
-#df_WoS_jams = pd.read_csv('data/Raw/journalacademyofmarketingscience_WoS.csv')
-#df_WoS_jams['DOI']
-
-
-
-
 
 def scrape_article_springer(url, cookies):
     
@@ -43,7 +37,6 @@ def scrape_article_springer(url, cookies):
     title = soup.find_all("h1", {"class": "c-article-title"})[0].text
     
     doi = soup.find_all('a', {'data-track-action': 'view doi'})[0].get('href')
-    print(doi)
     
     # get the abstract   
     abstract_search = soup.find_all("div", {"id": "Abs1-content"})
@@ -91,9 +84,11 @@ def scrape_article_springer(url, cookies):
     return title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup
     
 
-url = 'https://link-springer-com.eur.idm.oclc.org/article/10.1007/s11747-021-00778-y'
 
-base_url = 'https://link-springer-com.eur.idm.oclc.org/article/'
+base_url_springer = 'https://link-springer-com.eur.idm.oclc.org/article/'
 cj = browser_cookie3.firefox() 
 
-scrape_article_springer(url, cj)
+list_data_springer = create_dataset_publisher(['Data/Raw/journalacademyofmarketingscience_WoS.csv'],
+                         cj, 
+                        base_url_springer,
+                         scrape_article_springer)

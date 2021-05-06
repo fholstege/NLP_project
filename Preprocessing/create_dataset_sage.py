@@ -202,7 +202,10 @@ cj = browser_cookie3.firefox()
 #df_journal_of_marketing = create_dataset_sage(['Data/Raw/journalofmarketing.csv'], cj)
 #df_journal_of_marketing[0].to_csv('Data/Raw/journalofmarketing_data.csv')
 
-create_dataset_publisher(['Data/Raw/journalofmarketingresearch_WoS.csv'], cj, )
+create_dataset_publisher(['Data/Raw/journalofmarketingresearch_WoS.csv'],
+                         cj, 
+                         'https://journals-sagepub-com.eur.idm.oclc.org/doi/full-xml/',
+                         scrape_article_sage)
 
 
 
