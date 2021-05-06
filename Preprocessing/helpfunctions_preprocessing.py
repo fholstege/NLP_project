@@ -62,8 +62,7 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
         
         # go through each url and pull the data
         for index_url in range(0,len(urls)):
-            print("{0} / {1}" .format(index_url+1, len(urls)))
-            
+                    
             # extract data from url
             url = urls[index_url]
             
@@ -77,9 +76,11 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
                 
                 continue 
             
-            # putt data in row and add to df
+            # put data in row and add to df
             row_entry = result_scrape
             df_data.iloc[index_url] = row_entry
+            
+            print("{0} / {1} -- {2} NAs" .format(index_url+1, len(urls), dict_missed['total_missed']))
             
             # sleep to make sure we are not recognized as DoS attack
             time.sleep(2)
