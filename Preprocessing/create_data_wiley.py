@@ -116,8 +116,8 @@ def scrape_article_wiley(url, cookies):
     acknowledge_search = soup.find_all("div", {"class": "header-note-content"})
     acknowledge = check_items_from_soup_search(acknowledge_search)
 
-    # ref list  - raw HTML
-    ref_list = soup.find_all("ul", {"class": "rlist separator"})
+    # ref list  - cleaned for HTML tags but not separated by reference
+    ref_list = soup.find_all("ul", {"class": "rlist separator"})[0].text
 
     # fn group (associate editor, declaration of conflicting interest, funding, online supplement)
     # not easily available would require more work with little benefit?
