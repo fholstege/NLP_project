@@ -8,6 +8,8 @@ import time
 from bs4 import BeautifulSoup as bs
 import pandas as pd
 
+from helpfunctions_preprocessing import create_dataset_publisher
+
 def create_list_urls_sage(list_DOI):
     """
     
@@ -199,6 +201,9 @@ cj = browser_cookie3.firefox()
 
 #df_journal_of_marketing = create_dataset_sage(['Data/Raw/journalofmarketing.csv'], cj)
 #df_journal_of_marketing[0].to_csv('Data/Raw/journalofmarketing_data.csv')
+
+create_dataset_publisher(['Data/Raw/journalofmarketingresearch_WoS.csv'], cj, )
+
 
 
 df_journal_of_marketing_research = create_dataset_sage(['Data/Raw/journalofmarketingresearch_WoS.csv'], cj)
