@@ -67,6 +67,8 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
             # extract data from url
             url = urls[index_url]
             
+            
+            # TODO: change output scrape functions
             if  scrape_func(url, cookies) == "NA":
                 dict_missed['total_missed'] += 1
                 dict_missed['indexes_missed'].append(index_url)
