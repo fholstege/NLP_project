@@ -70,7 +70,7 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
             # return list with items for dataframe
             result_scrape = scrape_func(url, cookies) 
             
-            # TODO: change output scrape functions
+            # check the output
             if  result_scrape == "NA":
                 dict_missed['total_missed'] += 1
                 dict_missed['indexes_missed'].append(index_url)
@@ -85,6 +85,8 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
             time.sleep(2)
         # add the df to list
         list_data_per_journal.append(df_data)
+    
+        print("Number missed: {0}/{1}".format(dict_missed['total_missed'], len(urls)))
     
     # return list of df
     return list_data_per_journal
