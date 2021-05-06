@@ -15,20 +15,20 @@ def create_list_urls_wiley(list_DOI):
     Parameters
     ----------
     list_DOI : list
-        Takes list of the DOI's for a set of articles that needs to be scraped from the SAGE website.
+        Takes list of the DOI's for a set of articles that needs to be scraped from the Wiley website.
 
     Returns
     -------
     list_urls_sage : TYPE
-        list of urls from the SAGE website to be scraped.
+        list of urls from the Wiley website to be scraped.
 
     """
     
     base_url = 'https://onlinelibrary-wiley-com.eur.idm.oclc.org/doi/'
     
-    list_urls_sage = [base_url + DOI for DOI in list_DOI]
+    list_urls_wiley = [base_url + DOI for DOI in list_DOI]
 
-    return list_urls_sage
+    return list_urls_wiley
 
 
 
@@ -68,7 +68,7 @@ def scrape_article_wiley(url, cookies):
     acknowledge : string
         acknowledgements in the article.
     ref_list : string
-        reference list. - Raw HTML
+        reference list. - cleaned for HTML tags but not separated by article
     fngroup : string
         associate editor, declaration of conflicting interest, funding, online supplement.
 
@@ -189,7 +189,7 @@ def create_dataset_wiley(csv_location, cookies):
         df_wiley_data.iloc[index_url] = row_entry
         
         # sleep to make sure we are not recognized as DoS attack
-        time.sleep(2)
+        time.sleep(3)
     
     # return df
     return df_wiley_data
@@ -201,5 +201,5 @@ def create_dataset_wiley(csv_location, cookies):
 cj = browser_cookie3.firefox() 
 
 
-df_journal_of_consumer_psych = create_dataset_wiley(['Data/Raw/journalofconsumerpsych_WoS.csv'], cj)
+df_journal_of_consumer_psych = create_dataset_wiley('data/raw/journalofconsumerpsych_WoS.csv', cj)
 df_journal_of_consumer_psych.to_csv('Data/Raw/journalofconsumerpsych_data.csv')
