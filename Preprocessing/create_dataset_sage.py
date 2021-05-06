@@ -80,7 +80,7 @@ def scrape_article_sage(url, cookies):
 
     except requests.HTTPError as exception:
         print(exception) # or save to logfile together with url
-        return
+        return "NA"
     
     # parse xml content
     soup = bs(response.content, "xml")
@@ -146,6 +146,10 @@ def create_dataset_sage(list_csv_locations, cookies):
     # list of dfs with data from SAGE
     list_sage_data_per_journals = []
     
+    # save dict with stats on what was missed
+    dict_missed = {'total_missed': 0,
+                   'indexes_missed': []}
+    
     # go through each csv
     for csv_location in list_csv_locations:
         
@@ -163,14 +167,21 @@ def create_dataset_sage(list_csv_locations, cookies):
             
             # extract data from url
             url = urls_sage[index_url]
-            title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup = scrape_article_sage(url, cookies)
+            
+            if  scrape_article_sage(url, cookies) == "NA":
+                dict_missed['total_missed'] += 1
+                dict_missed['indexes_missed'].append(index_url)
+                
+                continue 
+            else:
+                title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup = scrape_article_sage(url, cookies)
             
             # putt data in row and add to df
             row_entry = [title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup]
             df_sage_data.iloc[index_url] = row_entry
             
             # sleep to make sure we are not recognized as DoS attack
-            time.sleep(1)
+            time.sleep(2)
         # add the df to list
         list_sage_data_per_journals.append(df_sage_data)
     
@@ -184,6 +195,11 @@ def create_dataset_sage(list_csv_locations, cookies):
 cj = browser_cookie3.firefox() 
 
 
-df_journal_of_marketing = create_dataset_sage(['Data/Raw/test.csv'], cj)
 
+df_journal_of_marketing = create_dataset_sage(['Data/Raw/journalofmarketing.csv'], cj)
+df_journal_of_marketing[0].to_csv('Data/Raw/journalofmarketing_data.csv')
+
+
+df_journal_of_marketing_research = create_dataset_sage(['Data/Raw/journalofmarketingresearch.csv'], cj)
+df_journal_of_marketing_research[0].to_csv('Data/Raw/journalofmarketingresearch_data.csv')
 
