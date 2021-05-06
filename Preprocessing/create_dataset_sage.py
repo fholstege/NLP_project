@@ -168,6 +168,7 @@ def create_dataset_sage(list_csv_locations, cookies):
             # extract data from url
             url = urls_sage[index_url]
             
+            
             if  scrape_article_sage(url, cookies) == "NA":
                 dict_missed['total_missed'] += 1
                 dict_missed['indexes_missed'].append(index_url)
@@ -196,10 +197,10 @@ cj = browser_cookie3.firefox()
 
 
 
-df_journal_of_marketing = create_dataset_sage(['Data/Raw/journalofmarketing.csv'], cj)
-df_journal_of_marketing[0].to_csv('Data/Raw/journalofmarketing_data.csv')
+#df_journal_of_marketing = create_dataset_sage(['Data/Raw/journalofmarketing.csv'], cj)
+#df_journal_of_marketing[0].to_csv('Data/Raw/journalofmarketing_data.csv')
 
 
-df_journal_of_marketing_research = create_dataset_sage(['Data/Raw/journalofmarketingresearch.csv'], cj)
+df_journal_of_marketing_research = create_dataset_sage(['Data/Raw/journalofmarketingresearch_WoS.csv'], cj)
 df_journal_of_marketing_research[0].to_csv('Data/Raw/journalofmarketingresearch_data.csv')
 
