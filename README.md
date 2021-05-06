@@ -14,5 +14,5 @@
 * Journal of Marketing Research (JMR) SAGE                      
 * Journal of Consumer Research (JCR)  OUP
 * Journal of the Academy of Marketing Science (JAMS) Springer
-* Marketing Science (MkS) Informs
+* Marketing Science (MkS) Informs, fulltext only in pdf form
 * Journal of Consumer Psychology (JCP) Wiley
