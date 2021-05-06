@@ -14,12 +14,15 @@ import time
 from bs4 import BeautifulSoup as bs
 import pandas as pd
 
-def check_items_from_soup_search(ReturnObj):
-    
-    if len(ReturnObj) == 0:
-        return 'NA'
-    else:
-        return ReturnObj[0].text
+from helpfunctions_preprocessing import create_list_urls, check_items_from_soup_search, create_dataset_publisher
+
+
+
+#df_WoS_jams = pd.read_csv('data/Raw/journalacademyofmarketingscience_WoS.csv')
+#df_WoS_jams['DOI']
+
+
+
 
 
 def scrape_article_springer(url, cookies):
@@ -39,17 +42,21 @@ def scrape_article_springer(url, cookies):
     # use title 
     title = soup.find_all("h1", {"class": "c-article-title"})[0].text
     
-       
+    doi = soup.find_all('a', {'data-track-action': 'view doi'})[0].get('href')
+    print(doi)
+    
+    # get the abstract   
     abstract_search = soup.find_all("div", {"id": "Abs1-content"})
     abstract = check_items_from_soup_search(abstract_search)
     
-    acknowledgement_search = soup.find_all('div', {'id': 'Ack1-content'})
-    acknowledgement = check_items_from_soup_search(acknowledgement_search)
+    # get the acknowledgement
+    acknowledge_search = soup.find_all('div', {'id': 'Ack1-content'})
+    acknowledge = check_items_from_soup_search(acknowledge_search)
     
     author_notes_search = soup.find_all('div', {'id': 'author-information-content'})
     author_notes = check_items_from_soup_search(author_notes_search)
     
-    #1. Body of text
+    # Body of text
     list_body_text = []
     sections = soup.find_all("div", {"class": "c-article-section"})
     
@@ -68,22 +75,25 @@ def scrape_article_springer(url, cookies):
             
             list_body_text.append(section_text)
     
+
     
-    references = soup.find_all('section', {'data-title': 'References'})[0].text
+    body = ' '.join(map(str, list_body_text))
+    
+    ref_list_search = soup.find_all('section', {'data-title': 'References'})
+    ref_list = check_items_from_soup_search(ref_list_search)
     
     list_keywords = soup.find_all('li', {'class': 'c-article-subject-list__subject'})
+    keywords = ', '.join(map(str, list_body_text))
     
-    keywords = ''
-    for keyword in list_keywords:
-        keywords = keywords + keyword.text + ', '
+    fngroup_search =  soup.find_all('div', {'id': 'additional-information-content'})
+    fngroup = check_items_from_soup_search(fngroup_search)
     
-    additional_info =  soup.find_all('div', {'id': 'additional-information-content'})[0].text
+    return title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup
     
-    print(list_body_text)
-    
+
 url = 'https://link-springer-com.eur.idm.oclc.org/article/10.1007/s11747-021-00778-y'
 
+base_url = 'https://link-springer-com.eur.idm.oclc.org/article/'
 cj = browser_cookie3.firefox() 
-
 
 scrape_article_springer(url, cj)
