@@ -232,7 +232,12 @@ def scrape_article_OUP(url, cookies):
 
     # extract keywords, not easily possible as it is a java widget
     # can instead use keywords given by scopus  
-    keywords = soup.find("div", {"class": "kwd-group"}).text
+    keywords = soup.find("div", {"class": "kwd-group"})
+    if keywords is None:
+        keywords = "NA"
+    else:
+        keywords = keywords.text
+
 
     # extract acknowledgements
     acknowledge = "NA"
@@ -326,7 +331,12 @@ def scrape_article_wiley(url, cookies):
     acknowledge = check_items_from_soup_search(acknowledge_search)
 
     # ref list  - cleaned for HTML tags but not separated by reference
-    ref_list = soup.find_all("ul", {"class": "rlist separator"})[0].text
+    ref_list = soup.find_all("ul", {"class": "rlist separator"})
+    if len(ref_list) > 0:
+        ref_list = ref_list[0].text
+    else:
+        ref_list = "NA"
+        print("ref_list not found")
 
     # fn group (associate editor, declaration of conflicting interest, funding, online supplement)
     # not easily available would require more work with little benefit?

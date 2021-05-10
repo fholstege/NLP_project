@@ -83,7 +83,7 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
             print("{0} / {1} -- {2} NAs" .format(index_url+1, len(urls), dict_missed['total_missed']))
             
             # sleep to make sure we are not recognized as DoS attack
-            time.sleep(2)
+            time.sleep(5)
         # add the df to list
         list_data_per_journal.append(df_data)
     

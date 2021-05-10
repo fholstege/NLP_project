@@ -8,6 +8,7 @@ Created on Thu May  6 17:20:00 2021
 from helpfunctions_preprocessing import create_dataset_publisher
 from scrape_functions import scrape_article_sage, scrape_article_wiley, scrape_article_OUP, scrape_article_springer
 import browser_cookie3
+import pandas as pd
 
 
 base_url_springer = 'https://link-springer-com.eur.idm.oclc.org/article/'
@@ -38,13 +39,45 @@ df_jcr = create_dataset_publisher(['Data/Raw/journalofconsumerresearch_WoS.csv']
                          base_url_oup,
                          scrape_article_OUP)
 
+# replace None by "NA" in rep_list column
+df_jcr[0].loc[(df_jcr[0]['ref_list'].isnull()), 'ref_list'] = 'NA'
+
+# instead of html get text for rep_list
+for row in range(0, df_jcr[0].shape[0]+1):
+    df_jcr[0]['ref_list'].iloc[row] = df_jcr[0]['ref_list'].iloc[row].text
+
+    
+df_jcr[0].to_parquet("data/scraped/journalofconsumerresearch.gzip", compression='gzip')
+# no NAs
+
+df_jcr[0].to_csv("data/scraped/journalofconsumerresearch.csv")
+
+df_jcr[0]['ref_list']
+
+df_jcr[0]['ref_list'].iloc[1279] = df_jcr[0]['ref_list'].iloc[1279].text
+
+old = df_jcr
+
+    
+    
+    
+    
 
 df_jams = create_dataset_publisher(['Data/Raw/journalacademyofmarketingscience_WoS.csv'],
                          cj, 
                          base_url_springer,
-                         scrape_article_springer)
+                         scrape_article_springer)   
+df_jams[0].to_parquet("data/scraped/journalacademyofmarketingscience.gzip", compression='gzip')
+# 7 NAs, either DOIs are not available anymore or only pdf full-text e.g. via SAGE
 
 df_jcs = create_dataset_publisher(['Data/Raw/journalofconsumerpsych_WoS.csv'],
                          cj, 
                          base_url_wiley,
                          scrape_article_wiley)
+df_jcs[0].to_parquet("data/scraped/journalofconsumerpsych.gzip", compression='gzip')
+
+# for some the ref_list is length 0, e.g. after 29/972 is printed (so the 30th article)
+# also article 402, 423, 600, 618, 828, 835, 837, 839, 845 - 856, 858 - 877, 892,
+# 894, 895, 898, 900, 901, 906, 908, 910, 911, 915, 916, 927 - 934, 936 - 938, 
+# 954 - 959, 961 - 972
+# NAs: 71/972 (mostly dois coming pretty late, probably older articles?)
