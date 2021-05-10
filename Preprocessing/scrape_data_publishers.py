@@ -28,40 +28,30 @@ df_jom = create_dataset_publisher(['Data/Raw/journalofmarketing_WoS.csv'],
                                   base_url_sage,
                                   scrape_article_sage)
 
+df_jcs[0].to_parquet("data/scraped/journalofmarketing.gzip", compression='gzip')
 
 df_jomr = create_dataset_publisher(['Data/Raw/journalofmarketingresearch_WoS.csv'],
                          cj, 
                          base_url_sage,
                          scrape_article_sage)
 
+df_jomr[0].to_parquet("data/scraped/journalofmarketingresearch.gzip", compression='gzip')
+
+
 df_jcr = create_dataset_publisher(['Data/Raw/journalofconsumerresearch_WoS.csv'],
                          cj, 
                          base_url_oup,
                          scrape_article_OUP)
 
-# replace None by "NA" in rep_list column
-df_jcr[0].loc[(df_jcr[0]['ref_list'].isnull()), 'ref_list'] = 'NA'
-
 # instead of html get text for rep_list
 for row in range(0, df_jcr[0].shape[0]+1):
     df_jcr[0]['ref_list'].iloc[row] = df_jcr[0]['ref_list'].iloc[row].text
-
-    
-df_jcr[0].to_parquet("data/scraped/journalofconsumerresearch.gzip", compression='gzip')
 # no NAs
 
+# save first as csv then as parquet to avoid issues with transformation to parquet
 df_jcr[0].to_csv("data/scraped/journalofconsumerresearch.csv")
-
-df_jcr[0]['ref_list']
-
-df_jcr[0]['ref_list'].iloc[1279] = df_jcr[0]['ref_list'].iloc[1279].text
-
-old = df_jcr
-
-    
-    
-    
-    
+df = pd.read_csv("data/scraped/journalofconsumerresearch.csv")
+df.to_parquet("data/scraped/journalofconsumerresearch.gzip", compression='gzip')
 
 df_jams = create_dataset_publisher(['Data/Raw/journalacademyofmarketingscience_WoS.csv'],
                          cj, 
