@@ -9,6 +9,9 @@ from helpfunctions_preprocessing import create_dataset_publisher
 from scrape_functions import scrape_article_sage, scrape_article_wiley, scrape_article_OUP, scrape_article_springer
 import browser_cookie3
 import pandas as pd
+from bs4 import BeautifulSoup as bs
+
+
 
 
 base_url_springer = 'https://link-springer-com.eur.idm.oclc.org/article/'
@@ -17,6 +20,11 @@ base_url_wiley = 'https://onlinelibrary-wiley-com.eur.idm.oclc.org/doi/'
 base_url_sage = 'https://journals-sagepub-com.eur.idm.oclc.org/doi/full-xml/'
 
 cj = browser_cookie3.firefox() 
+
+
+
+
+
 
 # Before you start; make sure to have access through the respective publisher. This happens in three steps
 #1. Log in on eur.worldcat 

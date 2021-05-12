@@ -80,18 +80,18 @@ def scrape_article_sage(url, cookies):
     keywords = check_items_from_soup_search(keywords_search)
 
     # extract acknowledgements
-    acknowledge_search = soup.find_all("ack")
-    acknowledge = check_items_from_soup_search(acknowledge_search)
+    acknowledge_search = soup.find("ack").find('p')
+    acknowledge = check_items_from_soup_search([acknowledge_search])
 
     # ref list  - raw HTML
-    ref_list = soup.find_all("ref-list")[0]
+    #ref_list = soup.find_all("ref-list")[0]
 
     # fn group (associate editor, declaration of conflicting interest, funding, online supplement)
-    fngroup_search = soup.find_all("fn-group")
-    fngroup = check_items_from_soup_search(fngroup_search)
+    #fngroup_search = soup.find_all("fn-group")
+    #fngroup = check_items_from_soup_search(fngroup_search)
     
     
-    return [title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup]
+    return [title, doi, body, author_notes, abstract, keywords, acknowledge] #ref_list, fngroup]
     
 
 
@@ -124,6 +124,10 @@ def scrape_article_springer(url, cookies):
     acknowledge = check_items_from_soup_search(acknowledge_search)
     
     author_notes_search = soup.find_all('div', {'id': 'author-information-content'})
+    for author_note in author_notes_search:
+        for author_title in author_note.find_all(['h1','h2','h3'], {'class':'c-article__sub-heading'}):
+            author_title.decompose()
+    
     author_notes = check_items_from_soup_search(author_notes_search)
     
     # Body of text
@@ -141,7 +145,7 @@ def scrape_article_springer(url, cookies):
             break
         else:         
            
-            section_text = section.text
+            section_text = section
             
             list_body_text.append(section_text)
     
@@ -149,17 +153,16 @@ def scrape_article_springer(url, cookies):
     
     body = ' '.join(map(str, list_body_text))
     
-    ref_list_search = soup.find_all('section', {'data-title': 'References'})
-    ref_list = check_items_from_soup_search(ref_list_search)
+    #ref_list_search = soup.find_all('section', {'data-title': 'References'})
+    #ref_list = check_items_from_soup_search(ref_list_search)
     
     list_keywords = soup.find_all('li', {'class': 'c-article-subject-list__subject'})
     keywords = ', '.join(map(str, list_body_text))
     
-    fngroup_search =  soup.find_all('div', {'id': 'additional-information-content'})
-    fngroup = check_items_from_soup_search(fngroup_search)
+    #fngroup_search =  soup.find_all('div', {'id': 'additional-information-content'})
+    #fngroup = check_items_from_soup_search(fngroup_search)
     
-    return [title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup]
-  
+    return [title, doi, body, author_notes, abstract, keywords, acknowledge]
 
 
 def scrape_article_OUP(url, cookies): 
@@ -209,7 +212,7 @@ def scrape_article_OUP(url, cookies):
     
     # information to crosscheck with scopus data to confirm we have correct data
     # use title 
-    title = soup.find("h1", {"class": "wi-article-title article-title-main"}).text
+    title = soup.find("h1", {"class": "wi-article-title article-title-main"}).text.replace('\r\n', '')
     # or use doi
     doi = "NA"
     
@@ -217,9 +220,9 @@ def scrape_article_OUP(url, cookies):
     body = soup.find_all("p", {"class": "chapter-para"})
     # concatenate body of text
     if len(body) > 1:
-        body = ' '.join([section.text for section in body])
+        body = ' '.join(map(str, [section for section in body]))
     elif len(body) == 1:
-        body = body[0].text
+        body = body[0]
     else:
         body = "NA"
         
@@ -243,16 +246,14 @@ def scrape_article_OUP(url, cookies):
     acknowledge = "NA"
 
     # ref list  - raw HTML
-    ref_list = soup.find("div", {"class": "ref-list js-splitview-ref-list"})
+    #ref_list = soup.find("div", {"class": "ref-list js-splitview-ref-list"})
 
     # fn group (associate editor, declaration of conflicting interest, funding, online supplement)
     # not easily available would require more work with little benefit?
     # can take editor from scopus data
-    fngroup = "NA"
+    #fngroup = "NA"
     
-    return [title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup]
-
-
+    return [title, doi, body, author_notes, abstract, keywords, acknowledge]
 
 def scrape_article_wiley(url, cookies): 
     """
@@ -309,9 +310,9 @@ def scrape_article_wiley(url, cookies):
     body = soup.find_all("section", {"class": "article-section__content"})
     # concatenate body of text
     if len(body) > 1:
-        body = ' '.join([section.text for section in body])
+        body = ' '.join(map(str, [section for section in body]))
     elif len(body) == 1:
-        body = body[0].text
+        body = body[0]
     else:
         body = "NA"
         
@@ -320,7 +321,7 @@ def scrape_article_wiley(url, cookies):
 
     # get abstract
     abstract_search = soup.find_all("div", {"class": "article-section__content en main"})
-    abstract = check_items_from_soup_search(abstract_search)
+    abstract = check_items_from_soup_search(abstract_search).strip('\n')
 
     # extract keywords, not easily possible as it is a java widget
     # can instead use keywords given by scopus  
@@ -328,20 +329,26 @@ def scrape_article_wiley(url, cookies):
 
     # extract acknowledgements
     acknowledge_search = soup.find_all("div", {"class": "header-note-content"})
-    acknowledge = check_items_from_soup_search(acknowledge_search)
+    if len(acknowledge_search) > 1:
+        acknowledge = ' '.join(map(str, [ack.text for ack in acknowledge_search])).strip('\n')
+    elif len(body) == 1:
+        acknowledge = acknowledge_search[0].text.strip('\n')
+    else:
+        acknowledge = "NA"
+    
+    #acknowledge = check_items_from_soup_search(acknowledge_search).strip('\n')
 
     # ref list  - cleaned for HTML tags but not separated by reference
-    ref_list = soup.find_all("ul", {"class": "rlist separator"})
-    if len(ref_list) > 0:
-        ref_list = ref_list[0].text
-    else:
-        ref_list = "NA"
-        print("ref_list not found")
+    #ref_list = soup.find_all("ul", {"class": "rlist separator"})
+    #if len(ref_list) > 0:
+    #    ref_list = ref_list[0].text
+    #else:
+    #    ref_list = "NA"
+    #    print("ref_list not found")
 
     # fn group (associate editor, declaration of conflicting interest, funding, online supplement)
     # not easily available would require more work with little benefit?
     # can take editor from scopus data
-    fngroup = "NA"
+    #fngroup = "NA"
     
-    return [title, doi, body, author_notes, abstract, keywords, acknowledge, ref_list, fngroup]
-        
+    return [title, doi, body, author_notes, abstract, keywords, acknowledge]
