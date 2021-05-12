@@ -36,12 +36,38 @@ df_jom = create_dataset_publisher(['Data/Raw/journalofmarketing_WoS.csv'],
                                   base_url_sage,
                                   scrape_article_sage)
 
+df_jmr = create_dataset_publisher(['Data/Raw/journalofmarketingresearch_WoS.csv'], 
+                                  cj,
+                                  base_url_sage,
+                                  scrape_article_sage)
+
+df_jams = create_dataset_publisher(['Data/Raw/journalacademyofmarketingscience_WoS.csv'], 
+                                  cj,
+                                  base_url_sage,
+                                  scrape_article_springer)
+
+df_jcr = create_dataset_publisher(['Data/Raw/journalofconsumerresearch_WoS.csv'],
+                         cj, 
+                         base_url_oup,
+                         scrape_article_OUP)
+
+df_jomr = create_dataset_publisher(['Data/Raw/journalofmarketingresearch_WoS.csv'],
+                         cj, 
+                         base_url_sage,
+                         scrape_article_wiley)
+
+
+
+
+
+
+
 df_jcs[0].to_parquet("data/scraped/journalofmarketing.gzip", compression='gzip')
 
 df_jomr = create_dataset_publisher(['Data/Raw/journalofmarketingresearch_WoS.csv'],
                          cj, 
                          base_url_sage,
-                         scrape_article_sage)
+                         scrape_article_wiley)
 
 df_jomr[0].to_parquet("data/scraped/journalofmarketingresearch.gzip", compression='gzip')
 
