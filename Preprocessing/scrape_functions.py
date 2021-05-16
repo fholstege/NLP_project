@@ -58,6 +58,7 @@ def scrape_article_sage(url, cookies):
     # parse xml content
     soup = bs(response.content, "xml")
     
+    
     # information to crosscheck with scopus data to confirm we have correct data
     # use title 
     title = soup.find_all("article-title")[0].text
@@ -80,8 +81,13 @@ def scrape_article_sage(url, cookies):
     keywords = check_items_from_soup_search(keywords_search)
 
     # extract acknowledgements
-    acknowledge_search = soup.find("ack").find('p')
-    acknowledge = check_items_from_soup_search([acknowledge_search])
+    acknowledge_search = soup.find("ack")
+    
+    
+    if acknowledge_search is None:
+        acknowledge = 'NA'
+    else:
+        acknowledge = check_items_from_soup_search([acknowledge_search.find('p')])
 
     # ref list  - raw HTML
     #ref_list = soup.find_all("ref-list")[0]

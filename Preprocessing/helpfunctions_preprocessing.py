@@ -41,7 +41,7 @@ def create_dataset_publisher(list_csv_locations, cookies, base_url, scrape_func)
     """
     
     # column names for df to be filled
-    col_df = ['title', 'DOI' , 'body', 'author_notes', 'abstract', 'keywords', 'acknowledge', 'ref_list', 'fngroup']
+    col_df = ['title', 'DOI' , 'body', 'author_notes', 'abstract', 'keywords', 'acknowledge']
     
     # list of dfs with data from SAGE
     list_data_per_journal = []

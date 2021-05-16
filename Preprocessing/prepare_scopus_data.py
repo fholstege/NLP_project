@@ -57,6 +57,8 @@ field_data.columns = ['journal', 'field']
 prepare_scopus('data/raw/journalofmarketing_WoS.csv', field_data, field_dict)
 
 
+#TODO: merge it with the clean text 
+
     
 # # merge scopus data onto scraped data
 # result = pd.merge(scraped_data, scopus_data, how = 'left', on = 'DOI', sort = False)
