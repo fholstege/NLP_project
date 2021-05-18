@@ -81,9 +81,7 @@ for f in file_list:
     result = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
     
     # check how many could not be merged
-    sum(result['refs_found'].isna())
-    
-    result.loc[result['refs_found'].isna()]
+    # sum(result['refs_found'].isna())
     
     # save result
     result.to_parquet('data/clean/' + f + '_merged.gzip', compression = 'gzip')
