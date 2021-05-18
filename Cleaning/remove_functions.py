@@ -36,7 +36,7 @@ def remove_titles_sage(body_str_sage):
         for title in titles:
             title.decompose()
             
-        return body_html_sage
+        return str(body_html_sage)
 
 
 
