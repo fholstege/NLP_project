@@ -61,11 +61,17 @@ df_jams[0].to_csv('../Data/Raw/journalacademyofmarketingscience_data_lim.csv')
 df_jcr[0].to_csv('../Data/Raw/journalofconsumerresearch_data_lim.csv')
 df_jcs[0].to_csv('../Data/Raw/journalofconsumerpsych_data_lim.csv')
 
-df_jom[0].to_parquet("../Data/scraped/journalofmarketing_data_lim.gzip", compression='gzip')
 
 
 # step 3; put csv in gzip 
+df_jom_fromCSV = pd.read_csv('../Data/Raw/journalofmarketing_data_lim.csv')
+df_jomr_fromCSV = pd.read_csv('../Data/Raw/journalofmarketingresearch_data_lim.csv')
+df_jams_fromCSV = pd.read_csv('../Data/Raw/journalacademyofmarketingscience_data_lim.csv')
+df_jcr_fromCSV = pd.read_csv('../Data/Raw/journalofconsumerresearch_data_lim.csv')
+df_jcs_fromCSV = pd.read_csv('../Data/Raw/journalofconsumerpsych_data_lim.csv')
 
-
-
-
+df_jom_fromCSV.to_parquet("../Data/scraped/journalofmarketing_data_lim.gzip", compression='gzip')
+df_jomr_fromCSV.to_parquet("../Data/scraped/journalofmarketingresearch_data_lim.gzip", compression='gzip')
+df_jams_fromCSV.to_parquet("../Data/scraped/journalacademyofmarketingscience_data_lim.gzip", compression='gzip')
+df_jcr_fromCSV.to_parquet("../Data/scraped/journalofconsumerresearch_data_lim.gzip", compression='gzip')
+df_jcs_fromCSV.to_parquet("../Data/scraped/journalofconsumerpsych_data_lim.gzip", compression='gzip')
