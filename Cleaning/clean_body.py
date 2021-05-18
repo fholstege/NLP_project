@@ -1,6 +1,20 @@
 from bs4 import BeautifulSoup as bs
 from nltk.tokenize import word_tokenize 
-from remove_functions import remove_stopwords, remove_non_alpha
+from remove_functions import remove_stopwords, remove_non_alpha, remove_single_words
+
+def remove_titles_sage(body_str_sage):
+    
+    if body_str is None:
+        return 'NA'
+    else:
+        body_html_sage = bs(body_str_sage, 'xml')
+        titles = body_html_sage.find_all('title')
+        
+        for title in titles:
+            title.decompose()
+            
+        return body_html_sage
+
 
 
 def remove_in_text_references_html(body_html, publisher):
@@ -57,7 +71,7 @@ def remove_in_text_references_text(body_str, publisher):
 
 
 
-def remove_stopwords_and_non_alpha(body_str, stopword_list):
+def remove_stopwords_non_alpha_single_words(body_str, stopword_list):
     
     if type(body_str) != str:
         return 'NA'
@@ -68,8 +82,14 @@ def remove_stopwords_and_non_alpha(body_str, stopword_list):
         
         word_tokens_alpha = remove_non_alpha(word_tokens_no_stopwords)
         
-        cleaned_str = " ".join(word_tokens_alpha)
+        word_tokens_no_single = remove_single_words(word_tokens_alpha)
+        
+        cleaned_str = " ".join(word_tokens_no_single)
         
         return cleaned_str
+    
+
+def remove_single_words(body_str):
+    
     
     

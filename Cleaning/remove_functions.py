@@ -13,3 +13,9 @@ def remove_non_alpha(word_tokens):
     
     return alpha_words
 
+def remove_single_words(word_tokens):
+    
+    not_single_words = [word for word in word_tokens if len(word) != 1]
+    
+    return not_single_words
+
