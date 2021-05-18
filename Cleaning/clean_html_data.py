@@ -1,4 +1,4 @@
-from clean_body import  remove_in_text_references_text, remove_stopwords_non_alpha_single_words, clean_titles_sage
+from clean_body import remove_in_text_references_text, remove_stopwords_non_alpha_single_words
 import pandas as pd
 from bs4 import BeautifulSoup as bs
 from nltk.tokenize import word_tokenize 
@@ -13,7 +13,6 @@ df_jam = pd.read_parquet('../Data/Scraped/journalacademyofmarketingscience_data_
 
 df_jom['body'] = df_jom['body'].apply(remove_titles_sage)
 df_jomr['body'] = df_jomr['body'].apply(remove_titles_sage)
-
 
 
 
