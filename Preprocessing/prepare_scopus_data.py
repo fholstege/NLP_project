@@ -54,14 +54,8 @@ field_data = all_journals[['Title', 'Field']]
 field_data.columns = ['journal', 'field']
 
 
-
-
-
-
-
-
-
-
+f = 'journalacademyofmarketingscience'
+data_path = 'data/raw/' + f + '_WoS.csv'
 
 
 # loop over journals and construct merge dataframes
@@ -73,12 +67,17 @@ file_list = ['journalofmarketing',
 
 for f in file_list:
     # load text data
-    text_df = pd.read_parquet('data/scraped/' + f + '_data_lim.gzip')
+    text_df = pd.read_parquet('data/clean/' + f + '_words.gzip')
     
     # prepare relevant scopus data
     scopus_df = prepare_scopus('data/raw/' + f + '_WoS.csv', field_data, field_dict)
     
+    # for first two journal also drop abbreviated source title
+    if f in ['journalofmarketing', 'journalofmarketingresearch']:
+        scopus_df.drop(labels = ['Abbreviated Source Title'], axis = 1, inplace = True)
+    
     # merge scopus and text data
+    text_df['DOI'] = 
     result = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
     
     # check how many could not be merged
@@ -86,7 +85,6 @@ for f in file_list:
     
     result.loc[result['refs_found'].isna()]
     
-    
     # save result
-    result.to_parquet('data/cleaned/' + f + '.gzip', compression = 'gzip')
+    result.to_parquet('data/clean/' + f + '_merged.gzip', compression = 'gzip')
     print(f'Merged data saved for {f}')

@@ -8,6 +8,7 @@ import urllib.request
 import requests
 import browser_cookie3
 import time
+import re
 from bs4 import BeautifulSoup as bs
 import pandas as pd
 from helpfunctions_preprocessing import create_list_urls, check_items_from_soup_search
@@ -57,7 +58,6 @@ def scrape_article_sage(url, cookies):
     
     # parse xml content
     soup = bs(response.content, "xml")
-    
     
     # information to crosscheck with scopus data to confirm we have correct data
     # use title 
@@ -118,8 +118,9 @@ def scrape_article_springer(url, cookies):
     # information to crosscheck with scopus data to confirm we have correct data
     # use title 
     title = soup.find_all("h1", {"class": "c-article-title"})[0].text
-    
-    doi = soup.find_all('a', {'data-track-action': 'view doi'})[0].get('href')
+
+    # cannot be scraped so take from scopus
+    doi = re.search('/article/(.*)', url).group(1)
     
     # get the abstract   
     abstract_search = soup.find_all("div", {"id": "Abs1-content"})

@@ -121,11 +121,16 @@ def prepare_scopus(data_path, field_data, field_dict):
     # drop unnecessary variables
     scopus_data.drop(labels = ['Volume', 'Issue', 'Art. No.', 'Page start', 'Page end',
                   'ISBN', 'CODEN', 'PubMed ID', 'Language of Original Document', 'Page count',
-                  'Abbreviated Source Title', 'Document Type', 'Publication Stage',
+                  'Document Type', 'Publication Stage',
                   'Open Access', 'Source', 'EID', 'Link', 'Affiliations', 'Index Keywords',
                   'Funding Text 2', 'Editors', 'Publisher', 'ISSN', 'Authors with affiliations',
-                  'Author(s) ID', 'Correspondence Address', 'Funding Text 1', 'Funding Details'],
-        axis = 1, inplace = True)
+                  'Author(s) ID', 'Correspondence Address', 'Funding Text 1', 'Funding Details'], axis = 1, inplace = True)
+    
+    # sort by year
+    scopus_data = scopus_data.sort_values(by = 'Year')
+    
+    # get rid of potential duplicates
+    scopus_data = scopus_data[~scopus_data['DOI'].duplicated(keep = 'first')]
 
     # get total number of references for each article
     scopus_data['num_ref'] = scopus_data['References'].apply(lambda x: str(x).count(";") + 1)
