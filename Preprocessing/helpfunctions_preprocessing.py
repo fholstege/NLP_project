@@ -129,6 +129,9 @@ def prepare_scopus(data_path, field_data, field_dict):
 
     # get total number of references for each article
     scopus_data['num_ref'] = scopus_data['References'].apply(lambda x: str(x).count(";") + 1)
+    
+    # treat missing number of citations as 0
+    scopus_data['Cited by'] = scopus_data['Cited by'].fillna(0)
 
     # get references as columns
     references = scopus_data['References'].str.split(pat = ";", expand = True)

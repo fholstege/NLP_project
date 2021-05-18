@@ -54,19 +54,39 @@ field_data = all_journals[['Title', 'Field']]
 field_data.columns = ['journal', 'field']
 
 
-prepare_scopus('data/raw/journalofmarketing_WoS.csv', field_data, field_dict)
 
 
-#TODO: merge it with the clean text 
 
+
+
+
+
+
+
+
+# loop over journals and construct merge dataframes
+file_list = ['journalofmarketing',
+             'journalofmarketingresearch',
+             'journalofconsumerresearch',
+             'journalofconsumerpsych',
+             'journalacademyofmarketingscience']
+
+for f in file_list:
+    # load text data
+    text_df = pd.read_parquet('data/scraped/' + f + '_data_lim.gzip')
     
-# # merge scopus data onto scraped data
-# result = pd.merge(scraped_data, scopus_data, how = 'left', on = 'DOI', sort = False)
+    # prepare relevant scopus data
+    scopus_df = prepare_scopus('data/raw/' + f + '_WoS.csv', field_data, field_dict)
     
-# # remove redundant unnamed column (old index)
-# result.drop(labels = ['Unnamed: 0'], axis = 1, inplace = True)
-
-# # save data
-# result.to_parquet('data/cleaned/' + output_name + '.gzip', compression='gzip')
+    # merge scopus and text data
+    result = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
     
-# merge_data('data/scraped/journalofmarketing.gzip', 'data/raw/journalofmarketing_WoS.csv', 'jom_merged')
+    # check how many could not be merged
+    sum(result['refs_found'].isna())
+    
+    result.loc[result['refs_found'].isna()]
+    
+    
+    # save result
+    result.to_parquet('data/cleaned/' + f + '.gzip', compression = 'gzip')
+    print(f'Merged data saved for {f}')
