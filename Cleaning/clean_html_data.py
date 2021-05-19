@@ -11,7 +11,6 @@ df_jcr = pd.read_parquet('../Data/Scraped/journalofconsumerresearch_data_lim.gzi
 df_jcp = pd.read_parquet('../Data/Scraped/journalofconsumerpsych_data_lim.gzip')
 df_jam = pd.read_parquet('../Data/Scraped/journalacademyofmarketingscience_data_lim.gzip')
 
-
 # remove titles from html
 df_jom['body'] = df_jom['body'].apply(remove_titles_sage)
 df_jomr['body'] = df_jomr['body'].apply(remove_titles_sage)

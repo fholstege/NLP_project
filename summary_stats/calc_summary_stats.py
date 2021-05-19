@@ -13,7 +13,6 @@ df_jcp = pd.read_parquet('../Data/clean/journalofconsumerpsych_words.gzip')
 df_jam = pd.read_parquet('../Data/clean/journalacademyofmarketingscience_words.gzip')
 
 
-
 body_text = ' '.join(df_jam['body'])
 body_text_tokenized = word_tokenize(body_text)
 n_gram = ngrams(body_text_tokenized,1)
