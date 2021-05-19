@@ -60,11 +60,12 @@ file_list = ['journalofmarketing',
              'journalofconsumerpsych',
              'journalacademyofmarketingscience']
 
+f = 'journalofconsumerresearch'
+f = 'journalofmarketing'
+
 for f in file_list:
     # load text data
     text_df = pd.read_parquet('../data/clean/' + f + '_words.gzip')
-    
-    text_df = pd.read_parquet("../Data/scraped/journalacademyofmarketingscience_data_lim.gzip")
     
     # prepare relevant scopus data
     scopus_df = prepare_scopus('../data/raw/' + f + '_WoS.csv', field_data, field_dict)

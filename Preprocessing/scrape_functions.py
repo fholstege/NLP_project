@@ -221,7 +221,7 @@ def scrape_article_OUP(url, cookies):
     # use title 
     title = soup.find("h1", {"class": "wi-article-title article-title-main"}).text.replace('\r\n', '')
     # or use doi
-    doi = "NA"
+    doi = re.search('https://doi-org.eur.idm.oclc.org/(.*)', url).group(1)
     
     # get body of text, includes in the end data collection info and acknowledgements
     body = soup.find_all("p", {"class": "chapter-para"})
