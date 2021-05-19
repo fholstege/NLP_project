@@ -66,11 +66,11 @@ df_jcp['abstract'] = df_jcp['abstract'].apply(remove_stopwords_non_alpha_single_
 df_jam['abstract'] = df_jam['abstract'].apply(remove_stopwords_non_alpha_single_words,stopword_list = stopwords_final)
 
 
-
 # to gzip 
 df_jom.to_parquet("../Data/clean/journalofmarketing_words.gzip", compression='gzip')
 df_jomr.to_parquet("../Data/clean/journalofmarketingresearch_words.gzip", compression='gzip')
-df_jcr.to_parquet("../Data/clean/journalacademyofmarketingscience_words.gzip", compression='gzip')
-df_jcp.to_parquet("../Data/clean/journalofconsumerresearch_words.gzip", compression='gzip')
-df_jam.to_parquet("../Data/clean/journalofconsumerpsych_words.gzip", compression='gzip')
+df_jcr.to_parquet("../Data/clean/journalofconsumerresearch_words.gzip", compression='gzip')
+df_jcp.to_parquet("../Data/clean/journalofconsumerpsych_words.gzip", compression='gzip')
+df_jam.to_parquet("../Data/clean/journalacademyofmarketingscience_words.gzip", compression='gzip')
+
 
