@@ -311,7 +311,7 @@ def scrape_article_wiley(url, cookies):
     # use title 
     title = soup.find("h1", {"class": "citation__title"}).text
     # or use doi
-    doi = soup.find("a", {"class": "epub-doi"}).text
+    doi = re.search('doi/(.*)', url).group(1)
     
     # get body of text
     body = soup.find_all("section", {"class": "article-section__content"})

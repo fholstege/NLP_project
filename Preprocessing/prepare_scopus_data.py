@@ -79,6 +79,7 @@ for f in file_list:
     
     # check for missings in body of text
     result = result.loc[result['body'] != '']
+    result = result.loc[result['body'] != 'na']
     
     # save result
     result.to_parquet('../data/clean/' + f + '_merged.gzip', compression = 'gzip')
