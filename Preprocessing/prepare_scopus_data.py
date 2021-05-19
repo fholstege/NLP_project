@@ -24,7 +24,7 @@ all_journals = pd.DataFrame(columns = ['Rank', 'Title', 'Field', 'ID'])
 
 for field, path in field_dict.items():
     # input data
-    journals = pd.read_csv(path, sep = ";")
+    journals = pd.read_csv('../' + path, sep = ";")
     # clean frame
     journals = journals[['Rank', 'Title']]
     # create field info
@@ -53,11 +53,6 @@ all_journals = all_journals[cond]
 field_data = all_journals[['Title', 'Field']]
 field_data.columns = ['journal', 'field']
 
-
-f = 'journalacademyofmarketingscience'
-data_path = 'data/raw/' + f + '_WoS.csv'
-
-
 # loop over journals and construct merge dataframes
 file_list = ['journalofmarketing',
              'journalofmarketingresearch',
@@ -67,22 +62,25 @@ file_list = ['journalofmarketing',
 
 for f in file_list:
     # load text data
-    text_df = pd.read_parquet('data/clean/' + f + '_words.gzip')
+    text_df = pd.read_parquet('../data/clean/' + f + '_words.gzip')
+    
+    text_df = pd.read_parquet("../Data/scraped/journalacademyofmarketingscience_data_lim.gzip")
     
     # prepare relevant scopus data
-    scopus_df = prepare_scopus('data/raw/' + f + '_WoS.csv', field_data, field_dict)
+    scopus_df = prepare_scopus('../data/raw/' + f + '_WoS.csv', field_data, field_dict)
     
     # for first two journal also drop abbreviated source title
     if f in ['journalofmarketing', 'journalofmarketingresearch']:
         scopus_df.drop(labels = ['Abbreviated Source Title'], axis = 1, inplace = True)
     
     # merge scopus and text data
-    text_df['DOI'] = 
     result = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
     
     # check how many could not be merged
     # sum(result['refs_found'].isna())
     
+    # check for missings in body of text
+    
     # save result
-    result.to_parquet('data/clean/' + f + '_merged.gzip', compression = 'gzip')
+    result.to_parquet('../data/clean/' + f + '_merged.gzip', compression = 'gzip')
     print(f'Merged data saved for {f}')
