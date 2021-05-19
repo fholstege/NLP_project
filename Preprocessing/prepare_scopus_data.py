@@ -60,9 +60,6 @@ file_list = ['journalofmarketing',
              'journalofconsumerpsych',
              'journalacademyofmarketingscience']
 
-f = 'journalofconsumerresearch'
-f = 'journalofmarketing'
-
 for f in file_list:
     # load text data
     text_df = pd.read_parquet('../data/clean/' + f + '_words.gzip')
@@ -81,6 +78,7 @@ for f in file_list:
     # sum(result['refs_found'].isna())
     
     # check for missings in body of text
+    result = result.loc[result['body'] != '']
     
     # save result
     result.to_parquet('../data/clean/' + f + '_merged.gzip', compression = 'gzip')
