@@ -37,8 +37,13 @@ fields = ['AI', 'Behavioral Neuroscience', 'Business / Int. Management',
        'Social Sciences', 'Sociology / Pol.Sc.', 'Statistics',
        'Strategy and Management']
 
+# table
+df_fields_avg_citations_table = df_journals_merged[fields].mean()
+
 
 df_fields_avg_citations = df_journals_merged.groupby(['Year'])[fields].mean()
+
+
 df_fields_avg_citations_melted = pd.melt(df_fields_avg_citations.reset_index(), id_vars='Year')
 
 fields_noMarketing = [x for x in fields if x != 'Marketing']

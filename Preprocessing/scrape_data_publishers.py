@@ -26,7 +26,6 @@ cj = browser_cookie3.firefox()
 #2. search the journal, and get access
 #3. Test if you can access the full text of the article through the browser
 
-
 # step 1; create dataframes
 df_jom = create_dataset_publisher(['../Data/Raw/journalofmarketing_WoS.csv'], 
                                   cj,

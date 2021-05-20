@@ -37,7 +37,12 @@ df_jcr['abstract'] = df_jcr['abstract'].str.lower()
 df_jcp['abstract'] = df_jcp['abstract'].str.lower()
 df_jam['abstract'] = df_jam['abstract'].str.lower()
 
-
+# do the same for titles
+df_jom['title'] = df_jom['title'].str.lower()
+df_jomr['title'] = df_jomr['title'].str.lower()
+df_jcr['title'] = df_jcr['title'].str.lower()
+df_jcp['title'] = df_jcp['title'].str.lower()
+df_jam['title'] = df_jam['title'].str.lower()
 
 
 # create stopword list
@@ -47,6 +52,7 @@ stopwords_TN_add = pd.read_csv('../Data/stopwords/TN_additional.txt', sep = "\n"
 stopwords_USTPO = pd.read_csv('../Data/stopwords/USTPO.txt', sep = "\n", header = None)[0].tolist()
 stopwords_own = pd.read_csv('../Data/stopwords/own_stopwords.txt', sep = "\n", header = None)[0].tolist()
 
+# combine to one stopword list
 stopwords_final = stopwords_nltk + stopwords_technical_add + stopwords_TN_add + stopwords_USTPO + stopwords_own
 
 
@@ -64,6 +70,15 @@ df_jomr['abstract'] = df_jomr['abstract'].apply(remove_stopwords_non_alpha_singl
 df_jcr['abstract'] = df_jcr['abstract'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
 df_jcp['abstract'] = df_jcp['abstract'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
 df_jam['abstract'] = df_jam['abstract'].apply(remove_stopwords_non_alpha_single_words,stopword_list = stopwords_final)
+
+
+# do the same for titles
+df_jom['title'] = df_jom['title'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jomr['title'] = df_jomr['title'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jcr['title'] = df_jcr['title'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jcp['title'] = df_jcp['title'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jam['title'] = df_jam['title'].apply(remove_stopwords_non_alpha_single_words,stopword_list = stopwords_final)
+
 
 
 # to gzip 
