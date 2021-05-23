@@ -32,8 +32,9 @@ frames_journals = [df_jom_merged, df_jomr_merged, df_jcr_merged, df_jcp_merged, 
 
 # merge the journals in one dataframe, vertically
 df_journals_merged = pd.concat(frames_journals)
-df_journals_merged.columns
+df_count_obs = df_journals_merged.groupby(['Year']).size()
 
-df_journals_merged['References']
-
-continuous variables = ['Cited by', 'num_ref']
+# 
+plt.bar(df_count_obs.index, df_count_obs, color = 'Grey')
+plt.xlabel('Year')
+plt.ylabel('Number of articles in dataset')

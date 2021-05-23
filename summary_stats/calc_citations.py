@@ -39,22 +39,24 @@ fields = ['AI', 'Behavioral Neuroscience', 'Business / Int. Management',
 
 # table
 df_fields_avg_citations_table = df_journals_merged[fields].mean()
-
+round(df_fields_avg_citations_table*100, 1).to_latex()
 
 df_fields_avg_citations = df_journals_merged.groupby(['Year'])[fields].mean()
 
 
 df_fields_avg_citations_melted = pd.melt(df_fields_avg_citations.reset_index(), id_vars='Year')
 
-fields_noMarketing = [x for x in fields if x != 'Marketing']
+fields_selected = [x for x in fields if x in ['AI','Computer Science', 'Behaviorial Neuroscience', 'Psychology', 'Medicine', 'Sociology / Pol.Sc.', 'Statistics']]
 
 
 # get colors for graphs
 colors = cm.get_cmap('tab20').colors
 index_color = 0
-for field in fields_noMarketing:
+for field in fields_selected:
     df_field = df_fields_avg_citations_melted[df_fields_avg_citations_melted['variable'] == field]
-    plt.plot(df_field['Year'], df_field['value'], label = field, color = colors[index_color])
+    plt.plot(df_field['Year'], df_field['value']*100, label = field, color = colors[index_color])
     index_color += 1
 
+plt.xlabel("Year")
+plt.ylabel("% of Journals in Reference list  ")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')

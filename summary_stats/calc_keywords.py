@@ -11,6 +11,7 @@ from collections import Counter
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from IPython.display import display, Latex
 
 # read the zipped files
 df_jom_merged = pd.read_parquet('../Data/clean/journalofmarketing_merged.gzip')
@@ -68,17 +69,21 @@ def extract_keywords(keywords_list, lemmatize = True, top = True, n=20,selected 
     
         return dict_selected_keywords
 
+# get top keywords
 top_keywords_alltime = extract_keywords(df_journals_merged['Author Keywords'], n=20, top = True)
 top_keywords_list = list(top_keywords_alltime.keys())
 
+# get table
+df_top_keywords_alltime = pd.DataFrame({'keyword': top_keywords_alltime.keys(), 'count':top_keywords_alltime.values()})
+df_top_keywords_alltime.to_latex()
 
-
+# get years
 years = df_journals_merged['Year'].unique()
 years_noNaN = years[~np.isnan(years)]
 
+# get top keywords per year, fill dataframe
 df_top_keywords =  pd.DataFrame(columns = top_keywords_list)
 df_top_keywords['Year'] = years_noNaN
-
 
 
 for year in years_noNaN:

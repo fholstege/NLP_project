@@ -71,7 +71,7 @@ def get_top_n_gram(text_list, n, top_n):
     
     return top_words_text
 
-def create_plot_n_gram(top_words, color):
+def create_plot_n_gram(top_words, color, save= False, dpi = 200, figname = None):
     
     list_words, list_words_counts = extract_values_counter(top_words) 
     
@@ -81,6 +81,11 @@ def create_plot_n_gram(top_words, color):
     # plot of n-gram
     plt.barh(list_words, width = list_words_counts, color = color)
     plt.tick_params(axis='both', which='major', length=5, labelsize = 'small')
+    
+    if save:
+        plt.tight_layout()
+        plt.savefig(figname, dpi=dpi)
+
     plt.show()
 
 
@@ -97,10 +102,10 @@ top_words_title = get_top_n_gram(title_flat_list, 1, 20)
 top_two_words_title =  get_top_n_gram(title_flat_list, 2, 20)
 
 
-create_plot_n_gram(top_words_body, 'blue')
-create_plot_n_gram(top_two_words_body, 'red')
-create_plot_n_gram(top_words_abstract, 'green')
-create_plot_n_gram(top_two_words_abstract, 'purple')
-create_plot_n_gram(top_words_title, 'orange')
-create_plot_n_gram(top_two_words_title, 'pink')
+create_plot_n_gram(top_words_body, 'blue', save = True, figname = 'unigram_body_plot')
+create_plot_n_gram(top_two_words_body, 'red', save = True, figname = 'bigram_body_plot')
+create_plot_n_gram(top_words_abstract, 'green', save = True, figname = 'unigram_abstract_plot')
+create_plot_n_gram(top_two_words_abstract, 'purple', save = True, figname = 'bigram_abstract_plot')
+create_plot_n_gram(top_words_title, 'orange', save = True, figname = 'unigram_title_plot')
+create_plot_n_gram(top_two_words_title, 'pink', save = True, figname = 'bigram_title_plot')
 
