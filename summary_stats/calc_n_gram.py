@@ -27,7 +27,7 @@ frames_journals = [df_jom_merged, df_jomr_merged, df_jcr_merged, df_jcp_merged, 
 
 # merge the journals in one dataframe, vertically
 df_journals_merged = pd.concat(frames_journals)
-
+df_journals_merged.to_parquet("../Data/clean/data_journals_merged.gzip", compression='gzip')
 
 # init the Wordnet Lemmatizer
 lemmatizer = WordNetLemmatizer()

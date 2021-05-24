@@ -8,6 +8,10 @@ import nltk
 # nltk.download('wordnet') # uncomment if wordnet not installed
 from nltk.stem import WordNetLemmatizer 
 import logging
+from gensim.models import ldamodel
+
+from helpfunctions_models import get_average_perplexity_from_LDA_CV
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 file_list = ['journalofmarketing',
@@ -64,32 +68,43 @@ len(id2word)
 
 
 # estimate model
-lda_model = ldaseqmodel.LdaSeqModel(corpus=corpus, time_slice=time_slice, id2word = id2word, num_topics=2, chunksize=100, passes = 1)
+#lda_model = ldaseqmodel.LdaSeqModel(corpus=corpus, time_slice=time_slice, id2word = id2word, num_topics=2, chunksize=100, passes = 1)
 
 ##################################################################
 
 # save model
-temp_file = datapath("seq_model")
-lda_model.save(temp_file)
+#temp_file = datapath("seq_model")
+#lda_model.save(temp_file)
 
 # load model
-lda = LdaModel.load(temp_file)
+#lda = LdaModel.load(temp_file)
 
 
 # test to see how dynamic LDA works
-from gensim.test.utils import common_corpus
-lda_model = ldaseqmodel.LdaSeqModel(corpus=common_corpus, time_slice=[2, 4, 3], num_topics=2, chunksize=1)
+#from gensim.test.utils import common_corpus
+#lda_model = ldaseqmodel.LdaSeqModel(corpus=common_corpus, time_slice=[2, 4, 3], num_topics=2, chunksize=1)
+
+
+# implement cross validation
+result_per_n_topics = []
+K = 4
+
+for n_topics in range(2, 20+1):
+    
+    result = get_average_perplexity_from_LDA_CV(corpus, n_topics, id2word, K)
+    result_per_n_topics.append(result)
 
 
 # original LDA model
-from gensim.models import ldamodel
-test = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=20)
+lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=20)
 
-test.print_topics()
+lda_model.print_topics()
 
-test.get_topic_terms(1)
+lda_model.get_topic_terms(1)
 
-test.show_topics()
+lda_model.show_topics()
+
+lda_model.log_perplexity(corpus)
 
 # import pyLDAvis
 # import pyLDAvis.gensim_models as gensimvis
