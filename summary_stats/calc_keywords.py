@@ -103,7 +103,11 @@ df_top_keywords_melted_post08 = df_top_keywords_melted_noNA[df_top_keywords_melt
 colors = cm.get_cmap('tab20').colors
 index_color = 0
 
-for top_keyword in top_keywords_list:
+top_keywords_list
+
+selected_keywords = [' Social media', ' Sustainability', 'Advertising', ' Innovation', ' Decision making', ' Emotions']
+
+for top_keyword in selected_keywords:
     
     df_top_keyword = df_top_keywords_melted_post08[df_top_keywords_melted_post08['variable'] == top_keyword]
     df_top_keyword_ordered = df_top_keyword[::-1]
@@ -111,3 +115,5 @@ for top_keyword in top_keywords_list:
     index_color += 1
     
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xlabel('Year')
+plt.ylabel('Total number of times mentioned as keyword')
