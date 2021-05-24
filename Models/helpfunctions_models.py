@@ -2,6 +2,7 @@
 import random
 from gensim.models import ldamodel
 import logging
+from gensim.models.coherencemodel import CoherenceModel
 
 
 
@@ -57,7 +58,7 @@ def get_K_folds_from_corpus_list(corpus_list, K):
 
             
 
-def get_average_perplexity_from_LDA_CV(corpus_list, n_topics, id2word, K):
+def get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, coherence_measure='u_mass'):
     """
     
 
@@ -79,7 +80,8 @@ def get_average_perplexity_from_LDA_CV(corpus_list, n_topics, id2word, K):
     """
     
     list_of_fold_indeces = get_K_folds_from_corpus_list(corpus_list, K)
-    fold_scores = []
+    fold_perplexity = []
+    fold_coherence = []
     
     for fold_indeces in list_of_fold_indeces:
         
@@ -89,11 +91,32 @@ def get_average_perplexity_from_LDA_CV(corpus_list, n_topics, id2word, K):
         lda_model = ldamodel.LdaModel(corpus=training_corpus, id2word=id2word, num_topics=n_topics)
         
         log_perplexity_fold = lda_model.log_perplexity(fold)
+        coherence_model = CoherenceModel(model = lda_model, corpus=fold, coherence=coherence_measure)
         
-        fold_scores.append(log_perplexity_fold)
+        fold_perplexity.append(log_perplexity_fold)
+        fold_coherence.append(coherence_model.get_coherence())
+    
+    avg_perplexity = sum(fold_perplexity) / len(fold_perplexity) 
+    avg_coherence = sum(fold_coherence)/ len(fold_coherence)
+    
+    return avg_perplexity, avg_coherence
 
-    return sum(fold_scores) / len(fold_scores) 
-
-
+def check_n_topic_scores_CV(corpus_list, range_topics, id2word, K, coherence_measure = 'u_mass'):
+    
         
+    # implement cross validation
+    result_per_n_topics = []
+    K = 4
+    
+    for n_topics in range(2, 30+1):
+        
+        avg_perplexity, avg_coherence = get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, coherence_measure = coherence_measure)
+        result_dict = {'avg_perplexity': avg_perplexity, 'avg_coherence':avg_coherence }
+        
+        result_per_n_topics.append(result_dict)
+    
+    
+    dict_results = dict(enumerate(result_per_n_topics, start = 2))
+    return dict_results
+
     

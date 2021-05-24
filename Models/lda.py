@@ -10,7 +10,7 @@ from nltk.stem import WordNetLemmatizer
 import logging
 from gensim.models import ldamodel
 
-from helpfunctions_models import get_average_perplexity_from_LDA_CV
+from helpfunctions_models import check_n_topic_scores_CV
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
@@ -89,14 +89,22 @@ len(id2word)
 result_per_n_topics = []
 K = 4
 
-for n_topics in range(2, 20+1):
+for n_topics in range(2, 30+1):
     
     result = get_average_perplexity_from_LDA_CV(corpus, n_topics, id2word, K)
     result_per_n_topics.append(result)
 
 
+dict_results = dict(enumerate(result_per_n_topics, start = 2))
+dict_results
+
+
 # original LDA model
 lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=20)
+lda_model.topics
+
+t = CoherenceModel(model = lda_model, corpus=corpus, coherence='u_mass')
+t.get_coherence()
 
 lda_model.print_topics()
 
