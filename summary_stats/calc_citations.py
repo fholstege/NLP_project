@@ -39,7 +39,8 @@ fields = ['AI', 'Behavioral Neuroscience', 'Business / Int. Management',
 
 # table
 df_fields_avg_citations_table = df_journals_merged[fields].mean()
-round(df_fields_avg_citations_table*100, 1).to_latex()
+df_fields_avg_citations_table.sort_values(ascending = False)
+round(df_fields_avg_citations_table.sort_values(ascending = False)*100, 1).to_latex()
 
 df_fields_avg_citations = df_journals_merged.groupby(['Year'])[fields].mean()
 

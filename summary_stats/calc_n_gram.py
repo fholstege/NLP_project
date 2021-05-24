@@ -36,6 +36,12 @@ lemmatizer = WordNetLemmatizer()
 body_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['body'].tolist()]
 body_flat_list = list(flatten(body_list))  
 
+
+sd_count = 0
+for word in body_flat_list:
+    if word == 'sd':
+        sd_count += 1
+
 # create list of words for each document -abstract
 abstract_list =  [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['abstract'].tolist()]
 abstract_flat_list =  list(flatten(abstract_list))  
