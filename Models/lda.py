@@ -9,7 +9,7 @@ import nltk
 from nltk.stem import WordNetLemmatizer 
 import logging
 from gensim.models import ldamodel
-
+import numpy as np
 from helpfunctions_models import check_n_topic_scores_CV
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -86,46 +86,28 @@ len(id2word)
 
 
 # implement cross validation
-result_per_n_topics = []
 K = 4
+range_n_topics = range(2, 31)
+result_cv = check_n_topic_scores_CV(corpus, range_n_topics, id2word, K, coherence_measure = 'u_mass')
 
-for n_topics in range(2, 30+1):
-    
-    result = get_average_perplexity_from_LDA_CV(corpus, n_topics, id2word, K)
-    result_per_n_topics.append(result)
-
-
-dict_results = dict(enumerate(result_per_n_topics, start = 2))
-dict_results
 
 
 # original LDA model
-lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=20)
-lda_model.topics
-
-t = CoherenceModel(model = lda_model, corpus=corpus, coherence='u_mass')
-t.get_coherence()
-
+lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=3, minimum_probability=0)
 lda_model.print_topics()
+lda_corpus = lda_model[corpus]
+lda_model.get_topics()
 
-lda_model.get_topic_terms(1)
+def edit_tuple(x):
+    return x[1]
+df_topics = pd.DataFrame(lda_corpus).applymap(edit_tuple)
+df_topics.columns = ['Topic 1', 'Topic 2', 'Topic 3']
 
-lda_model.show_topics()
 
-lda_model.log_perplexity(corpus)
+def get_max(doc):
+        idx,l = zip(*doc)
+        return idx[np.argmax(l)]
 
-# import pyLDAvis
-# import pyLDAvis.gensim_models as gensimvis
-# import matplotlib.pyplot as plt
+data['doc_topic'] = [get_max(doc) for doc in model.get_document_topics(model_corpus)]
 
-# pyLDAvis.disable_notebook()
-# vis = gensimvis.prepare(test, corpus, id2word)
-# vis.show()
 
-# TODO
-# do CV on normal LDA
-# use gensim coherence model to evaluate fit
-# prepare corpus for each fold separately?
-# visualisation
-# show ranking of words in topics over time
-# find most typical paper for each year and topic?
