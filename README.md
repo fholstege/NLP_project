@@ -16,3 +16,7 @@
 * Journal of the Academy of Marketing Science (JAMS) Springer
 * Marketing Science (MkS) Informs, fulltext only in pdf form
 * Journal of Consumer Psychology (JCP) Wiley
+
+## Summary Statistics
+* 4401 documents
+* for 3452 of them altmetric scores are available

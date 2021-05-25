@@ -53,6 +53,14 @@ all_journals = all_journals[cond]
 field_data = all_journals[['Title', 'Field']]
 field_data.columns = ['journal', 'field']
 
+# read altmetric data and clean
+alt_df = pd.read_csv('../data/raw/altmetric.csv')
+alt_df['Journal/Collection Title'].value_counts()
+cols = ['DOI', 'Altmetric Attention Score', 'News mentions', 'Blog mentions', 'Policy mentions', 'Twitter mentions', 'Facebook mentions', 'Reddit mentions', 'Wikipedia mentions', 'Number of Mendeley readers', 'Number of Dimensions citations']
+alt_df = alt_df[cols]
+
+
+
 # loop over journals and construct merge dataframes
 file_list = ['journalofmarketing',
              'journalofmarketingresearch',
@@ -72,7 +80,10 @@ for f in file_list:
         scopus_df.drop(labels = ['Abbreviated Source Title'], axis = 1, inplace = True)
     
     # merge scopus and text data
-    result = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
+    intermediate = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
+    
+    # merge data and altmetric data
+    result =  pd.merge(intermediate, alt_df, how = 'left', on = 'DOI', sort = False)
     
     # check how many could not be merged
     # sum(result['refs_found'].isna())
