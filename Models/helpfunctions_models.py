@@ -106,11 +106,10 @@ def check_n_topic_scores_CV(corpus_list, range_topics, id2word, K, coherence_mea
         
     # implement cross validation
     result_per_n_topics = []
-    K = 4
     
-    for n_topics in range(2, 30+1):
+    for n_topics in range_topics:
         
-        avg_perplexity, avg_coherence = get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, coherence_measure = coherence_measure)
+        avg_perplexity, avg_coherence = get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word=id2word, K=K, coherence_measure = coherence_measure)
         result_dict = {'avg_perplexity': avg_perplexity, 'avg_coherence':avg_coherence }
         
         result_per_n_topics.append(result_dict)
