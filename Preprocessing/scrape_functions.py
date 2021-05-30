@@ -9,6 +9,8 @@ import requests
 import browser_cookie3
 import time
 import re
+import subprocess
+import os
 from bs4 import BeautifulSoup as bs
 import pandas as pd
 from helpfunctions_preprocessing import create_list_urls, check_items_from_soup_search
@@ -359,3 +361,42 @@ def scrape_article_wiley(url, cookies):
     #fngroup = "NA"
     
     return [title, doi, body, author_notes, abstract, keywords, acknowledge]
+
+
+def scrape_article_informs(url, cookies, no_article): 
+    """
+    
+
+    Parameters
+    ----------
+    url : string
+        url on the Wiley website to be scraped (HTML).
+    cookies : cookie object
+        set of cookies present in current browser.
+    no_article : int
+        number of article to be scraped
+    Returns
+    -------
+    pdf file of scraped article in ../data/raw/marketing_science_pdf
+    txt file of scraped article in ../data/raw/marketing_science_txt
+
+    """
+
+    try:
+        response = requests.get(url, cookies=cookies, headers={'User-Agent': 'Mozilla/5.0'})
+        response.raise_for_status()
+
+    except requests.HTTPError as exception:
+        print(exception) # or save to logfile together with url
+        return False
+    
+    # save download as pdf
+    with open(f'../data/raw/marketing_science_pdf/{no_article}.pdf', 'wb') as f:
+        f.write(response.content)
+    print(f"Successfully downloaded file {no_article}")
+    
+    # parse to txt, do not parse first page
+    cmd = f'pdftotext -f 2 ../data/raw/marketing_science_pdf/{no_article}.pdf ../data/raw/marketing_science_txt/{no_article}.txt'
+    subprocess.call(cmd, shell=True)
+    print(f"Successfully converted file {no_article} to txt")
+    return True
