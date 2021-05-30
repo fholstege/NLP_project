@@ -1,0 +1,3146 @@
+CORRECTED VERSION OF RECORD; SEE LAST PAGE OF ARTICLE
+
+MARKETING SCIENCE
+
+http://pubsonline.informs.org/journal/mksc
+
+Vol. 38, No. 6, November­December 2019, pp. 1038­1058 ISSN 0732-2399 (print), ISSN 1526-548X (online)
+
+Test & Roll: Profit-Maximizing A/B Tests
+
+Elea McDonnell Feit,a Ron Bermanb
+a LeBow College of Business, Drexel University, Philadelphia, Pennsylvania 19104; b The Wharton School, University of Pennsylvania, Philadelphia, Pennsylvania 19104 Contact: eleafeit@gmail.com, http://orcid.org/0000-0002-1067-0791 (EMF); ronber@wharton.upenn.edu,
+http://orcid.org/0000-0002-8594-3627 (RB)
+
+Received: October 29, 2018 Revised: May 21, 2019 Accepted: May 24, 2019 Published Online in Articles in Advance: November 14, 2019
+https://doi.org/10.1287/mksc.2019.1194
+Copyright: © 2019 INFORMS
+
+Abstract. Marketers often use A/B testing as a tool to compare marketing treatments in a test stage and then deploy the better-performing treatment to the remainder of the consumer population. Whereas these tests have traditionally been analyzed using hypothesis testing, we reframe them as an explicit trade-off between the opportunity cost of the test (where some customers receive a suboptimal treatment) and the potential losses associated with deploying a suboptimal treatment to the remainder of the population. We derive a closed-form expression for the profit-maximizing test size and show that it is substantially smaller than typically recommended for a hypothesis test, particularly when the response is noisy or when the total population is small. The common practice of using small holdout groups can be rationalized by asymmetric priors. The proposed test design achieves nearly the same expected regret as the flexible yet harder-to-implement multi-armed bandit under a wide range of conditions. We demonstrate the benefits of the method in three different marketing contexts--website design, display advertising, and catalog tests--in which we estimate priors from past data. In all three cases, the optimal sample sizes are substantially smaller than for a traditional hypothesis test, resulting in higher profit.
+
+History: Avi Goldfarb served as the senior editor and Olivier Toubia served as associate editor for this article.
+Funding: This work was supported by the 2017 Adobe Data Science Research Award. Supplemental Material: Data are available at https://doi.org/10.1287/mksc.2019.1194.
+
+Keywords: A/B testing · randomized controlled trial · marketing experiments · Bayesian decision theory · sample size
+
+1. Introduction
+
+Experimentation is an important tool for marketers in
+
+a wide range of settings including direct mail, email,
+
+display advertising, social media marketing, website
+
+optimization, and app design. In tactical marketing
+
+settings, which we call "test & roll" experiments, data
+
+on customer response are first collected in a test stage
+
+where a subset of customers are randomly assigned to
+
+a treatment. In the roll stage that follows, marketers
+
+deploy one treatment to all remaining customers based
+
+on the test results.
+
+Figure 1 shows an example test & roll setup screen.
+
+Emails with two different subject lines will each be
+
+sent to 8,910 customers at random from a total list of
+
+59,404 email addresses. Once the test outcomes are
+
+measured, the platform sends the better-performing
+
+email to the remainder of the list.
+
+Traditionally, such randomized controlled trials
+
+are analyzed with a significance test, where the null
+
+hypothesis of equal mean response of two treatments
+
+is rejected if
+
+
+
+y1 - y2  z1-/2
+
+s21 + s22 , n1 n2
+
+(1)
+
+where y1 and y2 are the mean response for each test group, s1 and s2 are the standard deviation of the
+response, n1 and n2 are the sample sizes, and the significance level  is the desired Type I error rate that determines the critical value z.1
+When using hypothesis testing, the sample size is
+fixed prior to data collection, and n1 and n2 are set to detect an effect of at least d with probability 1 - .
+When s1 s2 s, the recommended sample size is
+
+nHT
+
+n1
+
+n2
+
+
+
+( z1-/2
+
++
+
+z)2(2ds22
+
+) .
+
+(2)
+
+The recommendation is to set n1 n2 because this maximizes the statistical power of the experiment when s1 s2.
+We develop an alternative approach to planning and analyzing A/B tests with finite populations. Although null hypothesis testing is the "gold standard" in scientific and medical research and is often recommended for marketing tests (e.g., Pekelis et al. 2015), the statistical significance threshold in (1) is a poor decision rule for test & roll experiments aimed at maximizing profits, for four reasons.
+
+1038
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+Figure 1. (Color online) Typical Test & Roll Setup
+
+1039
+
+Note. Screenshots were obtained from the email marketing tool Campaign Monitor, as described on the Zapier.com blog.
+
+First, hypothesis tests at typical significance levels (e.g.,  0.05) are designed to avoid concluding that two treatments perform differently when they do not. Yet these Type I errors have little consequence for profit, assuming no deployment costs. If the null cannot be rejected and both treatments yield identical effects, the same profit will be earned regardless of which treatment is deployed. Because of the profit trade-off between test-stage learning and roll-stage earning, conservative sample sizes based on null hypothesis testing lower overall expected profit, by exposing too many people to the less effective treatment in the test.
+Second, the population available for testing and deploying is often limited, but the recommended sample size in (2) does not take this constraint into account. In online advertising experiments where effects are often small (but profitable), the recommended sample size may be larger than the size of the population itself (Lewis and Rao 2015).2 Yet, as we show, when the population is limited, smaller tests that will never reach statistical significance can still have substantial benefit in improving expected profit.
+
+Third, the typical null hypothesis test in (1) provides no guidance on which treatment to deploy when the results are not significant. Many A/B testers advocate deploying the incumbent treatment (if there is one) in the interest of being "conservative," choosing randomly (Gershoff 2017), or continuing the test until it reaches significance (e.g., Berman et al. 2018).
+Fourth, practitioners often design tests with unequal sample sizes for each treatment (e.g., Lewis and Rao 2015, Zantedeschi et al. 2016). Our framework allows unequal sample sizes to arise naturally from prior beliefs, whereas this cannot be rationalized under classical hypothesis testing when response variance is equal (s21 s22).
+We reframe the test & roll decision problem in Section 2, focusing on profit and making an explicit trade-off between the opportunity cost of the test (where some customers receive the suboptimal treatment) and the losses associated with deploying the suboptimal treatment to the remainder of the finite population. In effect, the problem we define can be seen as a constrained version of a multi-armed bandit, where there are only two allocation decisions instead of many.
+
+1040
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+We derive a new closed-form expression for the profit-maximizing sample size in Section 3, assuming that the average revenue per customer is normally distributed with Normal priors. Test sample sizes under this framework are often substantially smaller than those recommended by (2). Unlike sample sizes for a hypothesis test that increase linearly with the variance of the response in (2), profit-maximizing sample sizes increase sublinearly with the standard deviation of the response, leading to substantially smaller test sizes when the response is noisy. Profitmaximizing samples are also proportional to the square root of the total size of the population available, and so they naturally scale to both large and small settings.
+Improved performance is achieved because profitmaximizing tests identify the best-performing treatment with high probability when treatment effects are large; the lost profit (regret) from errors in treatment selection is small when treatment effects are small. We also show that a test & roll with the profitmaximizing sample size achieves nearly the same level of regret as the popular Thompson sampling solution to the multi-armed bandit problem (Scott 2010, Schwartz et al. 2017); both have regret of O( N). Although suboptimal relative to a multi-armed bandit, the profit-maximizing test & roll provides a transparent decision point and reduced operational complexity without significant loss of profit.
+Section 4 extends the analysis to situations with different priors on treatments, and it provides an efficient numeric approach to computing optimal sample sizes. This allows us to rationalize the common practice of using unequally sized treatment groups when the two treatments are believed a priori to produce different responses (e.g., a test comparing media exposure to no exposure or a test comparing two different prices).
+To illustrate how test & roll experiments should be designed in practice, Section 5 provides three empirical applications: website design, online display advertising, and catalog marketing. For each application, we estimate priors based on previous similar experiments. These applications show the wide range of test designs that result from different priors and show that the "one-size-fits-all" approach favored by null hypothesis testing does not maximize profit. We conclude in Section 6 with a discussion of potential extensions of the test & roll framework and implications for A/B testers. Full statements of propositions and proofs appear in the appendix.
+2. The Test & Roll Decision Problem
+A test & roll with a population of N customers has two stages: a test stage and a roll stage. In the test stage, a random sample of n1 customers are exposed to
+
+treatment 1, and a random nonoverlapping sample
+of n2 customers are exposed to treatment 2, with n1 + n2 < N. In the roll stage, all remaining N - n1 - n2 customers receive either treatment 1 or treatment 2
+based on a decision rule that incorporates the data observed in the test stage. The marketer's goal is to maximize the cumulative profit earned in both stages.
+Assuming the profit for each customer receiving
+treatment j is an independent random variable Yj that follows a distribution with parameters j, the expected profit earned during the test phase is
+
+EY1,Y2 [T|1, 2] n1E[Y1|1] + n2E[Y2|2], (3)
+
+where Yj is the profit net of any costs related to the treatments (e.g., media costs or discounts). In website
+and email tests, for example, the cost of both treat-
+ments is the same and can be ignored. Denote the vector of observed profit from customers
+exposed to treatment j in the test as yj yj,1, . . . , yj,nj . Once y1 and y2 are observed, the analyst chooses a treatment to deploy with the remaining N - n1 - n2 customers. Let (y1, y2) be the decision rule, which takes the value 1 for the decision to deploy treatment
+1 and 0 for treatment 2. The optimal decision rule is to
+select the treatment with the highest posterior predictive mean E[Yj|yj] (DeGroot 1970).
+Depending on the decision rule, the expected profit
+in the roll stage is
+
+EY1,Y2 [D|1, 2]
+
+[( )
+
+(N( - n1 (- n2)E)Y) 1,Y2  y1,]y2 Y1
+
++ 1 -  y1, y2 Y2|1, 2 .
+
+(4)
+
+Increasing n1 and n2 provides more observations about the profitability of each treatment and thus has the potential to yield more correct decisions in the roll stage. Simultaneously, increasing n1 and n2 decreases the population remaining in the roll stage and increases the test population, some of which is exposed to the lesser-performing treatment. Thus, the test & roll framework sets up an explicit trade-off between learning during the test phase and earning during the roll phase. This trade-off is important when the total population size N is limited.3 Well-defined, limited populations are common in marketing: in direct marketing N is the size of the customer list (Bitran and Mondschein 1996, Bonfrer and Dre`ze 2009); in paid media, N is often determined by a finite budget; and in website or app tests, N reflects the expected traffic for some period after the test.
+The parameters 1 and 2 are unknown prior to the test (hence the need for the test). By assuming a prior distribution over these parameters, we obtain the a priori expected profit of the A/B test:
+
+[
+
+]
+
+E1,2 EY1,Y2 [T|1, 2] + EY1,Y2 [D|1, 2] . (5)
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1041
+
+Designing the test entails selecting the sample sizes n1 and n2 that maximize the total expected profit:
+
+(n1, n2)
+
+[ argmax E1,2 EY1,Y2 [T|1, 2]
+
+n1 ,n2
+
+]
+
++ EY1,Y2 [D|1, 2] .
+
+(6)
+
+Thus a profit-maximizing test & roll runs a test with the sample size in (6) and deploys one treatment based on the decision rule .
+Both our approach and the hypothesis testing approach described in Equations (1) and (2) are decisiontheoretic but differ in three aspects: (1) We define the decision as whether to deploy treatment 1 or treatment 2, instead of deciding whether to reject the null hypothesis. (2) The objective in hypothesis testing is to maximize statistical power while controlling Type I error, whereas we focus on maximizing profits. (3) Hypothesis testing uses a 0/1 loss function, and so every incorrect decision has the same cost, while our approach uses the actual opportunity cost as the loss, including the cost of the test.
+Similar two-stage decision problems have appeared in the literature. Chick and Inoue (2001) analyze a two-stage decision problem where the cost of the test is a fixed multiple of the sample sizes, rather than actual opportunity cost as we have here. In studying multi-armed bandits, Schwartz et al. (2017) and Misra et al. (2019) use a test & roll as a benchmark, but they do not optimize the sample size. The closest work comes from the clinical trials literature, where Cheng et al. (2003) define the same test & roll problem with a finite "patient horizon" and approximate the optimal sample size for Bernoulli responses with beta priors. Stallard et al. (2017) extend Cheng et al. (2003) to exponential family responses with conjugate exponential family priors. As a result, they also need to use approximations to compute the optimal sample size. In this paper, we focus on Normal response distributions with Normal priors, which allows us to provide an exact closed form for the optimal sample size as well as exact expected profit and regret, which we show next.
+
+3. Test & Roll with Symmetric
+Normal Priors
+To derive a profit-maximizing sample size formula, we assume Y1  1(m1, s2) and Y2  1(m2, s2) with identical priors m1, m2  1(, 2). The variance of the response, s2, is known; in practice, it can be estimated from previously observed responses.4 The hyperparameters  and  represent expectations for how
+the two treatments may perform, which can be in-
+formed by previous similar marketing campaigns (as
+illustrated in Section 5).
+
+The symmetric priors imply that neither treatment
+is a priori likely to perform better, but they do not
+imply that m1 m2. The implied prior on the treatment effect m1 - m2 is 1(0, 22), and the absolute difference between treatments |m1 - m2| is distributed half-normal with mean 2/ . Thus  is related to
+the a priori expectation about the potential difference
+in treatment effects (as well as the uncertainty). The expected profit in the test stage for this model is
+
+E[T] (n1 + n2).
+
+(7)
+
+The expected profit in the roll stage depends on the decision rule (y1, y2). The profit-maximizing decision rule is to choose the treatment with the greater expected posterior mean response:
+
+(y1, y2)
+
+((
+
+I
+
+1 2
+
++
+
+n1)-1(  s2 2
+
++
+
+) n1y1
+s2
+
+>
+
+( 1 2
+
++
+
+n2)-1(  s2 2
+
++
+
+))
+
+n2y2 s2
+
+,
+
+(8)
+
+where yj is the average response observed for treatment j and I(·) is the indicator function. Because
+the priors are symmetric, this reduces to (y1, y2) I(y1 > y2) if n1 n2 (i.e., the highly intuitive "pick the winner" in the test).
+Proposition A.1 shows that the decision rule in (8)
+yields an expected roll-stage profit of
+
+E[D]
+
+(N - n1 - n2) + 222+2nn11+nn22s2.
+
+(9)
+
+The second addend in the square brackets is the expected incremental profit per customer earned by (usually) deploying the better treatment relative to choosing randomly with expected profit of . Unsurprisingly, the incremental gain per customer from the test is increasing in the sample sizes n1 and n2. However, as (n1 + n2) increases, the number of customers for whom this higher profit is earned is smaller. The incremental gain decreases with the noise in the data, s, as expected. The a priori range of effect sizes is defined by . Higher a priori uncertainty about the mean response increases the option value from the experiment, and so the incremental gain increases with .
+To find the optimal sample size, the sum of the test profit in (7) and the deployment profit in (9) can be maximized over n1 and n2, resulting in optimal sample sizes (Proposition A.2):
+
+n
+
+n1
+
+n2
+
+N4(s)2+(34(s)2)2
+
+-
+
+3 4
+
+(s )2 .
+
+(10)
+
+1042
+
+
+
+Because
+
+N 4
+
+(s )2
+
++(34(s)2)2
+
+(
+
+N
+
+s 2
+
++
+
+3 4
+
+(s)2
+
+)2
+
+,
+
+(10)
+
+implies
+
+that n1 n2  N 2s. The profit-maximizing sample
+
+size is always less than the population size N and
+
+grows sublinearly with the standard deviation of
+
+the response s. By contrast, the recommended sample
+
+size for a hypothesis test in (2) grows linearly with
+
+the variance s2 without regard to N. This explains
+
+why, for noisy responses, hypothesis tests frequently
+
+require sample sizes that are larger than the available population (Lewis and Rao 2015).5
+
+Note that the profit-maximizing sample size de-
+
+creases with . A large  implies (1) a larger expected
+
+difference between treatments and (2) a lower error
+
+rate for a given sample size (see (12)), whereas (3) the
+
+opportunity cost remains the same.
+
+3.1. Error Rate
+
+Test & roll does not require the planner to specify an
+
+acceptable level of error; the error rate follows from
+
+optimally trading off the opportunity cost of the test
+
+against the expected loss in profit as a result of de-
+
+ployment errors. However, practitioners may want
+
+to know the expected error rate. Conditional on m1
+
+and m2, the likelihood of deploying treatment 1 when
+
+treatment 2 has a better mean response is
+
+
+
+
+
+( Pr (y1, y2)
+
+) 1|m1, m2
+
+1 - sm2n1-1+mn112.
+
+(11)
+
+From (11), we see that when the difference in treat-
+
+ments m2 - m1 is positive and large, the error rate is lower; that is, the better treatment will be deployed.
+
+When m2 - m1 is smaller, it is more likely that the wrong treatment will be deployed, but this is less
+
+consequential for profit.
+
+Integrating (11) over the priors on m1 and m2, the
+
+expected error rate is (Corollary A.3)
+
+[(
+
+)]
+
+E Pr (y1, y2) 1|m1 < m2
+
+E[Pr((y1, y2)(0|m1 >m2)])
+
+1 4
+
+-
+
+1 2
+
+arctan
+
+2 s
+
+n1n2 n1 + n2
+
+.
+
+(12)
+
+As expected, the error rate decreases with the test sizes n1 and n2, increases with s, and decreases with .
+
+3.2. Regret
+
+To provide an upper bound on the total expected
+
+profit, we compute the expected profit with perfect
+
+information (PI). If an omniscient marketer were able
+
+to deploy the treatment with higher expected profit to
+
+all N customers without testing, the expected profit
+
+would be (Proposition A.4, part 1)
+
+(
+
+)
+
+E[|PI]  +  N.
+
+(13)
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+The expected profit of any algorithm for choosing which treatment to deploy to each customer will be between the expected value of choosing randomly, which is N, and the expected value of perfect information in (13). The expected profit with perfect information scales with the variance of the prior ; the more potential difference there is between treatments, the more opportunity there is to improve profits by choosing the better treatment.
+The expected regret of the profit-maximizing test & roll experiment is (Proposition A.4, part (2))
+
+E[|PI] - E[D + T] 
+
+
+
+N  
+3sN
+
+1
+
+- 2+ns2 
+O( N).
+
++
+
+2n22+ns2
+
+(14)
+
+When populations are larger, the regret per customer
+
+decreases; hence marketers with larger populations
+
+have a greater opportunity to improve profits on a
+
+per-customer basis with a profit-maximizing test. We
+
+also see that the regret has an upper bound that does
+
+not depend on , implying that the potential regret is
+
+limited. Marketers can use the new closed-form for-
+
+mulas in (12) and (14) to easily assess the potential
+
+value of running a test & roll.
+
+To gain further insight into these results, we look at
+
+the expected relative regret of the profit-maximizing
+
+test & roll with respect to the expected profit from
+
+perfect information:
+
+E[|PI] - E[D E[|PI]
+
++
+
+T ]
+
+.
+
+(15)
+
+As Corollary A.5 proves, the relative regret reaches a maximum for an intermediate finite value of . When  is very small, there is not much to gain from having perfect information, and hence the relative regret will be small, whereas when  is large, the test stage will pick the best-performing treatment with a very high probability, also yielding low regret. Only when  is intermediate is there some chance of substantial loss from using a simple method such as test & roll, but even in this case, the potential loss is limited.
+By contrast, using the suboptimal sample size recommended for a hypothesis test produces substantially greater regret. Assuming that the better-performing treatment will be deployed after the test regardless of significance,6 we can substitute the value of nHT from (2) for n in (14). The regret from using the larger sample size is (Proposition A.4, part (3))
+
+E[|PI] - E[D + T|HT]
+
+
+
+N
+
+ 
+
+4(z(1-)/2
+
+d2 + z)22
+
++
+
+2d2)
+
+(N),
+
+(16)
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1043
+
+implying that hypothesis testing has a lower bound expected regret of (N), substantially larger than the profit-maximizing sample size with regret O( N) as N becomes large.7 Proposition A.4 also shows that this bound holds when a finite-population correction is included in the sample size formula.
+We can also compare a test & roll with profitmaximizing sample size to a multi-armed bandit where allocation to treatments is determined probabilistically for each customer based on previous responses. Agrawal and Goyal (2013) show that the expected regret of a multi-armed bandit with Thompson sampling (Thompson 1933)8 and Normal rewards also has regret O( N) and that this bound is tight. Thus, the regret of a test & roll with the profit-maximizing sample size has the same order as a multi-armed bandit with Thompson sampling. Because the actual regret depends on parameter values and cannot be computed in closed form for Thompson sampling with Normal response, we compare them in specific application settings in Section 5, and we show that test & roll achieves comparable average regret in several realistic cases.
+The Normal model developed in this section can also be used in situations where the response is Bernoulli (e.g., clicks, purchase incidence) using the standard approximation s (1 - ) and has a convenient closed-form solution. Alternatively, Appendix B develops a beta-binomial version where sample size must be computed numerically. Figure B.1 compares exact sample sizes from the beta-binomial with the Normal approximation and shows that the Normal approximation provides accurate sample sizes when  is between 0.05 and 0.95; for smaller or larger , the sample size computed using the Normal approximation is too small, and we suggest using the betabinomial formulation.
+
+4. Test & Roll with Asymmetric
+Normal Priors
+The analysis thus far has focused on cases with a common prior for both treatments. However, there are many situations where the priors might be different (e.g., comparing a marketing communication against a holdout control).
+Relaxing the assumptions from the previous section, assume Y1  1(m1, s21) and Y2  1(m2, s22) with priors m1  1(1, 21) and m2  1(2, 22) that represent the information about the treatments available prior to the test.
+Under these priors, the a priori expected profit in the test stage is
+
+E[T] 1n1 + 2n2.
+
+(17)
+
+Decision rule (8) is still optimal in this case but does not imply selecting the treatment that performs better
+
+in the test anymore; the prior information now also af-
+
+fects the decision. Using the decision rule in (8), the a
+
+priori expected profit in the roll stage is (Proposi-
+
+tion A.1)
+
+E[D]
+
+(N
+
+-
+
+n1
+
+-
+
+[ n2) 1
+
++
+
+e(ve)+v(ve)],
+
+(
+
+)
+
+where e 2 - 1 and v
+
+21
+
+41 + s21/n1
+
++
+
+22
+
+42 + s22
+
+. /n2
+
+(18)
+
+The expected total profit E[] E[T] + E[D] can be maximized over n1 and n2 to find the optimal sample
+size. The optimal sample sizes cannot be solved for
+analytically, but the function can be easily optimized numerically.9
+
+4.1. Incumbent/Challenger Tests
+One example of an asymmetric test & roll experiment arises when the experimenter has more past experience with treatment 1 versus treatment 2, implying that 1 < 2. We dub this an "incumbent/challenger" test. For example, an incumbent can be an ad copy or page design that follows the traditional firm branding strategy, whereas a challenger uses a new creative approach. When 1 < 2, the optimal sample size will be larger for the challenger treatment, to gain more information about the challenger in the test. A proof of this alongside sample size formulas can be found in Appendix C.
+
+4.2. Pricing Tests
+A second common case for asymmetric test plans is pricing experiments. Because companies face uncertainty about which prices are optimal, they often experiment with multiple prices. Different prices, however, influence two important factors. First is the number of people who will purchase the product; higher prices will elicit fewer purchases. Second is the profit per person; higher prices yield higher profits conditional on purchase. Thus, setting different prices effectively changes the priors on the mean profit per customer, which implies different optimal sample sizes for the two price levels.
+An example application that fits our framework is as follows. Suppose the firm would like to pick between two known prices, p1 and p2, and that demand from customer i presented with price j is dij a - m · pj + ij. In this model, demand is linear in price, a is the willingness to pay for the product, m is the uncertain price sensitivity with a prior distribution 1(, 2), and ij  1(0, s2). The profit from a customer i presented with price j will be yij pjdij. This model translates directly to a Normal-Normal model with asymmetric priors, where we denote j pj(a - pj),
+
+1044
+j p2j , and sj pjs. Consequently, the profit and optimal sample size formulas derived for the asymmetric case can be applied directly to pricing experiments and will recommend different sample sizes depending on the levels of prices being tested. A marketer could further optimize the test prices p1 and p2. More distant prices help to identify m but increase the opportunity cost of the test.
+A more comprehensive approach to this problem is taken by Misra et al. (2019), where their goal was not to test specific prices but rather to learn the demand curve while maximizing profits. The test & roll setup can be adapted to solve a similar problem, but the solution will require a numerical approach for calculating sample sizes and optimal prices.
+5. Applications
+Designing a profit-maximizing test & roll requires priors on the distribution of the mean response (profit) of the treatments. This section illustrates how to estimate these priors using data on past marketing interventions.10 We then use the estimated priors to provide optimal test plans for three different marketing contexts and compare them to hypothesis testing and multi-armed bandits using Thompson sampling, based on expected profit and regret. The first two applications use symmetric priors, whereas the third presents a situation where asymmetric priors are appropriate.
+5.1. Website Testing To set priors based on past data, we analyze 2,101 website tests from Berman et al. (2018) that were conducted across a wide variety of websites. For each treatment arm in each experiment, we observe the click rate y¯ and sample size n.11 Fitting a hierarchical model to these data, we estimate that the mean responses (click rates) are distributed 1(0.68, 0.03) across treatment arms. (Appendix Section E.1 details the data and estimation.)
+To plan a new test, we assume that this as a symmetric prior on mean response (m1 and m2). Assuming symmetric priors is reasonable as there is typically no prior information that one version of a web page will perform better than the other. The implied prior on the treatment effect is shown in Figure 2 and has mean E[|m1 - m2|] 0.023. Wecom pute the sample size based on (10), using
+(1 - ) to approximate s. The population size N is set based on the expected number of people who will visit the website over the deployment period. As an example, with N 100, 000, the optimal test size is n1 n2 2, 284 in each test group. The expected number of clicks is 3,106 in the test and 66,430 more when the better-performing treatment is deployed, for a total of 69,536 conversions. Following (12), this test will deploy the worse-performing web page 10.0%
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+Figure 2. Implied Prior on Treatment Effect for Website Example
+of the time, and this represents the optimal tradeoff with the opportunity cost of the test. The profitmaximizing test & roll has expected regret of 0.22% relative to expected profit with perfect information12 and achieves 90.7% of the potential gains over choosing randomly.
+Figure 3 shows the overall expected conversion rate (in the test and roll phases combined) as a function of the test size. Because small tests rapidly improve the deployment decision and increase profits, practitioners should be encouraged to run small tests and act on them. Tests that are larger than optimal decrease the error rate marginally (Figure 3(b)) but erode overall expected profit (Figure 3(a)). Notice that the slope of expected profit falls more swiftly when sample sizes are suboptimal; a test is that is too large is preferable to one that is too small by the same amount.
+Computing the profit-maximizing test size formula in (10) requires the user to specify a full prior distribution on the mean response for each arm, which requires the test designer to think about how the treatments will perform and can be informed by past data. By contrast, finding the recommended sample size for a hypothesis test following (2) requires selecting the minimum effect size to detect (d) and acceptable levels of Type I and Type II errors ( and , respectively). This can be challenging; many test planners have difficulty defining Type I and Type II error, let alone estimating the costs of those two errors to set desired levels of  and . There are numerous blog posts devoted to explaining how to apply hypothesis testing to A/B tests (Gershoff 2017, Wortham 2018). In most applications, standard values of  0.05 and
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1045
+
+Figure 3. (Color online) Total Expected Conversions (a) and Error Rate (b) as a Function of Test Size for Website Test Example
+
+Note. Here, N 100, 000,  0.68,  0.03, and s 0.466.
+
+ 0.8 are used despite the fact that Type I error is often inconsequential.
+To estimate a typical recommended sample size for a hypothesis test for this example, we use standard values for  and  and set d 0.68 × 0.02 0.0136 (i.e., a 2% lift). This value for d is the 25.1st percentile of the prior distribution of treatment effects implied by  and . The resulting recommended sample size for a hypothesis test is 18,468 in each group (or 13,487 with a finite population correction), an order of magnitude larger than the profit-maximizing test size. This larger sample size is set to control Type I and Type II error tightly irrespective of the opportunity cost of the test, resulting in much larger sample sizes than are necessary to maximize expected profit. In this application, the oversized test reduces the remaining population that can receive the better treatment and results in 476 fewer expected conversions (see Figure 3 and Table 1).
+Figures 4(a)­(c) show the sensitivity of the profitmaximizing sample size to N, , and s. Panel (a) shows how the sample size scales with the population N, allowing marketers with lower-traffic websites or pages
+
+to appropriately size website A/B tests. Panel (b) shows how sample size grows linearly with the response noise s, unlike the recommended sample size for a null hypothesis test, which increases with s2. Panel (c) shows that when  is larger, smaller test sizes are sufficient to detect treatments that, on average, perform substantially better than the alternative.13
+To compare test & roll to a multi-armed bandit, Table 1 shows the expected conversions and relative regret for multi-armed bandit with Thompson sampling where units are allocated to treatments sequentially based on the posterior predictive probabilities that each treatment is best (Thompson 1933). See Appendix D for implementation details. The dynamic Thompson sampling algorithm produces 136 more conversions (in expectation) than a test & roll with the optimal sample size. Both methods use a decision rule based on the same posterior, but the multi-armed bandit has more flexibility to recover from early observations that favor the wrong treatment. However, the difference is small: Thompson sampling achieves an expected relative regret of 0.03%, whereas test & roll achieves 0.22%. For this example,
+
+Table 1. Comparison of Test Plans for Website Test Example
+
+Expected conversions
+
+Test plan
+
+n1
+
+n2 Test Roll Overall Exp. regret (%) Roll error (%)
+
+No test (random)
+
+--
+
+--
+
+--
+
+-- 68,000
+
+2.43
+
+50.0
+
+Standard hypothesis
+
+18,468 18,468 25,116 43,944 69,060
+
+0.91
+
+3.6
+
+test
+
+Hypothesis test with FPCa 13,487 13,487 18,342 50,883 69,225
+
+0.67
+
+4.2
+
+Test & roll
+
+2,284 2,284 3,106 66,430 69,536
+
+0.22
+
+10.0
+
+Thompson sampling
+
+--
+
+--
+
+--
+
+-- 69,672
+
+0.03
+
+--
+
+Perfect information
+
+--
+
+--
+
+--
+
+-- 69,693
+
+0
+
+--
+
+Note. Here, N 100, 000,  0.68,  0.03, and s 0.466. aThe hypothesis test with finite population correction as defined in Endnote 2.
+
+1046
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+Figure 4. (Color online) Optimal Sample Size (n) for Website Test Example as a Function of (a) Population Size N, (b) Standard Deviation of Response s, and (c)  Compared with the Sample Size for a Hypothesis Test (nHT) and a Hypothesis Test with Finite Population Correction (nFPC)
+
+Note. Other parameters fixed at N 100, 000,  0.68,  0.03, and s 0.466.
+
+profit-maximizing test & roll becomes an attractive option once the operational complexity of integrating a dynamic algorithm into the website is considered.
+To provide guidance as to when a test & roll and Thompson sampling are most comparable, we compute relative regret for both algorithms under a variety of conditions. For each condition, we simulated R 10, 000 sets of potential outcomes on which to compare algorithms. The resulting densities of relative regret are plotted in Figure 5. In general, an optimized test & roll has a wider distribution of regret with a longer right tail as a result of occasional deployment errors. Thompson sampling can recover from these errors and so achieves a tighter distribution of regret. The difference between algorithms is more pronounced when there are a greater number of
+
+treatment arms, where dynamic allocation provides a stronger advantage. As discussed in Section 3, the difference is also more pronounced when there is a moderate expected difference between treatments (governed by ), which leads to a greater risk of deployment error for test & roll. When  is small, there is little to be gained by selecting the right treatment. When  is large, the difference between treatments is large, and both algorithms will detect the better treatment. Thompson sampling performs remarkably well over a wide range of conditions, usually producing relative regret less than 1%. However, even in the worst conditions we test, the test & roll has expected relative regret that is close to Thompson sampling, making it a reasonable alternative when there are high costs of implementing a dynamic algorithm or
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1047
+
+Figure 5. (Color online) The a Priori Relative Regret of Thompson Sampling (Dark) and Profit-Maximizing Test & Roll (Light) Are Remarkably Similar Under a Wide Range of Conditions
+
+Notes. Parameters not varied are fixed at the website example N 100, 000, K 2,  0.63, s 0.466, and  0.03. Density plots are computed from R 10, 000 draws of potential outcomes. For K > 2 treatments, we computed the test & roll profit numerically for all possible sample sizes to find the optimum. Sometimes, the algorithm achieves profit higher than the ex ante expected value of perfect information, resulting in negative relative regret.
+
+when greater transparency is desired. Decision makers can compute expected regret for Thompson sampling versus test & roll for their specific priors to evaluate whether the difference in performance exceeds the additional cost of implementing a dynamic algorithm.
+5.2. Display Advertising Testing As a second example of a profit-maximizing test & roll, we base priors on online display ad experiments reported by Lewis and Rao (2015). We focus on five experiments reported for "advertiser 1." Lewis and
+
+Rao (2015) report the mean and standard deviation of the sales response (in dollars) in the control group for each experiment (m1 and s s1 s2 in our notation). Applying a hierarchical model to the reported summaries, we estimate m1  1(10.36, 4.40), and the standard deviation of response s is 103.77. See Appendix E for details.
+Ideally, we would estimate a similar distribution for the treated group, creating asymmetric priors, but Lewis and Rao (2015) do not report the treatment effects for these experiments. Instead, we assume the
+
+1048
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+Table 2. Comparison of Test Plans for Online Display Example
+
+Expected sales ($000)
+
+Test plan
+
+n1
+
+n2
+
+Test Roll Overall Regret (%) Roll error (%)
+
+No test (random)
+
+--
+
+--
+
+-- -- 10,360 19.32
+
+50.0
+
+Standard hypothesis testa 4,782,433a 4,782,433a n/a n/a n/a
+
+n/a
+
+n/a
+
+Hypothesis test with FPCb 452,673 452,673 9,380 1,125 10,595 17.5
+
+1.1
+
+Test & roll
+
+11,391 11,391 236 12,491 12,727
+
+0.89
+
+6.9
+
+Thompson sampling
+
+--
+
+--
+
+-- -- 12,803
+
+0.29
+
+--
+
+Perfect information
+
+--
+
+--
+
+-- -- 12,840
+
+0
+
+--
+
+Note. Here, N 1, 000, 000,  10.36,  4.40, and s 103.77. aThe recommended test size is larger than assumed population. bThe hypothesis test with finite population correction as defined in endnote 2.
+
+profit per customer m2 has the same prior distribution as m1. That is, on average the ads produce a lift that precisely covers the cost.
+Assuming a total population size of N 1, 000, 000, the profit-maximizing sample size is n1 n2 11, 391. Even with this small test, the decision of whether to advertise to the remainder of the population is incorrect only 6.9% of the time. By contrast, these tests would require a sample size of 4,782,433 in each group for a standard hypothesis test to detect a difference of d 0.19 at  0.05 and  0.20.14 As Lewis and Rao (2015) point out, tests of this size are infeasible within the budget of most advertisers and the population available on most ad platforms. Even with a finite population correction, the sample size for a hypothesis test is 452,673, which results in substantially higher regret. A risk-neutral firm can reliably determine whether advertising is more profitable than not and maximize expected profits with far smaller tests. As can be seen by comparing (2) with (10), the difference in sample size is larger when s is large, as it is for the display advertising tests. Even if
+
+we cut the prior variance  in half and increase the population to N 10, 000, 000, the profit-maximizing sample size only increases to n1 n2 234, 361, still half that required for a hypothesis test with finite population correction. Test sizes, profits, and error rates are summarized in Table 2.
+5.3. Catalog Holdout Testing Finally, we illustrate how asymmetric priors described in Section 4 lead to unequal test group sizes. We estimate priors based on 30 catalog holdout tests conducted by a specialty retailer. For each customer in each test, we observe all-channel sales (in dollars) in the month after the catalog is sent. Appendix E details how the data are used to estimate the distribution of mean catalog responses for the treated and holdout groups. Figure 6 shows the fitted priors for mean revenue per customer, which are 1(30.06, 13.48) for the treated groups and 1(19.39, 20.97) for the holdout groups. That is, we expect the customers who receive the catalog to purchase more. The standard deviation in response within a group is estimated at s1 87.69 and s2 179.36.
+
+Figure 6. Fitted Distributions for Mean Response Estimated from Previous Catalog Mailings for a Specialty Retailer (Left) and the Implied Prior on Treatment Effects (Right)
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+Table 3. Comparison of Test Plans for Catalog Holdout Example
+
+Expected sales ($000)
+
+Test plan
+
+n1
+
+n2 Test Roll Overall Regret (%) Roll error (%)
+
+No test (random)
+
+--
+
+--
+
+----
+
+2,433
+
+30.75
+
+50.0
+
+Standard hypothesis test 7,822 15,999 620 2,668 3,287
+
+7.85
+
+1.9
+
+Hypothesis test with FPC 6,317 12,921 501 2,828 3,328
+
+5.23
+
+2.2
+
+Test & roll
+
+588 1,884 67 3,409 3,476
+
+1.68
+
+6.4
+
+Thompson sampling
+
+--
+
+--
+
+----
+
+3,504
+
+0.57
+
+--
+
+Perfect information
+
+--
+
+--
+
+----
+
+3,512
+
+0
+
+--
+
+Note. Here, N 100, 000, 1 30.06, 1 13.48, s1 87.69, 2 19.39, 2 20.97, and s2 179.36).
+
+1049
+
+After accounting for the cost of the media (approximately $0.80), 23.2% of catalog campaigns are expected to decrease profit based on the priors in Figure 6. A test & roll experiment can be used with future campaigns to prevent mailing to the entire list when it is unprofitable. Assuming a population size of N 100, 000, the profit-maximizing sample sizes are n1 588 (control) and n2 1, 884 (treated). An experiment with these sample sizes achieves expected total sales of $3,463,250. The recommended sample size for a hypothesis test to detect a 25% sales lift is 7,822 in the control group and 15,996 in the treated,15 resulting in a much larger test that achieves a lower expected profit of $3,287,412. Correcting for finite sampling reduces sample sizes to 6,317 (control) and 12,921 (treated) and improves overall profit slightly. These test plans are summarized in Table 3.
+The profit-maximizing test and the null hypothesis test both allocate a larger sample to the treatment group, but for different reasons. The hypothesis test does so because the treatment group has a noisier response (s1 < s2). The profit-maximizing test additionally considers that we a priori expect greater profits from customers who receive the catalog (m1 < m2). Even if we fix s1 s2 and reestimate the hierarchical model (see Appendix E), the resulting test & roll sample size is n1 771 and n2 1, 949, because of the remaining differences in the priors.
+Figure 7 shows the sensitivity of the sample sizes to the expected catalog lift. We analyzed this sensitivity by varying µ2, leaving all other parameters of the priors fixed. As the plot shows, when the expected lift is very high, a small holdout group is optimal. Thus, the common practice of using small holdout tests can be rationalized by a prior expectation that the treatment increases sales (or other desired behavior) more than the cost of marketing. The test & roll framework provides a principled way to set the size of the holdout group by making these priors explicit.
+
+emphasizes high confidence and power, our approach optimally balances the trade-off between not deploying the best treatment in the roll stage and the cost of identifying this treatment in the test stage. The practical result is far smaller recommended test sizes that scale to the size of the available population. Most important, by focusing on profit, we show that marketers should not be discouraged from running smaller tests and acting on the findings; although imperfect, such smaller tests increase profit. Profit-maximizing tests may split the test sample unequally between the treatments, allowing us to rationalize this common practice in marketing experiments.
+The profit-maximizing sample size is optimized for marketing campaigns, which typically have a limited target population. Direct marketing campaigns are conducted with finite mailing lists. Media campaigns have a fixed budget. Web pages have limited traffic. With finite populations, the firm should identify which treatment to deploy to the majority of the population without "wasting" too many exposures on suboptimal treatments in the test.
+Figure 7. Sensitivity of Optimal Test Sizes to the A Priori Expected Increase in Sales from the Catalog (2 - 1)
+
+6. Discussion
+We present a new approach to planning sample sizes for A/B tests. Unlike the classic hypothesis test that
+
+1050
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+Unlike fully dynamic approaches (Bertsimas and Mersereau 2007, Chick and Frazier 2012, Schwartz et al. 2017) that vary allocation continuously, our method fits within the typical A/B testing framework and requires no changes in testing software other than the recommended sample size. Operational complexity is reduced by providing a definitive end to the test phase, limiting the number of alternative treatments that must be maintained and providing transparency about what treatment is being selected, what evidence led to the selection of this treatment, and what the expected benefit (or regret) is. Managers can interject if they wish before "rolling." These features make the profit-maximizing test & roll attractive to marketers.
+One limitation of our method is that the best treatment will not always be selected. Although the error rate may be higher than the one guaranteed by typical null hypothesis testing, the profit-maximizing test size sets the error rate optimally, based on the potential differences between treatments and resulting opportunity costs. In contexts where the decision maker is risk averse or the cost of deploying a subpar treatment is very high, as in clinical trials (Berry et al. 1994, Cheng et al. 2003), then other approaches are warranted.
+Further extensions of the test & roll framework presented in Section 2 would be useful. As data from sets of experiments become available (Bart et al. 2014, Johnson et al. 2017), there is opportunity to develop a catalog of priors for different test settings. Other forms of prior distributions could be considered. For example, Stallard et al. (2017) extend the test & roll framework to response distributions from the exponential family using approximations. Azevedo et al. (2019) focus on priors with fat tails.
+The test & roll method is easily extended to more than two treatments, potentially allowing for correlated priors (e.g., for a holdout group versus several alternative marketing treatments). The cost of switching between treatments, which can be substantial for offline marketing treatments, could also be incorporated into the decision problem. If it is possible to deploy different treatments to subpopulations, then the potential to identify heterogeneous treatment effects (Hitsch and Misra 2018, Simester et al. 2019) can be considered in the test design. Similarly, time dependency in response could be considered (e.g., day-ofweek or "novelty" effects). These extensions all fit naturally within the test & roll framework.
+Acknowledgments The authors thank Julie Albers, Eduardo Azevedo, Eric Bradlow, Raghu Iyengar, Pete Fader, Bruce McCullough, and Christophe Van den Bulte for helpful discussions and suggestions.
+
+Appendix A. Normal-Normal Model Derivations
+Proposition A.1 (Expected Roll Stage Profit). When the mean profit yj is distributed yj  1(mj, s2j /nj) with prior mj  1(j, 2j ), and when the decision rule picks the arm with the highest posterior mean, the expected profit in the roll stage is
+
+E[D]
+
++(×N(-1 n-121-+2n)s41212/)n1+21+s224121/1+n1-s+4222/2n22+2s4222/n2.21+s4121/1n1-+222+s4222/n2  (A.1)
+
+Proof. Denote the decision rule (y1, y2) as I(a1 + b1y1 >
+
+a2 + b2y2). The linear decision rule includes the optimal one
+
+that and
+
+uses bj
+
+the posterior predictive
+
+. 2j
+2j +s2j /nj
+
+Denote
+
+the
+
+pdf
+
+distribution with aj of yj as fj and its cdf
+
+s2j /njj 2j +s2j /nj
+as Fj.
+
+Denote the pdf of mj as gj and its cdf as Gj.
+
+The expected value from the roll stage is
+
+  
+
+E[D]
+
+(N - n1 - n2)
+
+m(1 ( m2 y)1 y2 (
+
+(
+
+)) ) ( ) ( )
+
+×  y1, y2 m1 + 1 -  y1, y2 m2 f2 y2 f1 y1
+
+× g2(m2)g1(m1)dy2dy1dm2dm1.
+
+(A.2)
+
+In the derivation, we will make multiple uses of the following identities:
+
+
+
+
+
+( y y
+
++
+
+b)(y)dy
+
+(
+
+)
+
+1  b
+
+-
+
+a
+
+a2 + 1 a2 + 1
+
+(A.3)
+
+and
+
+
+-
+
+( y
+
++ a
+
+b)(y)dy
+
+(
+
+)
+
+ b .
+
+a2 + 1
+
+(A.4)
+
+The expression (N - n1 - n2) can be taken out of the integrand. Continuing with the first additive in the integral (the
+second will be symmetric),
+
+  ( ) ( )( )
+
+ y1, y2 m1 f2 y2 f1 y1 dy1dy2
+
+y1 y2
+
+
+
+
+
+a1 -a2 +b1 y1 b2
+
+( )( ) m1 f2 y2 f1 y1 dy1dy2
+
+y1
+m1 m1
+m1
+
+yyy-11F2((yaa1+-1 a-a2sb1+22bb-ab/21a12ssb2by21+211//+nsb-112/nnbm21m11ny-12b1)2)mfs121(/y11()ynd)1yd1y(. ys11
+
+/-mn11
+
+) dy1
+
+(A.5) (A.6) (A.7) (A.8) (A.9)
+
+The last equation uses y sy11/-mn11 as a change of variables.
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1051
+
+Using identity (A.4), the final integral equals
+
+
+m1
+y
+(
+
+ y
+
++
+
+
+
+a1 b-2as2b2+1/sb11/nm21n-1b2 m2 (y)dy
+
+b1s1/ n1
+
+)
+
+m1
+
+a1-a2+b1m1-b2m 2 b21s21/n1 + b22s22/n2
+
+.
+
+(A.10) (A.11)
+
+Plugging back into the expected value in (A.2), the expected value of the roll stage equals
+
+(N
+
+-
+
+n1
+
+-
+
+(
+n2)
+m1
+
+
+m2
+
+(
+
+)
+
+m1
+
+a1-a2+b1m1-b2m 2 b21s21/n1 + b22s22/n2
+
+× g2(m2)g1(m1)dm1dm2
+
++
+
+
+m2
+
+
+m1
+
+(
+
+)
+
+m2
+
+a2-a1+b2m2-b1m 1
+
+b21 s21
+
+/n1 )
+
++
+
+b22 s22 /n2
+
+× g1(m1)g2(m2)dm1dm2 .
+
+(A.12)
+
+Using identity (A.4) again, the first additive equals
+
+
+m1
+
+
+m2
+
+(
+
+)
+
+m1
+
+a1-a2+b1m1-b2m 2 b21s21/n1 + b22s22/n2
+
+g2(m2)g1(m1)dm1dm2
+
+
+
+
+
+(A.13)
+
+
+m1
+
+m1
+
+ 1
+m
+
+-
+
+m
+
++a2-a1-bb21m21+b2
+b21 s21 /n1 +b22 s22 /n2
+
+2
+
+(m)dmg1
+
+(m1
+
+)dm1
+
+b2 2
+
+
+m1
+
+(
+
+)
+
+m1
+
+a1-a2+b1m1-b22 b21s21/n1 + b22s22/n2 + b2222
+
+1 1
+
+(
+
+
+
+m1 - 1
+
+(A.14) ) 1 dm1
+
+
+
+
+
+(A.15)
+
+( m1
+m
+
++
+
+1 )mb+21 s21a/1n-1a+2b+22bbs1221/1n12-+bb222222 (m)dm,
+
+b21 21
+
+(A.16)
+
+where the last equation uses the change of variables m
+
+. m1 -1
+1
+
+Using identities (A.3) and (A.4), we receive
+
+
+
+
+
+( m1
+m
+
++
+
+1)mb+21s21a/1n-1a+2b+22bbs1221/1n12-+bb222222(m)dm
+
+b21 21
+
+b121
+
+b21(s21/n1 + b22s22/n2 + b2121 + b2222
+
+)
+
+×  a1-a2+b11-b22 (b21s21/n1 + b22s22/n2 + b2121 + b2222 )
+
++ 1
+
+a1-a2+b11-b22 b21s21/n1 + b22s22/n2 + b2121 + b2222
+
+.
+
+(A.17) (A.18)
+
+Using symmetry, the a priori expected value of the roll
+
+stage is
+
+E[D]
+
+[
+
+(N
+
+- n1 (
+
+-
+
+n2)
+
+b121+b222 b21s21/n1 + b22s22/n2 + b21)21 + b2222
+
+×  a1-a2+b11-b22
+
+b21s21/n(1 + b22s22/n2 + b2121 + b2222
+
+)]
+
++ (1 - 2)
+
+a1-a2+b11-b22 b21s21/n1 + b22s22/n2 + b2121 + b2222
+
+.
+
+(A.19)
+
+Plugging in the posterior mean parameters for aj and bj (as they are optimal), the roll stage expected value in the fully asymmetric model is
+
+E[D]
+
+×+(N(-1n-211+-2sn)41212/)n1+21+s224121/+1n1-s42+22/n2222+s4222/n2,21+s4121/1n1-+222+s4222/(nA2.20)
+
+where in the text we set e 1 - 2 and
+
+
+
+v
+
+21
+
+41 + s21/n1
+
++
+
+22
+
+42 + s22/n2
+
+in Equation (18). Thus we have completed the proof for the asymmetric case.
+To get the expression in (9), we plug in 1 2 , 1 2  and s1 s2 s into the above expression. 
+
+Proposition A.2 (Profit-Maximizing Sample Size). When the
+mean profits yj are distributed yj  1(mj, s2/nj) with prior mj  1(, 2), the profit-maximizing sample size is
+
+n1
+
+n2
+
+N4(s)2+(34(s)2)2
+
+-
+
+3 4
+
+( s )2 
+
+.
+
+Proof. Because the priors are symmetric, the optimal sample sizes will be equal. Denote them as n n1 n2.
+The expected profit of the experiment with symmetric priors is
+
+E[T] + E[D]
+
+N + (N - 2n)2222+n2s2.
+
+(A.21)
+
+The first-order condition with respect to n is
+
+2 sn2+2 (4n2 2 2 (n2
+
++ +
+
+6ns2 s2)2
+
+-
+
+Ns2 )
+
+0,
+
+(40)
+
+which is equivalent to solving 4n22 + 6ns2 - Ns2 0, yielding the optimal sample size formula. 
+
+1052
+
+Corollary A.3 (Expected Error Rate). Under symmetric priors,
+
+the expected rates of making the incorrect choice in the roll stage,
+
+E[Pr((y1, y2) 1|m1 < m2)] and E[Pr((y1, y2) 0|m1 > m2)],
+
+both equal
+
+( )
+
+1 4
+
+-
+
+1 2
+
+arctan
+
+2 s
+
+n1n2 n1 + n2
+
+.
+
+Proof. Using the fact that yj  1(mj, s2/nj), and because in
+
+the symmetric case the decision rule is to pick the treatment
+
+with the highest mean,
+
+(( )
+
+)(
+
+)
+
+Pr  y1, y2 1|m1, m2 Pry1 - y2 >0|m1, m2
+
+sm1n1-1+mn212.
+
+(A.22)
+
+If we let m m1 - m2, then m has a prior 1(0, 22). The expected error rate is therefore
+
+[( ) E  y1, y2
+
+] 1|m1 > m2
+
+0 (
+
+)
+
+Pr y1 - y2 > 0|m Pr(m)dm
+
+- 
+
+
+
+0
+-
+
+sn1m1+n12
+
+1 2
+
+()  m dm.
+2
+
+(A.23)
+
+Using the identity
+
+0 (ax)(bx)dx
+-
+
+(
+
+( ))
+
+1 2|a|
+
+ 2
+
+- arctan
+
+b |a|
+
+,
+
+we get the following expression:
+
+() E[ y1, y2
+
+1|m1 > m2]
+
+()
+
+E[ y1, y2 0(|m1 <m2])
+
+1 4
+
+-
+
+1 2
+
+arctan
+
+2 s
+
+n1 n2 n1 + n2
+
+.
+
+
+
+Proposition A.4 (Regret). In the symmetric Normal-Normal
+
+model with a population size N, we have the following:
+
+(1) The expected value of perfect information is E[|PI]
+
+N( + ).
+
+
+
+(2) The regret of the profit-maximizing design is O( N).
+
+(3) The regret from using a classic hypothesis test is (N).
+
+Proof. Perfect information allows the marketer to pick the
+
+treatment with the highest mean mj without testing, yield-
+ing an expected profit of N · E[max(m1, m2)]. Because both treatments come from the same prior 1(, 2), the mean of
+
+the maximum of two independent and identically distributed
+
+Normal
+
+variables
+
+is
+
+
+
++
+
+
+
+
+,
+
+proving
+
+the
+
+first
+
+item.
+
+To prove the second item, we calculate the regret from
+
+using the profit-maximizing design:
+
+E[|PI] ­ E[D + T]
+
+
+
+
+
+N
+
+ 
+
+1
+
+-
+
+2+ns2
+
++
+
+2n22+ns2
+
+.
+
+(A.24)
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+Applying the n2/s2, the first
+
+ inequality x + 1 additive results in
+
+-
+
+ x
+
+<
+
+1 
+2x
+
+for
+
+x > 0,
+
+to
+
+
+
+
+
+N
+
+ 
+
+1
+
+-
+
+2+ns2
+
+
+
+N
+
+ 
+
+1 2 2n/s2 + 1 2n/s2
+
+
+
+N
+
+
+
+1 2n2/s2
+
+.
+
+(A.25) (A.26) (A.27)
+
+
+
+Plugging in n 2n2/s2 is larger
+
+N 4
+
+(s)2+(34
+
+(s )2 )2
+
+-
+
+than
+
+1 2s
+
+N when N
+
+3 4
+
+(s )2
+
+,
+
+the
+
+denominator
+
+>
+
+4
+
+s2 2
+
+.
+
+Hence,
+
+we
+
+can
+
+bound the first additive in the regret (A.24) from above by
+
+N
+
+
+
+ 1
+
+-
+
+ 2+ns2
+
+
+
+ 2sN
+
+.
+
+(A.28)
+
+To bound the second additive,
+
+2n22+ns2
+
+
+
+2n2  2
+
+ 2n < sN .
+
+
+(A.29)
+
+The
+
+first
+
+inequality
+
+uses
+
+the
+
+factthat
+
+s2 n
+
+is
+
+positive,
+
+whereas
+
+the second uses the fact that n < N 2s, as shown in Section 3.
+
+Summing the two additives shows that the regret of the
+
+profit-maximizing design is smaller than 3sN, proving the second item, that the regret is O( N).
+
+To prove the third item, we plug in the sample size from (2)
+
+for n in the regret formula:
+
+E[|PI] - E[D + T] 
+
+N
+
+ 
+
+1 
+
+-
+
+
+
+2
+
++
+
+s2 n
+
+ 
+
++
+
+2n22+sn2
+
+
+
+>
+
+N
+
+ 
+
+1
+
+-
+
+
+
+2
+
++
+
+s2 n
+
+
+
+N
+
+ 
+
+1
+
+-
+
+2+2z22
+
+> N 
+
+2(2z2212
+
++
+
+) 1
+
+(N),
+
+(A.30) (A.31) (A.32)
+
+where the equality in (A.31) follows from plugging in the null
+
+hypothesis significance testing (NHST) sample size denoting
+
+z x
+
+z(1-)/2 > 1
+2 x+1
+
++ z, and the when x  0,
+
+last inequality follows with x n2/s2.
+
+from
+
+x+1-
+
+When using the sample size for the NHST with finite
+
+population correction, we can use the same approach where
+
+in Equation (A.31) we plug in n
+
+. (z1-/2 +z )2 2s2 N
+(N -1)d2 +4s2 (z1-/2 +z )2
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1053
+
+This results in
+
+E[|PI] - E[D + T] 
+
+N
+
+ 
+
+1 
+
+-
+
+2+sn2
+
++
+
+2n22+sn2
+
+(A.33)
+
+>
+
+N
+
+
+
+1
+
+-
+
+
+
+2
+
++
+
+s2 n
+
+
+
+>
+
+N 
+
+(1 )
+
+2
+
+n2 s2
+
++
+
+1
+
+(A.34)
+
+N
+
+ 
+
+(
+
+1
+
+2
+
+2Nz22 (N - 1)d2 + 4z2s2
+
+) +1
+
+>
+
+N
+
+ 
+
+(
+
+1
+
+2
+
+2Nz22 (N - 1)d2
+
+) +1
+
+>
+
+N
+
+ 
+
+2(12/N2zN21d22
+
++
+
+) 1
+
+N
+
+ 
+
+2(4zd2212
+
+) +1
+
+(A.35) (N).
+
+(A.36)
+
+
+The last inequality follows from the fact that 1/2N  N - 1 for N  2, which completes the proof.
+
+Corollary A.5 (Maximum Relative Regret). There is an intermediate value of  for which the profit-maximizing test & roll achieves the maximum relative regret.
+
+Proof. The relative regret at the optimal sample size equals
+
+44NN(22++9(9ss2(2-+3ss(s(4N2+9)s2-3s))
+
+))
+
++ 2 N s 4N2 + 9s2 + 3s + N2 - N
+
+( )
+
+.
+
+2N  + 
+
+Using L'Hôpital's rule, the limit as   0 is 0. Similarly, the limit as    is 0. The relative regret is always positive. Consequently, the relative regret achieves a maximum for a value of , which is not 0 or infinity.
+
+Appendix B. Derivations for Beta-Binomial Model
+
+Let the profit yij from customer i exposed to treatment arm j
+
+be yj
+
+vj
+
+wni ij1thyij
+nj
+
+probability pj and 0 with probability 1 be the average conversion rate with
+
+- pj, and let treatment j,
+
+when nj is the number of individuals assigned to treatment j. We put a Beta(, ) prior distribution on pj and denote its pdf as f (·).
+
+Proposition B.1 (Beta-Binomial Expected Profit). If profit yij
+
+from customer i exposed to treatment j is vj with probability pj and 0
+
+otherwise, with priors pj  Beta(, ), (1) the expected profit in the test stage is (n1v1 + n2v2) +; (2) the expected profit in the roll stage is
+
+(N
+
+- × +
+
+n(1y 1n-1y~1n(2ny)11y )2n21((Byny(122)+, )(B)y((2n(+n,11+)-)(yn(+1n2+2+-))yv+21+)+)
+
+y~ 1 -1(n1 y1 0 y1
+
+)
+
+(
+
+)(
+
+)
+
+ y(1 + ) ( n1 - y1 +)
+
+B ,   n1 +  + 
+
+v2
+
+
+
+ +
+
++ 
+
++ y1
+
+ + n1 )
+
+y2 + n2
+
+,
+
+(B.1)
+
+with
+
+(
+
+)(
+
+)
+
+y~ 1
+
+
+
+v2  +  + n1 v1  +  + n2
+
+-1
+
++ y2
+
+v2  +  + n1 v1  +  + n2
+
+.
+
+Proof. To prove the first item, the expected profit in the test
+
+stage is
+
+E[T ]
+
+  n1
+
+( )( )
+
+v1y1Pr y1|p1 f p1 dp1
+
+p1 y1
+
+0
+ n2
+
+( )( )
+
++
+
+v2y2Pr y2|p2 f p2 dp2.
+
+(B.2)
+
+p2 y2 0
+
+Because
+
+nj
+yj
+
+0 yjPr(yj|pj)
+
+njpj,
+
+then
+
+ n1
+p1 y1
+
+0 y1Pr(y1|p1) ·
+
+f (p1)dp1 nj +, and plugging this in yields the expression
+
+in the proposition.
+
+The prove the second item, the a priori expected profit in
+
+the roll stage is
+
+   n1  n2 [ (
+
+)
+
+( ( )) ]
+
+(N - n1 - n2)
+
+ y1, y2 p1v1 + 1 -  y1, y2 p2v2
+
+(
+
+p2
+)(
+
+p1 y)1 (1 y2 )1(
+
+)
+
+× Pr y2|p2 Pr y1|p1 f p1 f p2 dp1dp2.
+
+(B.3)
+
+Focusing on the first additive (the second will be symmetric because of the symmetric prior), it can be written as
+
+   n1  n2 (
+
+)( )
+
+(N - n1 - n2)v1
+
+ y1, y2 Pr y2|p2
+
+(
+
+)
+
+p2
+(
+
+p1
+)(
+
+y1
+
+)1
+
+y2
+
+1
+
+× Pr y1|p1 p1 f p1 f p2 dp1dp2.
+
+(B.4)
+
+The optimal decision rule (y1, y2) is to pick the treatment
+
+with the highest expected posterior profit vjE[pj|yj]
+
+vj
+
++yj ++nj
+
+,
+
+resulting from the fact that the profits are binomially distributed
+
+with a Beta prior. Hence, by letting y~1
+
+(vv21
+
+++n1 ++n2
+
+-
+
+1)
+
++
+
+y2 (vv21
+
+++n1 ++n2
+
+),
+
+and
+
+by
+
+applying
+
+Fubini's
+
+theorem,
+
+we
+
+can
+
+rewrite
+
+(B.4) as
+
+ n2  n1 
+
+(
+
+)( )
+
+(N - n1 - n2)v1
+
+Pr y2|p2 f p2 dp2
+
+
+
+y2 1 y1 y~1 p2
+()( )
+
+× p1 f p1 Pr y1|p1 dp1.
+
+p1
+
+(B.5)
+
+The derivation above assumes that if the expected posterior profit of both treatments is equal, then treatment 1 is chosen as a tiebreaking rule. We will show that this tiebreaking rule does not change the result if we opt for another rule (e.g., pick treatment 2 if tied, or pick one randomly).
+Using Bayes rule, Pr(yj|pj)f (pj) Pr(yj)f (pj|yj). This implies that
+
+ ( )( )
+
+Pr y2|p2 f p2 dp2
+
+
+
+p2
+(
+
+)
+
+(
+
+)
+
+p1 f p1 Pr y1|p1 dp1
+
+p1
+
+() Pr y2 ,
+
+() Pr y1
+
+
+
+ +
+
++ 
+
+y1 + n1
+
+.
+
+(B.6) (B.7)
+
+The second equation stems from the fact that f (p1|y1) is the pdf of a Beta( + y1,  + n1 - y1) distribution.
+
+1054
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+Figure B.1. (Color online) Comparison of Optimal Sample Sizes Computed Exactly Using the Beta-Binomial Model vs. the Normal-Normal Approximation for Various Values of Mean Response Rate ( +) and Prior Precision ( + )
+
+We can calculate Pr(yj) as
+
+( ) 1 ( )( )
+
+Pr yj
+
+Pr yj|pj f pj dpj
+
+pj 0
+
+() nj
+
+(  y(j
+
++
+
+)( ) ( nj
+
+-
+
+yj
+
++
+
+) )
+
+.
+
+yj B ,   nj +  + 
+
+(B.8)
+
+Plugging into (B.5), the total roll stage profit is
+
+(N - n1
+(  n1
+×
+y1 y~1
+
+-
+
+n2
+
+)
+
+ n2
+
+( n2
+
+y2 1 y2
+
+)
+
+(
+
+)(
+
+)
+
+ y(2 + ) ( n2 - y2 +)
+
+B ,   n2 +  + 
+
+() n1 y1
+
+(
+
+)(
+
+)
+
+ y(1 + ) ( n1 - y1 +)
+
+B ,   n1 +  + 
+
+v1
+
+
+
+ +
+
++ 
+
+y1 + n1
+
++
+
+y~ 1-1(n1 y1 0 y1
+
+)
+
+(
+
+)(
+
+)
+
+ y(1 + ) ( n1 - y1 +)
+
+B ,   n1 +  + 
+
+v2
+
+
+
+ +
+
++ 
+
+y2 + n2
+
+) .
+
+(B.9)
+
+If
+
+there
+
+is
+
+a
+
+tie
+
+such
+
+that
+
+v1
+
++y1 ++n1
+
+v2
+
++y2 ++n2
+
+,
+
+it
+
+does
+
+not
+
+mat-
+
+ter if we take the left or the right additive within the pa-
+
+rentheses. Hence, any tiebreaking rule will yield an equivalent
+
+profit. 
+
+To design a test for binomial experiment, the expected
+
+profit from Proposition B.1 can be numerically optimized,
+
+using a discrete optimization heuristic. However, because
+
+the Normal-Normal model is more computationally conve-
+
+nient, it can be used to approximate the beta-binomialusing
+
+the usual binomialapproximation:  +, s (1 - ),
+
+and 
+
+(+)2(++1). Figure B.1 shows that this approxi-
+
+mation results in nearly the same sample size except when
+
+the response rate  is close to 0 (or equivalently, close to 1)
+
+and the prior is relatively informative (prior precision =
+
+ +  > 100) .
+
+Appendix C. Asymmetric Tests
+C.1. Incumbent Challenger Test
+In an incumbent/challenger test, more is known about one treatment than the other. Denote 2 c1 with c > 1. To analyze this scenario in closed form, we will assume that 1 2 and that s1 s2 s, although the solution can be found numerically for any set of values. Because the uncertainty is larger for treatment 2, it is always the case that n2 > n1 in an
+
+incumbent/challenger test. When the population size is small enough, it is too wasteful to experiment with treatment 1, and the test will only include exposures to treatment 2. After this test phase, comparisons will be made to the prior on treatment 1 to select which treatment to deploy. This is shown formally in Proposition C.1.
+
+Proposition C.1 (Incumbent/Challenger Sample Sizes). In
+an asymmetric test when treatment 1 is an incumbent and treatment 2 is a challenger such that 1 2, s1 s2 s, and 2 c · 1, with c > 1,
+(1) the optimal sample sizes are
+
+(
+
+)
+
+n1
+
+s
+
+2c2(c2 + 1)N21 + (2c4 + 5c2 + 2)s2 - cs(1 + 2c2) 2(c3 + c)21
+
+,
+
+n2
+
+(  s c 2c2(c2 + 1)N21 + (2c4 + 5c2 + 2)s2
+2c2(c2 + 1)21
+
+-
+
+(c2
+
++
+
+) )(C.1) 2s
+;
+
+(C.2)
+
+(2) n2 > n1 for any value of N, s, c > 1, and ; and
+
+(3) n2 > 0 for any value of N, s, c > 1, and , and n1 > 0 
+
+N
+
+>
+
+(2c4 -c2 -1)s2
+c2 21
+
+.
+
+Proof. Plugging 1 2 , s1 s2 s, and 2 c1 into the expected profit derived in Proposition A.1, the expected profit in an incumbent/challenger experiment is
+
+
+
+N
+
++
+
+(N
+
+-
+
+n1
+
+-
+
+n2)
+
+v 2
+
+,
+
+with
+
+v
+
+21
+
+41 + s2
+
+/n1
+
++
+
+c2
+
+c441 21 + s2
+
+/n2
+
+.
+
+After simplifying and rearranging, the first-order conditions for finding the optimal n1 and n2 are
+
+-
+
+s2
+
+(-N + ( n121
+
++n1s2+)2n2)
+
+c4s2(N - ( c2n221
+
+n1 +
+
+s-2)n22
+
+)
+
+22((cc22nn22cc44nn2121 22++
+
+s2 s2
+
++ +
+
+n1 n121 +
+n1 n121 +
+
+s2 s2
+
+) ,
+) .
+
+(C.3) (C.4)
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1055
+
+Dividing the two equations and solving for n1, the only
+
+possible solution such that n1 > 0 for some values is n1
+
+pc2 rne2 s21cs2-ico212 sn2 +isn2 .
+
+Plugging this into Equation the proposition, proving the
+
+(C.4) yields first item.
+
+the
+
+ex-
+
+To prove the second item, the inequality n2 - n1 > 0 can be written as
+
+(n2
+
+-
+
+n1)
+
+221c2(1 s
+
++
+
+c2)
+
+2(c4
+
+-
+
+) 1s
+
+>
+
+0,
+
+(C.5)
+
+which always holds because c > 1.
+
+To prove the third item, we solve for n2 > 0, which holds
+
+for the described parameter values, and n1 > 0, which holds
+
+if
+
+and
+
+only
+
+if
+
+N
+
+>
+
+(2c4
+
+-c2 -1)s2
+c2 21
+
+.
+
+
+
+Appendix D. Thompson Sampling for the
+Normal-Normal Model
+Thompson sampling (Thompson 1933) has recently become the prominent heuristic for solving multi-armed bandit problems, because of its superior performance and ease of implementation (Scott 2010, Schwartz et al. 2017). Here, we describe the Thompson sampling algorithm we use, which is the standard implementation applied to the Normal symmetric model.
+Opportunities to apply the treatment are assumed to come in one at a time for each i 1, . . . , N. Under the symmetric Normal model, treatment j generates outcomes yji drawn from 1(mj, s2).
+The algorithm is initialized with priors mj  1(j(0), 2j (0)). For each i, the algorithm makes a dynamic decision whether to deploy treatment 1 or treatment 2 as follows:
+1. Draw a mean m1(i) from 1(1(i - 1), 21(i - 1)) and m2(i) from 1(2(i - 1), 22(i - 1)).
+2. If m1(i) > m2(i), treatment 1 is deployed. Otherwise, treatment 2 is deployed.
+3. Either y1i or y2i is observed based on the decision. In simulation, yji is drawn from its true distribution 1(mj, s2).
+4. The hyperparameters j(i) and 2j (i) are updated given the new data. If treatment j was not deployed, the hyperparameters at time i equal those at time i - 1. If the treatment was deployed, the hyperparameters are calculated as the posterior of the Normal distribution, with the observed outcome used as data and the hyperparameters from period i - 1 used for the prior.
+Thus, treatments are probabilistically sampled according to the current probability that each treatment is best; that is, treatment 1 is sampled at the rate of Pr(1(i) > 2(i)). This rule favors treatments with higher expected response, and as a result, the algorithm will quickly converge to the bestperforming treatment as data accumulate. However, it also is also more likely to sample treatments with higher uncertainty, because of the high potential upside for those treatments, which helps to avoid converging to the wrong treatment.
+The explicit explore versus exploit trade-off in a multiarmed bandit is similar to the trade-off between the size of the test sample and the remaining population in a test & roll, albeit more dynamic. The dynamic approach works better when opportunities to apply the treatment are spread out over time and the desired response is immediately available
+
+(e.g., website tests where the response is a click), but it can be difficult to execute when the response is not immediately
+observable (e.g., sales) or when the treatments are sent out
+in batches (e.g., direct mail).
+Agrawal and Goyal (2013) have shown that the regret
+from Thompson samp ling with Normal outcomes and Normal priors is O( N). This has been shown before to be the best achievable regret for any dynamic multi-armed bandit approach when compared with having perfect information, and hence Thompson sampling is an ideal benchmark for comparison.
+
+Appendix E. Application Details If a firm has data on response to prior marketing treatments that are similar to those that will be tested, these data can be used to estimate the distribution of mean response needed to compute the test & roll sample size. For example, if the firm has past data on response yij for each customer i in each of the j 1, . . . , J previous marketing campaigns, then we can fit a hierarchical model:
+
+() yij  1 mj, s for observations i 1, . . . , Nj in campaigns
+j 1, . . . , J,
+
+() mj  1 ,  in campaigns j 1, . . . , J.
+
+(E.1) (E.2)
+
+Estimates of  and  can be plugged into (10) to compute the test & roll sample size. For binary responses with small samples, we could estimate a similar beta-binomial model.
+The campaigns j can be defined by a particular period of time when a marketing treatment was in place and the response was stable, such as response rates to direct marketing campaigns or customers visiting a website in a particular month. The key assumption is that these prior campaigns represent the range of likely mean responses for the treatments in the test that is being planned. We provide more details for specific applications in Sections E.1, E.2, and E.3.
+
+E.1. Website Testing Example
+The data on website tests are adopted from Berman et al. (2018) and contain the results for 2,101 A/B tests. These tests were conducted across a wide variety of pages and websites. For each test we observe the number of times the page was served with each of the two variations and the total number of times a user clicked on the page for each variation. Our goal is to use these data to estimate the range of lifts in click rates that one might expect from a website test and then use this to size a test & roll experiment.
+Figure E.1 displays the distribution of observed lift values between -0.6 and 0.6. This range contains 2,084 values, or 99.15% of the experiments. The distribution is long tailed with a small number of experiments having higher lifts than 0.6. The interquantile [1%, 99%] lift range is [-0.213, 0.327], with a mean of 0.112 and a median of 0.0015. For treatment effects, the range is [-0.10, 0.16], with a mean of 0.005 and a median of 0.001. The sample sizes range from 100 to 17.4 million, with an interquantile [1%, 99%] range of [116, 903,850], a mean of 574,474, and a median of 3,864 users per treatment.
+
+1056 Figure E.1. Distribution of Lift Values for Experiments
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+Note. Adopted from Berman et al. (2018).
+
+Because these tests were conducted across many web-
+
+sites with a wide range of click rates, there tends to be
+
+correlation in the click rate between the two arms in the
+
+same experiment. To account for this, we assume that each
+
+experiment k has its own mean click rate tk and assume that the means for the treatment arms within the experi-
+
+ment are distributed Normal around the click rate for the
+
+experiment as follows: ()
+yijk  1 mjk, s ,
+
+(E.3)
+
+mjk
+
+
+
+1((tk ,
+
+), )
+
+tk  1 ,  .
+
+(E.4) (E.5)
+
+Because the data are binary, we follow the binomial approximation and assume s m1k(1 - m1k), reducing the number of estimated population parameters to three. The model is estimated using the Hamiltonian Monte Carlo (HMC) algorithm implemented in Stan (Stan Development Team 2018) with diffuse priors on the hyperparameters, and the estimates are reported in Table E.1.
+In the empirical model,  captures the variation in mean response across experiments, whereas  captures the variation between arms within an experiment. In sizing a test & roll experiment following (10), we are interested in the potential differences between arms within a single experiment, so we use the estimate of  and ignore . In addition,
+
+Table E.1. Model Estimates for Meta-Analysis of Website Tests Provide an Estimate of the Distribution of Mean Response to Be Used in Planning Future Tests with Similar Treatments and Targeted Populations
+
+Parameter
+
+Mean
+
+
+
+0.676
+
+
+
+0.030
+
+
+
+0.199
+
+Note. %ile, percentile.
+
+sd
+0.004 0.001 0.003
+
+2.5th %ile
+0.667 0.029 0.193
+
+97.5th %ile
+0.685 0.031 0.206
+
+we assume s (1 - ), but if the experimenter has other information about the likely click rate for these particular web pages, then s can be appropriately adjusted or conservatively set at 0.25 while still using  as an estimate of the range of mean responses expected for treatments within an experiment.
+
+E.2. Display Ad Testing Example
+
+We illustrate how "advertiser 1" in Lewis and Rao (2015)
+
+might obtain the parameters  and  in order to find the profit-
+
+maximizing sample size for a new test & roll with treatments
+
+that are expected to perform similarly to experiments 1.1,
+
+1.2, 1.3, 1.5, and 1.6 reported in Table E.2. We eliminated
+
+experiment 1.4 because it had a substantially different media
+
+cost and response rate for the control group versus the other
+
+experiments and appears to be targeting customers with
+
+higher baseline purchase propensity.
+
+Using the data in Table E.2, we estimate the following
+
+hierarchical model for the mean response in the control
+
+group reported for each experiment j:
+
+y¯ j
+
+
+
+( 1 mj,
+(
+
+s^), )n
+
+mj  1 ,  ,
+
+(E.6) (E.7)
+
+Table E.2. Reported Mean and Standard Deviation for the Control Group in Display Advertising Tests from Table 1 of Lewis and Rao (2015)
+
+Test
+
+Mean (y¯j)
+
+Pooled sd (s^)
+
+Group size (n)
+
+1.1
+
+9.49
+
+1.2
+
+10.50
+
+1.3
+
+4.86
+
+1.5
+
+11.47
+
+1.6
+
+17.62
+
+94.28 111.15 69.98 111.37 132.15
+
+300,000 300,000 300,000 300,000 300,000
+
+Note. These are used to estimate mean and variance for display advertising response for the typical campaign of advertiser 1.
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+1057
+
+Table E.3. Model Estimates for Meta-Analysis of Display Advertising Tests Provide an Estimate of the Distribution of Mean Response to Be Used in Planning Future Tests with Similar Treatments and Targeted Populations
+
+Parameter
+
+Mean
+
+sd
+
+2.5th %ile
+
+97.5th %ile
+
+
+
+10.36
+
+1.99
+
+6.16
+
+14.17
+
+
+
+4.40
+
+1.17
+
+2.63
+
+7.17
+
+Note. %ile, percentile.
+
+where the sampling distribution for yijk in (E.4) has been replaced with y¯j, because we do not have access to the userlevel data. The estimates of  and  reported in Table E.3 are used in designing a new test & roll for advertiser 1. Note that s is estimated as the average of sj across the five experiments, which is 103.77.
+Because we are estimating the variance in mean response  from just five experiments, the posterior of  is relatively wide. As can be seen from (10), the profit-maximizing sample size will be largest when  is smallest. Taking a conservative approach one might use the posterior 2.5th percentile for  instead of the posterior mean. This results in a profitmaximizing sample size of 18,486, still far smaller than that recommended for a hypothesis test.
+
+E.3. Catalog Holdout Testing Example The catalog holdout data describe 30 catalog holdout tests conducted in October 2013 through March 2014. In each month, six tests were conducted using the same print catalog and different targeted populations. These data are provided by the same retailer as in Zantedeschi et al. (2016) but use a different sample of tests. For each customer i in each test k, we observe the all-channel sales yijk for one month after the catalog is delivered. The sample sizes and holdout rates for these tests vary with a [10%, 90%] interquartile range for the sample size of [346.7, 1,395.5], with a mean of 658.3 and a median of 437.0. The holdout rates also varied widely with a range of [1.1%, 95.1%], a median of 5.4%, and a mean of 21.0%.
+Figure E.2. Distribution of Catalog Holdout Test Treatment Effects (y2 - y1)
+
+Table E.4. Model Estimates for Meta-Analysis of Catalog Holdout Tests Provide an Estimate of the Distribution of Mean Response to Be Used in Planning Future Tests
+
+Parameter
+
+Mean
+
+sd
+
+2.5th %ile
+
+97.5th %ile
+
+s1
+
+87.69
+
+1.21
+
+85.41
+
+90.06
+
+s2
+
+179.36
+
+0.97
+
+177.46
+
+181.24
+
+1
+
+19.39
+
+7.13
+
+5.32
+
+33.17
+
+
+
+10.67
+
+6.19
+
+-1.30
+
+22.77
+
+1
+
+20.97
+
+5.85
+
+8.81
+
+32.25
+
+2
+
+13.48
+
+5.88
+
+4.01
+
+26.78
+
+
+
+27.25
+
+5.18
+
+18.27
+
+38.57
+
+Note. %ile, percentile.
+
+The distribution of the estimated treatment effects are shown in Figure E.2. The interquartile range for the point estimates of the treatment effects is [-10.77, 39.15], with a median of 6.23 and a mean of 11.34 (all in U.S. dollars). Lifts cannot be computed for seven of the tests because no purchases were made in the control group, but the median lift is 1.48, and the 10th percentile is -0.549. The one-month purchase amounts for individual customers have a median of 0, a mean of 43.64, and a 90th percentile of 113.00.
+Individually, the catalog holdout tests have very imprecise estimates for response because of small sample size and high noise in the data. The hierarchical model is particularly valuable in pooling information across the tests and propagating uncertainty due to small sample sizes. We fit a model similar to that used for the website tests, except that we allow for 1 2 and 1 2, because, unlike for the website tests, there is a clear distinction between the treated and holdout conditions. The model we fit is
+
+yi1k  1(m1k, s1) for customers in control group,
+
+yi2k  1(m2k, s2) for customers in treatment group,
+
+m1k  1(tk, 1),
+
+m2k
+
+
+
+1( (tk
+
++ , )
+
+2),
+
+tk  1 1,  .
+
+(E.8) (E.9) (E.10) (E.11) (E.12)
+
+By modeling the overall response rate for the experiment tk, we allow for the different targeted populations to have different response rates and account for the correlation in response within experiments. In planning a new test, we focus on the variation in response rates within the experiment, as estimated by 1 and 2.
+Samples from the posterior are obtained using the HMC algorithm implemented in Stan with uniform priors on the
+
+Table E.5. Model Estimates for Catalog Holdout Tests Assuming s1 s2 s
+
+Parameter
+
+Mean
+
+sd
+
+2.5th %ile
+
+97.5th %ile
+
+s
+
+170.17
+
+0.86
+
+1
+
+23.32
+
+8.38
+
+
+
+6.39
+
+7.48
+
+1
+
+18.54
+
+7.08
+
+2
+
+9.79
+
+5.98
+
+
+
+28.75
+
+4.87
+
+Note. %ile, percentile.
+
+168.48 6.64
+-7.78 5.55 2.37 20.20
+
+171.91 40.06 21.93 33.62 23.73 39.15
+
+1058
+
+Feit and Berman: Test & Roll: Profit-Maximizing A/B Tests Marketing Science, 2019, vol. 38, no. 6, pp. 1038­1059, © 2019 INFORMS
+
+hyperparameters. The posterior means for 1,  = 2 - 1, 1, and 2 reported in Table E.4 are used as point estimate to compute the asymmetric test & roll sample size.
+We also estimated a version of the model where s1 was constrained to be the same as s2 and used these estimates to show that unequal group sizes can arise from the priors (unlike in null hypothesis testing). The resulting estimates are reported in Table E.5.
+
+Endnotes
+
+1 We focus on a z-test for simplicity. The test of proportions is similar.
+
+2 The seldom-used finite population correction (FPC) will recom-
+
+mend sample sizes smaller than the population; however, this cor-
+
+rection does not account for the opportunity cost of the test and does not maximize profit. The FPC adjusts the standard error to
+
+correct for the inaccuracy of the central limit theorem when sampling
+
+from a finite population of size N without replacement resulting in a
+
+recommended sample size of nFPC
+
+. 2N(z1-/2 +z )2s2
+(N-1)d2 +4s2 (z1-/2 +z )2
+
+We
+
+thank
+
+an
+
+anonymous reviewer for suggesting this as a benchmark.
+
+3 Treatments may be defined as a single exposure (e.g., an email) or a
+
+series of exposures (e.g., a digital media campaign).
+
+4 The assumption that s1 and s2 are known could easily be relaxed by putting priors on them, but this is not necessary for deriving key insights.
+
+5 An online sample size calculator is available at http://testandroll.com.
+
+6 As noted in the introduction, it is not clear what should be done if
+
+the null hypothesis cannot be rejected.
+
+7 The symbol  denotes a lower asymptotic bound, whereas O de-
+
+notes an upper asymptotic bound.
+
+8 Thompson sampling uses a decision rule based on the posterior
+
+similar to (8), but it continuously updates the posterior and makes a
+
+probabilistic decision for each customer proportional to the proba-
+
+bility that each treatment is best.
+
+9 R functions for finding optimal sample sizes for asymmetric Normal
+
+priors or beta-binomial priors are available at http://testandroll.com.
+
+10 This is similar to using a pretest to inform priors for conjoint design
+
+(Arora and Huber 2001).
+
+11 Although it would be ideal to observe sales and revenue for each
+
+visitor, this is not always possible. As a proxy, we assume for this example that profit is proportional to the number of clicks.
+
+12 To facilitate comparisons across applications, we report the regret
+
+relative to the expected value of perfect information as in (15).
+
+13 The values of nHT and nFPC shown in panel (c) assume d is set at the 25th percentile of the prior of the absolute treatment effect.
+
+14 The difference of 0.19 is approximately the difference between the return on investment being equal to -100% and 0%, assuming the
+
+ads cost 0.094 per user (the average reported cost across experiments)
+
+and the margin on retail sales is 0.5. This sample size is similar to
+
+those calculated by Lewis and Rao (2015) in table III.
+
+15 When s1
+
+s2, then the sample sizes n1
+
+(z(1-)/2
+
++
+
+z
+
+)2
+
+(s21
+
++s1 2
+
+s2
+
+)
+
+and
+
+n2
+
+(z(1-)/2
+
++
+
+z
+
+)2
+
+(s1
+
+s2 +s22 2
+
+)
+
+minimize
+
+n1
+
++ n2
+
+while
+
+achieving
+
+the
+
+de-
+
+sired confidence and power. See Luh and Guo (2007).
+
+References
+Agrawal S, Goyal N (2013) Further optimal regret bounds for Thompson sampling. Carvalho CM, Ravikumar P, eds. Proceedings of the 16th International Conference on Artificial Intelligence and Statistics (AISTATS) (PMLR), 99­107.
+Arora N, Huber J (2001) Improving parameter estimates and model prediction by aggregate customization in choice experiments. J. Consumer Res. 28(2):273­283.
+
+Azevedo EM, Alex D, Montiel Olea J, Rao JM, Weyl EG (2019) A/B testing with fat tails. Working paper, Wharton School, University of Pennsylvania, Philadelphia.
+Bart Y, Stephen A, Sarvary M (2014) Which products are best suited to mobile advertising? A field study of mobile display advertising effects on consumer attitudes and intentions. J. Marketing Res. 51(3):270­285.
+Berman R, Pekelis L, Scott A, Van den Bulte C (2018) p-Hacking and false discovery in A/B testing. Working paper, Wharton School, University of Pennsylvania, Philadelphia.
+Berry DA, Wolff MC, Sack D (1994) Decision making during a phase III randomized controlled trial. Controlled Clinical Trials 15(5):360­378.
+Bertsimas D, Mersereau AJ (2007) A learning approach for interactive marketing to a customer segment. Oper. Res. 55(6):1120­1135.
+Bitran GR, Mondschein SV (1996) Mailing decisions in the catalog sales industry. Management Sci. 42(9):1364­1381.
+Bonfrer A, Dre`ze X (2009) Real-time evaluation of email campaign performance. Marketing Sci. 28(2):251­263.
+Cheng Y, Su F, Berry DA (2003) Choosing sample size for a clinical trial using decision analysis. Biometrika 90(4):923­936.
+Chick SE, Frazier P (2012) Sequential sampling with economics of selection procedures. Management Sci. 58(3):550­569.
+Chick SE, Inoue K (2001) New two-stage and sequential procedures for selecting the best simulated system. Oper. Res. 49(5):732­743.
+DeGroot MH (1970) Optimal Statistical Decisions (McGraw-Hill, New York).
+Gershoff M (2017) Do no harm A/B testing without P-values. Conductrics Blog (March 30), https://conductrics.com/do-no-harm -or-ab-testing-without-p-values/.
+Hitsch GJ, Misra S (2018) Heterogeneous treatment effects and optimal targeting policy evaluation. Working paper, University of Chicago, Chicago.
+Johnson GA, Lewis R, Nubbemeyer E (2017) The online display ad effectiveness funnel & carryover: A meta-study of ghost ad experiments. Working paper, University of Rochester, Rochester, NY.
+Lewis RA, Rao JM (2015) The unfavorable economics of measuring the returns to advertising. Quart. J. Econom. 130(4):1941­1973.
+Luh W-M, Guo J-H (2007) Approximate sample size formulas for the two-sample trimmed mean test with unequal variances. British J. Math. Statist. Psych. 60(1):137­146.
+Misra K, Schwartz EM, Abernethy J (2019) Dynamic online pricing with incomplete information using multiarmed bandit experiments. Marketing Sci. 38(2):225­252.
+Pekelis L, Walsh D, Johari R (2015) The new Stats Engine. Technical report, Optimizely, San Francisco.
+Schwartz EM, Bradlow ET, Fader PS (2017) Customer acquisition via display advertising using multi-armed bandit experiments. Marketing Sci. 36(4):500­522.
+Scott SL (2010) A modern Bayesian look at the multi-armed bandit. Appl. Stochastic Models Bus. Indust. 26(6):639­658.
+Simester D, Timoshenko A, Zoumpoulis SI (2019) Efficiently evaluating targeting policies: Improving upon champion vs. challenger experiments. Management Sci. Forthcoming.
+Stallard N, Miller F, Day S, Hee SW, Madan J, Zohar S, Posch M (2017) Determination of the optimal sample size for a clinical trial accounting for the population size. Biometrical J. 59(4):609­625.
+Stan Development Team (2018) RStan: The R interface to Stan. R package version 2.17.3. Accessed May 1, 2019, http://mc-stan.org.
+Thompson WR (1933) On the likelihood that one unknown probability exceeds another in view of the evidence of two samples. Biometrika 25(3/4):285­294.
+Wortham K (2018) Sample size calculation--Myth buster edition. Search Discovery (blog) (May 20), https://www.searchdiscovery.com/ blog/sample-size-calculation-myth-buster-edition.
+Zantedeschi D, Feit EM, Bradlow ET (2016) Measuring multichannel advertising response. Management Sci. 63(8):2706­2728.
+
+CORRECTION
+In this article, "Text & Roll: Profit-Maximizing A/B Tests" by Elea McDonnell Feit and Ron Berman (Marketing Science, vol. 38, no. 6, pp. 1038-1058, DOI: 10.1287/mksc.2019.1194), equation (8) on page 1041 has been corrected to remove an error in the expression for the posterier mean in the decision rule. The other formulas in the body of the paper, including the expected deploy-stage profits in equations (9) and (18), are correct. The expression for the decision rule used in the Appendix where the deploy-stage profit is derived (Proposition A.1) is correct, but uses slightly different notation. In Proposition A.1, yj is used to denote the average response for treatment group j (instead of yj as in the body of the paper).
+
+

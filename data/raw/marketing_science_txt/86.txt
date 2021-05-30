@@ -1,0 +1,2121 @@
+http://pubsonline.informs.org/journal/mksc
+
+MARKETING SCIENCE
+Vol. 38, No. 5, September­October 2019, pp. 888­909 ISSN 0732-2399 (print), ISSN 1526-548X (online)
+
+Linear Estimation of Aggregate Dynamic Discrete Demand for Durable Goods: Overcoming the Curse of Dimensionality
+
+Cheng Chou,a Tim Derdenger,b Vineet Kumarc
+a University of Leicester, Leicester LE1 7RH, United Kingdom; b Carnegie Mellon University, Pittsburgh, Pennsylvania 15289; c Yale University, New Haven, Connecticut 06511 Contact: cchou@le.ac.uk (CC); derdenge@andrew.cmu.edu (TD); vineet.kumar@yale.edu, https://orcid.org/0000-0001-8784-6858 (VK)
+
+Received: August 27, 2018 Revised: February 24, 2019 Accepted: April 22, 2019 Published Online in Articles in Advance: September 20, 2019
+https://doi.org/10.1287/mksc.2019.1182
+Copyright: © 2019 INFORMS
+
+Abstract. We develop a new approach using market-level data to model, identify, and estimate a dynamic discrete choice demand model for durable goods with continuous unobserved product-specific state variables. They are specified as serially correlated and correlated with the observed product characteristics, particularly price. We provide a method to estimate all model primitives, including the consumer's discount factor and the state transition distributions of unobserved product characteristics without the need to reduce the dimension of the state space or by other approximation techniques, such as discretizing state variables. We prove the identification of model primitives and provide an estimation algorithm in which the most computationally demanding step is a linear regression. Finally, we show how it can be implemented in an application in which we estimate the demand for smartphones.
+
+History: Yuxin Chen served as the editor-in-chief and Paul Ellickson served as associate editor for this article.
+Supplemental Material: Data and the online appendix are available at https://doi.org/10.1287/mksc.2019.1182.
+Keywords: dynamic discrete choice · curse of dimensionality · durable goods · demand estimation
+
+1. Introduction
+In recent years, dynamic discrete choice (DDC) models have become more prevalent in marketing and economics because of their ability to analyze the dynamic aspects of firms' and consumers' preferences and the consequent intertemporal trade-offs across a wide range of substantive contexts. As researchers recognize and seek to incorporate these factors into their modeling, the complexity of estimating such models remains a challenging barrier for research. Specifically, defining a tractable state space for such models is often a difficult task, leading some to adopt ad hoc approximation approaches. The task becomes even more challenging in the absence of an approximation method and when the researcher incorporates multiple dimensions of unobserved state variables, individual and choice specific.
+In the demand estimation literature, these unobservables relate to traditional individual productspecific idiosyncratic errors and unobserved product characteristics.1 Estimation is further complicated when the unobserved product characteristics are serially correlated and correlated with observed state variables given that computing the ex ante expected value function involves high-dimensional integration over all unobserved state variables (idiosyncratic and product characteristics). This is especially
+
+problematic when there are many available products, each with their own unobserved characteristic.
+Our main contribution is to develop a novel approach using market-level data to model, identify, and estimate a dynamic discrete choice demand model for durable goods with continuous unobserved product-specific state variables in addition to the commonly included individual product idiosyncratic errors. The unobserved states or product characteristics are specified as serially correlated and correlated with the observed product characteristics, particularly price. We provide a method to estimate all model primitives, including the consumer's discount factor, without the need to reduce the dimension of the state space or by other approximation techniques, such as discretizing state variables. In this sense, our method avoids the curse of dimensionality--a large practical problem when implementing DDC models.
+We provide rigorous proof of identification and an algorithm for estimation in which the most computationally demanding step is a linear regression. Following the sequence of linear regressions, applied researchers will have estimated all primitives of the dynamic structural model. The estimation simplicity and the absence of the curse of dimensionality aid model specification because the researcher no longer faces the trade-off between including more state
+
+888
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+889
+
+variables with the feasibility of estimation or the dilemma of reducing the dimension of state variables at the cost of incurring omitted variable bias. Thus, researchers are able to estimate multiple model specifications at little computational cost. The major limitations of the method are that (a) there need to be two or more terminal choices in the DDC model (e.g., purchasing a product, then leaving the market permanently) and (b) the DDC model can only accommodate the multinomial logit or generalized extreme value (GEV) nested logit structure, not unobservable heterogeneity.
+Our identification results are novel relative to the literature on identifying DDC models. Our model for durable goods can be understood as a general DDC model in which a subset of unobserved state variables (unobserved product characteristics herein) are continuous, serially correlated, and correlated with other observed state variables. The existing identification results (Magnac and Thesmar 2002; Kasahara and Shimotsu 2009; Norets 2009; Arcidiacono and Miller 2011, 2018; Hu and Shum 2012; Hu et al. 2017) in the literature cannot be applied here.
+Most of the research focusing on individual-level data do not include persistent unobservable state variables (e.g., Bajari et al. 2016, Daljord et al. 2018).2 The following exceptions involving persistent unobservables are worth noting. Hu and Shum (2012) study dynamic binary choice models with continuous unobserved state variables, but their identification result is limited to the conditional choice probabilities and state transition distribution functions, not to model primitives such as flow utility functions and discount factors. Norets (2009) does include a serially correlated unobservable idiosyncratic error, which is individual-specific rather than an aggregate product shock as in our case. Arcidiacono and Miller (2011) model persistent unobservables but limit them to a discrete set of values.
+Our linear estimation approach is also new relative to the literature on estimating DDC models. First, our estimation approach is not an approximation method and, thus, does not rely on the validity of specific approximations, such as interpolation or other value function approximations, or behavioral assumptions that consumers only consider some function of the state space and not the entire state (Gowrisankaran and Rysman 2012, Melnikov 2013). Second, our estimator does not exhibit a curse of dimensionality because it does not require the estimation or approximation of the ex ante expected value function as is almost always the case with prior papers (e.g., Rust 1994, Bajari et al. 2016). Third, we estimate more model primitives than the current literature because our method recovers not just the preference parameters but also the discount factor
+
+and the transition process for observed and unobserved state evolution.
+Our work builds on several foundational papers in the demand estimation literature. First is the result that the difference between choice-specific payoff is a function of individual choice probabilities (Hotz and Miller 1993) in static and dynamic settings. The work of Berry (1994) and the Berry et al. (1995) (BLP) model (Berry 1994, Berry et al. 1995, Berry and Haile 2014) on demand estimation with market-level data, including unobservable product characteristics, have been extensively used. This is similar to our setting but focused on a static environment.
+Extending the BLP models to a dynamic setting with forward-looking agents is challenging. Formal identification in these papers is not specified. Some researchers ignore persistent unobserved shocks (Song and Chintagunta 2003) or make them timeinvariant (Goettler and Gordon 2011). Others focus on improving the computational speed of fixed point estimators by approximation. Melnikov (2013) and Gowrisankaran and Rysman (2012) approximate based on inclusive value sufficiency, allowing the researcher to collapse the multidimensional state into one dimension, making it more tractable. Derdenger and Kumar (2019) study the approximation properties of this approach and show that it is a biased and an inconsistent estimator. Su and Judd (2012) and Dubé et al. (2012) propose a constrained optimization approach to estimate static and dynamic structural models based on aggregate data. Also noteworthy are Sun and Ishihara (2019), who present a simple Monte Carlo­based approach to significantly diminish the burden of dynamic structural models.
+Although the literature has made advances in computational tools that eliminate the costly nested fixed point algorithm used in dynamic models, our approach is different in that we have focused on proving identification of model primitives and also in that our approach avoids any computation of the value function in the estimation process.
+The simplicity of our estimator is quite powerful, but it does come at a cost. In addition to the two previously mentioned limitations, we discuss two others. First, consumers in our model face an optimal stopping situation in that their choice is to continue in the market without purchasing ("no purchase") or to purchase a product and forever exit the market (terminal choice). Specifically, the model must have two or more terminal choices for the estimator to be linear in preferences and for preferences to be estimated via instrumental variables (IV). That said, the model and estimator do allow for nonterminal choices when an individual is faced with a choice of, say, "lease one car" as long as the consumer choice does not affect the future transition of state variables. We
+
+890
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+do not track individual product inventory holdings. Thus, environments in which choices exhibit state dependence with repeat purchases would not be appropriately characterized.
+Second, our computationally simple approach applies to a class of models similar to Berry (1994), that is, type 1 and GEV distribution for idiosyncratic errors. This limitation eliminates any possibility of incorporating unobserved consumer heterogeneity in preferences as in Berry et al. (1995). This may be problematic to those interested in understanding policies targeted to heterogeneous populations though it should be highlighted that our model can incorporate any observable heterogeneity for a finite number of classes. However, it is well known that identifying unobserved consumer heterogeneity using aggregate data are quite difficult in practice. Albuquerque and Bronnenberg (2009, p. 356) illustrate that, "in isolation neither variable ((market share or brand penetration)) may lead to precise estimates of heterogeneity." Sudhir (2013, p. 53) also states that "identification of heterogeneity is tough with aggregate data." As a result, we attempt to mitigate the lack of unobserved heterogeneity through the estimation of a GEV model.
+Third, in our model, we generally can only identify the difference between two unobserved product characteristics, a challenge for counterfactual analysis. We attempt to address this concern with two approaches. The first is to simply draw from the identified distribution of only one unobserved state variable a large number of times to provide an identified set on the policy experiment. In practice, there is little to no added cost to this method as compared with what a researcher does in order to generate a confidence interval (draws from all parameters). Next, we show that unobserved product characteristics are identified if the correlation between at least one unobserved state variable and price is perfectly correlated. This second option has the benefit of being testable.
+The last limitation is a required stationarity assumption for the identification and estimation of the dynamic evolution of state variables. In particular, we require the joint distribution of the unobserved and observed product characteristics and price to be time invariant for at least two periods. If such joint distribution changes in every period, the model is not identified. The intuition is similar to the identification of a linear panel data model in which regression coefficients and the unobserved fixed effect are assumed time invariant for at least two periods in order to use a fixed effect or first difference estimator to identify/estimate the model. Thus, it is typically not a limitation in applications. When the number of periods is large and one suspects that the joint
+
+distribution of product characteristics and price could have changed, one can split the sample into a few subsamples and estimate the preferences and/or the dynamic evolution of state variables for each subsample as long as there are enough periods in each sample.
+There are a number of institutional features of an empirical context that make our model more suitable. Our approach is likely to prove useful in settings in which the dynamics and intertemporal trade-offs are of first-order importance to researchers and in which the state space is large, which reflect a number of empirical settings. Durable goods with a long replacement fit best, for example, solar panels. However, even products with a smaller replacement cycle would work if the discount factor is low. Because our method allows the researcher to recover the discount factor easily, one could simply run the model to determine suitability even when the researcher is not sure about the discount factor. The data required for the model is aggregate market-level data but allows significant flexibility in the nature of variation. Although our identification results only require T 2 periods of data (with multiple markets), in practice, for estimation, a longer panel is helpful. Thus, the researcher can deploy this method even with data from only one market (e.g., national) or a smaller panel with data from multiple markets (e.g., states or metropolitan areas). The Monte Carlo studies in the Online Appendix Section O.1 demonstrate recovery for different combinations of markets and time periods.
+We apply our estimator using data from the cell phone device market. Using monthly data from 10 different states, we estimate consumer preferences for phone hardware, including smartphones. We determine Apple had the largest fixed effect, and Blackberry had the smallest out of all brands. Additionally, we find the unobserved product characteristics were positively serially correlated for Apple yet were negatively for Blackberry. After the recovery of consumer preferences, we run several counterfactuals to identify the feature that most impacts consumer adoption. Counterfactual analysis finds that removing Bluetooth or Wi-Fi from phones dramatically changes the within-market shares. Without Wi-Fi, Apple's iPhone would lose substantial market share compared with other brands. This is due to Wi-Fi almost exclusively being available only on the iPhone. Moreover, Bluetooth was found to have the largest overall demand on the market with its absence leading to roughly a 20 percentage point increase in the market share of the outside good.
+The rest of the paper is structured as follows. In Section 2, we present the basic modeling approach. In Section 3, we detail the assumptions and show the
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+891
+
+identification for the model parameters. In Section 4, we obtain the estimators of preference parameters and state transition distribution. In Section 5, we discuss counterfactual implementation. In Section 6, we provide an empirical application of the model in the smartphone hardware market around the introduction of the iPhone. In the counterfactual analysis, we evaluate market outcomes when product characteristics exogenously change. In the appendix, we detail the GEV model along with the cellphone demand estimates using a nested logit model.
+This paper comes with an online appendix, which contains (i) numerical studies about our estimators under various scenarios, (ii) discussion about the interpretation of the assumptions in an empirical context, (iii) implementation details about the counterfactual procedure, (iv) proofs of some identification theorems, (v) various formulas that are helpful for calculating the asymptotic variance of our estimators, and (vi) detailed discussion about the identification of nested logit specification.
+2. Model
+Our model follows the previous literature on dynamic discrete choice models of demand, particularly those that employ market-level data. The choice set of a consumer i in period t is )t  )  {0, 1, . . . , J}, where 0 denotes outside good and no purchase, and 1, . . . , J are products. The possible time-varying choice set corresponds to the observed entry­exit of products in the market. In each period t, consumer i considers whether to purchase a product from the available products )t \ {0}. If consumer i decides to purchase, consumer i then chooses which to buy. Once a consumer has purchased a product, the consumer exits the market completely. Hence, purchasing a product is a terminal action in our model. The consumer decision process is, thus, equivalent to an optimal stopping problem. The presence of a terminal choice greatly simplifies the identification and estimation because its expected lifetime utility is easy to characterize.
+2.1. Consumer Utility Consumers consider numerous product and market characteristics that may affect their current and future purchase utilities, such as price, age of product, and quality. The state can be described as it  (xt, pt, t, it), where pt denotes the vector of product prices, xt denotes the vector of the other observable product characteristics, t denotes the unobserved (to an econometrician) product characteristics, and it is the vector of individual choice-specific idiosyncratic shocks, which are unobservable to researchers. Denote mt  (xt, pt, t) the market-level state.
+
+Assumption 1 (Markov Process). Conditional Probability Pr(i,t+1 | it, i,t-1, . . .) Pr(i,t+1 | it).
+Typically, in a product choice model, we can include all the product variables in the state space, xt  (x1t, . . . , xJt) and pt  (p1t, . . . , pJt) , where xjt and pjt denote the vector of observable product characteristics and the price of product j in period t, respectively. There is some abuse of notation because xjt and pjt are indeed not defined if product j does not exist in period t, that is, j / )t.
+We normalize the expected period of utility of the outside good to be zero. Hence, if consumer i does not purchase in period t, consumer i receives flow utility ui0t 0 + i0t. This normalization is only for simplicity of exposition. Our arguments still hold when ui0t is a parametric function of observed characteristics of the outside good and additive in i0t. This is useful because it has been shown that, unlike the case of static discrete choice models, normalization in dynamic discrete choice models is not innocuous for the purpose of counterfactual predictions (e.g., Norets and Tang 2014, Kalouptsidi et al. 2017).
+When consumer i purchases product j at time t, consumer i's flow utility during the purchase period t is
+
+uijt f (xjt, jt) - pjt + ijt.
+
+(1)
+
+Consumer i then receives the identical flow utility f (xjt, jt) in each period  > t following consumer i's purchase. Let f (xjt, jt) xjt + j + jt. Let  (1, . . . , J) . The term j is the unobserved product fixed effect. The vector t (1t, . . . , Jt) is unobservable to researchers, and jt is a scalar with E(jt) 0. One typically views j + jt as a measure of functional or design quality. Hereafter, we refer to jt as the unobserved characteristics of product j at time t, which may be serially correlated. Possible interpretations of unobservable product­period-specific shocks jt are not limited to the following:
+i. Product quality: If the firm has a quality control in the production process, then there is likely some degree of randomness or stochasticity in the manufacturing process. This would vary by product period and fit the assumptions about  in the paper. Note that, depending on the production process, this could also be serially correlated, which we accommodate in our model. In our application using cell phone data, jt can be thought as the quality of software on the phone, battery life, durability, etc.
+ii. Advertising: We might have product-period unobservable advertising levels by both manufacturers or network carriers and retailers such as Best Buy in our application. Because advertising expenditure decisions are set well in advance, it is quite likely for such expenditures to be serially correlated.
+
+892
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+The inclusion of these unobserved product characteristics (states) are important. The data the researcher collects to estimate demand models is almost always incomplete as it does not contain all the state variables that consumers use to make their decisions. Ignoring unobserved product characteristics could bias the estimation of price coefficients was first discussed in the work of Berry (1994) about the endogeneity of price.
+Another econometric problem when one only uses idiosyncratic errors as in Bajari et al. (2016) is that, if the data-generating process had product-period unobservables (e.g., advertising or quality control variations over time) but were ignored, then the idiosyncratic errors would pick up those factors as in Song and Chintagunta (2003). In such a case, we would have correlation of idiosyncratic errors across individuals and time if the unobservable product characteristics were serially correlated. Because almost all papers effectively specify such idiosyncratic errors to be independent across agents, this would lead to a misspecification and biased parameter estimates.
+2.2. Dynamic Decision Problem The consumer makes a trade-off between buying in the current period t and waiting to make a purchase in the next period. The crucial intertemporal trade-off is in the consumer's expectation of how the market-level state variables mt (xt, pt, t) evolve in the future. For example, if product characteristics (or price) are expected to improve over time, the consumer has incentive to wait.
+Consumer i in period t chooses from the set of choices )t, which includes the option zero to wait without purchasing any product. However, if the consumer purchases, recall that the consumer exits the market immediately upon purchase.
+For a consumer in the market faced with a state it in period t, we can write the Bellman equation in terms of the value function Vt(it) as follows:
+(
+Vt(it) max i0t + E(Vt+1(i,t+1) | it), )
+max vj(it) + ijt ,
+j)t \{0}
+where the first term within brackets is the present discount utility associated with the decision to not purchase, j 0, any product in period t. The discount factor is   [0, 1). The choice of not purchasing in period t provides flow utility i0t and a term that captures expected future utility associated with choice j 0, conditional on the current state being it. This last term is the option value of waiting to purchase. The second term within brackets indicates the value associated with the purchase of a product.
+
+Given the fact that consumers exit the market after the purchase of any product, a consumer's choice-specific value function can be written as the sum of the current period t utility and the stream of utilities in periods following purchase:
+
+vjt(it)
+
+f
+
+(xjt, 1-
+
+jt) 
+
+-
+
+pjt
+
+xjt
+
++ j + 1-
+
+jt
+
+-
+
+pjt,
+
+We also let
+
+(2) j  )t \ {0}.
+
+v0t(it) E(Vt+1(i,t+1) | it).
+
+(3)
+
+The value function Vt(it) involves consumer i's flow utility shock it. Assumption 2(i) ensures the following in which the expectation in the preceding display is taken over i,t+1:
+E(Vt+1(i,t+1) | it) E(V¯ t+1(xt+1, pt+1, t+1) | xt, pt, t),
+
+where V¯ t+1(xt+1, pt+1, t+1)  E(Vt+1(i,t+1) | xt+1, pt+1, t+1).
+
+Assumption 2 (Conditional Independence). For all t, we
+have (i) i,t+1  it | (xt, pt, t); (ii) i,t+1  it | (xt+1, pt+1, t+1).
+
+The role of part (ii) will be clear soon. Under As-
+
+sumption 2, we know that vj is a function of marketlevel state variables mt (xt, pt, t) only. Let sjt be the
+
+market share of product j at time t. Given a conditional
+
+distribution function F(· | mt) of it, we have
+
+sjt(mt)
+
+(
+
+)
+
+1 vjt(mt) + ijt  vkt(mt) + ikt, k  )t (4)
+
+· F(dit | mt).
+
+Our results do not require that the value function Vt(it) or the integrated value function V¯ t(mt) be time invariant. This could be desirable in applications because the introduction of new products or technology innovation could change the consumer's value function.
+
+3. Identification
+We start by clarifying the data and the structural
+parameters of the model. With the data, we observe
+market shares sjt, observable product characteristics xjt and prices pjt for j  )t. Structural parameters include consumer preference parameters 1 (, ,  ,  ) , the state transition distribution function F(i,t+1 | it), and the initial distribution function F(it) for some period t. In general, we need to know 1, F(i,t+1 | it) and F(it) in order to simulate the consumer's dynamic decisions starting from period t
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+893
+
+and market shares under various counterfactual experiments.
+Using conditional independence (Assumption 2), we have
+F(it) F(mt)F(it | mt),
+F(i,t+1 | it) F(mt+1 | mt)F(i,t+1 | mt+1).
+Moreover, we assume that it  mt and F(it) are known for all t. We can write F(mt) F(xt, pt) · F(t | xt, pt). Thus, the cumulative distribution function F(xt, pt) is identified from observed xt and pt. Our focus is then on F(t | xt, pt) and F(mt+1 | mt). The difficulty is that we do not observe t. In the remainder of this section, we show how to identify 1, F(t | xt, pt), and F(mt+1 | mt) nonparametrically under mild restrictions.
+We give a brief summary of our results in this section. To identify preference 1, one only needs to know F(it | mt) and to have IV that are uncorrelated with unobserved characteristics t. To identify E(jt | xt, pt), we further assume that F(t | xt, pt) is time invariant. To identify Var(jt) and Var(jt | xt, pt), one needs one additional assumption, that is, to assume that the unobserved characteristics 1t, . . . , Jt are independent and homoscedastic conditional on xt and pt. To identify F(t | xt, pt) nonparametrically, one needs a further assumption, that is, to assume that the unobserved characteristics jt have identical distribution except for their conditional mean. To identify F(mt+1 | mt) nonparametrically, one needs additional assumptions, among which one would require that t+1 is an autoregressive (AR) process and xt+1  (t, t+1) | (xt, pt) or (xt+1, pt+1)  t | (xt, pt). Most identification results are constructive; hence, they can be used as formulas for estimation.
+It is well known that, without assuming that F(it | mt) is known, the flow utility functions and discount factor are not separately identified (e.g., Magnac and Thesmar 2002). Our restriction on F(it | mt) is twofold. First, we assume it  mt. Second, we know the marginal distribution of it, which is a type I extreme value distribution. In the online appendix, we present identification for a GEV distribution.
+Assumption 3. Assume that consumer i's utility shocks it (i0t, . . . , iJt) are independent of mt (xt, pt, t). Let i0t + , . . . , iJt +  be an independent identically distributed type I extreme value with density f (ijt +  ) exp[-( + e-)], where   0.5772 is Euler's constant.
+Assumption 3 does not allow correlation between market-level state variables and unobserved consumer heterogeneity. This can be restrictive in some applications. For example, consumers may be heterogeneous in
+
+their preference for design or quality, which is captured by t in this model. Such consumer preference is unobserved; hence, it is denoted by it. This implies that it and t are correlated. Allowing for such correlation between it and the other state variables in general has been a difficult problem in the literature of dynamic discrete choice model (see Magnac and Thesmar 2002, Arcidiacono and Miller 2011). It seems to be harder here because t in mt is unobservable.
+It should be remarked that the assumption of independent idiosyncratic shocks is required, but the assumption on type I distribution or any specific distribution is not essential for our identification arguments because our arguments start from expressing the difference between the payoffs of purchasing different products as a function of market shares, which holds for more general distribution of it (Hotz and Miller 1993). However, it greatly simplifies the exposition and estimation.
+3.1. Consumer Preference Let 1o (o, o, o, o) denote the true values. To make the idea clear, we consider a simple case with two products (1 and 2) in addition to the outside good 0. Both products are always available. Our arguments can also be applied to show identification when the choice set varies over time. It follows from the multinomial logit model that the market share sjt(mt) has the following formula:
+sjt(mt) exp(vjt(mt))/k)t exp(vkt(mt)).
+
+Hence, for any two products j, k  )t, we have
+
+ln(sjt/skt) vjt(mt) - vkt(mt).
+
+(5)
+
+To show identification, we only use ln(s2t/s1t) and ln(s2t/s0t). Equation (5) is similar to Berry (1994). The
+
+key difference is that v0t(mt) in Berry (1994) or BLP
+
+equals zero, and v0t(mt) here depends on an unknown
+
+value function.
+
+In Equation (5), letting j 2, k 1, we have ln(s2t/
+
+s1t) v2t(mt) - v1t(mt), that is,
+
+()
+
+ln
+
+s2t s1t
+
+(x2t
+
+-
+
+x1t)
+
+~
+
+-
+
+(p2t
+
+-
+
+p1t)
+
++
+
+2 1
+
+- -
+
+1 
+
++
+
+2t 1
+
+- -
+
+1t 
+
+,
+
+(6)
+
+with ~ /(1 - ). Equation (6) explains the relative market share by the difference of product characteristics. Equation (6) resembles a linear regression because we observe ln(s2t/s1t), (x2t - x1t), and (p2t - p1t). Let z(2,1),t denote a vector of instruments that are
+
+894
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+uncorrelated with 2t - 1t. We can identify ~ , , and (2 - 1)/(1 - ) with one period of data from the moment equation
+
+E(g1,(2,1),t(1o)) 0, [ ( )
+
+g1,(2,1),t(1)
+
+z(2,1),t
+
+ln
+
+s2t s1t
+
+- (x2t - x1t) ~ ]
+
++ (p2t
+
+-
+
+p1t)
+
+-
+
+2 1
+
+- -
+
+1 
+
+.
+
+(7)
+
+We show the identification of the discount factor 
+
+and product effect . Once  is identified,  is iden-
+
+tified from the already identified ~ /(1 - ). In
+
+Equation (5), letting j 2, k 0, we have
+
+()
+
+ln s2t s0t
+
+x2t~
+
+-
+
+p2t
+
++
+
+1
+
+2 -
+
+
+
++
+
+2t 1-
+
+(8)
+
+- E(V¯ t+1(mt+1) | mt).
+
+Define the already identified term yt  ln(s2t/s0t) - x2t~ + p2t: Note that yt is a function of mt only. We rewrite Equation (8) with yt(mt),
+
+yt(mt)
+
+1
+
+2 -
+
+
+
++
+
+2t 1-
+
+-
+
+E(V¯ t+1
+
+(mt+1
+
+)
+
+|
+
+mt).
+
+(9)
+
+By the expectation maximization formula for multinomial logit (e.g., Arcidiacono and Miller 2011):
+
+V¯ t(mt)
+
+v(2(mt) - ln s2t(mt)
+
+)
+
+x2t~
+
+-
+
+p2t
+
++
+
+1
+
+2 -
+
+
+
++
+
+2t 1-
+
+- ln s2t(mt).
+
+(10)
+
+Define another identified term wt, a function of mt only, and the corresponding value function
+
+wt  x2t~ - p2t - ln s2t(mt)
+
+V¯ t(mt)
+
+wt(mt)
+
++
+
+1
+
+2 -
+
+
+
++
+
+2t 1-
+
+,
+
+for all t.
+
+Substituting V¯ t+1(mt+1) in Equation (9) with the preceding display, we have the conditional moment restriction
+
+yt(mt)
+
+1
+
+2 -
+
+
+
++
+
+2t 1-
+
+-
+
+( E wt+1(mt+1)
+
++
+
+1
+
+2 -
+
+
+
++
+
+12-,t+1mt).
+
+(11)
+
+Because yt(mt) is a function of mt only, E(yt | mt) yt.
+
+Moreover, E(2t | mt) 2t because 2t is an element
+
+of mt. As a result, the preceding display implies
+
+( E yt
+
++
+
+wt+1
+
+-
+
+2
+
+-
+
+1
+
+1 -
+
+2t
+
++
+
+1
+
+ -
+
+2,t+1mt)
+
+0.
+
+(12)
+
+By this conditional moment condition, we know that,
+
+for any integrable function (mt), we have
+
+[(
+
+)]
+
+E
+
+yt
+
++
+
+wt+1
+
+-
+
+2
+
+-
+
+1
+
+1 -
+
+2t
+
++
+
+1
+
+ -
+
+2,t+1
+
+(mt)
+
+0.
+
+(13)
+
+The conditional moment Equation (12) is very useful. As its first application, we show the identification of product fixed effect  when the discount factor  is known. Given , letting (mt) 1, we have
+
+2 E(yt + wt+1).
+
+We use E(2t) E(2,t+1) 0. Because (2 - 1)/(1 - ) is identified, we identify 1 given 2 and .
+As the second application of Equation (12), we show the identification of . The market-level state mt includes (x1t, x2t, p1t, p2t). Let x2t,IV be a vector of functions of mt such that cov(x2t,IV, 2t) cov(x2t,IV, 2,t+1) 0.3 We can identify  and 2 from
+
+g2,(2,0),t(1)
+
+( E(g2,(2,0),t(1o)) 0,
+
+)
+
+yt + wt+1 - 2, (yt + wt+1 - 2)x2t,IV .
+
+(14)
+
+For example, if x2t,IV is a scalar, we explicitly have  -cov(yt, x2t,IV)/cov(wt+1, x2t,IV),
+
+provided that cov(wt+1, x2t,IV) 0 (corresponding to rank condition in IV regression). From the definition of wt+1, the rank condition requires that x2t,IV must be correlated with the next period market-level state variables or market share s2,t+1. The following proposition is a summary about the identification of consumer preference.
+Proposition 1. Suppose Assumptions 1­3 hold. Let dx[ dim xjt. If th]ere is a vector of IV[ z(2,1),t such that E z(2,1),t(2]t - 1t) 0 and rank E z(2,1),t((x2t - x1t) , (p2t - p1t)) dx + 1, and there is a vector-valued function x2t,IV of mt such that cov(x2t,IV, 2t) cov(x2t,IV, 2,t+1) 0 and cov(wt+1, x2t,IV) 0, we can identify consumer preference parameters , , and  and product fixed effect  with two periods of data.
+Moreover, these constructive identification arguments suggest a simple estimation method for 1 (, ,  ,  ) . An IV regression can estimate ~ , (2 - 1)/(1 - ), and . Another IV regression of yt on -wt+1 with IV x2t,IV can be used to estimate the discount factor . Such an estimator does not impose any further distributional assumptions about state transition law besides the first-order Markovian assumption.4 As a result, there is no "curse of dimensionality" in the estimation of consumer preferences.
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+895
+
+Remark 1 (Why Can We Identify the Discount Factor?). In dynamic discrete choice literature, in order to identify the discount factor, it is usually necessary to have an excluded variable that does not affect current utility but does impact future payoff (e.g., Fang and Wang 2015). To see why we can identify the discount factor even without the excluded variable, let's assume that there are no unobserved product characteristics jt and j 0. The key reason is that we can identify the mean value vj for each product j from relative market shares. Without jt, we have
+ln(s2t/s1t) (x2t - x1t) ~ - (p2t - p1t).
+
+We identify ~ and ; hence, vj for every product j.
+
+Knowing vj and the market share sjt from data, we henceforth know the integrated value function V¯ t by (Arcidiacono and Miller 2011) V¯ t(mt) vj(xjt, pjt) -
+
+ln sjt. Next, by ln(s2t/s0t) v2(x2t, p2t) - v0(mt), and v0(mt) E(V¯ t+1(mt+1) | mt), we have
+
+[
+
+ln(s2t/s0t) v2(x2t, p2t) - ]E v2(x2,t+1, p2,t+1)
+
+(15)
+
+- ln s2,t+1 | mt .
+
+Note that mt (x1t, p1t, x2t, p2t) here. Because we know v2, and market shares s2t, s0t, s2,t+1 are included in the data, we can identify the conditional expectation term; hence, .
+In general, in dynamic discrete choice models, the
+mean value vj for each alternative j depends on the unknown value function; hence,  cannot be identified from the relative choice probabilities first. Our ar-
+guments do not apply to the general dynamic discrete
+choice model. With unobserved product characteristics jt, we
+need x2t,IV, a nonrandom function of mt. From Equation (15), we have
+
+E(ln(s2t/s0t) | x2t,IV) E(v2t | x2t,IV) - E(v2,t+1 - ln s2,t+1 | x2t,IV).
+
+Here we use v2t to denote v2(x2t, p2t, 2t). Because the unobserved 2t enters in v2(x2t, p2t, 2t) additively, 2t and 2,t+1 disappear from the display by E(2t | x2t,IV) E(2,t+1 | x2t,IV) 0.
+In the online appendix, we show that, when there is
+only one product on the market, one can still identify consumer preferences (, ,  ,  ) with certain rank condition. However, such identification has limited
+practical relevance.
+
+3.2. Dynamics of State Evolution We now focus on identification of the firm side variables, mt, which, in turn, impact the state space for the consumer. Although the identification of consumer preferences did not require us to assume stationarity of the state evolution process, stationarity is necessary for us to identify the state transition distribution.
+
+Assumption 4 (Stationary Markov Process). The firstorder Markov process mt is stationary. The conditional distribution function F(mt+1 | mt) is time invariant, and F(mt) is the stationary distribution of mt.
+We first show the identification of marginal distribution function F(mt), then the conditional distribution function F(mt+1 | mt).
+
+3.2.1. Identification of F(mt). We first identify E(jt | xt, pt) with the stationary Assumption 5 about t. Then we show nonparametric identification of F(t | xt, pt) with additional restrictions.
+Assumption 5. (i) The marginal distribution function F(t) and the conditional distribution function F(t | xt, pt) are both time invariant. (ii) t+1  (xt, pt) | (xt+1, pt+1).
+Though Assumption 5(i) is implied by Assumption 4, we state it separately because it involves unobserved characteristics t whose interpretation depends on empirical applications. It is more informative to applied researchers to state the restriction about t separately.
+By Equation (6) and the identification of , we can identify dt  2t - 1t. It follows from Equation (6) that
+
+dt (1 - )ln(s2t/s1t) - (x2t - x1t)  - (2 - 1) + (1 - )(p2t - p1t).
+
+Variable dt is an identified object.
+
+It is important to note that it is likely that we cannot
+
+identify jt, only the difference 2t - 1t. Equation (11)
+
+reads
+
+1
+
+2 -
+
+
+
++
+
+2t 1-
+
+-
+
+( E wt+1
+
++
+
+1
+
+2 -
+
+
+
++
+
+12-,t+1xt,
+
+pt,
+
+t
+
+)
+
+-
+
+yt
+
+0.
+
+The unknown 2t appears both linearly and nonlinearly as a conditioning variable in the preceding display. Recall that wt+1 x2,t+1~ - p2,t+1 - ln s2,t+1 and yt ln(s2t/s0t) - x2t~ + p2t. In general, in order to show identification of 2t, one needs to prove that the left-hand side (LHS) of the preceding display is globally monotone in 2t, whose primitive condition is unclear to us because yt and wt+1 depend on market shares, hence, value function. It is expected that yt/2t > 0 and -wt+1/2,t+1 > 0 because the market share is expected to be increasing in 2t. As a result, the sign of the derivative of the LHS of the display with respect to 2t is indeterminate, when 2,t+1 is positively correlated with 2t. Intuitively, the increase in 2t can make both purchasing now and waiting to purchase in the future more desirable; hence, the market share is not necessarily monotone in 2t. In practice, after the estimation of model primitives, one can try to solve 2t from the equation numerically by trying random starting guesses of the solution. If the
+
+896
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+equation has multiple solutions, the numerical so-
+
+lution is likely to depend on the choice of starting
+
+values. We tried to solve 2t for our model used in the Monte Carlo studies reported in the online appendix
+
+and found that the solution of 2t does not depend on the starting values, which suggests that 2t is identifiable for that model.
+
+One sufficient yet uninteresting condition is that
+
+(x2,t+1, p2,t+1, s2,t+1, 2,t+1)  t | (xt, pt). In this condition, one can drop t from the conditioning variables from the conditional expectation and solve 2t.5 However, in practice, unobserved product characteristics t are
+
+serially correlated as seen in our empirical applica-
+
+tion. Moreover, the next period's market share is
+
+typically correlated with the current period's un-
+
+observed product characteristics despite their price
+
+and xt. For example, if the current t is high, con-
+
+sumers tend to buy now rather than waiting until the
+
+next period.
+
+We show how to identify E(jt | xt, pt). By E(1t | xt, pt) E(2t | xt, pt) - E(dt | xt, pt), we only need to show the identification of E(2t | xt, pt). Multiplying both sides of Equation (12) by (1 - ), we get
+
+[
+
+]
+
+E (1 - )yt + (1 - )wt+1 - (1 - )2 - 2t + 2,t+1 |mt 0.
+
+Because xt, pt  mt, apply the law of iterated expectation, and we have
+
+[
+
+]
+
+E (1 - )yt + (1 - )wt+1 - (1 - )2 - 2t + 2,t+1 | xt, pt
+
+0.
+
+(16) Now define
+[ h(x, p)  E (1 - )yt + (1 - )wt+1]
+- (1 - )2 | xt x, pt p ,
+(x, p)  E(2t | xt x, pt p).
+
+The function h(x, p) is nonparametrically identified because we observe yt, wt+1, xt and pt. The unknown function (x, p) is the parameter of interest. It can be shown (see the online appendix for the proof) that Equation (16) can written as a Fredholm integral equation of type 2,
+
+(x, p) -  (x , p )F(dx , dp | x, p) h(x, p). (17)
+
+We know that there would be a unique solution of (x, p) (the proof is similar to lemma 2 of Chou and Ridder (2017)).
+Proposition 2. In addition to the conditions of Proposition 1, suppose Assumptions 4 and 5 hold. We can identify E(jt | xt, pt) for each product j  )t.
+To identify the conditional variance Var(t | xt, pt), we need additional assumptions.
+
+Assumption 6. (i) The unobserved characteristics 1t, . . . , Jt
+are independent conditional on (xt, pt); (ii) assume that Var(1t | xt, pt) · · · Var(Jt | xt, pt) 2(xt, pt).
+
+Using dt 2t - 1t, it can be shown that
+
+E(d2t | xt, pt)
+
+22(xt,
+
+pt)
+
++
+
+[( E 2t
+
+|
+
+xt,
+
+) pt
+
+-
+
+( E 1t
+
+|
+
+xt
+
+,
+
+pt
+
+)]2
+
+.
+
+Because we have identified E(1t | xt, pt) and E(2t | xt, pt), we identify 2(xt, pt) from the preceding display.
+As for the unconditional variance, we use
+
+Var(jt) E(2jt) E[E(2jt | xt, pt)].
+
+Moreover, E(2jt | xt, pt) 2(xt, pt) + E(jt | xt, pt)2. Because we have identified 2(xt, pt) and E(jt | xt, pt), we identify E(2jt | xt, pt) and, hence, Var(jt).
+
+Proposition 3. In addition to the conditions of Proposition 2, suppose Assumption 6 holds. We then can identify Var(jt | xt, pt) and Var(jt).
+
+The fact that we can identify both the condi-
+
+tional mean and variance of jt given (xt, pt) is quite
+
+useful. By the conditional independence of the un-
+
+observed product characteristics (Assumption 6(i)),
+
+we can write F(1t, . . . , Jt | xt, pt)
+
+J
+j
+
+1F(1t
+
+|
+
+xt,
+
+pt).
+
+If
+
+the conditional distribution of jt given xt, pt belongs
+
+to the location scale family, the conditional mean and
+
+variance determine the distribution of F(t | xt, pt). For two products j and k, if we assume F(jt | xt, pt)
+and F(kt | xt, pt) are "similar" in the following sense, we indeed can nonparametrically identify F(jt | xt, pt).
+
+Assumption 7. For any two products j and k, conditional on (xt, pt), jt and kt have identical distribution except for their conditional mean.
+
+Proposition 4. In addition to the conditions of Proposition 3,
+suppose Assumption 7 holds. Let (t; xt, pt) the characteristic function of jt conditional on xt, pt. Conditional on xt, pt, if jt has absolute moment of order 2, | (t; xt, pt) | + | (t; xt, pt) | + | (t; xt, pt) | 0, and F(~ 1t | xt, pt) is symmetric at zero, F(jt | xt, pt) and F(t | xt, pt) are identified.
+
+Proof. See the online appendix.
+
+Remark 2 (Heteroskedasticity). When we have three or
+more products, we only need to assume that there are
+at least two products whose conditional variance Var(jt | xt, pt) is the same. To see this, suppose there are three products, and Var(1t | xt, pt) Var(2t | xt, pt). We have shown how to identify Var(1t | xt, pt). To identify Var(3t | xt, pt), we simply use d31,t 3t - 1t. By Equation (6), we have
+
+d31,t (1 - ) log(s3t/s1t) - (x3t - x1t)  - (3 - 1) + (1 - )(p3t - p1t),
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+897
+
+which is identified. By the same arguments, we have
+
+E(d231,t | xt, pt)
+
+Va[r((3t | xt, pt)) + E 3t | xt, pt
+
++ -
+
+Va( r(1t | E 1t | xt
+
+,xpt,t)p]t2).
+
+We then identify Var(3t | xt, pt) from this display.
+
+3.2.2. F(mt+1 | mt). Note that mt (xt, pt, t) and t is a J × 1 vector. We are going to show the semiparametric identification of F(mt+1 | mt) by restricting the relationship between t+1 and mt to have a certain linear functional form.
+We present two versions of identification results under two different Assumptions 8 and 8'. Under either assumption, the conclusion F(mt+1 | mt) is identified. Depending on the context of one's empirical research, one may find one assumption is more appropriate than the other. Roughly speaking, Assumption 8 is more appropriate if t can be understood as design or product quality, which can affect the price. Assumption 8', however, is more appropriate if t can be understood as the spending of advertisement that is determined based on the product price.
+Assumption 8. Assume that (i) t+1  (xt, pt) | t, (ii) xt+1 (t, t+1) | (xt, pt), (iii) and pt+1  (xt, pt, t) | (xt+1, t+1). This implies that the following decomposition
+
+F(mt+1 | mt) F(t+1 | t)F(xt+1 | xt, pt)F(pt+1 | xt+1, t+1).
+
+(iv) Assume that F(t+1 | t) F(1,t+1 | 1t) · · · F(J,t+1 | Jt), and j,t+1 and kt are uncorrelated for any two distinct products j and k, and (v) j,t+1 jjt + j,t+1, where j,t+1 has mean zero and is independent of jt.
+These assumptions can be interpreted as follows. At the beginning of period t + 1, each manufacturer j receives its j,t+1, which depends on jt. Meanwhile, xt+1 is generated based only on xt and pt. Given j,t+1 and xt+1 in period t + 1, manufacturers then determine their prices for period t + 1.
+Proposition 5. In addition to the conditions of Proposition 4, suppose Assumption 8 holds. We can identify F(t+1 | t), henceforth, F(mt+1 | mt).
+Proof. See the online appendix.
+Assumption 8. Assume that (i) (xt+1, pt+1)  t | (xt, pt), (ii) t+1  (xt, pt) | (xt+1, pt+1, t). This implies the following decomposition:
+F(mt+1 | mt) F(xt+1, pt+1 | xt, pt)F(t+1 | xt+1, pt+1, t).
+(iii) Assume that F(t+1 | xt+1, pt+1, t) Jj 1F(j,t+1 | xj,t+1, pj,t+1, jt), and (iv) j,t+1 0j + 1jjt + 2jpj,t+1 +
+
+3jxj,t+1 + j,t+1, where j,t+1 has mean zero and is independent of (jt, pj,t+1, xj,t+1).
+Proposition 5. In addition to the conditions of Proposition 4, suppose Assumption 8' holds. We can identify F(t+1 | xt+1, pt+1, t), henceforth F(mt+1 | mt).
+Proof. See the online appendix.
+Remark 3 (Nonterminal Choices). Up to now, we have assumed that a consumer's choice is terminal, for example, "buy one car then exit the market." We can extend the analysis to allow for nonterminal choice, for example, "lease one car." For simplicity, assume that there is a third product "lease one car." Let the flow utility of the third product be
+ui3t x3t - p3t + 3 + 3t + i3t.
+By buying product 3, the consumer remains on the market. Hence, the choice-specific value function v3t is as follows:
+v3t x3t - p3t + 3 + 3t + E(V¯ t+1(mt+1) | mt).
+Recall that v0t E(V¯ t+1(mt+1) | mt). We then have
+ln(s3t/s0t) v3t - v0t x3t - p3t + 3 + 3t,
+which is the standard regression model in the BLP model. It is well known that one can identify 3t itself in general (Berry and Haile 2014). Once one has identified 3t, the joint distribution F(p3t, 3t) and the autocorrelation corr(3t, 3,t+1) are identified. So nonterminal choice can be accommodated.
+It should be remarked that the main reason why this works is that the current nonterminal choice, "lease one car" today, does not affect the future market state mt+1. Hence, the expected future payoff E(V¯ t+1(mt+1) | mt) does not vary with respect to choice. As a result, the payoff difference between the choice of "lease one car" and the choice of "outside good" is simply the flow utility difference. In most dynamic discrete choice with individual-level data, this does not hold because, in most applications, the current choice affects the transition of state variables; hence, the expected future payoff is also alternative specific.
+Remark 4 (Changing Choice Set). It is important to remark that our identification (preceding) and estimation arguments (following) rely only on the need for the same products to exist in two consecutive periods. Of course for estimation, one needs multiple markets when there are only two periods of data available. Consider one example: in periods 1 and 2, there are two products a and b, and in periods 3 and 4, there are two products b and c. This example has both entry
+
+898
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+(product c) and exit (product a). In each period, we assume we have enough markets. To identify/estimate the preference parameters, we can use all four periods by taking account of the log market share ratio between b and a for periods 1 and 2, b and c for periods 3 and 4. To identify/estimate the product-specific correlation between price and unobserved product characteristic and the serial correlation of unobserved product characteristic, we can use periods 1 and 2 for product a, periods 1­4 for product b, and periods 3 and 4 for product c.
+4. Estimation
+For simplicity of exposition, we focus on the case that the data are from one single market, for example, the United States, over T consecutive periods. Both numerical studies and empirical application show the case with multiple markets. We first describe the estimation routine for parameters and then describe the variance estimation. The estimation routine involves only IV and linear regressions. We then discuss the assumptions made in the paper, followed by comments about data requirements in practice. However, for applied marketers who are only interested in understanding how to implement our procedure, we include Table 1, which concisely presents the six ordinary least square (OLS) or IV regressions that are required to estimate the model primitives.
+
+4.1. Preference 4.1.1. Preference for the Observed Characteristics
+and Price. Step 1. Estimate (~   /(1 - ), ) using the following moment equation:
+
+E(g1,(j,k),t(1o)) g1,(j,k),t(1)
+
+0, for 0 < j < k  J,
+
+[( )
+
+z(j,k),t ln + (pjt -
+
+sjt skt
+pkt)
+
+- -
+
+(xjt - xkt
+
+j 1
+
+- -
+
+k 
+
+] .
+
+)
+
+~
+
+The vector z(j,k),t is a vector of IV that is uncorrelated with (jt - kt). The moment equation follows from Equation (7) in identification.
+In practice, one can estimate ~ and  by an IV regression of ln(sjt/skt) on (xjt - xkt) and (pjt - pkt) with IV z(j,k),t using data t 1, . . . , T and a set of selected pairs of products (j, k). In real data applications, we found
+that it is desirable to divide the products into a few
+clusters based on their prices, for example, run a
+k-means clustering by price and consider only in-
+tercluster pairs of products. The underlying reason is that price difference pjt - pkt is usually endogenous. If two products are close in their price, for example,
+they come from the same cluster, the instrument z( j,k),t is likely to be weak.
+
+Table 1. Estimation Recipe
+
+Step
+
+Dependent variable
+
+Independent variablesa
+
+IV
+
+1
+
+ln(sjt/skt)
+
+(xjt - xkt)
+
+-(pjt - pkt)
+
+z(j,k),t b
+
+~
+
+
+
+2
+
+y^ jt 
+
+-w^ j,t+1
+
+xjt,IV c
+
+
+
+3
+
+(y^jt + ^w^ j,t+1)
+
+1d
+
+j
+
+OLS
+
+4
+
+(1 - ^)(y^jt + ^w^ j,t+1)
+
+(p~jt - ^p~j,t+1)
+
+~ j
+
+5
+
+d^2(j,k),t/2 + ^~ j^~ kp~ jtp~kt 
+
+1
+
+2
+
+z,jt e OLS
+
+6
+
+d^(2j,k),t/(2^^ 2) - [(1 - ^)/^ ](y^jt + ^w^ j,t+1)d^(j,k),t/^ 2
+
+1
+
+j
+
+OLS
+
+Variable de(fin)itions:
+
+1. y^jt
+
+ln
+
+sjt s0t
+
+- xjt^~ + ^ pjt;
+
+2. 3.
+
+w^ jt d^ (j,k),t
+
+xjt^~ - ^ p[jt -(ln)sjt;
+
+(1 - ^)
+
+ln
+
+sjt skt
+
+-
+
+(xjt
+
+-
+
+xkt )
+
+^~
+
++
+
+^ (pjt
+
+-
+
+pkt)
+
+-
+
+^ j -^ k 1-^
+
+] .
+
+aThe (IV) regression coefficient estimates associated with independent variables are estimates of the
+
+parameters underneath the independent variables. bThe IV z(j,k),t is uncorrelated with (jt - kt). cThe IV xjt,IV is uncorrelated with jt and j,t+1. dThis indicates regression with intercept term only. ez,jt(pjt) is a vector of functions of pjt, for example, z,jt(pjt) (pjt, p2jt, . . . , pKjt ) for some integer K  1 or
+the optimal IV formula, Equation (O.11) in the online appendix.
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+899
+
+Letting ^~ and ^ be the obtained estimates, define
+
+()
+
+yjt
+
+ln
+
+sjt s0t
+
+- xjt~ + pjt
+
+and
+
+wjt xjt~ - pjt - ln sjt,
+
+()
+
+and their estimates y^jt xjt^~ - ^ pjt - ln sjt.
+
+ln
+
+sjt s0t
+
+- xjt^~ + ^ pjt and w^ jt
+
+4.1.2. Discount Factor. Step 2. Estimate  using
+
+E(g2,(j,0),t(1o)) E(xjt,IV(yjt + wj,t+1 - j)) 0, for 0 < j < J,
+
+This moment equation follows from Equation (14) in
+identification. In practice, to estimate , one simply runs an IV regression of y^jt on -w^ j,t+1 using xjt,IV as the IV for w^j,t+1 using data t 1, . . . , T - 1 and j 1, . . . , J.
+
+(pjt - pjt)/pjt be the standardized price. The bivariate normal distribution implies that E(jt | pjt) jp~jt. This also implies that j,t+1 in the AR(1) process j,t+1 jjt + j,t+1 follows a normal distribution.
+Given this assumption, the primary interests are to estimate 2 Var(jt), j corr(pjt, jt), and j. However, it is easier to estimate ~ j j. Let 2 (~ 1, . . . , ~ J, , 1, . . . , J) and  (1, 2) .
+
+4.2.1. Correlation Between Product Price and Unobserved Product Characteristics.
+Step 4. Estimate ~ j  j using
+
+E(g3,j,t(o)) 0,
+
+for
+
+0 < j  J,
+
+where
+
+g3,j,t() z,jt(pjt)rjt,
+
+(18)
+
+rjt (1 - )(yjt + wj,t+1) - (1 - )j - ~ j(p~jt - p~j,t+1).
+
+4.1.3. Expected Unobserved Product Fixed Effect. Step 3. Estimate j using
+E(yjt + wj,t+1 - j) 0,
+
+which corresponds to the preceding moment equa-
+tion when xjt,IV 1. In practice, one runs a linear regression for each j of (y^jt + ^w^j,t+1) on a constant of one using data from t 1, . . . , T - 1.
+Define d^(j,k),t, which is used in the estimation of the other parameters,
+
+d^(j,k),t
+
+(1 -
+
+[( )
+
+^ )
+
+ln
+
+sjt skt
+
+-
+
+(xjt
+
+-
+
+xkt)
+
+^~
+
++
+
+^ (pjt
+
+-
+
+pkt)
+
+-
+
+]
+
+^j - ^k 1 - ^
+
+.
+
+4.2. F(mt) and F(mt+1 | mt) The full nonparametric estimation of F(mt) and F(mt+1 | mt) would be unreliable in a small sample, which is the case in most applications using market-level data. We consider the assumption of normal distribution to simplify the problem while keeping the interesting dynamics and joint dependence among mt. For exposition, we assume that the distribution F(xt, pt) and F(xt+1 | xt, pt) are known.
+Assumption 9. (i) xt  t | pt and t+1  pt | pt+1. (ii) Assume the necessary conditional independence so
+that
+F(1t, . . . , Jt | p1t, . . . , pJt) F(1t | p1t) · · · F(Jt | pJt).
+In particular, this implies jt  pkt | pjt for j k. (iii) For each product j, assume that (pjt, jt) follows a
+bivariate normal distribution with mean (pjt, 0) , Var(pjt) 2pjt, Var(jt) 2, and cov(pjt, jt) jpjt. Let p~jt
+
+Here z,jt(pjt) is a vector of functions of pjt, for example, z,jt(pjt) (pjt, p2jt, . . . , pKjt ) for some integer K  1. We discuss the optimal choice of z,jt(pjt). In practice, one can estimate ~ j for each j by an IV regression of (1 - ^)(y^jt + ^w^ j,t+1) on (p~jt - ^p~j,t+1) with IV z,jt. The online
+appendix collects the detailed steps for obtaining the
+moment equations of Steps 4­6.
+It should be remarked that, in practice, ~ j is more difficult to estimate than 1 (, ,  ,  ) for three reasons. First, to estimate ~ j, one has only T - 1
+number of observations. Second, the sampling error
+in estimating 1 impacts the estimation of ~ j. Third, the variance of ~ j is proportional to the inverse of the variance of (p~jt - p~j,t+1). When price is persistent over time, the variance of (p~jt - p~j,t+1) is small.
+
+4.2.2. Variance of Unobserved Product Characteristics. Step 5. Estimate  using
+
+E(g4,(j,k),t(o)) g4,(j,k),t()
+
+0, for 0 < j < k  J, d2(j,k),t/2 + ~ j~ kp~ jtp~kt - 2.
+
+In practice, one can run a linear regression of d^2(j,k),t/2 + ^~ j^~ kp~jtp~kt on a constant using data t 1, . . . , T and all selected pairs of products. Knowing ~ j j and , we know the joint distribution of (jt, pjt).
+
+4.2.3. Serial Correlation of Unobserved Product Characteristics.
+Step 6. Estimate j using
+
+E(g5,(j,k),t(o)) 0,
+
+for
+
+k j,
+
+g5,(j,k),t()
+
+d(2j,k),t 22
+
+-
+
+1
+
+- 
+
+
+
+(yjt
+
++
+
+wj,t+1)
+
+d(j,k),t 2
+
+-
+
+j.
+
+900
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+In practice, one can run a linear regression for each j of d^(2j,k),t/(2^^ 2) - [(1 - ^ )/^](y^jt + ^w^ j,t+1)d^(j,k),t/^ 2 on a constant one using data t 1, . . . , T - 1 and the selected pairs of products.
+4.3. Asymptotic Variance and the Advantages of Sequential Estimation
+There are two major reasons why we favor sequential estimation. First, sequential estimation is numerically reliable. Regardless of the dimension of the state variables, each step in the sequential estimation involves only linear or IV regression; hence, there is no numerical optimization. This also implies that the output of the estimation does not suffer from any randomness, always results in the same estimates, and does not require us to specify any starting point.
+Second, sequential estimation is empirically appealing. Most steps in our sequential estimation process involve either running linear IV regression or straightforward computations. The identification and estimation involves finding relevant IV. One can then easily test whether one's chosen IVs are weak or not by standard statistical tests in linear IV regression. Using sequential estimation, one can immediately see the significance of the selected observed product characteristics by software routines.
+Remark 5 (Estimating Standard Errors in Practice). Even though we present a sequential estimator, one should not use the standard errors reported along these sequential steps. This is because these standard errors do not take into account the sampling error from the estimation in the earlier steps. One should instead use the asymptotic variance formulas that are derived assuming a joint parametric generalized method of moments (GMM) estimation process. See the online appendix for details. To evaluate those formulas, one plugs in the parameter estimates from either the sequential or joint procedure because they are both consistent. Thus, to summarize, the estimation of parameters is carried out sequentially, but the estimation of standard errors is done jointly.
+4.4. Summary of Assumptions Given that we have presented numerous assumptions for identification and estimation of parameters, we provide a summary of them in Table 13 of the online appendix highlighting the settings in which the assumptions are consistent and inconsistent. There are a few points that deserve further explanation.
+First, we note that Assumptions 1­4 and similar ones are standard in the dynamic structural models literature (Hotz and Miller 1993, Rust 1994, Bajari et al. 2007). For the estimation of preference parameters, only Assumptions 1­3 are required.
+Assumptions 5­9 on unobservable state variables (product-period specific) are mostly new because most
+
+prior research does not consider a persistent unobservable state.6 These are required for identification of the observable and unobservable state evolution process. Third, Assumption 9 is only required to make parametric estimation possible because of data limitations encountered in practice. There, we specify a bivariate normal distribution, which characterizes the contemporaneous dependence between price and the unobservable product characteristics. We also specify that an unobservable characteristic for a product j only depends on its price and not the price of other products k j.
+Finally, many of the assumptions are made on conditional distributions or moments of conditional distributions. Typically, the conditioning variables are some combination of observables xjt and pjt. Thus, the dimension of observable product characteristics xjt and their variation play a significant role in the assumption. In situations in which we have many product characteristics or when they span a greater support, the assumptions that restrict conditional moments could be viewed as less restrictive. Because our method does not have to worry about the curse of dimensionality from increasing the dimension of xjt, one can make these assumptions less restrictive by adding more observable product characteristics if data permitted. It is easy to understand from the following example. Suppose there are two products, and they are dishes served by two restaurants. Let 1t and 2t be the unobserved taste of the two dishes. Assumption 6(ii) in the paper says that Var(1t | xt, pt) Var(2t | xt, pt). Without any conditioning variables, Assumption 6(ii) requires Var(1t) Var(2t), which is strong. However, if the conditioning variables include food ingredients, recipes, tenure of chef, etc., it is reasonable to assume Assumption 6(ii).
+Another point is worth noting on the conditional moment restrictions. The larger the support of the conditioning variables, (xt, pt), the less restrictive the assumptions are. If, on the other hand, all product characteristics are binary and prices show no variation, then the restrictions become stronger. For example, if we have an X variable that indicates whether the smartphone supports music or not (binary), that would be more restrictive. If, on the other hand, the music variable actually indicated support for different formats (e.g., MP3, WAV), we can view it as less restrictive.
+4.5. Data Requirements for Estimation
+We now discuss the data requirements for employing our estimator. For consumer parameters , , , it uses the data on all products J across markets M and time periods T. For product-specific parameters (j fixed effect and evolution of state-space parameters), the
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+901
+
+length of the panel T and markets M is relevant. With Assumption 9 (normal distribution), estimation reduces to a linear regression. Thus, the realistic sample size would be comparable to the sample size that the researcher would use for a linear regression.
+With regard to the nonparametric estimation within certain steps, there are only two instances. They are E(p~j,t+1 | pjt) and E(r2jt | pjt) in the construction of the optimal IV for estimation Step 4.
+First, one does not have to use the optimal IV. Instead, one can use a sequence of polynomials of price as the IV, and the estimator is still consistent though inefficient. Similarly, even if the nonparametric estimates E^ (p~j,t+1 | pjt) and E^ (r2jt | pjt) of the conditional expectations have large estimation error, the constructed optimal IV is still a valid IV (because the nonparametric estimates are still a function of price pjt), and hence, the estimation is valid though it's no longer efficient.
+Second, the nonparametric regressions for estimating E(p~j,t+1 | pjt) and E(r2jt | pjt) involve only one single regressor, pjt. Hence, it does not require much more data than the linear regression of p~j,t+1 on pjt or the linear regression of r2jt on pjt. It is known that if one used a linear regression to estimate the conditional expectation, the mean-squared-error (MSE) is of order O(n-1), and the MSE of nonparametric regression has the order of O(n-4/5). In other words, if one believes that 20 observations is sufficient to estimate the linear regression of p~j,t+1 on pjt, then 25 observations are enough for its nonparametric regression counterpart.
+5. Counterfactual Implementation
+The estimation of consumer preference parameters did not require the direct computation of the value function nor require an assumption about how consumers form future beliefs. However, in order to run any type of counterfactual analysis, the researcher is required to compute the ex ante value function based on the estimated parameters.
+In addition to the stationary Assumption 4, any counterfactual analysis requires the following:
+i. Consumer preference: Preference parameters do not change under the counterfactual.
+ii. Consumer expectations: Expectations are specified (e.g., rational expectations or perfect foresight).
+iii. State evolution: Determine how the state variables evolve. The typical assumption is that observable states evolve in the same manner as the evolution process present in data although the researcher is free to specify a different evolution process and then compute counterfactual outcomes for that case.
+As long as we have these, we can perform a counterfactual analysis by simulating individual consumer choices under the counterfactual setting
+
+because primitives for the agent and the state evolution parameters are identified. All that is required are assumptions on consumer expectations and what beliefs consumers have about the evolution of the state space (e.g., consumers track the evolution of each individual product's characteristics, the conditional value function of each good, or a market statistic such as the inclusive value). As a result, we are able to employ our model primitives to examine the impact of a change of any of the observed characteristics in the flow utilities, a price change, exit of a product, early entry of an observed product, and policies that change consumer expectations.7
+In order to implement any counterfactual exercises and recover the impact of market share or revenues, we must specify 1t. With this, all other jt are identified because jt - 1t is identified. One such approach is to simulate 1t from its estimated AR(1) process and determine the ex ante value function for each draw to obtain a range of counterfactual results.8
+6. Empirical Application
+We now examine an empirical setting in which we use our method to obtain estimates of preferences as well as other market- or product-level factors, including the correlation between price and the unobservable product characteristic, and serial correlation in the unobservable product characteristics. We focus on the market for mobile phone hardware in the United States during the period June 2007­May 2008 (12 months). For this setting, we use data from the top 10 states across the United States with each of the states serving as markets. The top six brands overall are chosen as separate products, and all other brands are included in a generic other brand choice.
+6.1. Data We have a number of product features at the brand level for each of these markets. The features vary both temporally as well as across markets. These product characteristics are averaged at the brand choice level across products within the brand for each market and period. More specifically, variables are generated using a weighted average based on sales in each period.
+Table 2 shows the basic summary statistics of the market by showing the mean of product characteristics for each brand in the sample.9 The top brands in the market include Apple (iPhone), RIM (Blackberry), Samsung, LG, Nokia, Motorola, and others. This market displays differentiation among the brands with the first two brands arguably representing smartphones, whereas the rest were primarily focused on feature phones (or dumb phones) during this time frame. The "x" variables are observable
+
+902
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+Table 2. Summary Statistics for Mobile Phone Data: Mean of Characteristics
+
+Brand
+
+price xblue xgps xweight xqwerty xmusic xwifi xtalktime share n of obs
+
+Other
+
+0.34 0.29 3.36
+
+0.16
+
+0.24 0.04 4.41
+
+120
+
+Moto
+
+0.57 0.44 3.42
+
+0.03
+
+0.35 0.00 4.83
+
+120
+
+Samsung
+
+0.61 0.35 2.98
+
+0.10
+
+0.43 0.01 4.31
+
+120
+
+LG
+
+0.68 0.68 3.50
+
+0.18
+
+0.55 0.00 4.05
+
+120
+
+Nokia
+
+0.41 0.09 3.28
+
+0.01
+
+0.35 0.00 4.33
+
+120
+
+Blackberry
+
+0.87 0.43 3.59
+
+0.87
+
+0.73 0.03 4.07
+
+119
+
+Apple
+
+1.00 0.04 4.50
+
+0.00
+
+1.00 1.00 7.87
+
+111
+
+All
+
+131.86 0.64 0.34 3.50
+
+0.19
+
+0.52 0.15 4.80 18.9
+
+product characteristics, and include indicator variables for the presence of Bluetooth support (xblue), GPS capability (xgps), presence of a physical QWERTY keyboard (xqwerty), whether music capability was supported (xmusic), and Wi-Fi support (xwifi). The two numeric variables characterized the weight of the device in ounces (xweight), and the talk time in hours (xtalktime). Typical battery life was measured in hours of talk time, which does not seem to be the case at present. Recall also that most phones at the time were feature phones (not smartphones), and typical phones only had a numeric keypad with 10 buttons, rather than the full QWERTY keyboard.
+The price shows significant variation with very low-priced as well as high-priced models over $400. A majority of the phones at the time did have Bluetooth support, but not GPS support. QWERTY keyboards were not as prevalent with the exception of Blackberry, which was well known for this feature. About 50% of the phones had some degree of music support, but some of this support was tied in to carrier-based music services (such as downloading tones), which were quite expensive because customers of a carrier such as Verizon or AT&T were seen as a captive market. Surprisingly, except for iPhone, the majority of the phones did not support Wi-Fi, a feature which is taken for granted in the present market. Phones weighed an average of 350 ounces (100 grams) and lasted for about five hours of talk time before the battery was depleted.
+6.2. Model We model J products in each market and time period. Consumers are indexed by i, products by j, markets (states) by , and periods by t. The period utility for a consumer i making a purchase of product j in market
+at time t is
+uij t j + xj t + pj t + j t + ij t.
+After purchasing, consumer i receives flow utility j + xj t + j t + ij  in each following period  > t. The no-purchase option is modeled as receiving a period utility of zero with an option to continue in the
+
+market as in Section 2. Consumers who purchase exit the market and, thus, can be modeled as receiving the discounted stream of future utilities immediately upon purchase. Thus, they obtain in expectation (j + Xj t + j t)/(1 - ) + Pj t. Consumers who do not purchase continue in the market and receive the expected discounted value of waiting or E(V¯ (mt+1) | mt).
+Estimates are obtained based on Section 4 and standard errors from the GMM variance formula.
+6.3. Results The results of the estimation are detailed in Table 3. There are a few noteworthy observations regarding the first step IV regression results. We exclude price and music as potentially endogenous variables and use the other product characteristics as instruments in the IV regression. We also use additional instruments obtained as the mean product characteristics and price for comparison products in other markets. These comparison products are chosen by a clustering process, in which Apple and RIM (Blackberry) are grouped in one cluster, which could be interpreted as the smartphone cluster; other well-regarded brands of feature phones at the time are grouped in a second cluster (Motorola, Samsung, LG, and Nokia); and finally, all other brands are grouped in a third cluster. For a product, the products in other clusters serve as comparison products in order to provide a sufficient degree of variation.
+First, observe that the price and all the product characteristics are significant. The relative sales response to product characteristics is positive for Bluetooth and GPS but negative for weight and music. Wi-Fi capabilities as well as talk time (which measures battery life) are also positive as we might expect. Our result about music appears counterintuitive, but two contextual reasons help understand this effect. First, in 2007, music capabilities of most phones were very rudimentary, and they typically did not support the well-known MP3 music format, and capabilities of streaming with Spotify or other internet services were also unavailable. Second, many consumers who cared about music owned iPods or
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+Table 3. Estimation Results of Mobile Phone Market
+
+Parameter
+
+Step 1: preference, /(1 - )
+Step 2: discount factor Step 3: fixed effect
+Step 4: correlation between price and unobserved product characteristics
+Step 5: standard error of jt Step 6: autocorrelation of jt
+
+price xblue xgps xweight xqwerty xmusic xwifi xtalktime  Moto Samsung LG Nokia Blackberry Apple Other Moto
+Samsung LG Nokia Blackberry Apple Other  Moto Samsung LG Nokia Blackberry Apple Other
+
+a"F-value" is the first stage F test statistic on excluded IV.
+
+Estimate
+-0.01 5.37 0.79
+-0.37 1.03
+-8.63 3.37 0.29 0.79
+-0.36 -0.43 -0.29 -0.38 -0.55 -0.03 -0.34
+0.27
+0.21 0.38 0.28 0.53 0.89 0.25 0.29 0.63 0.96 0.85 0.57 -0.44 0.32 0.46
+
+Standard error
+0.001 0.387 0.213 0.095 0.169 0.454 0.379 0.061 0.006 0.043 0.042 0.039 0.053 0.043 0.050 0.038 0.025
+0.021 0.034 0.025 0.050 0.079 0.023 0.003 0.041 0.041 0.049 0.040 0.089 0.145 0.015
+
+t-value
+-19.2 13.9 3.7 -3.9 6.1
+-19.0 8.9 4.7
+122.1 -8.4 -10.2 -7.5 -7.2 -12.9 -0.5 -8.8 10.6
+10.0 11.0 11.2 10.6 11.2 10.8 93.2 15.3 23.4 17.2 14.2 -5.0 2.2 30.8
+
+903
+F-valuea 13.5
+9.3 9.5
+75.6 75.5 71.5 88.7 72.1 49.6 61.4
+
+other dedicated music (MP3) players, and phones were really seen as a rather poor substitute for these until the iPhone became popular over the years. Finally, we tested for weak instruments and did not find this in our setting.
+The coefficients of product characteristics are scaled by 1/(1 - ). Thus, the first step results in Table 3 do not directly depend on . However, obtaining the appropriately scaled coefficients of the product characteristics requires us to either assume or estimate .
+Step 2 of Table 3 provides the estimate of , which is the (negative of) coefficient of wt+1 in Step 2 detailed in Section 4. We find that ^  0.8, and it is highly significant. For our monthly data,  0.8 implies that, after 24 months, which is the typical length of a cell phone contract in the United States, the cell phone has no additional utility, 24 0.824 0.0047, for consumers.
+We proceed with estimating the product fixed effects, detailed in Section 4. The fixed effects are detailed in Step 3 of Table 3. We find that the most negative fixed effect is for Blackberry (RIM), followed
+
+by Samsung and the other feature phone manufacturers. Apple has the highest fixed effect.
+Finally, we examine the remaining set of all parameter estimates in Steps 4­6 of Table 3. We have previously described the product characteristics and discount factor as well as the fixed effects for the products. We now focus attention on the dynamics of the state transition process as detailed in Section 2. The correlation between the product price and the structural error (or unobserved product characteristic) is captured by j for product j. We find that all these correlations are positive, and Apple has the highest such correlation. One interpretation is that, for Apple, there is a stronger connection between its price and unobserved product characteristics, relative to other manufacturers, which is consistent with the recognition it received for designing the iPhone to be unique and highly differentiated. The weakest correlation is observed for Samsung and other (generic) feature phones.
+Next, we find the variance of the unobservable product characteristic jt to be small but significant. This partially explains why our estimates are significant.
+
+904
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+This unobservable characteristic evolves differently across the products. We note a strong serial correlation for Samsung and LG, indicating their relative stability over time, whereas, in the case of Blackberry, we observe a negative value, consistent with new designs being released. Empirical results for nested logit are in Section A.2.
+6.4. Counterfactual Next, we look to analyze the impact a number of observable product characteristics have on sale.
+
+Specifically, we examine the sales (market share)
+
+impact when xwifi, xgps, and xblue are individually
+
+set to zero for all products. In order to determine the
+
+corresponding impact for each phone, we use the
+
+method proposed in Section 5 of the online appendix.
+
+For completeness, we discuss two important details
+
+associated with the implementation. First, in the se-
+
+ries approximation of the outside market share in
+
+Equation (O.5), we use the quadratic polynomial
+
+olnf(vcj7jt
+
+for each 1 exp(vcjt)).
+
+j 1, . . . , 7 and the inclusive value The inclusive value is used to capture
+
+Figure 1. Impact on Within-Market Shares
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+905
+
+the possible interaction between vc1t, . . . , vcJt. Second, we use Equations (O.6) and (O.7) from the online
+appendix to recover Apple,t because of its high correlation (0.89) between its price and Apple,t. In par-
+ticular, we let
+
+(
+
+)
+
+^ 1t
+
+1 - ^ 1 - ^^1
+
+[ y^ 1t
+
+-
+
+^ 1
+
++ ^ E(w^ 1,t+1 | xt, pt, d^(2,1),t,
+
+.
+
+.
+
+.
+
+,
+
+d^ (J,1),t)],
+
+and ^ jt ^ 1t + d^(j,1),t. For exposition simplicity, we omit the subscript of state/market. Recall d(j,1),t jt - 1t. The conditional expectation was estimated nonparametrically.
+Figure 1 shows the counterfactual substitution effects among brands. We compute how the log market shares relative to Apple change from the observed data to the counterfactual (e.g., no Wi-Fi). We find that removing the Bluetooth or Wi-Fi dramatically changes the within-market shares. Without Wi-Fi, the iPhone would lose a substantial amount of its market share when compared with other brands. We note that Wi-Fi is almost exclusively available on iPhone (Table 2) during the data period. Thus, it could be viewed as providing a competitive advantage to Apple in that it provides full internet access. Also, removing GPS does not seem to impact the withinmarket share significantly. Consumers were likely not using their phones for GPS because they were very poor substitutes with limited screen size and visibility during the data period. Also, GPS capabilities provided by phones required consumers to pay an additional monthly fee to their network.
+Table 4 shows the counterfactual outside market share, which can be understood as the impact on overall demand. The average in Table 4 is taken over all months for each state (market). Table 4 shows that removing Wi-Fi or GPS has little effect on the overall demand. However, removing Bluetooth has a large effect on the overall demand. Table 5 reports the total
+
+Table 4. Average Counterfactual Outside Market Share, Percentage
+
+State
+California Florida Georgia Illinois Michigan New Jersey New York Ohio Pennsylvania Texas
+
+No change
+64.4 71.2 66.9 67.7 68.1 63.1 66.1 72.5 71.1 67.0
+
+xwifi = 0
+64.0 70.9 67.7 68.6 68.7 63.4 66.8 72.1 70.9 66.7
+
+xgps = 0
+68.9 72.1 70.3 70.3 72.7 70.1 70.5 75.1 74.1 68.7
+
+xblue = 0
+91.5 91.4 91.9 90.9 91.8 89.8 89.5 89.7 91.5 91.4
+
+Table 5. Average Counterfactual Market Shares, Percentage
+
+Brand
+Other Moto Samsung LG Nokia BB Apple
+
+No change
+6.91 8.86 5.94 5.60 2.87 1.40 0.62
+
+xwifi = 0
+6.19 9.43 6.10 5.93 3.02 1.35 0.02
+
+xgps = 0
+6.59 7.66 5.44 3.91 3.26 1.21 0.72
+
+xblue = 0
+4.02 1.71 0.96 0.62 1.65 0.08 0.01
+
+effects by showing the market shares in different counterfactual settings.
+7. Conclusion
+We develop a new method to estimate dynamic discrete choice models using only aggregate data. Although the extant methods for such estimation are fairly computationally burdensome, our proposed approach has the advantage that it can handle a large number of products as well as characteristics across a number of markets and time periods. The computational complexity is of the order of a linear (or IV) regression to obtain the parameter estimates, making it easily accessible.
+We demonstrate the validity through proofs of the asymptotic properties of the estimators and demonstrate parameter recovery in finite sample simulations. Further, we show the results in a practical application using data from the market for mobile phone handsets.
+Although the method requires minimal assumptions on the state transition process and other primitives, there are a few limitations worth noting. First, the method allows for product-level differences across both observed and unobserved dimensions but is only applicable for logit or GEV distributions. However, our method is able to leverage specific properties of a setting in which there are two or more terminal (or renewal) choices, making the problem similar to a linear model. Although the method does not incorporate unobserved consumer heterogeneity in preferences, the approach is suitable for cases in which this limitation is offset by the computational simplicity and the fact that no assumptions are needed about the state space or how state variables transition in order to estimate preference parameters. We expect that building further on this research to broaden its applicability to be a worthwhile area for further exploration. Future work would benefit from recognizing Albuquerque and Bronnenberg (2009), Sudhir (2013), and others and include additional microdata and moment conditions to precisely pin down the distribution of unobserved consumer heterogeneity.
+
+906
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+Acknowledgments The authors benefited from discussions with Robert Miller, Geert Ridder, Xun Tang, and participants in the econometrics seminar at UC Riverside. They also thank two referees, one associate editor, and senior editor Yuxin Chen for very useful comments. All errors remain their own.
+
+Appendix. Nested Logit Extension
+The multinomial logit specification has the notorious "independent irrelevant alternative" properties. We consider a
+nested logit model as a remedy. First, split the products {0, 1 . . . , J} into  + 1 exhaustive and mutually exclusive sets. Denote &A the Ath group. The outside good 0 is assumed to be the only member of group 0. When one
+product, excepting for 0, forms a group by itself, we call it a "stand-alone" product. For a product j, let s¯jt be the market share of the group containing j, let s~jt sjt/s¯jt be the withingroup market share. Of course, if product j is a stand-alone product, s¯jt sjt and s~jt 1.
+
+Assumption A.1. distribution: F(it)
+
+Aesxsupm[-ethAat0
+
+(itjf&oAlleo-wisjt
+
+the
+/(A)
+
+)fo(All)o]w. iTngheGuEnV-
+
+known scale parameter (A) determines the within-nest correlation
+
+of group &A. For any group A with one single product, such as
+
+&0 {0}, let (A) 1.
+
+For any product j, we also use j to denote the within-nest correlation of the group containing j. For example, if j  &A, j (A). It is well known that the within-nest correlation coefficient is 1 - (A)2. Because of space limitation, we only
+describe the estimation steps. The online appendix shows the identification and the other details of obtaining our
+estimation recipe.
+
+A.1. Estimation We focus on the case in which the data are from one single market over T consecutive periods.
+
+A.1.1. Preference: No Stand-Alone Product. Apart from the
+outside good, every group contains at least two products. Step 1. For each group A 1, . . . ,G, estimate (~ /(A),
+/(A)) using the following moment equation:
+
+E(g1,(j,k),t (o )) g1,(j,k),t()
+
+0+z,(j,(kp),jtt[-lnfop(krs~s~tkj)jtt,)/k-A(x-jt&(-1Ax-j ak-tn))d~kA/j >]A. k,
+
+The vector z(j,k),t is a vector of IV that are uncorrelated with (jt - kt).
+In practice, one can estimate (~ /(A), /(A)) by an IV
+regression of ln(s~jt/s~kt) on xjt - xkt and pjt - pkt with IV z(j,k),t using data t 1, . . . , T. Letting ~ / (A) and / (A) be the
+obtained estimates, define
+
+yjt ln s~jt - xjt~ /j + pjt/j,
+
+and their estimates y^jt ln s~jt - xjt~ /j + pjt /j. Note that j (A) when j  &A.
+Step 2. Estimate , , and . Define a list of group dummy variables dGA,jt 1 if j  &A and 0 otherwise. Estimate , , and  using E(g2,(j,0),t(o)) 0, where
+
+g2,(j,0),t()
+
+[ xjt,IV ln
+
+(s¯jt ) s¯0t
+
++
+
+
+A1
+
+(A)dGA,jt yjt
+
+]
+
+ - (A)dGA,j,t+1yj,t+1 -  ln s¯j,t+1 - j .
+
+A1
+
+In practice, one can first estimate  and (1), . . . , () by solving the nonlinear least square problem,
+
+J  T-1
+
+min
+, j 1 t 1
+g^ 2,(j,0),t() (xjt,IV -
+
+g^ 2,(j,0),t() g^ 2,(j,0),t(),
+
+[ x¯j,IV) ln
+
+(s¯jt ) s¯0t
+
++
+
+
+A1
+
+(A)dGA,jt ]
+
+y^ jt
+
+ - (A)dGA,j,t+1y^ j,t+1 -  ln s¯j,t+1 .
+
+A1
+
+Here, x¯j,IV
+
+T-1
+
+T
+t
+
+1 xjt,IV
+
+is
+
+the
+
+sample
+
+average
+
+of
+
+xjt,IV .
+
+As for initial values, one can run an IV regression of
+
+ln(s¯jt/s¯0t) on dGA,jty^jt, dGA,j,t+1y^j,t+1, and ln s¯j,t+1 with IV xjt,IV and use the coefficients associated with dGA,jty^jt and ln s¯j,t+1 as the
+
+initial values for (A) and .
+
+After obtaining ^ and ^, one can let ^j be the estimate of j:
+
+^ j
+
+T-1
+
+ T-1
+t1
+
+ln
+
+(s¯jt ) s¯0t
+
++
+
+^ j y^ jt
+
+-
+
+^ ^ jyj,t+1
+
+-
+
+^
+
+ln
+
+s¯j,t+1.
+
+A.1.2. Preference: With Stand-Alone Product. When there are stand-alone products, the estimation can be simplified. Without loss of generality, assume product 1, . . . , J1 are standalone products, and they form group 1, . . . , J1, respectively. If J1 J, this becomes multinomial logit case.
+Step 1. It can be shown that we, in general, have
+
+ln
+
+( s¯jt s¯kt
+
+)
+
+j 1
+-
+
+- -
+j
+
+k 
+ln
+
++ (xjt - xkt)
+
+(s~jt ) s~kt
+
++
+
+jt 1
+
+- -
+
+~ -
+
+kt 
+
+.
+
+(pjt
+
+-
+
+pkt)
+
+Note that ln(s¯jt/s¯kt) 0 if j, k are from the same nest, and ln(s~jt/s~kt) 0 if j and k are both stand-alone products. When there is at least one stand-alone product, that is, J1  1, we can estimate (J1 + 1), . . . , () ((0) · · · (J1) 1), ~ , and  by the following:
+
+g1,(j,k),t()
+
+(z(j,k),t
+
+-
+
+[ z¯ (j,k) )
+
+ln
+
+(s¯jt ) s¯kt
+
+-
+
+(xjt
+
+-
+
+xkt)
+
+~
+
++
+
+(pjt
+
+-
+
+pkt)
+
++
+
+
+A J1+1
+
+(A)dGA,jt
+
+ln
+
+( s~jt s~kt
+
+)] ,
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+907
+
+where z¯(j,k)
+
+T-1
+
+T
+t
+
+1
+
+z(j,k),t .
+
+In
+
+practice,
+
+we
+
+run
+
+an
+
+IV
+
+re-
+
+gression of ln(s¯jt/s¯kt) on xjt - xkt, pjt - pkt, and dGA,jt ln(s~jt/s~kt)
+
+with IV z(j,k),t.
+
+Step 2. Estimate . Define
+
+y~jt jyjt + ln(s¯jt/s¯0t), w~ j,t+1 -jyj,t+1 - ln s¯j,t+1.
+
+and
+
+(A.1)
+
+Because j has been estimated in the first step, y~t and w~ t are known. We then can estimate  using E(g2,(j,0),t(o)) 0, where
+
+g2,(j,0),t() xjt,IV (y~jt + w~ t+1 - j).
+
+In practice, to estimate , -w^~ j,t+1 using xjt,IV as the IV.
+
+run
+
+an
+
+IV
+
+regression
+
+of
+
+y^~ jt
+
+on
+
+Step 3. Estimate j using
+
+E(y~jt + w~ t+1 - j) 0. Run a linear regression for each j of (y^~jt + ^w^j,t+1) on a constant (of one) with data from t 1, . . . , T - 1.
+
+A.1.3. F(mt) and F(mt+1 | mt). We make the same normal
+
+distribution assumption as in the paper. The estimation
+
+of the parameters in F(mt) and F(mt+1 | mt) in the nested logit
+
+case is identical to the multinomial logit case by replac-
+
+di~n(j,gk),td,(jy~,kj)t,,t,aynjtd,
+
+and w~ jt,
+
+wjt in the where y~jt
+
+multinomial logit case with and w~ jt are defined in Equa-
+
+tion (A.1), and
+
+d~(j,k)t
+
+(1
+
+-
+
+)j
+
+ln
+
+( s~jt s~kt
+
+)
+
+-
+
+(xjt
+
+· (pjt - pkt) - (j - k
+
+- xkt)  + ) + (1 - )
+
+(1 ln
+
+- )
+
+( s¯jt s¯kt
+
+) ,
+
+with or without stand-alone products. So we do not repeat the procedures.
+
+A.2. Mobile Phone Market Application with Nested Logit Specification
+Using the nested logit (NL) specification, we reestimated the cell phone market application. Besides the outside option, there are three nests in the model. Nest 1 consists of Apple and RIM (Blackberry), nest 2 consists of the
+
+Table A.1. Estimation Results of Mobile Phone Market: Nested Logit
+
+Parameter
+
+Estimate
+
+Standard errora
+
+tvalue
+
+F-valueb
+
+Step 1: preference, /(1 - ), and within nest corr
+Step 2: discount factor Step 3: fixed effect
+Step 4: correlation between price and unobserved product characteristics
+Step 5: std. error of jt Step 6: autocorrelation of jt
+
+price xblue xgps xweight xqwerty xmusic xwifi xtalktime Corr in nest 1 Corr in nest 2  Moto Samsung LG Nokia Blackberry Apple Other Moto
+Samsung LG Nokia Blackberry Apple Other  Moto Samsung LG Nokia Blackberry Apple
+
+-0.01 1.00 0.47
+-0.08 -1.55 -0.27
+0.68 0.12 0.78 1.00 0.97 0.15 0.16 0.12 0.19 0.11 0.28 0.16 0.14
+0.17 0.21 0.20 0.24 0.69 0.25 0.05 0.08 0.04 0.45 0.40 0.42 4.67
+
+0.00
+
+-4.60
+
+6.81
+
+0.58
+
+1.72
+
+0.09
+
+5.22
+
+0.05
+
+-1.72
+
+0.45
+
+-3.41
+
+1.04
+
+-0.26
+
+13.17
+
+0.91
+
+0.75
+
+0.05
+
+2.39
+
+0.15
+
+5.35
+
+27.70
+
+0.00
+
+371.13
+
+29.6
+
+0.10
+
+9.55
+
+29.6
+
+0.07
+
+2.07
+
+0.07
+
+2.21
+
+0.07
+
+1.64
+
+0.07
+
+2.56
+
+0.08
+
+1.40
+
+0.08
+
+3.52
+
+0.07
+
+2.14
+
+0.02
+
+5.54
+
+50.11
+
+0.03
+
+6.28
+
+46.84
+
+0.03
+
+7.14
+
+45.39
+
+0.03
+
+7.89
+
+59.89
+
+0.07
+
+3.28
+
+45.61
+
+0.11
+
+6.13
+
+31.62
+
+0.05
+
+5.00
+
+35.85
+
+0.00
+
+41.22
+
+0.02
+
+4.34
+
+0.01
+
+4.05
+
+0.03
+
+17.73
+
+0.03
+
+14.33
+
+0.07
+
+5.66
+
+0.23
+
+20.28
+
+Note. xblue, Bluetooth indicator; xgps, GPS indicator; xweight, weight in ounces; xwerty, QWERTY keyboard indicator; xmusic, music playing
+capability indicator; xwifi, Wi-Fi support indicator; xtalktime, talk time (battery life) in minutes; std., standard; Corr, correlation. aThe standard errors reported here are obtained from sequential estimation steps. b"F-value" is the first stage F test statistic on excluded IV.
+
+908
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+well-regarded brands of feature phones at the time (Motorola, Samsung, LG, and Nokia), and nest 3 consists of all other brands. In this specification, "all other brands" is a standalone product; hence, we use the estimation method outlined for the case with stand-alone product. In estimation, we use the same IV as we use in the multinomial logit (MNL) specification. The results are detailed in Table A.1.
+The correlation coefficient for nest 2 (feature phones) is almost 1.00, likely because these phones are very similar. The correlation coefficient for nest 1 (Blackberry and iPhone) is 0.78 because of some important differences between these two phones, for example, iPhone can access Wi-Fi, though they are both smartphones.
+The estimates of many important parameters in the NL case are close to the estimates in the MNL case. The price coefficient, , in both NL and MNL is -0.01. The estimate of the discount factor, , in NL is 0.97, which is bigger than 0.8 in the MNL case. The ordering of the estimated fixed effect among different phones from both MNL and NL is similar-- iPhone has the highest fixed effect, and Blackberry has the lowest. Also, similar to the estimates in the MNL, iPhone has the highest correlation between price and unobserved product characteristics. The estimates of the serial correlation of jt are somewhat different from the MNL case. The most noticeable difference is the iPhone, whose autocorrelation coefficient is greater than one. This means iPhone,t is a nonstationary process, which could be because the iPhone had only been on the market for a few months. Note that the estimated standard error of jt is substantially smaller than the MNL case. This can be understood from the regression formula in the NL case:
+
+ln
+
+( s¯jt s¯kt
+
+)
+
+j 1
+-
+
+- -
+
+k 
+
++
+
+(xjt
+
+-
+
+xkt
+
+(pjt - pkt) - j
+
+) ~
+
+ln
+
+( s~jt s~kt
+
+)
+
++
+
+jt 1
+
+- -
+
+kt 
+
+.
+
+Note that, in the MNL case, each product forms a nest by itself, and preceding equation becomes
+
+ln
+
+( s¯jt s¯kt
+
+)
+
+j 1
+
+- -
+
+k 
+
++
+
+(xjt
+
+-
+
+xkt)
+
+~
+
+-
+
+(pjt
+
+-
+
+pkt)
+
++
+
+jt 1
+
+- -
+
+kt 
+
+.
+
+The "regressor" ln(s~jt/s~kt) vanishes in the MNL case. The estimated variance of jt essentially depends on the variance of the "error term" (jt - kt)/(1 - ) in the regression equations. In the NL case, we have one additional regressor ln(s~jt/s~kt); hence, the variance of the residuals is reduced. The observed reduction of the variance of unobserved product
+characteristics after controlling for nest or group market share
+suggests that, in empirical research, one might be able to at least reduce the influence of the unobserved product char-
+acteristics by using certain observed group characteristics,
+for example, the nest or group market share.
+
+Endnotes
+1 The inclusion of the latter unobserved state is necessary to account for the endogeneity of price. 2 We note that Daljord et al. (2018) presents an innovative way to identify the discount factor in DDC models with individual data. The primary difference is that our setting involves persistent unobservable
+
+state variables, whereas those are not present in the aforementioned paper. 3 It should be remarked that x2t,IV does not need to be a component of x2t. For example, x2t,IV can be x1t + x2t if cov(xjt, 2t) cov(xjt, 2,t+1) 0 for both j 1 and 2. 4 Implicitly, we assumed the unobserved product characteristics are mean stationary. 5 In the solution, one needs E(2,t+1 | xt, pt). We identify E(2,t+1 | xt+1, pt+1). Then we can identify E(2,t+1 | xt, pt) E[E(2,t+1 | xt+1, pt+1) | xt, pt] by Assumption 5. 6 The closest paper is that of Norets (2009), who models a serially correlated idiosyncratic shock. 7 In stationary models such as ours, Arcidiacono and Miller (2018) determine that a counterfactual policy change induced by an innovation to the state transition is identified as long as the true utility value associated with the Arcidiacono and Miller (2011) representation of the value function is known. One computationally light method that allows for the recovering of counterfactual outcomes in which state transitions change is with the use of the inclusive value sufficiency assumption. In this method, both the change in flow utilities and state transitions are accounted for with the latter by simply reestimating the AR(1) process for the counterfactual inclusive value. For exit models, we are able to simulate forward the unobserved state variables because again we identify and estimate its transition process. 8 In the online appendix Section O.3, we present a solution for solving the value function that does not require value function iteration, the discretization of state variables, nor the use of interpolation and an alternative way to determine 1t. 9 Because of a nondisclosure agreement, we cannot report brand-level price and market share data.
+References
+Albuquerque P, Bronnenberg BJ (2009) Estimating demand heterogeneity using aggregated data: An application to the frozen pizza category. Marketing Sci. 28(2):356­372.
+Arcidiacono P, Miller R (2011) Conditional choice probability estimation of dynamic discrete choice models with unobserved heterogeneity. Econometrica 79(6):1823­1867.
+Arcidiacono P, Miller R (2018) Identifying dynamic discrete choice models off short panels. Working paper, Duke University, Durham, NC.
+Bajari P, Benkard CL, Levin J (2007) Estimating dynamic models of imperfect competition. Econometrica 75(5):1331­1370.
+Bajari P, Chu CS, Nekipelov D, Park M (2016) Identification and semiparametric estimation of a finite horizon dynamic discrete choice model with a terminating action. Quant. Marketing Econom. 14(4):271­323.
+Berry S, Levinsohn J, Pakes A (1995) Automobile prices in market equilibrium. Econometrica 63(4):841­890.
+Berry ST (1994) Estimating discrete-choice models of product differentiation. RAND J. Econom. 25(2):242­262.
+Berry ST, Haile PA (2014) Identification in differentiated products markets using market level data. Econometrica 82(5):1749­1797.
+Chou C, Ridder G (2017) Three-step CCP estimation of dynamic programming discrete choice models with large state space. Working paper, University of Leicester, Leicester, UK.
+Daljord Ø, Nekipelov D, Park M (2018) A simple and robust estimator for discount factors in optimal stopping dynamic discrete choice models. Working paper, University of Chicago, Chicago.
+Derdenger T, Kumar V (2019) Estimating dynamic discrete choice models with aggregate data: Small sample properties of the inclusive value approximation. Quant. Marketing Econom. Forthcoming.
+
+Chou, Derdenger, and Kumar: Linear Estimation of Aggregate DDC Models for Durable Goods Marketing Science, 2019, vol. 38, no. 5, pp. 888­909, © 2019 INFORMS
+
+909
+
+Dubé JP, Fox JT, Su CL (2012) Improving the numerical performance of static and dynamic aggregate discrete choice random coefficients demand estimation. Econometrica 80(5):2231­2267.
+Fang H, Wang Y (2015) Estimating dynamic discrete choice models with hyperbolic discounting, with an application to mammography decisions. Internat. Econom. Rev. 56(2):565­596.
+Goettler RL, Gordon BR (2011) Does AMD spur Intel to innovate more? J. Political Econom. 119(6):1141­1200.
+Gowrisankaran G, Rysman M (2012) Dynamics of consumer demand for new durable goods. J. Political Econom. 120(6):1173­1219.
+Hotz VJ, Miller RA (1993) Conditional choice probabilities and the estimation of dynamic models. Rev. Econom. Stud. 60(3):497­529.
+Hu Y, Shum M (2012) Nonparametric identification of dynamic models with unobserved state variables. J. Econometrics 171(1): 32­44.
+Hu Y, Shum M, Tan W, Xiao R (2017) A simple estimator for dynamic models with serially correlated unobservables. J. Econom. Methods 6(1):1­16.
+Kalouptsidi M, Scott P, Souza-Rodrigues E (2017) Identification of counterfactuals in dynamic discrete choice models. Center for Economic Policy Research Discussion Paper No. DP12470, London.
+Kasahara H, Shimotsu K (2009) Nonparametric identification of finite mixture models of dynamic discrete choices. Econometrica 77(1): 135­175.
+
+Magnac T, Thesmar D (2002) Identifying dynamic discrete decision processes. Econometrica 70(2):801­816.
+Melnikov O (2013) Demand for differentiated durable products: The case of the US computer printer market. Econom. Inquiry 51(2): 1277­1298.
+Norets A (2009) Inference in dynamic discrete choice models with serially correlated unobserved state variables. Econometrica 77(5): 1665­1682.
+Norets A, Tang X (2014) Semiparametric inference in dynamic binary choice models. Rev. Econom. Stud. 81(3):1229­1262.
+Rust J (1994) Structural estimation of Markov decision processes. Heckman J, Leamer EE, eds. Handbook of Econometrics, vol. 4 (Elsevier, Amsterdam), 3081­3143.
+Song I, Chintagunta PK (2003) A micromodel of new product adoption with heterogeneous and forward-looking consumers: Application to the digital camera category. Quant. Marketing Econom. 1(4):371­407.
+Su CL, Judd KL (2012) Constrained optimization approaches to estimation of structural models. Econometrica 80(5):2213­2230.
+Sudhir K (2013) Demand estimation using aggregate data: Static discrete choice models. Slides, Yale School of Management, New Haven, CT.
+Sun Y, Ishihara M (2019) A computationally efficient fixed point approach to dynamic structural demand estimation. J. Econometrics 208(2):563­584.
+
+

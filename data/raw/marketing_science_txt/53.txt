@@ -1,0 +1,1215 @@
+http://pubsonline.informs.org/journal/mksc
+
+MARKETING SCIENCE
+Vol. 39, No. 6, November­December 2020, pp. 1181­1198 ISSN 0732-2399 (print), ISSN 1526-548X (online)
+
+Optimizing Price Menus for Duration Discounts: A Subscription Selectivity Field Experiment
+
+Longxiu Tian,a Fred M. Feinbergb
+a Kenan-Flagler School of Business, University of North Carolina, Chapel Hill, North Carolina 27599; b Stephen M. Ross School of Business and Department of Statistics, University of Michigan, Ann Arbor, Michigan, 48109 Contact: longxiu_tian@kenan-flagler.unc.edu, https://orcid.org/0000-0001-6257-7583 (LT); feinf@umich.edu,
+https://orcid.org/0000-0003-2238-0721 (FMF)
+
+Received: October 2, 2017 Revised: March 13, 2019; August 13, 2020 Accepted: August 20, 2020 Published Online in Articles in Advance: October 21, 2020
+https://doi.org/10.1287/mksc.2020.1265
+Copyright: © 2020 INFORMS
+
+Abstract. Subscription services typically offer duration discounts, rewarding longer commitments with lower per-period costs. The "menu" of contract plan prices must be balanced to encourage potential customers to select into subscription overall and to nudge those that do to more profitable contracts. Because subscription menu prices change infrequently, they are difficult to optimize using historical pricing data alone. We propose that firms solve this problem via an experiment and a model that jointly accounts for whether to opt in and, conditionally, which plan to choose. To that end, we conduct a randomized online pricing experiment that orthogonalizes the "elevation" and "steepness" of price menus for a major dating pay site. Users' opt-in and plan choice decisions are analyzed using a novel model for correlated binary selection and multinomial conditional choice, estimated via Hamiltonian Monte Carlo. Benchmark comparisons suggest that common models of consumer choice may systematically misestimate price substitution patterns, and that a key consideration is the distinctiveness of the opt-out (e.g., nonsubscription) option relative to others available. Our model confirms several anticipated pricing effects (e.g., on the margin, raising prices discourages both opt-in overall and choice of any higher-priced plans), but also some that alternative models fail to capture, most notably that across-the-board pricing increases have a far lower negative impact than standard random-utility models would imply. Joint optimization of the menu's component prices suggests the firm has set them too low overall, particularly so for its longest-duration plan.
+
+History: This paper has been accepted for the Marketing Science Special Issue on Field Experiments. Supplemental Material: Data and the web appendix are available at https://doi.org/10.1287/mksc.2020.1265.
+
+Keywords: field experiment · price menu · duration discount · selection model · subscription contract · Hamiltonian Monte Carlo
+
+Introduction
+Firms offering subscription services face a dilemma: they wish to entice new customers into longer-term or higher-revenue commitments, but most are reluctant to lock in at the outset. Various "try before you buy" options help ease the transition between free or teaserrate trials and paid commitments, for example, "shareware" offering limited functionality. Potential customers can choose among various options--typically balancing prices and contract durations--including opting out entirely. Although the marginal cost of an additional online service user is typically negligible, firm fixed costs are not: to be sustainably profitable, the proportion of paying customers must be suitably high, or the price they each pay sufficiently large. Firms must thereby solve a difficult problem, crafting the portfolio offered to incoming customers to balance self-selection into a paid contract with the revenues they afford.
+Although such contract strategies are common among online and mobile services (Niculescu and Wu 2014),
+
+how consumers self-select into a paid contract and then choose among plans remains "poorly understood" (Kumar 2014, p.27). To entice consumers to "lock in" for a longer period--and thus provide a guaranteed revenue stream--firms typically offer declining perperiod costs. The practice spans widely disparate categories: Dronemobile offers progressively attractive multiyear commitment terms (one year for $59.88, three years for $143.64, and five years for $179.40), as does the Chicago Manual of Style (one year for $39, three years for $70, and five years for $99); whereas AutoCAD LT offers more modestly declining per-year rates (one year for $420 and three years for $1,135), as does This Old House magazine (one year for $9, two years for $16, and three years for $22), among other publications.
+Despite the ubiquity of such menu-based duration pricing for subscription services, firms rarely have suitable experimental data or modeling capability to calibrate interplan trade-offs among individual consumers.
+
+1181
+
+1182
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+Ideally, the firm seeks to understand how the entire price menu affects consumers' decisions about whether to subscribe (henceforth, opt in) and, conditional on doing so, which plan offers the best balance between risk (longer commitment) and reward (lower perperiod cost).
+Historical subscription data suitable for optimizing subscription prices suffer several defects. First, firms only rarely alter prices, often keeping them stable for years (as did the firm in our forthcoming price experiment), so they suffer from low variation over time. Second, plan prices are typically all raised at once, so they are collinear. And third, price changes, being nonexperimental, may correlate with uncontrolled or unmeasured covariates. Ideally, to measure price-driven substitution effects, one would experimentally decouple the mean (i.e., typical or representative) plan price from the range across them, to extract the cleanest signal of how the price menu acts as a whole, to encourage opt-in overall, and to redistribute those paying consumers across available plans.
+Here, we overcome these limitations in three ways. First, we examine opt-in and plan choice using a subscription field experiment conducted on a menupriced online dating site. Second, plan price levels are manipulated using a factorial design to orthogonalize their absolute versus relative values. Third, resulting data are analyzed via a novel methodology assessing the latent correlation between the (binary) opt-in subscription decision and (multinomial) plan choice. The modeling framework extends recent literature on selection effects, for example, control functions (Petrin and Train 2010) and multinomial selectivity (Feinberg et al. 2016), and compares favorably with classic methods used in the price discrimination literature (as detailed later). The model is estimated via Hamiltonian Monte Carlo (HMC), which allows the efficient recovery of even highly nonlinear parameters and full covariance matrices, with source code made available in the extensible probabilistic programming language, Stan.
+This paper is organized as follows. We first review relevant literature in nonlinear pricing, subscription service models, price discrimination, and selectivity effects. We then introduce the setting and particulars of our field experiment, followed by the specific model used to isolate pricing effects of interest. Model estimation, plan price elasticities, and results are then presented and discussed, followed by joint optimization of the menu's component plan prices. We conclude with implications for practice and further research into discrete price menu effects.
+Selected Literature
+The literature on pricing policies in marketing and economics is vast, and even a summary of the research
+
+on online pricing is beyond our purview (see, e.g., Rao 2009, Ratchford 2009). Part of the complexity concerns the nature of contractual services, which (in contrast to tangible products) can be altered or gradated inexpensively or on the fly, even for a large consumer base (e.g., setting a heterogeneous usage cap, as is common in cellular data contracts). The "space" of potential price and service attribute strategies can thereby be so enormous as to be practically infinite.
+The use of field experiments to study promotions and pricing is common among practitioners and has received extensive treatment in the marketing literature. For example, in the context of subscription services, Danaher (2002) conducted a long-term experiment on the pricing of wireless phone plans to derive a revenue-maximizing strategy for usage versus retention, whereas Anderson and Simester (2004) used a series of field experiments to assess the effects of price promotions on future purchasing by firsttime and existing customers. Such experiments are a mainstay in empirical economics and provide something of a gold standard for the assessment of pricing effects (Levitt and List 2009).
+Estimating Cross-Plan Substitution Effects and an Idealized Experiment In our experimental design, described more fully in the following section, new site registrants are randomly assigned to treatment conditions that vary menu price levels. Our goal is to measure both (1) how the entire set of the menu's prices affects users' paid subscription opt-in decisions and (2) how all visitors, not only those who opted in, trade off across subscription contracts. The key observation (and eventual modeling objective) is that the opt-in decision alters the subset of customers whose trade-offs are actually observed, that is, who make a plan choice. For example, suppose that the firm "elevates" the price menu by increasing all component prices by some percentage. Visitors with higher price sensitivity will differentially opt out of subscription entirely: cross-plan substitution patterns will be determined (stochastically) by customers with higher willingness to pay. The analyst may observe tamped-down cross-elasticities among the plans, and thereby obtain biased counterfactuals about altering plan prices.
+A critical point is that all such substitution effect measures depend on latent error terms in a random-utility model. For example, in the popular multinomial logit (MNL) model, the independence of irrelevant alternatives (IIA) property dictates that making the outside good (i.e., opting out) more attractive leaves the ratios of other plans' choice probabilities unchanged; that is, "zeroing out" latent utility correlation(s) between opting in (self-selection into subscribing) and individual plan choice can constrain elasticity measures.
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+1183
+
+This, in turn, can distort assessments of price-driven substitution effects and lead to misleading conclusions for key managerial decisions, such as joint plan pricing.
+One way to conceptualize eliminating such selection "biases" (in the sense of Heckman 1979) is to imagine an idealized experiment where price menus were manipulated, but first-time site visitors were required to choose a plan, for example, given a sufficient endowment in an incentive-compatible setup. In this case, visitors who would have opted out-- roughly 80% in our experiment--would provide plan choices, debiasing the counterfactuals necessary for price menu optimization. The key modeling point is this: by specifying a distinct latent utility for the binary opt-in decision--one correlated with the latent utilities of the plans themselves--the analyst obtains debiased counterfactuals for visitors who did not subscribe, whose plan choices are missing nonrandomly (Little and Rubin 2020, Zanutto and Bradlow 2006). The model developed later stochastically imputes these censored latent utilities for visitors who opt out, conditional on their own covariates and the observed plan choices for those who opt in, via data augmentation (e.g., Tanner and Wong 1987, Wachtel and Otter 2013).
+Nonlinear Pricing, Quantity Discounts, and Contract Duration As mentioned earlier, a key trade-off for potential subscribers is that longer plans provide lower unit costs, but higher total commitment. The literature on nonlinear pricing (Wilson 1993) and consequent price discrimination in marketing and economics is extensive, and the reader is directed to the excellent reviews by Iyengar and Gupta (2009) and Lambrecht et al. (2012). In the former's general definition, "a nonlinear pricing schedule refers to any pricing structure where the total charges payable by customers are not proportional to the quantity of their consumed services" (Iyengar and Gupta 2009, p.355).
+Unit prices being "nonlinear" depends on there being a unidimensional quantity--like volume or duration--against which to compute them. This is not always possible; as pointed out by Mussa and Rosen (1978), items in a product line can differ in nontrivial ways that preclude their being organized along a spectrum. Whereas opting out might be accommodated as "just another option" when available options are highly varied or heterogeneous, it is arguably less so when they can be aligned along a unidimensional trade-off spectrum, as for duration. In this latter case, models assessing pricing trade-offs vary in at least three ways: whether they explicitly incorporate a selection mechanism, whether the utility for the opt-in
+
+decision has a separate functional form for prices, and how flexibly they account for latent correlations among possible outcomes, that is, both opting in and plan choice. Prior research in the area varies considerably in this regard, to which we next turn our attention.
+Selectivity and Intercorrelation in Binary-Multinomial Subscription Choices Nonrandom (self-)selection is well documented in field data, and correcting resulting measurement "biases" has been widely studied since Heckman (1979), including in marketing proper (e.g., Danaher 2002, Wachtel and Otter 2013). Formally accounting for selectivity in online marketing is critical whenever customers self-select into a treatment condition, for example, in online banking (Lambrecht et al. 2011), responding to an ad (Braun and Moe 2013), or joining an online community (Manchanda et al. 2015).
+The literature on price discrimination, quantity discounts, and nonlinear pricing relies on a mixture of experimental and observational data; of analytical, structural, and econometric analysis; and on a wide range of modeling techniques. Here, we focus on models for consumer choice, specifically in how they accommodate (nonrandom) selection and latent correlations in utility "shocks" (i.e., errors or disturbances). One method for handling this self-selection is to view it as a branch on a decision tree, for example, Lambrecht and Skiera (2006) applying nested logit to whether consumers keep their current tariff and then, conditionally, which subsequent one they choose; or Wolk and Skiera (2010), where consumers choose an internet usage portfolio and then, conditionally, a tariff. Although the nested logit model specifically alleviates IIA, choice within a nest retains this property. Gu and Yang (2010), in studying nonlinear pricing for quantity discounts, adopt a flexible covariance specification to alleviate IIA concerns, finding it superior to several nested logit structures. The proposed model will, in a sense, meld both these perspectives--plan selectivity and non-IIA conditional choice--and explicitly compare against restricted variances and nested logit.
+The literature on modeling plan choice overwhelmingly relies on either an MNL specification, entailing IIA, or a multinomial probit (MNP) specification with either no error covariance or a tightly patterned one. For example, McManus (2007) built a sophisticated structural model of coffee size purchases in which errors were Gumbel distributed, leading to a tractable logit choice mechanism. A similar presumption about lack of error covariance or correlated selectivity effects is adopted in much of the pricing and multipart tariff literature, including that positing nonlinear utility functions, for example, the learning-based model of wireless
+
+1184
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+Figure 1. Price Menu Information as Displayed, Per Month and Total (for Base/Standard Condition)
+
+services of Iyengar et al. (2007), Goettler and Clay's (2011) study of grocery home delivery service, or the studies of cellular service by Ascarza et al. (2012) and Grubb and Osborne (2015), among numerous others.
+The key observation is that the analyst wishes to understand substitution effects (i.e., elasticities) for all customers, particularly so those who did not selfselect into purchase--after all, the firm wishes to entice them to by altering its price menu--yet inferences made about them must rely on those who did. Such inferences must work off a statistical footprint that can be rather small, often (as in some of our experimental conditions) single percentage digits. Efficient methods to account for the consumer choice process should therefore carefully model three elements: the utility for whether one opts in, the utilities for which option (plan) one chooses, and their mutual (latent) intercorrelations.
+Before proceeding to the model proper, we first describe our field experiment in detail.
+Field Experiment
+Experimental Design We implemented a field experiment in partnership with a U.S.-based online dating site1 in February 2014. The site has operated since inception as a subscription service, offering multiple plans that differ in contract duration. Specifically, the site provides basic membership free of charge, allowing for searchable public profiles and restricted site functionality. Free users
+
+are aware of paywalled premium features (i.e., unlimited messaging, wider search area, etc.), which require purchasing a subscription plan.
+Importantly, premium functionalities are identical across paid plans, so the focal decision for paid subscribers is length of contract precommitment (a unidimensional quantity). The site offers three such plans, for one, three, and six months (1MO, 3MO, and 6MO hereafter, respectively), durations standard in the industry at the time of the experiment. Plan options are presented as a price menu, depicted in Figure 1. The central trade-off for the user, as mentioned earlier, is that longer contracts provide lower per-month prices, but a greater overall cost must be paid up front.
+The site's executive team highlighted an underlying tension between higher monthly rates and lockedin revenue: whereas customers on the 1MO plan were the most lucrative per single month, those on the other plans afforded longer guaranteed revenue. The firm explicitly prioritized the latter and encouraged choice of the 6MO plan (as we shall see, by far the least popular choice in our experimental conditions). A key concern was therefore understanding how altering the price menu (re)distributes customers (1) between free versus paying ("whether") and (2) among the three subscription plans ("which"). To assess these trade-offs, we, in concert with the site's team, designed and implemented the randomized pricing experiment for new registrants.2
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+1185
+
+Test Conditions
+For an initial pooling period of one week, a randomly selected subset of new registrants was funneled into the field experiment (n = 18,286). To gauge uptake for subscription plans, the experiment ran for an additional 26 days; this timeframe was determined in conjunction with the site operators, whose historical analysis indicated that the vast majority of paid subscribers' initial opt-ins occur early; comparably, in our experiment, 90% occurred by Day 12, 95% by Day 18, and 99% by Day 27.
+Individuals in the experiment were randomly assigned to one of 20 price menu treatment conditions. During the observation window (one week intake + 26 days follow-up = 33 days total), subjects were exposed to the price menu as determined by their treatment group assignment and did not see any other pricing offers or promotions. All price offerings are viewed in a three-option menu format analogous to that in Figure 1, with trivial visual differences based on altering the price levels themselves. Participation in the field study was not disclosed to subjects.
+As discussed earlier, plan prices in the online dating industry change rarely and, when they do, all tend to be raised simultaneously, making plan price crosselasticities exceedingly difficult to measure. Our experimental design therefore sought to orthogonalize (1) the overall price levels of the trio of plans ("elevation"), operationalized via the 3MO plan price as the fulcrum, and (2) proportional range of per-month prices ("steepness"), such that greater steepness made the 6MO plan relatively more attractive and the 1MO plan less so. Specifically, the 20 experimental conditions were based on a 5 (elevation) × 4 (steepness) design, which together characterize a price menu.3 To ease comparability, all prices are hereafter referred to as per-month unit prices. Because the study involved a
+
+large number of new registrants, the site was reluctant to include large price deviations from their standard price offering (Base = $18.99; Figure 2), because of the possibility of substantial negative impact on revenues. The firm was especially focused on the effects of raising the price, which they anticipated needing to do in the future; thus, the Base price level (i.e., for the 3MO plan) was reduced by $1 in the Lower condition, but raised in the other three conditions: by $1 (High), $2 (Higher), and $3 (Highest).
+Steepness (Figure 2) reflects the range in the permonth unit price of the three options, with the 1MO and 6MO prices represented as multipliers relative to the 3MO (elevation) price. Steepness ranges from 140% to 170% for the 1MO/3MO price ratio and from 65% to 80% for 6MO/3MO, from the Flattish to the Shallow to the Standard through the Steep condition. Note that 1MO and 6MO percentage deviations from the baseline are asymmetric, with the former's being larger.4
+To reiterate, elevation and steepness characterize each price menu, and orthogonalization allows us to distinguish their impacts on new registrants' decisions about whether to subscribe and, if so, which plan to choose. Of particular interest is whether raising all prices (elevation) is less impactful than raising each plan separately, which we will examine empirically by comparing elasticities.
+Variable Description
+Our data consist of cross-sectional observations on the opt-in decision (conditional contract), choice outcome, geodemographics, and mate-seeking preferences for all participants in the field experiment. Across the orthogonalized menu price conditions and 18,286 randomly assigned participants, 3,758 (20.5%) subscribed during the 33-day observation window
+
+Figure 2. Full Orthogonal Design
+
+1186
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+(as per Table 1). Among those who opted in, 2,383 (13.0%), 846 (4.6%), and 529 (2.9%) chose the 1MO, 3MO, and 6MO options, respectively.5 Our dependent variables therefore consist of a binary (opt-in) decision and a multinomial (conditional) contract choice outcome for each participant.
+The Base elevation and Standard steepness condition (Table 1) is the price menu long used by the site. We note that it does not maximize yield for any of the three price levels, which is unsurprising, because it does not offer the lowest prices for any of the three plans. Overall opt-in is highest (23.7%), as might be expected, for the Lower and Flattish condition, whereas choice of the lucrative 6MO contract (5.08%) is highest for the Base and Steep condition. Which condition is "best," of course, depends on how the firm balances short-term total gain (i.e., 6MO contracts) versus high per-month fees (1MO). Our primary goal is to measure price-driven trade-offs across plans in the presence of self-selection into paid contract; we later optimize price menus using the firm's objective to maximize upfront revenue, and additionally consider another based on historical CLV (see the web appendix).
+Model-Free Evidence: Effects and Manipulation Checks Owing to the elevation × steepness orthogonalization, we can examine cell-wise experimental results (Table 1) for evidence of menu price effects. For simplicity, we use median splits, that is, combining the Lower
+
+and Base conditions versus the Higher and Highest conditions for the elevation manipulation, and the Shallow and Standard conditions versus the Steep and Flattish ones for the steepness manipulation.6 Differences in both self-selection (opting in) and conditional choice can then be assessed using likelihood ratio tests, as per Table 2.
+As might be expected, "elevating" the price menu has a significant (p = 0.015) negative effect on subscription overall, from 21.2% to 19.4%; intriguingly, it has no significant effects on choice proportions across plans, outside mild directional ones upward on 1MO (60.1%­63.0%) and downward on 6MO (16.7%­14.2%). Also intriguingly, steepness has a significant negative effect on subscription (p < 0.001), from 21.5% to 19.4%. Specifically, 3MO uptake is unaltered--its price is held constant in absolute terms--but 1MO is strongly affected downward (68.1%­59.0%, p < 0.001), and 6MO strongly upward (10.3%­17.4%, p < 0.001), suggesting that making the 1MO plan and especially the 6MO plan more attractive relative to the other two causes predictable shifts in the likelihood of choosing them. What one cannot tell from this pattern of results is detailed planwise price substitution patterns, to which we return later in comparing cross-elasticities across models.
+Menu Prices To gauge both the absolute and comparative effects of menu prices, we include linear, quadratic, and "ratioed" pricing terms into the utility specification.7 The linear
+
+Table 1. Experimental Conditions, Yields, and Revenues
+
+Unit price ($/Month)
+
+Subscription rates (%)
+
+Revenue ($)
+
+Elevation (code) Steepness (code) 1MO 3MO 6MO Unique users 1MO 3MO 6MO Total Expected Observed
+
+L
+
+F
+
+L
+
+W
+
+L
+
+D
+
+L
+
+P
+
+B
+
+F
+
+B
+
+W
+
+B
+
+D
+
+B
+
+P
+
+H1
+
+F
+
+H1
+
+W
+
+H1
+
+D
+
+H1
+
+P
+
+H2
+
+F
+
+H2
+
+W
+
+H2
+
+D
+
+H2
+
+P
+
+H3
+
+F
+
+H3
+
+W
+
+H3
+
+D
+
+H3
+
+P
+
+24.99 26.99 28.99 30.99 26.99 28.99 29.99 31.99 27.99 29.99 31.99 33.99 29.99 31.99 32.99 35.99 30.99 32.99 34.99 36.99
+
+17.99 17.99 17.99 17.99 18.99 18.99 18.99 18.99 19.99 19.99 19.99 19.99 20.99 20.99 20.99 20.99 21.99 21.99 21.99 21.99
+
+13.99 13.99 12.99 11.99 14.99 14.99 13.99 11.99 15.99 15.99 14.99 12.99 16.99 16.99 14.99 13.99 17.99 16.99 15.99 13.99
+
+934 971 918 951
+991 976 926 1,002 954 900 940 975 917 976 961 1,016 972 1,036 972
+
+15.8 4.9
+
+2.9 23.7
+
+14.7 4.7
+
+3.0 22.5
+
+12.9 4.6
+
+3.5 20.9
+
+10.4 6.2
+
+4.5 21.1
+
+Eliminated
+
+12.4 4.8
+
+2.4 19.7
+
+14.3 5.2
+
+2.9 22.4
+
+11.7 3.9
+
+5.1 20.6
+
+14.7 4.2
+
+1.9 20.8
+
+13.0 5.5
+
+2.1 20.5
+
+12.4 5.1
+
+2.7 20.2
+
+10.1 3.7
+
+4.7 18.5
+
+16.0 4.4
+
+1.1 21.5
+
+15.0 4.9
+
+2.5 22.5
+
+11.0 4.4
+
+2.9 18.2
+
+11.3 3.5
+
+3.5 18.4
+
+15.6 4.1
+
+2.0 21.7
+
+12.4 4.5
+
+2.3 19.2
+
+13.5 4.5
+
+2.6 20.7
+
+10.0 4.6
+
+2.8 17.4
+
+8.78 8.88 8.87 9.55
+8.69 9.61 9.40 8.92 9.15 9.39 9.00 8.54 10.15 9.30 9.38 9.93 9.49 10.38 9.29
+
+9.04 9.04 8.91 9.83
+8.54 9.69 9.60 8.44 9.18 9.44 9.32 8.73 10.47 8.97 9.29 9.67 9.40 10.22 9.08
+
+Notes. Elevations are Lower (L), Base (B), High (H1), Higher (H2), and Highest (H3). Gradients are Flattish (F), Shallow (W), Standard (D), and Steep (P). MO, Month.
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+Table 2. Model-Free Tests of Steepness and Elevation Manipulations
+
+Lower Higher p-value
+Lower Higher p-value
+
+Subscription
+
+Conditional choice
+
+# customers Pr(Subscribe) # customers Pr(1MO) Pr(3MO)
+
+Lower vs. higher elevation
+
+5,733 5,834
+
+21.2% 19.4% 0.015
+
+1,216
+
+60.1%
+
+1,131
+
+63.0%
+
+0.158
+
+Lower vs. higher steepness
+
+23.2% 22.8%
+0.827
+
+7,741 7,654
+
+21.5% 19.4% 0.001
+
+1,666 1,487
+
+68.1% 59.0% 0.000
+
+21.6% 23.6%
+0.181
+
+Pr(6MO)
+16.7% 14.2% 0.100
+10.3% 17.4% 0.000
+
+1187
+
+and quadratic terms are consistent with previous work in nonlinear pricing (Iyengar and Gupta 2009) and correspond to the experimental manipulation of between-condition price differences (in elevation). By contrast, the price ratio terms--3MO/1MO, 6MO/1MO, and 6MO/3MO--correspond to within-condition price differences (in steepness) and were literally how test conditions were operationalized. The three price ratios have the shorter-termed (and higher-unit-priced) contracts in the denominator, so are bounded between 0 and 1; conditions with lower duration discounts-- that is, "flattish" steepnesses--have ratios approaching 1, whereas those steeper discounts have ratios approaching 0. These ratios capture within-menu price trade-offs, decoupled from absolute level effects captured by the linear and quadratic pricing terms. Critically, we introduce all three sets of price terms into both the binary "whether" model and the multinomial "which" plan choice model, so that the differential impact of modeling selectivity can be assessed impartially.
+Model Development and Estimation
+To measure the effect of menu pricing on the correlated decisions of whether to opt in and which plan to choose, we develop a binary selection multinomial probit choice model, estimated using HMC via the general-purpose probabilistic programming framework Stan (Carpenter et al. 2017). The use of HMC allows for efficient, full posterior sampling over correlated latent variables, nonlinear parameters, and full covariance matrices that characterize our model and can otherwise hamper alternative classical and Bayesian estimation techniques (Neal 2011). The model extends the Tobit-type sample selection framework (Heckman 1979, Puhani 2000): despite wide potential applicability in marketing and beyond, there has been no fully general selection model for multinomial outcomes (Dubin and Rivers 1989, Bushway et al. 2007). Our goal is to bridge the gap between selectivity methods and discrete choice settings typically
+
+faced by marketers, and to introduce a novel data augmentation strategy (Tanner and Wong 1987) for tractable posterior inference in the presence of highdimensional data missingness. In this section, we formally state the selection censoring mechanism pertaining to our field experiment, followed by the model specification, likelihood, and estimation.
+
+Selection Mechanism In running the field experiment, the firm wishes to locate an "optimal" price menu, that is, one that maximizes expected customer revenue. It is unlikely that this optimal menu appeared among the experimental conditions, as they are a small number of discrete realizations within the vast combinatorial array of price menus. We therefore develop a modelbased strategy to infer a continuous response surface informed by all user data across the test conditions. Specifically, the model will provide posterior predictions of individual users' choice probabilities anywhere in the convex hull of the tested price ranges. In other words, the optimization exercise requires a counterfactual: how likely might each participant be to subscribe and choose among the (three) plans when presented with a particular price menu, irrespective of their observed menu assignment and choice during the experiment? Formally, our focal estimand is the fullsample (n = 18,286) posterior predictive distribution of the choice probabilities of subscribing Ys  {0, 1} and the three menu options Yo {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
+
+Pr ( Ys, Yo|Xvars, Xprice),
+
+(1)
+
+where Ys is a N-lengthed vector, Yo is a N × 3 matrix, Xvars (N × D matrix) indicates participant-specific covariates, and Xprice indicates menu price assignment.8 Given our inferential objective, our desired estimand is an unconditional distribution that imputes the potential choice probabilities of all (sampled) users, given menu prices (and other covariates).
+Although the purpose of the field experiment was to generate orthogonalized, exogenous variation in
+
+1188
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+menu pricing, the data contain observed menu choices
+only for users who selected to subscribe (Ys 1), which we denote by Yoobs. Potential outcomes for users who opted out can be viewed as missing data, denoted by Ymo is, such that Yo {Yoobs, Ymo is }. Rewriting the posterior predictive density in the presence of user self-
+selection, we have
+
+Pr ( Ys, Yo|Xvars, Xprice)
+
+}Pr ( Ys|Xvars, Xprice)Pr ( Yo|Ys, Xvars, Xprice)
+
+}Pr ( Ys|Xvars, Xprice)Pr ( Yoobs|Ys, Xvars, Xprice)
+
+· Pr ( Ymo is|Ys, Xvars, Xprice),
+
+(2)
+
+where the factorizations arise assuming (1) Ys precedes and serves as the selection censoring mechanism of Yo, and (2) conditional on Ys (along with Xvars and Xprice), Yoobs'Ymo is. The dependency on Ys entails that Ymo is are missing not at random (MNAR). As such, any inferences made on the posterior predictive density
+(Equation (1)) while ignoring these selection-censored
+outcomes can suffer from omitted variable bias (Heckman 1979). Specifically, in our context, parameter and elasticity estimation for menu item choices Yo--and thereby counterfactual simulations of choice and expected revenue--cannot be assumed to extend to all users, as they would be solely identified by Yoobs. The aim of our modeling framework is to overcome the
+selection-induced MNAR and identify the uncondi-
+tional distribution of menu choice probabilities. Extend-
+ing current work on Bayesian ignorability to address
+selectivity (e.g., Ricciardi et al. 2019), our approach utilizes a set of latent variables  augmented as in Equation (2) to "decouple" Ys and Yo as conditionally independent given , thereby recasting Ymo is as missing at random (MAR):
+
+Pr()Pr ( Ys, Yo|Xvars, Xprice, )
+
+}Pr()Pr ( Ys|Xvars, Xprice, )Pr ( Yoobs| Xvars, Xprice, )
+
+· Pr ( Ymo is| Xvars, Xprice, ).
+
+(3)
+
+Our parameterization of  is a generalization of the
+
+correction mechanism proposed by Heckman-type
+
+models and takes the form of correlated latent utili-
+
+ties, which we discuss next.
+
+Specification Common across extant selectivity literature is a bivariate stochastic censorship mechanism governed by a scalar parameter , which models the degree of selectivity (correlation) between selection and outcome errors; the outcome is observable only if the latent selection utility is greater than some threshold (typically normalized to zero). From the perspective
+
+of selectivity bias as a missing data problem, the "Heckman " enables the recovery of potential out-
+comes through parametric imputation. Following the
+classic Heckman (1979) framework, the opt-in decision and menu choice of an individual i  {1, . . ., N} in our field experiment are governed by a set of selection (Y*s,i) and outcome (Y*o,i) utilities, respectively, where the outcome is observed only if the individual selfselects to respond (Y*s,i > 0). In our case of censored multinomial outcomes, we generalize the selection
+censoring mechanism to stochastically arise from a
+multivariate normal (MVN) distribution with a fully identified, positive definite error covariance matrix (Equation (4)). This flexible, matrix-based parame-
+terization of the degree of selectivity allows each
+choice outcome pair a distinct correlation term. The correlated errors allow for the individual's latent utilities on the outcome (Y*o,i) to inform selection (and vice versa), and whether the outcome choice Yo,i is observed. Formally, Yo,i j is observed only if both Y*o,j max{Y*o} and Ys,i 1. Letting Y*o represent the vector of utilities of J multinomial outcomes9 and Xi {Xvars,i, Xprice,i} specifically within the context of our field experiment, we have
+
+Y*s,i Xis + s,i, Y*o,i,j Xio,j + jo,i,j,
+
+s.t. Ys,i I{Y*s,i  0}, { }
+
+s.t. ( Yo,i|Ys,i
+
+1)
+
+max
+j
+
+Y*o,i,j
+
+,
+
+(4)
+
+(s, o,1, . . . , o,J) ~ MVN(0, ),
+
+where
+
+
+
+ 
+
+2s
+
+s,o1so,1 2o1
+
+...
+... 
+
+
+
+s,oJ s oJ
+o1,oJ o1oJ 
+
+.
+
+(5)
+
+2oJ
+
+Likelihood For user i in the field experiment, we observe a oneshot binary opt-in decision and, conditionally, which of the J menu items is chosen (Equation (4)). When opt-in does not occur (Ys,i 0), the contract choice outcome Yo,i|Ys,i 0 is conditionally censored and considered as missing data. To recover (i.e., stochastically impute) them, utilities corresponding to unobserved outcomes (Y*o,,mi is) enter as individual-level latent variables whose correlation with Y*s,i is captured by the error covariance matrix,  (Equation (5)). As such,  generalizes the Heckman --and its imputation properties--for multinomial choice settings with correlated latent utilities. The full sample
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+1189
+
+log-likelihood function, inclusive of the latent utilities corresponding to censored menu choice outcomes, is given by (derivation in the web appendix)
+
+L(s, o, ) N  J-1
+
+[
+
+1
+
+ds,ido,i,j ln
+i1j0
+
+Es,i
+
+
+
+Eo,i,j
+(
+
+1+
+(2)
+
+(J 2
+
+-1)
+
+ )||]
+
+[
+
+× exp - 12i -1i di
+
+(6)
+
++ (1 - ds,i)ln
+
+1
+
+-Es,i
+
+1+
+(2()
+
+(J 2
+
+-1)
+
+ ||
+
+)
+
+]
+
+× exp
+
+-
+
+1 2
+
+i
+
+-1i
+
+di ,
+
+where ds,i Eo,i,j [(o,i,j
+
+I>{Y-sX,i o,i,1j};od)o,i, j(oI,i{,jY-o,i o,i,jk}>; E(sX,i o,i,ks-,i >Xo-,i,Xj)s,io)s,;
+
+k  j]; and i (s,i,o,i,1, ... ,o,i,J-1), if Ys,i 1; i (s,i,
+
+~o,i, 1, ... ,~o,i,J-1), if Ys,i 0.
+
+Estimation
+As the log-likelihood (Equation (6)) is not amenable to closed-form computation, we employ full Bayesian inference to estimate our focal parameters, (s, o, ), using HMC. The key challenge that our estimation strategy overcomes, which has thus far impeded selectivity correction for multinomial outcomes, is the difficulty in efficiently sampling from the multivariate normal cumulative distribution functions in the presence of high-dimensional, correlated missing latent utility terms. Our strategy involves sampling the equivalent data-augmented posterior over the set of {Y*s, Y*o} latent utilities,10 obviating the need
+
+to solve for the closed-forms of the integrals in Equation (6), where TMVN refers to the truncated MVN distribution:
+
+Pr(s, o, , , Y*s, Y*o|Ys, Yo, }MVN(s|0, I) · MVN(o|0,
+
+Xs, I) ·
+
+Xo) Cauchy+
+
+(|
+
+0,
+
+1)
+
+· LKJ(|1)·
+
+N
+
+[
+
+ TMVN µ
+
+i1
+
+{
+
+(
+
+Y*s,i,
+
+Y*o,i)|
+
+Xs,i
+
+s
+
+,
+
+Xo,i
+
+o
+
+} ,
+
+
+
+] 
+
+· s* · a* · Ys**o.
+
+(7)
+
+Derivation of Equation (7), source code in Stan, sim-
+ulation studies, and comparison with the alternative "omitted variable correction" estimation strategy ap-
+pear in the web appendix. For estimation, we obtained
+5,000 posterior draws split equally between burn-in and sampling periods, across six chains.11
+
+Results: Model Comparison
+We focus throughout on the two focal consumer decisions: (1) to self-select into (opt into) the paid service and (2) to (conditionally) choose among the 1MO, 3MO, and 6MO options. Although we mainly discuss the "full" model--intercorrelated selection and choice--we fit a variety of benchmarks to gauge the impact of various modeling constructs. Specifically, we consider six nested and three nonnested benchmarks, as in Table 3. The first three nested models (M1a­M1c) involve alternative utility specifications for pricing; the next three (M2­M4) for latent covariance components, including selectivity itself; and the nonnested models (M5­M7) are those with
+
+Table 3. Alternative Model Specifications
+
+Model
+
+M1:
+
+Full model
+
+Nested: Removing nonlinear pricing effects
+
+M1a:
+
+Main effects only
+
+M1b:
+
+Main + quadratics only
+
+M1c:
+
+Main + price ratios only
+
+Nested: Restricting covariance components
+
+M2:
+
+No selectivity
+
+M3:
+
+No selectivity or correlations
+
+M4:
+
+No selectivity, correlations, or scale
+
+Nonnested M5: M6: M7:
+
+MNP, full covariance MNL Nested logit
+
+Restrictions
+Correlations --
+-- -- --
+{s,3, s,6} 0 {s,3, s,6, 3,6} 0 {s,3, s,6, 3,6} 0
+-- All = 0 No IIA
+
+Scale
+--
+-- -- --
+-- -- 3 6
+-- All = 1
+--
+
+1190
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+widest application in marketing and economics for dealing with multinomial, correlated, and/or nested choice scenarios.
+Among these benchmarks, several stand out. The arguably key comparison concerns selectivity itself: the full model (M1) can be hobbled by constraining the selectivity terms {s,3, s,6} to zero (M2). Comparing M1 and M2 therefore highlights the differential importance of allowing the "whether" and "which" decisions to mutually inform the other. Similarly, the full-covariance multinomial probit model (M5) allows for a full account of pricing effects, but treats the "whether" decision as if it is simply another alternative; thus, M1 versus M5 helps quantify the degree to which it is important to model self-selection into subscription as fundamentally different from choice among the various plans. Last, the nested logit model (M7) allows just such an explicit distinction for initial contract choice, but no latent error covariances among the plans themselves. We will differentially focus on these model comparisons (M1 versus M2, M5, and M7) when considering cross-elasticity structure later.
+Table 4 compares M1­M7 using three fit metrics: insample hit rates and out-of-sample hit rates (OSHRs) and log-probability (LP); each also appears as a percentage change versus M1, with the LP averaged across the n = 18,286 participants (i.e., exp(LP/N)). OSHRs, on which we primarily rely for model comparison, are computed via 10-fold cross-validation, as correct predictions across all four possible outcomes-- no subscription (NoSub), 1MO, 3MO, and 6MO-- across the joint posterior for each model.12
+As might be expected, the full model performs best across the board. Which modeling constructs aid in predictive performance are reflected in OSHR percentage changes relative to M1. Altering the price specification is detrimental to some degree: 1% for removing quadratics (M1c), 1.8% for price ratios (M1b), and 4.2% for both (M1a). Note that the second
+
+of these isolates the steepness manipulation, quantifying the importance of accounting for this in utility over and above other pricing effects.
+As detailed earlier, a key comparison is made by removing selectivity correlations (M1 versus M2), that is, zeroing out {s,3, s,6}, which reduces the OSHR by 2.7% and log-probability by 9.3%. Additional covariance restrictions (M3 and M4) lead to further decrements in the OSHR, largely owing to misclassification among which plan to choose. This is consistent with performance patterns among the other nonnested models. Key among these is for the MNP model (M5), which allows a full suite of error correlations but treats self-selection into subscription as merely another option: the OSHR is 3.5% worse. By comparison, the nested logit model (M7), which does separate out the binary selection decision but zeros out the "which plan" correlations, is 8.6% worse; and the MNL model (M6), which zeros out all correlations (like M4), is especially poor, 10.5% worse than the full model. Recall that both M6 and M7 are common in the nonlinear pricing literature, suggesting caution in their continued application in that domain.
+Broadly speaking, the results of Table 4 do suggest that accounting for latent correlations substantially improves predictive performance, and that it is important to account for selectivity correlations. But predictive performance can be degraded without skewing estimates of pricing effects, which we take up next by examining parameters and cross-elasticities for M1 and key benchmarks.
+Results: Model Parameters and Comparative Elasticities
+Estimated parameters--linear, quadratic, and priceratio terms--for selection and conditional choice in M1­M4 appear in the upper and middle parts of Table 5, with all identifiable latent utility correlations below.13 Because all covariates are mean centered and prices
+
+Table 4. Fit Comparison Metrics for Full, Nested, and Benchmark Models
+
+Model
+M1: Full model M1a: Main effects only M1b: Main + quadratics only M1c: Main + price ratios only M2: No selectivity M3: No selectivity or correlations M4: No selectivity, correlations, or scale M5: MNP, full covariance M6: MNL M7: Nested logit
+
+Hit rate (individual level)
+
+In sample
+
+Out of sample
+
+Overall (%) % change (%) Overall (%) % change (%)
+
+78.4
+
+--
+
+76.9
+
+--
+
+76.0
+
+-3.0
+
+73.7
+
+-4.2
+
+76.1
+
+-2.9
+
+75.5
+
+-1.8
+
+77.2
+
+-1.5
+
+76.1
+
+-1.0
+
+75.5
+
+-3.7
+
+74.8
+
+-2.7
+
+72.2
+
+-7.9
+
+70.0
+
+-8.9
+
+70.9
+
+-9.5
+
+68.4
+
+-11.0
+
+76.2
+
+-2.8
+
+74.2
+
+-3.5
+
+69.3
+
+-11.6
+
+68.8
+
+-10.5
+
+71.2
+
+-9.2
+
+70.3
+
+-8.6
+
+Log posterior probability
+
+Overall % change (%)
+
+-9,446.6 -9,957.3 -9,850.8 -9,848.6 -10,325.5 -10,356.9 -10,763.2 -9,844.6 -12,146.1 -11,231.5
+
+-- -5.4 -4.3 -4.3 -9.3 -9.6 -13.9 -4.2 -28.5 -18.9
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+1191
+
+Table 5. Posterior Summaries for Binary Selection and Multinomial Choice Price Coefficients and Error Covariance Specification
+
+M1
+
+M2
+
+M3
+
+M4
+
+Choice alternatives
+
+Full
+
+No selection
+
+No correlations
+
+Restricted 
+
+Intercept Prices
+Linear
+Quadratic
+Price ratios
+
+1MO 3MO 6MO 1MO 3MO 6MO 3MO/1MO 6MO/1MO 6MO/3MO
+
+Binary selection model
+
+-1.260 ***
+
+-1.152 ***
+
+0.250 *** 0.265 *** -0.123 *** -0.487 *** -0.059 *** -0.843 *** 0.946 *** 0.590 *** -0.207 *
+
+0.029 *** -0.130 ***
+0.098 *** 0.010 *** -0.002 0.024 *** -0.008 -0.119 -0.114
+
+-1.135 ***
+0.025 *** -0.121 ***
+0.107 *** 0.013 *** -0.001 0.024 *** 0.007 -0.113 -0.097
+
+-1.119 ***
+0.033 *** -0.129 ***
+0.105 *** 0.014 *** -0.002 0.024 *** 0.002 -0.130 -0.102
+
+Price Linear Quadratic
+Intercept
+Price ratio (3MO/1MO)
+Price ratio (6MO/1MO)
+Price ratio (6MO/3MO)
+
+3MO 6MO 3MO 6MO 3MO 6MO 3MO 6MO
+
+Multinomial conditional choice model Common across alternatives
+
+-1.431 ***
+
+-0.229 ***
+
+-0.345 *
+
+0.012
+
+Alternative-specific
+
+-0.334 ***
+
+-0.896 ***
+
+-0.366 ***
+
+-3.507 ***
+
+-0.149 ***
+
+0.231
+
+-0.168 ***
+
+-0.999 **
+
+-0.061 ***
+
+0.586 ***
+
+0.046 ***
+
+-1.702 ***
+
+0.104 ***
+
+0.784 ***
+
+-0.197 ***
+
+-1.624 ***
+
+-0.263 *** 0.009
+-0.925 *** -4.475 ***
+0.422 -1.119
+0.785 *** -1.804 **
+0.875 *** -1.570*
+
+-0.091 *** -0.006
+-0.902 *** -1.065 *** -0.335 -0.353 -0.054 -0.766 ***
+0.393 -0.781 ***
+
+Selection: 3MO Selection: 6MO
+3MO/6MO (within)
+Selection Outcome: 3MO Outcome: 6MO
+
+Parameter
+_(s,1) _(s,3) _(s,6) _(1,3) _(3,6) _(1,6)
+_1 _3 _6
+
+Error covariance specification
+
+M1
+
+M2
+
+Full
+
+No selection
+
+Correlation matrix
+
+1
+
+--
+
+1
+
+--
+
+-0.361 ***
+
+--
+
+--
+
+-0.329 ***
+
+--
+
+--
+
+1
+
+--
+
+1
+
+--
+
+0.116 *
+
+0.114 ***
+
+1
+
+--
+
+1
+
+--
+
+Scale (square root of diagonals)
+
+1
+
+--
+
+1
+
+--
+
+3.450
+
+--
+
+1
+
+--
+
+2.936
+
+--
+
+2.863
+
+--
+
+M3 No correlations
+
+1
+
+--
+
+--
+
+--
+
+--
+
+--
+
+1
+
+--
+
+--
+
+--
+
+1
+
+--
+
+1
+
+--
+
+1
+
+--
+
+2.065
+
+--
+
+M4 Restricted 
+
+1
+
+--
+
+--
+
+--
+
+--
+
+--
+
+1
+
+--
+
+--
+
+--
+
+1
+
+--
+
+1
+
+--
+
+1
+
+--
+
+1
+
+--
+
+Note. Asterisks indicate that the HDR does not contain zero at the 90% (*), 95% (**), and 99% (***) levels, respectively.
+
+are in dollars, coefficient values can be roughly compared. Our discussion of "raw" coefficients will be brief; because the model is nonlinear, has overlapping covariates in selection and choice, and entails latent error correlations, we will focus primarily on marginal effects, in the form of elasticities.
+Binary Subscription Selection As per Table 5 (M1, Full), all menu-price-related effects are very strongly significant (with one exception, as below). We find that the linear effects of price are positive for the shorter plans (1MO, b = 0.250; 3MO,
+
+b = 0.265), but not for 6MO (b = -0.123), whereas all three plans have negative quadratic terms, that is, consumers select out at an accelerated rate as any plan's price increases. Price ratios capture marginal substitution effects (on selection) across plans, consistent with the steepness manipulation; recall that these are ratios of longer to shorter plans, so increases represent reducing the duration discount. These are significantly positive for 3MO/1MO (b = 0.946) and 6MO/1MO (b = 0.590), but nonsignificant for 6MO/ 3MO (b = -0.207). This pattern of results suggests that making the 1MO plan relatively inexpensive draws in
+
+1192
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+more customers overall, consistent with its being the most popular plan, but may also suggest it serves as an anchor against which the other plans are evaluated. By contrast, adjusting the 6MO/3MO price ratio appears to have at most minor effects on selection.
+Contract Choice Parameter estimates for conditional plan choice appear in the middle portion of Table 5. These reflect how prices influence plan choice if a first-time user were to opt in, regardless of having done so, allowing "debiased" counterfactuals of menu price changes on both opt-in and contract choice.
+All "alternative-specific" coefficients are relative to the 1MO baseline used for identification, whereas (linear and quadratic) price effects are "common across alternatives." Overall, there is a strongly negative price effect (b = -1.431) with a marginally significant quadratic term (b = -0.345), suggesting that raising the relative price decreases choice probability, as would be expected.
+In terms of plan-specific effects, both the 3MO (b = -0.334) and 6MO (b = -0.366) intercepts are significantly negative, reflecting their being less popular than the 1MO plan overall. One might anticipate that price ratio effects would exhibit a complex pattern that depends on the extent to which the IIA property holds (conditional on subscribing). For example, for someone who has decided to subscribe, whether to choose the 1MO plan should not strongly hinge on whether the 6MO/3MO ratio is increased, over and above the (linear and quadratic) price effects already accounted for. Yet we consistently find this to be the case: the 3MO/1MO price ratio has a negative effect on the 6MO plan, and the 6MO/1MO price ratio has a negative effect on the 3MO plan. Because of the complexity of these effects in the presence of selectivity, we defer a more holistic discussion for our examination of Menu Price Elasticities.
+Overall, the highly significant pattern of menu price effects helps inform the site about both how its pricing affects subscriptions and how to sway firsttime users toward longer-term contracts. How the firm should alter the menu's component prices is taken up later in our price menu optimization exercise.
+Latent Correlations in Selectivity and Plan Choices The bottom portion of Table 5 presents estimates for error covariance elements not fixed by model identification. There are five of these, corresponding to the correlation between the selection model and the 3MO and 6MO plans, the correlation in conditional choice between the 3MO and 6MO plans, and the two diagonal elements for the 3MO and 6MO error covariance scale.
+The primary econometric question of this paper is whether it is important to account for latent selectivity in (opt-in) choice, that is, for the selectivity
+
+correlations, s,3 and s,6. We find this to be overwhelmingly so, with highest density regions (HDRs) for both 3MO (s,3 = -0.361) and 6MO (s,6 = -0.329) very strongly below zero (p < 0.0001). This pattern of results implies that as the random component of the selection utility for users who opt in increases, their choice utilities for the 3MO and 6MO options (against the 1MO contract) decrease. One plausible interpretation is that a first-time user unsure of the usefulness of the site's premium functions may test the waters by choosing the 1MO over the 3MO and 6MO plans, so as to avoid committing to the longer-term options. We revisit the implications of such correlational effects later in our price menu optimization.
+Menu Price Elasticities
+Although model parameters assess constant marginal effects in some latent utility, they are difficult to contextualize in a complex model with many covariates and correlated error structures. So, to compare price substitution effects in a scale-free manner across models, we compute price elasticities. Because our focus is on improving current practice, we carry out the computations at the $29.99, $18.99, and $13.99 per-month rates for the 1MO, 3MO, and 6MO plans, respectively, for all models in Table 4. Although these benchmarks fit less well, it is entirely possible that they are still flexible enough to capture menu price elasticities accurately. Our goal is to determine which modeling constructs and parametric restrictions can lead to distortions in interplan substitution patterns.
+As mentioned earlier, we focus on the full model (M1) and specific nested and nonnested benchmarks: no selectivity (M2), full covariance MNP (M5), and nested logit (M7). Full results appear in the web appendix. The resulting elasticity matrices appear in Table 6. To aid in interpretation, these elasticities measure how much "demand" (choice probability) for each of the four possible outcomes--NoSub, 1MO, 3MO, and 6MO (four columns)--is affected by altering prices for each component plan and for the two orthogonalized experimental manipulations, elevation (altering all plan prices in tandem) and steepness (moving the 1MO and 6MO prices in opposite directions; five rows).
+Altering Plan Prices Individually M1 displays the classic elasticity pattern, with negative values on the diagonal and positive off-diagonal.14 But these diagonal elements are quite different: the 3MO plan is far more price elastic (e11 -0.89, e33 -2.68, e66 -1.68). This makes intuitive sense: customers with strong preference for a short- or longterm contract are less likely to "substitute away" than those in the middle. It also makes sense that the 6MO plan is next down, because this is the least costly (per month), the likely choice of highly price-sensitive
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+Table 6. Menu Price Elasticities for Proposed and Selected Benchmark Models
+
+1193
+
+Notes. Elasticities for the full suite of estimated models, M1­M7, appear in the web appendix, Section W7. Shaded numbers indicate own-elasticities.
+
+customers. The cross-elasticities are similarly suggestive: raising the 3MO plan has almost no effect on choice of the 1MO plan (e31 0.01), and a small effect on the 6MO (e36 0.22), but quite a strong effect on the overall subscription rate (e3s -0.57). Overall, this suggests that raising the 3MO price causes come customers to switch to the 6MO plan, but many others to not subscribe at all. Contrast this with the 1MO plan (e13 0.96, e16 0.76, e6s -0.22), where some customers do apparently fail to subscribe, but there is clear substitution into the longer-term plans. The 6MO results are perhaps most interesting of all (e61 0.42, e63 1.16, e6s 0.27): raising its price has a positive effect on overall subscription rates; because this is the least popular plan, chosen largely because it is inexpensive on a monthly basis, raising its price leads to far higher take-up of the two shorter-term plans, which comparatively look like better deals.
+Altering Plan Prices Together The "elevation elasticity"--where all plan prices are raised by the same small percentage--of -0.52 is actually somewhat smaller than for just the 3MO plan on its own (e3s -0.57). Although this cannot be called a full-blown regularity violation (Tversky 1972),
+
+it is intriguing that raising the price on the 3MO subscription alone has an effect similar to that of raising all three prices in tandem, suggesting that consumers may be more forgiving about across-theboard plan price increases than individual ones. Last, the "steepness elasticity" measures small (percentage) changes to the 1MO and 6MO plans in opposite directions, effectively increasing the range of prices. This greatly hurts the 1MO plan (-1.30) and strongly boosts the 6MO plan (2.44), while barely affecting the 3MO plan (-0.19), whose price is unchanged. The significantly negative effect on subscription rate (-0.48), however, suggests that the range of current prices might be too high in terms of attracting new customers, a question to which we return later in our price menu optimization.
+"Turning Off" Selectivity A key question concerns the effects not accounting for selectivity (model M2), that is, setting {s,3, s,6} 0, despite their strong significance. Some elasticity values change dramatically, most notably those for the 3MO plan, which are now all negative. Recall that the 3MO plan had by far the most negative own-price elasticity of the three plans for M1 (e33 -2.68), but this is
+
+1194
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+distortedly so for M2 (e33 -4.95). Worse, those effects are "carried over" to the other plans, and the selection submodel--whose errors are no longer correlated with the choice model--struggles to account for the substitution patterns: whereas e3s -0.57 for M1, it is grossly inflated for M2, to e3s -1.77. Perhaps to compensate, the overall subscription effects for the other two plans become much more positive: e1s 0.23 and e6s 0.54. Overall, given the decreased fit of M2 and the significance of the latent selection correlations {s,3, s,6}, it would seem that excluding these--as is fairly standard in the literature--can produce nontrivially altered elasticity estimates.
+Nonnested Models In terms of own-price elasticities, M5 (MNP) and M7 (nested logit) fail to recognize a fundamental substitution effect: that 3MO is the most price elastic, with M5 and M7 estimating these as {-1.25, -1.07, -1.45} and {-1.21, -1.40, -1.65} for the {1MO, 3MO, 6MO} plans, respectively. This anomaly may owe to these models' "overregularization" of price effects, wherein the greatest price elasticity is imposed on the least costly (per month) 6MO plan. Whereas the steepness effect is similar for both M5 (-0.57) and M7 (-0.59) compared with M1 (-0.57), they roughly double the elevation elasticity, with M5 (-1.00) and M7 (-1.16) versus M1 (-0.48); this suggests that these models have trouble detecting the muted effects of all prices being increased in tandem, mistaking them as roughly the additive effects of each price increasing on its own. Last, both models mistakenly assign a negative subscription elasticity to the 6MO plan, another potential sign of overregularization.
+Price Menu Optimization
+Although the previous findings speak to the enhanced fit and flexibility of the proposed model over both nested and nonnested alternatives, its managerial usefulness rests on its ability to provide insight and improve performance. An explicit goal of our partnering firm was to use the experimental results to identify a menu price configuration that improves upon their current one. To this end, we carry out a price menu optimization via a full posterior Monte Carlo grid search and provide credible intervals for
+
+expected improvement in customer revenue. Although a variety of objectives are possible, the firm is specifically interested in total up-front payment, which, as we will see, effectively favors menus that encourage choosing the 6MO plan (i.e., lowest unit cost but maximum total cost).15
+To generate individual-level choice probabilities in the grid search, we stochastically integrate over the latent utilities of subscription opt-in and plan choices for each participant, where linear coefficients' posterior samples are applied to geodemographic covariates and price terms, together with an additional 5,000 independent and identically distributed MVN draws using the posterior error covariance matrix. Specifically, we replace each participant's assigned price menu with counterfactual ones, with each of the three plan prices iteratively drawn from a ($0, $80) grid using $0.05 increments. Note that this range well exceeds those of the test conditions as well as what is realistically feasible on this site, to check the global optimality of the resulting menu. The expected revenues result in a convex hypersurface, indicating a unique optimum. As this hypersurface is in R4+ (e.g., three input prices and resultant revenue), for brevity, visualizations taken marginally with respect to each price dimension appear in the web appendix; these two-dimensional revenue "surfaces" are unimodal and smooth (i.e., convex) up to the granularity of the search grid.
+To contextualize the price menu optimization, as well as the role of failing to account for self-selection, Table 7 provides optimal menu levels and expected revenues based on the full (M1) and no selection (M2) models, along with HDRs and both elevation ("Average") and steepness ("Range %") metrics. (For convenience, realized and expected-under-M1 revenues are broken out as well by condition in Table 1.) The firm currently charges {$29.99, $18.99, $13.99} as the {1MO, 3MO, 6MO} per-month unit prices (i.e., the Base and Standard condition), where average customer revenue is observed to be $9.69 (n 976). Under M1 and M2, the current menu's full-sample (n = 18,286) expected customer revenue is estimated to be $9.61 and $11.46, respectively, suggesting a far better posterior predictive fit from M1. The menu configuration predicted to have the highest expected
+
+Table 7. Current vs. Optimal Price Menus and Revenue Projections
+
+1MO
+
+3MO
+
+Current Full model (M1)
+% change No selection (M2)
+% change
+
+$29.99 $34.80 (34.25, 36.75) 16.0% $35.10 (32.60, 39.45) 17.0%
+
+$18.99 $19.15 (18.15, 22.50)
+0.8% $18.70 (18.20, 20.00) -1.5%
+
+Note. The 99% HDRs are reported in parentheses.
+
+6MO
+$13.99 $17.75 (16.25, 22.15) 26.9% $16.45 (15.40, 18.95) 17.6%
+
+Average
+$20.99 $23.90 13.9% $23.42 11.6%
+
+Range %
+214% 196% -8.5% 213% -0.5%
+
+E[Revenue]
+$9.69 $10.73 10.7% $10.44
+7.7%
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+1195
+
+revenue (i.e., optimum) under M1 is {$34.80, $19.15, $17.75}, resulting in expected revenues of $10.73 (10.7% increase); and under M2, the optimum is {$35.10, $18.70, $16.45}, with expected revenue estimated to be $10.44 (7.7% increase).
+Although the models' expected revenues are difficult to compare in the absence of a ground truth (e.g., a field test), the price levels of the optima directly reflect the models' differences, particularly the elasticity estimates that drive these optimization results. We find M2's optimum to have a lower elevation ($23.42) and 3MO "midpoint" ($18.70) and greater steepness (213%) versus M1 ($23.90, $19.15, and 196%, respectively). These patterns correspond to M2's elasticities (versus M1; Table 6), which indicate greater subscription sensitivity to elevation (-1.00 versus -0.52) and 3MO price (-1.77 versus -0.57), leading M2's optimum to fall at relatively lower values of these two menu characteristics. By contrast, not only is M2 relatively less elastic to steepness on overall subscription (-0.35 versus -0.48), its plan choice elasticities indicate that in increasing steepness, customers are drawn toward longer-duration options16 (3MO and 6MO), an outcome favored by the firm's revenue objective. However, M1's superior fit (Table 3) and its highly significant selectivity correlations {s,3, s,6} (Table 5) suggest that the nested no-selectivity M2's optimization results are likely affected by selection bias, leading it to overestimate the optimal menu's steepness while underestimating its elevation and 3MO price.
+The optimal menu of {$34.80, $19.15, $17.75} under M1 suggests that the site's current prices are too low across the board, on average, by 13.9%, a finding consistent with the firm's a priori belief that they should be raised. In particular, the current 6MO price appears to be much lower than it should be, by 26.9%, suggesting the firm may have been overly cautious given its objective to maximize upfront revenue, because the 6MO plan requires the greatest initial commitment. Likewise, the current range (i.e., steepness) is 8.5% higher than optimal, whereas the optimal menu raises the 6MO price, serving to "flatten" the menu overall. An analogous effect appears when
+Figure 3. Posterior Distribution for Change in Revenue, Optimal vs. Current Menu
+
+Figure 4. Heterogeneity Distribution for Change in Revenue, Optimal vs. Current Menu
+comparing the 3MO and 1MO plans, which are currently priced at $18.99 and $13.99, or a 58% difference; yet the optimal menu suggests this should be substantially higher, at 82%.
+In short, the optimization suggests the site may be "leaving money on the table" on initial subscriptions, by 10.7%, or $1.14 per customer. To assess uncertainty around this expected customer revenue improvement, we conducted two additional analyses. First, a full-posterior simulation conducted by running the Monte Carlo grid search on the current and recommended menus finds the average change in expected customer revenue to be positive over the 99% HDR (Figure 3). Additionally, we assess the distribution of customer-level responses to the price menu change, that is, whether expected revenue improvement is positive for most customers or concentrated in a particular subgroup. Here we find that roughly 95% of all participants are expected to have a positive change in revenue given the optimal menu (Figure 4).
+Taken together, these analyses support the superiority of the suggested (optimal) menu over the one currently in use, and that the change will be revenuepositive over the full model posterior and for the strong majority of users. There are, however, two caveats. First, we have not tried to locate the best set of prices that each end in ".99," as the current monthly menu prices do and which prior field experiments suggest can nontrivially affect consumers' choices (Anderson and Simester 2003). Second, our price menu optimization was performed in-sample, so may take advantage of peculiarities of this particular set of new users or data window, possibly inflating the forecast 10.7% revenue increase. A true assessment of the proposed price menu's potential would, of course, require dedicated field testing.
+Conclusion
+Firms offering an array of options wish to understand how consumers choose among them, including the possibility of opting out entirely. Here, we examine whether (random-utility) models that treat opting out as just another option capture such complex
+
+1196
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+consumer decisions with appropriate flexibility. Our findings argue instead that explicitly modeling the self-selection induced by consumers' opting in provides greater fidelity to field data and inferred substitution patterns. In setting items' menu prices, specifically, one must therefore consider how they work in concert to affect two interrelated decisions: whether to opt in (purchase) at all and, conditionally, which item to choose.
+In the empirical domain of duration discounts, we caution against firms setting their contract menu prices solely via historical pricing data--which suffer from several known drawbacks (e.g., low variation, multicollinearity)--and instead propose an experimental approach and adopting a model that accounts for opt-in selectivity. Our field experiment orthogonalized the elevation and steepness of a dating site's contract menu prices in order to disentangle their often-confounded effects. To analyze resulting user data, we developed a general binary selection multinomial choice framework, one suitable for assessing substitution patterns in a wide range of choice settings beyond nonlinear pricing. Results indicate that model fit is substantially hampered when failing to account for selectivity; that estimated substitution patterns can be biased by the error covariance assumptions baked into common discrete choice models, including those widely applied in nonlinear pricing; and, substantively, that raising all prices in the menu concurrently can have a smaller negative impact on (subscription) opt-in than some of the component prices in isolation. The model can also be used to optimize such price menus, and doing so for our experiment suggests that the firm is systematically underpricing their contract menu, particularly the firm-favored six-month option, their longest-duration and highest-total-revenue contract.
+These findings represent, to our knowledge, the first rigorous field measurements of both menu pricing effects and selectivity in duration contracts, as well as the use of efficient HMC techniques to navigate the nonlinearities intrinsic to the latent, cross-submodel error correlations. Still, the results can potentially go further along a number of dimensions. First, long-run profitability depends not only on initial subscription, but resubscription, that is, becoming a regular customer. It is possible that new customers lured, for example, by a low-elevation or high-steepness menu may be less likely to resubscribe than the firm's usual customer mix. In such cases, multiple experimental waves or longitudinal subscription data would be required to capture long-term engagement and lifetime value.
+Second, although the model can be applied in any opt-in versus opt-out scenario, we have theorized that
+
+it will be especially valuable when opting out is highly distinct relative to the choice options taken as a set. Here, for example, because the subscription plans were arrayed along a unidimensional tradeoff--lower unit (monthly) price versus longer total commitment--assessing trade-offs among them was cognitively and informationally simple. The model's applicability can and should be gauged by how it performs in scenarios where the downstream choices differ in many ways, like for cars, or where opting out still entails a cost, for example, arranging transportation.
+Third, we did not supplement our submodels of "whether" and "which" with two other common questions: "when" and "how many." That is, not only does the firm want new users to subscribe to a lucrative plan, it would prefer they both do it sooner and purchase multiple units, the latter taking us beyond the realm of duration to volume discounts. From a Bayesian perspective, both "when" and "how many" can be readily accommodated using known techniques from the hazard-modeling and multiplediscreteness literatures, but would require careful modeling of both utility functions and multiple correlated error structures.
+Last, a key limitation of any parametric approach to consumer utility and preference is that the analyst must specify and test functional forms, as we have done in our empirical application. We see potential for methods from the nonparametric and machine learning literatures to be grafted onto the general framework proposed here, with a dedicated account of selectivity enriching "learned" models for consumer preference. Such an approach would be readily applicable to price menus, duration discounts, and nonlinear pricing in general, as well as in the wider realm of random utility models applied to consumer choices "censored" by the act of opting out.
+Acknowledgments The research assistance of Tian Zhou and Mengyao Huang is gratefully acknowledged, as are helpful comments from Katherine Burson, Peter Danaher, Rich Gonzalez, Raghu Iyengar, Anja Lambrecht, and Scott Rick. The authors thank the sponsoring firm for allowing them to run an online experiment and present analyses of the data.
+Endnotes
+1 A nondisclosure agreement prevents disclosure of the site itself or information that might enable its identification. We point out elsewhere where specific information is deliberately redacted for this purpose. 2 The field data are rich in individual registrant record content, for example, subscription plans, locations, and mate-seeking preferences, among other situational and geodemographic variables provided at registration. The effects of such covariates on customer uptake and
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+1197
+
+plan choice appear in the web appendix and are not discussed subsequently here.
+3 One condition (Base elevation, Flattish steepness; Table 1) was discontinued because the firm misimplemented its price levels.
+4 As mentioned earlier, this asymmetry in steepness was imposed (by the firm) to limit deviations from industry practice pricing levels, to mitigate potential revenue loss. The firm further imposed that monthly plan prices be "rounded" out to standard retail patterns, to end with ".99." All our conditions thus reflect this constraint.
+5 The 33-day observation window contained a few follow-up renewal decisions, but these were limited to participants who initially opted into the 1MO contract very early on. Such renewals were very rare (<1% of participants) and do not correspond to initial decisions, and so are excluded from the analysis.
+6 Because of the implementation error in the Base and Flattish condition, unbalanced cells must be omitted in each of these comparisons, which would upset the orthogonalization.
+7 We tested a variety of different covariate specifications as well, especially for the selectivity model. All produced inferior fit metrics, and in some cases, convergence difficulties owing to collinearity. Alternative estimation results are available from the authors, as are coefficients for all demographic and situational variables.
+8 In the counterfactual price optimization, Xprice Xp*rice × 1[1×N], where Xp*rice is a 3-lengthed vector representing a configuration of menu prices being queried at a particular instance within the search space of prices.
+9 Note that in standard multinomial choice model identification, typically one alternative's utility is held to zero and serves as the baseline to address the issues of additive redundancy. As such, in our estimation, the error covariance term (Equation (5)) will have only J - 1 dimensions with respect to outcome errors. Similarly, to address the multiplicative redundancy of latent utilities, the first elements in the error covariance matrix, with respect to both the selection and outcome submodels, are rescaled to 1, for example, 2s and 2o1 (McCulloch and Rossi 1994). Details are provided in the web appendix.
+10 For concision, Y*o denotes both censored and uncensored outcome latent utilities.
+11 Note that in the context of Stan's No-U-Turn Sampler, the burn-in is referred to as the "warm-up" period where, in addition to initial convergence toward the posterior mode, HMC hyperparameters (e.g., step size and length) are adaptively tuned. Sampling period convergence is assessed using the between-chain R^ statistic, of which all parameters are found to be < 1.1.
+12 The full sample is divided randomly into 10 groups, each model is fit on 90% of the data, and the posteriors used to make predictions for the held-out 10%, by stochastically integrating over the latent utility covariances in models that include them. Hit rates for all models (M1­M7) are computed across the entire posterior, and so "penalize" lack of parsimony. Finally, because log-probability is calculated up to a data-dependent scaling constant, values should be assessed only via differences across models.
+13 Note that, because the binary selectivity model is identical and uncorrelated with choice for M2­M4, these estimates are within Markov chain Monte Carlo error of one another; that is, they are essentially equal. The model also contains numerous individual-level covariates; selected estimation results appear in the web appendix.
+14 Significance is assessed via posterior HDRs; for comparison purposes, the 95% HDRs for model M1's elasticities appear at the bottom of Table 6.
+15 In the web appendix, we additionally consider a "long-term" objective function; that is, we optimize for the expected annual revenue by accounting for the average resubscription rates for each plan
+
+choice, calculated empirically from historical customer relationship management data provided by the firm. 16 M2 infers 3MO and 6MO steepness elasticities as 0.45 and 3.04, versus -0.19 and 2.44 for M1, respectively.
+References
+Anderson ET, Simester DI (2003) Effects of $9 price endings on retail sales: Evidence from field experiments. Quant. Marketing Econom. 1(1):93­110.
+Anderson ET, Simester DI (2004) Long-run effects of promotion depth on new versus established customers: Three field studies. Marketing Sci. 23(1):4­20.
+Ascarza E, Lambrecht A, Vilcassim N (2012) When talk is "free": The effect of tariff structure on usage under two-and three-part tariffs. J. Marketing Res. 49(6):882­899.
+Braun M, Moe WW (2013) Online display advertising: Modeling the effects of multiple creatives and individual impression histories. Marketing Sci. 32(5):753­767.
+Bushway S Johnson BD, Slocum LA (2007) Is the magic still there? The use of the Heckman two-step correction for selection bias in criminology. J. Quant. Criminology 23(2):151­178.
+Carpenter B, Gelman A, Hoffman MD, Lee D, Goodrich B, Betancourt M, Brubaker M, Guo J, Li P, Riddell A (2017) Stan: A probabilistic programming language. J. Statist. Software 76(1): 1­32.
+Danaher PJ (2002) Optimal pricing of new subscription services: Analysis of a market experiment. Marketing Sci. 21(2):119­138.
+Dubin JA, Rivers D (1989) Selection bias in linear regression, logit and probit models. Sociol. Methods Res. 18(2­3):360­390.
+Feinberg FM, Salisbury LC, Ying Y (2016) When random assignment is not enough: Accounting for item selectivity in experimental research. Marketing Sci. 35(6):976­994.
+Goettler RL, Clay K (2011) Tariff choice with consumer learning and switching costs. J. Marketing Res. 48(4):633­652.
+Gu Z, Yang S (2010) Quantity-discount-dependent consumer preferences and competitive nonlinear pricing. J. Marketing Res. 47(6):1100­1113.
+Grubb MD, Osborne M (2015) Cellular service demand: Biased beliefs, learning, and bill shock. Amer. Econom. Rev. 105(1): 234­271.
+Heckman JJ (1979) Sample selection bias as a specification error (with an application to the estimation of labor supply functions). Econometrica 47(1):153­161.
+Iyengar R, Gupta S (2009) Nonlinear pricing. Rao V, ed. Handbook of Pricing Research in Marketing (Edward Elgar Publishing, Northampton, MA), 355­383.
+Iyengar R, Ansari A, Gupta S (2007) A model of consumer learning for service quality and usage. J. Marketing Res. 44(4):529­544.
+Kumar V (2014) Making "freemium" work: Many start-ups fail to recognize the challenges of this popular business model. Harvard Bus. Rev. 92(5):27­29.
+Lambrecht A, Seim K, Tucker C (2011) Stuck in the adoption funnel: The effect of interruptions in the adoption process on usage. Marketing Sci. 30(2):355­367.
+Lambrecht A, Seim K, Vilcassim N, Cheema A, Chen Y, Crawford GS, Hosanagar K, et al. (2012) Price discrimination in service industries. Marketing Lett. 23(2):423­438.
+Lambrecht A, Skiera B (2006) Paying too much and being happy about it: Existence, causes, and consequences of tariff-choice biases. J. Marketing Res. 43(2):212­223.
+Levitt SD, List JA (2009) Field experiments in economics: The past, the present, and the future. Eur. Econom. Rev. 53(1):1­18.
+Little RJA, Rubin DB (2020) Statistical Analysis with Missing Data, 3rd ed. (John Wiley & Sons, Hoboken, NJ).
+
+1198
+
+Tian and Feinberg: Optimizing Price Menus for Duration Discounts Marketing Science, 2020, vol. 39, no. 6, pp. 1181­1198, © 2020 INFORMS
+
+Manchanda P, Packard G, Pattabhiramaiah A (2015) Social dollars: The economic impact of customer participation in a firmsponsored online customer community. Marketing Sci. 34(3): 367­387.
+McCulloch R, Rossi PE (1994) An exact likelihood analysis of the multinomial probit model. J. Econometrics 64(1):207­240.
+McManus B (2007) Nonlinear pricing in an oligopoly market: The case of specialty coffee. RAND J. Econom. 38(2):512­532.
+Mussa M, Rosen S (1978) Monopoly and product quality. J. Econom. Theory 18(2):301­317.
+Neal RM (2011) MCMC using Hamiltonian dynamics. Brooks S, Gelman A, Jones G, Meng XL, eds. Handbook of Markov Chain Monte Carlo (Chapman and Hall/CRC Press, Boca Raton, FL).
+Niculescu MF, Wu DJ (2014) Economics of free under perpetual licensing: Implications for the software industry. Inform. Systems Res. 25(1):173­199.
+Petrin A, Train K (2010) A control function approach to endogeneity in consumer choice models. J. Marketing Res. 47(1):3­13.
+Puhani P (2000) The Heckman correction for sample selection and its critique. J. Econom. Surveys 14(1):53­68.
+
+Rao VR, ed. (2009) Handbook of Pricing Research in Marketing (Edward Elgar Publishing, Cheltenham, UK).
+Ratchford BT (2009) Online pricing: Review and directions for research. J. Interactive Marketing 23(1):82­90.
+Ricciardi F, Mattei A, Mealli F (2019) Bayesian inference for sequential treatments under latent sequential ignorability. J. Amer. Statist. Assoc. 115(531):1498­1517.
+Tanner MA, Wong WH (1987) The calculation of posterior distributions by data augmentation. J. Amer. Statist. Assoc. 82(398): 528­540.
+Tversky A (1972) Elimination by aspects: A theory of choice. Psychol. Rev. 79(4):281­299.
+Wachtel S, Otter T (2013) Successive sample selection and its relevance for management decisions. Marketing Sci. 32(1):170­185.
+Wilson RB (1993) Nonlinear Pricing (Oxford University Press, New York).
+Wolk A, Skiera B (2010) Tariff-specific preferences and their influence on price sensitivity. Bus. Res. 3(1):70­80.
+Zanutto EL, Bradlow ET (2006) Data pruning in consumer choice models. Quant. Marketing Econom. 4(3):267­287.
+
+
