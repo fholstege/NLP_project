@@ -101,7 +101,7 @@ for count, link in enumerate(urls):
     if success:
         scraped_DOI.append(re.search('pdf/(.*)', link).group(1))
     # sleep to make sure we are not recognized as DoS attack
-    time.sleep(5)
+    time.sleep(10)
     
 # save scraped DOIs
 scraped_DOI = pd.Series(scraped_DOI)
