@@ -108,6 +108,10 @@ def get_max(doc):
         idx,l = zip(*doc)
         return idx[np.argmax(l)]
 
-data['doc_topic'] = [get_max(doc) for doc in model.get_document_topics(model_corpus)]
+doc_topics = [get_max(doc) for doc in lda_model.get_document_topics(corpus)]
+df_topics['Topic'] = doc_topics
+df_topics['Topic'] = df_topics['Topic']  + 1
 
-
+df_combined_info = pd.concat([df,df_topics], axis=1)
+df_combined_info.columns
+df_combined_info.groupby('Topic').mean()['num_ref']
