@@ -144,7 +144,8 @@ def prepare_scopus(data_path, field_data, field_dict):
     # clean references
     for col in range(references.shape[1]):
         references[col] = references[col].str.extract(r"\d{4}\)([a-zA-Z0-9_ :]*),")
-
+        references[col] = references[col].str.strip()
+    
     # rename columns
     references = references.add_prefix("ref_")
 
