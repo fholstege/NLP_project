@@ -4,8 +4,8 @@
 #
 # Parts: 
 #   1) Load in packages, define help functions
-#   2) Define dependent variable, log and winsorize it
-#   3) Use topics from LDA
+#   2) Define dependent variable
+#   3) check topics from LDA
 #   4) Use word embeddings from Word2vec
 #   5) Use tf-idf and PCA 
 #   6) Use BERT embeddings
@@ -22,7 +22,8 @@
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(reticulate,
                tidyverse,
-               glmnet) 
+               glmnet,
+               pscl) 
 
 
 # create ability to read parquet files into r
@@ -58,7 +59,7 @@ df_full = read_parquet('../data/clean/data_journals_merged_topics.gzip')
 colnames(df_full)
 
 ############################
-# 2) Define dependent variable, log and winsorize it
+# 2) Define dependent variable
 ############################
 
 
@@ -68,41 +69,63 @@ ggplot(data = df_full,aes(x = `Cited by`) ) +
   labs(x = 'Number of Citations', y = 'Frequency') + 
   theme_bw()
 
-# logged 
-ggplot(data = df_full,aes(x = log(`Cited by`) )) + 
+# logged (+1)
+ggplot(data = df_full,aes(x = log(1 + `Cited by`) )) + 
   geom_histogram(bins = 50, color="black", fill="blue") +
   labs(x = 'Number of Citations (Logarithm)', y = 'Frequency') + 
   theme_bw()
 
-n_zero_citation = nrow(df_full[df_full$`Cited by`==0,])
-n_zero_citation/ nrow(df_full)
+# Altmetric 
+ggplot(data = df_full,aes(x = `Altmetric Attention Score` )) + 
+  geom_histogram(bins = 20, color="black", fill="red") +
+  labs(x = 'Altmetric Attention Score', y = 'Frequency') + 
+  theme_bw()
+
+# Altmetric  looged
+ggplot(data = df_full,aes(x = log(1 + `Altmetric Attention Score`) )) + 
+  geom_histogram(bins = 20, color="black", fill="red") +
+  labs(x = 'Altmetric Attention Score', y = 'Frequency') + 
+  theme_bw()
 
 
+# conclusion; for prediction, keep logged. For inference, build two-stage model
+# check percentage of zero citations per
+n_0_log_citation = nrow(df_full[log( 1 + df_full$`Cited by`) == 0,])
+n_0_log_citation/ nrow(df_full)
 
-
-
-
-
-
-
-
-
-
+# conclusion; for prediction, keep logged. For inference, build two-stage model
+# check percentage of zero citations per
+n_0_log_altmetric = nrow(df_full[log( 1 + df_full$`Altmetric Attention Score`) == 0,])
+n_0_log_altmetric/ nrow(df_full[!is.na(df_full$`Altmetric Attention Score` ),])
 
 
 
 # not add topic 3 - since all classified in one of these
-topic_var = c('Topic 1', 'Topic 2', 'Topic 3')
-dependent_var = c('num_ref')
+topic_var = c('Topic')
+dependent_var = c('Cited by', 'Altmetric Attention Score')
 
-df_model <- df[,c(dependent_var, topic_var)]
-df_model_noNA <- na.omit(df_model)
-colnames(df_model_noNA)
+# removes a couple of empty rows
+df_topics <- df_full[,c(dependent_var, topic_var)]
 
-df_model_noNA
 
-baseline_topic_model = lm(log(num_ref) ~ as.factor(Topic) , data = df_model_noNA)
-summary(baseline_topic_model)
+# check for the entire dataset if the number of citations is zero
+df_topics$citations_is_zero = ifelse(df_topics$`Cited by` == 0, 1, 0)
+
+# create dataset where only citations are included that are not zero
+df_model_non_zero <- df_topics[df_topics$`Cited by` != 0,]
+
+# run the binary, logit model for entire dataset
+binary_model_topic = glm(factor(citations_is_zero) ~  factor(Topic), data = na.omit(df_topics %>% select(-`Altmetric Attention Score`)), family = binomial(link = "logit"), control = list(maxit = 50))
+
+# linear model for number of citations >0 
+linear_model_topic = lm(log(1 + `Cited by`) ~ factor(Topic)   , data = na.omit(df_model_non_zero%>% select(-`Altmetric Attention Score`)))
+
+
+summary(binary_model_topic)
+summary(linear_model_topic)
+
+
+
 
 
 

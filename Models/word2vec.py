@@ -14,14 +14,18 @@ df.index
 
 texts = [row.split() for row in df['body']]
 
-#random_indeces = list(np.random.permutation(len(texts)))
-#train_size = int(round(len(texts) * 0.7,0))
+random_indeces = list(np.random.permutation(len(texts)))
+train_size = int(round(len(texts) * 0.7,0))
 
-#train_indeces = random_indeces[:train_size]
-#test_indeces = random_indeces[train_size:]
+train_indeces = random_indeces[:train_size]
+test_indeces = random_indeces[train_size:]
 
-#train_texts = [texts[i] for i in train_indeces]
-#test_texts = [texts[j] for j in test_indeces]
+train_bool =  [1 if i in train_indeces else 0 for i in range(0,max(random_indeces)+1)]
+
+
+
+train_texts = [texts[i] for i in train_indeces]
+test_texts = [texts[j] for j in test_indeces]
 
 cores = multiprocessing.cpu_count()
 
@@ -30,7 +34,8 @@ cores = multiprocessing.cpu_count()
 # https://levyomer.files.wordpress.com/2014/04/dependency-based-word-embeddings-acl-2014.pdf
 window = 5
 # size = dimensionality of the vector; needs to be a lot lower than the vocabulary
-size = 100 # consider 300
+# mikolov: 300
+size = 300 
 
 # alpha: learning rate
 alpha = 0.025 
@@ -38,10 +43,8 @@ alpha = 0.025
 # based on mikolov et al; negative sampling
 negative = 5
 
-# original word2vec paper
-ns_exponent = 0.75
 
-w2v_model = Word2Vec(texts,
+w2v_model = Word2Vec(train_texts,
                      window=window,
                      size=size,
                      alpha = alpha,
@@ -80,18 +83,31 @@ def document_vector_min(doc, w2v_model):
 
 
 
-list_doc_representation = [document_vector_mean(doc, w2v_model) for doc in texts ]
-len(list_doc_representation)
-
-list_doc_representation
-names = ['mean_dim_' + str(i) for i in range(1,size + 1)]
-df_doc_representation = pd.DataFrame(list_doc_representation)
-df_doc_representation.columns = names
-df_doc_representation['num_ref']= df['num_ref']
-df_doc_representation
+list_doc_representation_mean = [document_vector_mean(doc, w2v_model) for doc in texts ]
+list_doc_representation_max = [document_vector_max(doc, w2v_model) for doc in texts ]
+list_doc_representation_min = [document_vector_min(doc, w2v_model) for doc in texts ]
 
 
-df_doc_representation.to_csv('../data/representations/word2vec_doc_representation.csv')
+names_mean = ['mean_dim_' + str(i) for i in range(1,size + 1)]
+names_max = ['max_dim_' + str(i) for i in range(1,size + 1)]
+names_min = ['min_dim_' + str(i) for i in range(1,size + 1)]
+
+
+df_doc_representation_mean = pd.DataFrame(list_doc_representation_mean)
+df_doc_representation_max = pd.DataFrame(list_doc_representation_max)
+df_doc_representation_min = pd.DataFrame(list_doc_representation_min)
+
+df_doc_representation_mean.columns = names_mean
+df_doc_representation_max.columns = names_max
+df_doc_representation_min.columns = names_min
+
+
+df_doc_representation_mean['Cited by']= df['Cited by']
+
+
+df_doc_representation_mean.to_csv('../data/representations/word2vec_doc_representation_mean.csv')
+df_doc_representation_max.to_csv('../data/representations/word2vec_doc_representation_max.csv')
+df_doc_representation_min.to_csv('../data/representations/word2vec_doc_representation_min.csv')
 
 
 
