@@ -55,7 +55,6 @@ dictionary.compactify()
 corpus = [dictionary.doc2bow(text) for text in texts_list]
 _ = dictionary[0] # need this line to force-load the data in the kernel
 id2word = dictionary.id2token
-len(id2word)
 
 # # save as blei corpus (lda-c format)
 # bleicorpus.BleiCorpus.serialize('../data/clean/lda_corpus.lda-c', corpus)
@@ -92,8 +91,9 @@ result_cv = check_n_topic_scores_CV(corpus, range_n_topics, id2word, K, coherenc
 
 
 
+n_topics = 3
 # original LDA model
-lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=3, minimum_probability=0)
+lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=n_topics, minimum_probability=0)
 lda_model.print_topics()
 lda_corpus = lda_model[corpus]
 lda_model.get_topics()
@@ -102,6 +102,8 @@ def edit_tuple(x):
     return x[1]
 df_topics = pd.DataFrame(lda_corpus).applymap(edit_tuple)
 df_topics.columns = ['Topic 1', 'Topic 2', 'Topic 3']
+
+
 
 
 def get_max(doc):
@@ -113,5 +115,7 @@ df_topics['Topic'] = doc_topics
 df_topics['Topic'] = df_topics['Topic']  + 1
 
 df_combined_info = pd.concat([df,df_topics], axis=1)
-df_combined_info.columns
-df_combined_info.groupby('Topic').mean()['num_ref']
+df_combined_info.to_parquet("../Data/clean/data_journals_merged_topics.gzip", compression='gzip')
+
+
+

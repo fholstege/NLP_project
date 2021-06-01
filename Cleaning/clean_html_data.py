@@ -1,7 +1,9 @@
-from remove_functions import remove_in_text_references_text, remove_stopwords_non_alpha_single_words,remove_titles_sage, remove_in_text_references_text
+from remove_functions import remove_in_text_references_text, remove_stopwords_non_alpha_single_words,remove_titles_sage, remove_in_text_references_text, keep_nouns_adjectives
 import pandas as pd
 from bs4 import BeautifulSoup as bs
 from nltk.tokenize import word_tokenize 
+
+### Part 1: raw data 
 
 
 # read the zipped files
@@ -10,6 +12,12 @@ df_jomr = pd.read_parquet('../Data/Scraped/journalofmarketingresearch_data_lim.g
 df_jcr = pd.read_parquet('../Data/Scraped/journalofconsumerresearch_data_lim.gzip')
 df_jcp = pd.read_parquet('../Data/Scraped/journalofconsumerpsych_data_lim.gzip')
 df_jam = pd.read_parquet('../Data/Scraped/journalacademyofmarketingscience_data_lim.gzip')
+
+df_jom.apply()
+
+
+## Part 2: remove titles and in-text references
+
 
 # remove titles from html
 df_jom['body'] = df_jom['body'].apply(remove_titles_sage)
@@ -22,6 +30,9 @@ df_jomr['body'] = df_jomr['body'].apply(remove_in_text_references_text, publishe
 df_jcr['body'] = df_jcr['body'].apply(remove_in_text_references_text, publisher = 'OUP')
 df_jcp['body'] = df_jcp['body'].apply(remove_in_text_references_text, publisher = 'Wiley')
 df_jam['body'] = df_jam['body'].apply(remove_in_text_references_text, publisher = 'springer')
+
+
+## Turn all to lower
 
 # turn all to lower
 df_jom['body'] = df_jom['body'].str.lower()
@@ -43,6 +54,16 @@ df_jomr['title'] = df_jomr['title'].str.lower()
 df_jcr['title'] = df_jcr['title'].str.lower()
 df_jcp['title'] = df_jcp['title'].str.lower()
 df_jam['title'] = df_jam['title'].str.lower()
+
+
+
+# remove stopwords and non-alpha words
+df_jom['body'] = df_jom['body'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jomr['body'] = df_jomr['body'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jcr['body'] = df_jcr['body'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jcp['body'] = df_jcp['body'].apply(remove_stopwords_non_alpha_single_words, stopword_list = stopwords_final)
+df_jam['body'] = df_jam['body'].apply(remove_stopwords_non_alpha_single_words,stopword_list = stopwords_final)
+
 
 
 # create stopword list

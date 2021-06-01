@@ -1,6 +1,32 @@
 from bs4 import BeautifulSoup as bs
 from nltk.tokenize import word_tokenize 
+import nltk
+from nltk.util import ngrams
+from collections import Counter
 
+
+def count_n_unique_top_words(text_str, n_top_words):
+    word_tokens = word_tokenize(text_str)
+    n_unique_words = len(word_tokens.unique())
+    
+    n_gram_text = ngrams(word_tokens, 1)
+    word_counter = Counter(n_gram_text)
+    top_words_text = word_counter.most_common(n_top_words)
+    
+    return n_unique_words, top_words_text
+
+
+
+
+
+def keep_nouns_adjectives(body_str):
+    word_tokens = word_tokenize(body_str)
+    tags = tags = nltk.pos_tag(word_tokens)
+    adj_nouns = [word for word,pos in tags if (pos == 'NN' or pos == 'ADJ')]
+    
+    adj_nouns_str = " ".join(adj_nouns)
+
+    return adj_nouns_str
 
 
 def remove_stopwords(stopword_list, word_tokens):
@@ -94,20 +120,24 @@ def remove_in_text_references_text(body_str, publisher):
 
 
 
-def remove_stopwords_non_alpha_single_words(body_str, stopword_list):
+def remove_stopwords_non_alpha_single_words(body_str, stopword_list = None, alpha = True, single_words = True, stopwords = True):
     
     if type(body_str) != str:
         return 'NA'
     else:
         word_tokens = word_tokenize(body_str)
         
-        word_tokens_no_stopwords = remove_stopwords(stopword_list, word_tokens)
+        if stopwords:
+            word_tokens = remove_stopwords(stopword_list, word_tokens)
         
-        word_tokens_alpha = remove_non_alpha(word_tokens_no_stopwords)
+        if alpha:
+            word_tokens = remove_non_alpha(word_tokens)
+            
+        if single_words:
+            word_tokens = remove_single_words(word_tokens)
         
-        word_tokens_no_single = remove_single_words(word_tokens_alpha)
-        
-        cleaned_str = " ".join(word_tokens_no_single)
+    
+        cleaned_str = " ".join(word_tokens)
         
         return cleaned_str
     
