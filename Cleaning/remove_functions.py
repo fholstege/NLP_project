@@ -5,17 +5,6 @@ from nltk.util import ngrams
 from collections import Counter
 
 
-def count_n_unique_top_words(text_str, n_top_words):
-    word_tokens = word_tokenize(text_str)
-    n_unique_words = len(word_tokens.unique())
-    
-    n_gram_text = ngrams(word_tokens, 1)
-    word_counter = Counter(n_gram_text)
-    top_words_text = word_counter.most_common(n_top_words)
-    
-    return n_unique_words, top_words_text
-
-
 
 
 
