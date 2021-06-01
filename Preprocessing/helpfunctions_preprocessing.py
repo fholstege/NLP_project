@@ -144,7 +144,7 @@ def prepare_scopus(data_path, field_data, field_dict):
     # clean references
     for col in range(references.shape[1]):
         references[col] = references[col].str.extract(r"\d{4}\)([a-zA-Z0-9_ :]*),")
-
+    
     # rename columns
     references = references.add_prefix("ref_")
 
@@ -171,7 +171,177 @@ def prepare_scopus(data_path, field_data, field_dict):
 
     # clean journal column, code nan as NaN
     result['journal'] = result['journal'].replace('nan', np.nan) 
+    
+    # check which journals are not matched
+    cond = ~result['journal'].isna() & result['field'].isna()
+    non_matched = result.loc[cond]['journal'].to_list()
+    len(non_matched)
+    
+    # assign unmatched journals that include 'economics' or 'economic'
+    # 'econometrics' or 'econometric', etc.
+    field_name = 'Economics / Econometrics / Finance'
+    words = ['economic', 'econometric', 'finance', 'financial studies', 'banking']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+    
+    # assign unmatched journals that include 'marketing' or 'advertising'
+    field_name = 'Marketing'
+    words = ['marketing', 'advertising', 'consumer', 'brand', 'jmr', 'mark sci', 'targeting']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
 
+    # assign unmatched journals that include 'psychology' or 'psychological'
+    field_name = 'Psychology'
+    words = ['psychology', 'psychologic', 'psycho', 'personality', 'psychiat', 'social cognition',
+             'attitude strength', 'memory and cognition', 'motivation and cognition' , 'memory and cognition',
+             'cognition and communication', 'free will',  'psyarxiv']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+    
+    # assign unmatched journals that include 'statistical' or 'statistics'
+    field_name = 'Mathematics'
+    words = ['statistical', 'statistics', 'statistician', 'bayesian', 'regression', 'stata',
+             'least squares', 'structural equation', 'multivariate', 'mediation', 'linear models',
+             'data analysis', 'multilevel model', 'network analysis', 'time series analysis']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+    
+    # assign unmatched journals that include 'operations research'
+    field_name = 'Mgmt. Science and OR'
+    words = ['operations research']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+    
+    # assign unmatched journals that include 'journal of business', 'sloan management review' and other journals
+    field_name = 'Strategy and Management'
+    words = ['journal of business', 'management review', 'sloan management review', 'strategy', 'strategic', 
+             'industry management', 'academy of management', 'leadership', 'management executive', 'focused management', 'practice of management', 'mckinsey', 'managerial', 'journal of management', 'management research']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+    
+    # assign unmatched journals that include news articles
+    newspapers = ['wall street journal', 'forbes', 'financial times', 'businessweek',
+                  'usa today', 'new york times', 'reuters', 'the economist', 'the atlantic', 'wired', 'denver post', 'adweek', 'washington post', 'cnn money', 'cnbc', 'newsweek', 'news', 'the new yorker',
+                  'ad age', 'bloomberg', 'brandweek', 'los angeles times', 'newswire', 'quartz', 'vogue',
+                  'cnet', 'mediaweek', 'the guardian', 'business insider', 'business week', 'computerworld',
+                  'informationweek', 'bulletin', 'business week', 'scientific american', 'new yorker',
+                  'american scientist', 'san francisco chronicle', 'business review', 'information week', 'boston globe', 'motley fool', 'techcrunch', 'the conversation', 'press release']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for source in newspapers:
+        result.loc[cond & result['journal'].str.contains(source), 'field'] = 'News'
+    
+    
+    # assign unmatched journals that include 'accouting'
+    field_name = 'Accounting'
+    words = ['accounting', 'accountan', 'risk and insurance']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+    
+
+    # assign unmatched journals that include 'innovation'
+    field_name = 'Mgmt. Technology and Innovation'
+    words = ['innovation', 'technology', 'logistics']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+
+    # assign unmatched journals in medicine
+    field_name = 'Medicine'
+    words = ['medical', 'medicine', 'gerontology', 'jama', 'lancet']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+
+    # assign unmatched journals in social sciences
+    field_name = 'Social Sciences'
+    words = ['law', 'marriage', 'family', 'sociolog', 'politics', 'political', 'legal']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+        
+    # assign unmatched journals in social sciences
+    field_name = 'Neuroscience'
+    words = ['cognitive', 'brain', 'neuroscience']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+        
+    # assign unmatched journals in biological sciences
+    field_name = 'Agricultural and Biological Sciences'
+    words = ['biology', 'royal society b']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+        
+    # assign unmatched journals in biological sciences
+    field_name = 'Org. Behavior and HR'
+    words = ['organizational', 'organizations', 'human resource']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+
+    # assign unmatched journals in multidisciplinary
+    field_name = 'Multidisciplinary'
+    words = ['national academy of sciences']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+        
+    # assign unmatched journals in management information systems
+    field_name = 'Mgmt. Information Systems'
+    words = ['mis quarterly', 'supply chain', 'management information system']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+        
+    # assign unmatched journals in touris, leisure, hospitality management
+    field_name = 'Tourism, Leisure, Hospitality Mgmt.'
+    words = ['service', 'hotel', 'restaurant', 'travel']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+        
+    # assign unmatched journals in computer science
+    field_name = 'Computer Science'
+    words = ['information science', 'computer science']
+    cond = ~result['journal'].isna() & result['field'].isna()
+    for word in words:
+        result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
+
+    
+    
+    
+    
+    
+    # # check journals still unmatched
+    # cond = ~result['journal'].isna() & result['field'].isna()
+    # non_matched = result.loc[cond]['journal'].to_list()
+    # len(non_matched)
+    
+    # # check unmatched journal names by frequency
+    # test = pd.Series(non_matched).value_counts()
+    
+    
+    # result['journal'].str.contains('accounting').sum()
+    
+    # result['field'].value_counts()
+
+
+    # checked all journals except for marketing science
+
+    # check much closer which journals are doubled! meaning appear on the same rank for two fields
+
+
+
+
+  
     # those not in fields of interest, none, NaN, empty, are NA
 
     # get back into correct format

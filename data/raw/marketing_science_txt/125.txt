@@ -1,0 +1,1351 @@
+http://pubsonline.informs.org/journal/mksc/
+
+MARKETING SCIENCE
+Vol. 38, No. 1, January­February 2019, pp. 88­106 ISSN 0732-2399 (print), ISSN 1526-548X (online)
+
+Accounting for Discrepancies Between Online and Offline Product Evaluations
+
+Daria Dzyabura,a,b Srikanth Jagabathula,a,c Eitan Mullera,d
+a Stern School of Business, New York University, New York, New York 10012; b New Economic School, Moscow, Russia 121353; c Harvard Business School, Harvard University, Boston, Massachusetts 02163; d Arison School of Business, Interdisciplinary Center (IDC) Herzliya, 46101 Herzliya, Israel Contact: ddzyabur@stern.nyu.edu, http://orcid.org/0000-0003-0729-2379 (DD); sjagabat@stern.nyu.edu,
+http://orcid.org/0000-0002-4854-3181 (SJ); emuller@stern.nyu.edu, http://orcid.org/0000-0002-8180-7484 (EM)
+
+Received: March 3, 2016 Revised: November 17, 2016; March 31, 2017; October 10, 2017 Accepted: January 21, 2018 Published Online in Articles in Advance: January 30, 2019
+https://doi.org/10.1287/mksc.2018.1124
+Copyright: © 2019 INFORMS
+
+Abstract. Despite the growth of online retail, the majority of products are still sold offline, and the "touch-and-feel" aspect of physically examining a product before purchase remains important to many consumers. In this paper, we demonstrate that large discrepancies can exist between how consumers evaluate products when examining them "live" versus based on online descriptions, even for a relatively familiar product (messenger bags) and for utilitarian features. Therefore, the use of online evaluations in market research may result in inaccurate predictions and potentially suboptimal decisions by the firm. Because eliciting preferences by conducting large-scale offline market research is costly, we propose fusing data from a large online study with data from a smaller set of participants who complete both an online and an offline study. We demonstrate our approach using conjoint studies on two sets of participants. The group who completed both online and offline studies allows us to calibrate the relationship between online and offline partworths. To obtain reliable parameter estimates, we propose two statistical methods: a hierarchical Bayesian approach and a k-nearest-neighbors approach. We demonstrate that the proposed approach achieves better out-of-sample predictive performance on individual choices (up to 25% improvement), as well as aggregate market shares (up to 33% improvement).
+
+History: K. Sudhir served as the editor-in-chief and Scott Neslin served as associate editor for this article. Funding: S. Jagabathula's research was supported in part by the National Science Foundation [Grant
+CMMI-1454310].
+Supplemental Material: Data are available at https://doi.org/10.1287/mksc.2018.1124.
+
+Keywords: conjoint analysis · omnichannel · machine learning · Bayesian · consumer choice
+
+1. Introduction
+Despite the rapid growth of online retail, the "touchand-feel" experience of physically evaluating a product remains a significant driver of consumer purchase decisions. Physical evaluation drives purchase decisions in offline stores, which remain the predominant sales channel for many industries. In the first two quarters of 2017, online sales accounted for 8.7% of the $2.5 trillion in total U.S. retail sales during this period (U.S. Census Bureau 2017). A recent survey of 19K consumers by PricewaterhouseCoopers (2015) revealed that 73% of U.S. consumers report having browsed products online, then purchased them in store. In the same survey, 61% of respondents cited being able to see and try out the item as the reason for buying in store (other reasons include delivery fees and having the item immediately).
+With the prevalence of offline shopping, firms need to measure and predict consumer decision making in the offline channel. Yet conjoint analysis, widely used by firms to conduct market research, design products, and predict market shares, is nearly always conducted online,
+
+asking participants to rate or choose between product descriptions via computer. The implicit assumption is that the attribute partworths carry over from online behavior to offline behavior. However, consumers may weight attributes differently when evaluating a physical product than when reading a list of attributes on the computer. These two formats differ greatly in how they convey information to the consumer. Consumers might obtain more information about certain product attributes by evaluating the physical prototype; they most commonly cite this reason for choosing to shop in physical stores. Additionally, an online description with the features presented in list form may render certain attributes more or less salient than when examining the product "live." Product features that are more salient tend to catch our attention and influence our decisions more so than less salient features. Behavioral factors are also at play that may affect how consumers process the information and integrate it into a decision in these two task formats.
+In a conjoint experiment, we show that large systematic differences can exist between the weight that
+
+88
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+89
+
+respondents give to product attributes online versus offline, even for utilitarian features such as a file divider and strap pad when evaluating messenger bags. We find that when the online task is performed first, the difference is larger than when the offline task is performed first, suggesting that much of the discrepancy is due to consumers' inability to obtain all necessary information about the product online and learning more offline.
+This discrepancy poses a problem, as conducting conjoint studies offline is significantly costlier than doing so online. We obtained price quotes from market research firms for a commercial offline conjoint study (to avoid peer effects, only one participant should be in the room examining products at a time). The costs involve payment to participants, the hourly rate of an experimenter (including salary, benefits, and overhead), and recruiting costs. The total comes to $100­$150 per participant, whereas online participants can be obtained for $2­$3 per participant. The firm therefore has access to very costly "accurate" data and much cheaper data that are noisy but correlate with the accurate data. Given the large difference in costs, assuming budget constraint, our proposed solution is to split the budget between the two types of data.
+The rest of this paper is organized as follows: The next section reviews relevant conjoint literature on using physical prototypes and on data fusion. Section 3 then describes Study 1, in which participants complete online and offline conjoint tasks in randomized order. Section 4 demonstrates superior predictive ability of offline choices when a separate group of online respondents' choices are fused with the data from Study 1. Section 5 reports an asymptotic variance analysis that calculates, for various cost-per-participant ratios, the precision with which partworths can be estimated for various sizes of online and offline populations. We conclude with implications and limitations of our work.
+2. Related Work
+We contribute to the large body of literature on preference elicitation using conjoint analysis, first introduced to marketing by Green and Rao (1971). Since then, researchers have improved on the basic methodology of asking respondents to rate, rank, or choose from among sets of products, with the goal of increasing the accuracy of the estimates of relative importance, or "partworths," of various product attributes. Netzer et al. (2008) provided a comprehensive review of recent developments in preference-measuring techniques, including conjoint analysis. They view preference measurement as comprising three components: (1) the problem the study seeks to address, (2) the design of the task and the data collection approach, and (3) the specification and estimation of the model.
+Under this framework, this paper specifically addresses the latter two steps (data collection and estimation). Our proposed methodology for improving
+
+estimates of offline partworths consists of two components: (1) a data collection method that measures both online and offline partworths for a set of respondents and (2) a statistical data fusion method that combines the online and offline data to estimate offline parameters. Each of these components builds on existing work, which we review here. We focus our review on two types of papers: those that propose to collect preference data using physical prototypes and those that propose data fusion techniques to combine conjoint data with other data.
+Past research has demonstrated that using physical prototypes as part of the data collection process is feasible in a number of categories and helps improve the validity of the preference elicitation. Srinivasan et al. (1997) advocated for the use of "customer-ready" prototypes rather than having consumers react to hypothetical product concepts and demonstrated a discrepancy between evaluating descriptions and prototypes in the categories of citrus juicers, bicycle lighting systems, and travel mugs. Our task format is most similar to that of Luo et al. (2008), who asked respondents to rate prototypes on the likelihood of purchase and used these ratings to infer attribute partworths, as part of a systematic approach to calibrating subjective product characteristics. More recently, a study by She and MacDonald (2013) exposed respondents to physical prototypes of toasters that either contained environmentally friendly features or did not. They then measured attitude and choice in a consider-then-choose task. The manipulation of exposing respondents to the "trigger feature" did not induce respondents to either consider or purchase sustainable products more frequently. The key distinction between our work and the above body of literature is that we asked individuals to complete an online task in addition to evaluating physical prototypes offline.
+The second step of our approach was to combine the online and offline data from the small set of respondents with online data of a larger set of respondents. Past research has developed methods for combining (or "fusing") data from a conjoint study with another data source, such as aggregate market shares observed in the real market (Ben-Akiva et al. 1994, Swait and Andrews 2003, Orme and Johnson 2006, Feit et al. 2010). To combine preference data from two sources, most methods assume that the means of the partworths are similar in both data sets (e.g., Swait and Andrews 2003). Then parameters are estimated by combining the data sets using various statistical methods, such as incorporating market share data by introducing a constraint that requires parameter estimates to result in prespecified market shares (Gilbride et al. 2008), or using the market shares as the prior in a Bayesian approach (Dzyabura and Hauser 2011). The approach proposed by Feit et al. (2010) provides more flexibility by linking preferences to consumer demographics, which are
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+90
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+observed in both revealed (purchase) data and conjoint data. The demographic data allow for the population mean to differ between the two data sets.
+All of the existing methods require the same individual to maintain the same individual parameter values across the two data sets. A key distinction of our work is that, depending on the order in which the respondent rated the products, the same individual may elicit differing resultant partworths in the online and offline data sets. We are able to merge the data sets by collecting both types of data from a set of consumers, which allows us to calibrate the mapping from online to offline preferences. Other work, such as that of Brownstone et al. (2000) and Bhat and Castelar (2002), has combined stated and revealed preference data from a panel of consumers, when all the respondents are observed in both data sets. Our approach allows offline data to be collected for only a subset of individuals, as collecting offline data are significantly costlier per respondent.
+3. Online/Offline Discrepancy
+Our first goal is to establish whether a significant discrepancy exists between the weight that consumers place on various product attributes when evaluating online versus offline.1 To that end, we had a set of participants complete two conjoint tasks--one online and one offline--in randomized order. We found statistically significant differences between online and offline partworths both within and across subjects. The discrepancy is smaller when the offline task is done first than when the online task is done first.
+3.1. Study 1 Design For our studies, we used Timbuk2 messenger bags as the focus product. This product is a good example of our application because (1) these bags are often sold offline (as well as online), and (2) they are a familiar category, yet are infrequently purchased, such that we expected that many participants would not be familiar with some of the attributes and would therefore not have well-formed preferences. In addition, they are fully customizable through the firm's website, which allowed us to purchase bags for the offline study with the aim of creating an efficient experimental design.
+Timbuk2's website offers a full customization option that includes a number of product features. We selected a subset of attributes that we expected to be relevant to the target population and for which some uncertainty was likely to exist on the part of consumers and respondents. To make the study manageable, we reduced the number of levels of some of the features. We thus have the following six attributes for the study:
+· Exterior design (four options): black, blue, reflective, colorful
+· Size (two options): small (10 × 19 × 14 in), large (12 × 22 × 15 in)
+
+· Price (four levels): $120, $140, $160, $180 · Strap pad (two options): yes, no · Water bottle pocket (two options): yes, no · Interior compartments (three options): empty bucket with no dividers, divider for files, padded laptop compartment We treat price as a continuous variable in the estimation and have a total of 13 discrete attribute levels for the rest of the attributes. We recruited respondents through a university subject pool and paid them $7 for completing both tasks, which together took 25 minutes on average. To ensure incentive compatibility and promote honest responses, the experimenter told participants that they would be entered in a raffle for a free messenger bag. Were they to win, their prize would be a bag configured to their preferences, which the researchers would infer from the responses they provided in the study. This chance of winning a bag provided an incentive to participants to take the task seriously and respond truthfully with respect to their preferences (Ding 2007, Hauser et al. 2010). We followed the instructions used by Ding et al. (2011) and told participants that, were they to win, they would receive a messenger bag plus cash, a combined value of $180. The cash component eliminates incentive for participants to provide higher ratings for more expensive items in order to win a more valuable prize. Each participant was asked to complete an online conjoint task and an offline conjoint task. We used two conditions: subjects either completed the online task first followed by the offline task (condition 1), or vice versa (condition 2). We next describe the details of both tasks.
+Conjoint Task. We used a ratings-based task in which respondents rated each bag on a five-point scale (definitely not buy, probably not buy, may or may not buy, probably buy, and definitely buy). Using the D-optimal study design criterion (Kuhfeld et al. 1994, Huber and Zwerina 1996), we selected a 20-product design that has a D-efficiency of 0.97. The reason a ratings-based task is preferable for offline conjoint is to keep the cost of the study reasonable. The cost of offline conjoint studies is affected not only by respondent time but also by the number of physical prototypes that need to be created, which is not a factor in online conjoint. In our setting, conducting a choice-based conjoint (CBC) offline would require 75 distinct physical prototypes2 (with each bag costing about $150), instead of the 20 we required for the ratings-based task design. Moreover, the task would require the researcher and the respondent to move between 20 displays of four prototypes each, potentially making the task tedious and the collected data prone to error. We use the ratings-based format in the online task as well, in the interest of keeping the tasks as similar as possible regarding all aspects other than
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+91
+
+Figure 1. Sample Online Conjoint Screenshot
+online/offline. Because CBC is the more prevalent format, and because choices arguably have higher external validity, we demonstrate in Section 4 how results obtained from our data can be fused with an online CBC data set to make predictions about participants' offline choices. Online Task. The online task was conducted using Sawtooth software. The first screens walked the participants through the feature descriptions one by one. Next, they were shown a practice rating question and were informed that it was for practice and that their response to it would be discarded. The screens that followed presented a single product configuration, along with the five-point scale, and one additional question that was used for another study. Participants could go back to previous screens if they wished but could not skip a question. Figure 1 shows a sample screenshot of the online task. The online portion took 10 minutes to complete on average.
+
+Offline Task. To ensure that participants could not see the bags during the online study, we conducted the offline task in a room separate from the computer laboratory in which the online task was conducted. This task was done individually, one respondent at a time in the room, to avoid a contagion effect. The bags were laid out on a conference table, each with a card next to it displaying a corresponding number (indexing the item), and the bags were arranged in order from 1 through 20. The prices were displayed on stickers on Timbuk2 price tags attached to each bag. The experimenter first walked the respondents through all the features, showing each one on a sample bag. Figure 2 shows the conference room display of the offline task. The offline portion took 15 minutes to complete on average.
+We next describe the results of the study and demonstrate the discrepancy between partworths participants use when evaluating products online and offline.
+
+3.2. Comparison of Online and Offline Partworths We begin with the online-first condition, which consisted of 122 participants. We assume a standard linearin-attributes utility function. The categorical attributes are dummy coded, using one level of each category as a baseline; price is captured as a linear attribute. To capture consumer heterogeneity, we fit a linear mixed effects (LME) model to the ratings data (abstracting away from any scale-usage heterogeneity):
+
+K
+
+uijt i0t + iktxjk + ijt,
+
+(1)
+
+k1
+
+ikt µkt + ikt.
+
+In Equation (1), uijt is the rating by participant i of product j for task t  {on, off}, with t on denoting the online task and t off denoting the offline task; ikt is the partworth that participant i assigns to feature k during task t; and i0t is the intercept. Product j is represented by its (K) attribute levels xjk. The random component ijt is assumed to follow a normal distribution, ijt ~ 1(0, 2t ); the vector i [i1, . . . i,K] follows a normal distribution with mean 0 and covariance matrix t that is diagonal.
+
+Figure 2. (Color online) Offline Task Room Setup
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+92
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+Table 1. Mean Population Partworths (µ), Online-First Condition (Standard Errors in Parentheses)
+
+Attribute Exterior design
+Size Price Strap pad Water bottle pocket Interior
+compartments Intercept
+
+Level
+
+Online partworth (µk,on) Offline partworth (µk,off)
+
+Reflective Colorful
+Blue Black Large Small $120, $140, $160, $180 Yes
+No Yes No Divider for files Crater laptop sleeve Empty bucket/no dividers
+
+-0.31 (0.07) -1.06 (0.09) -0.22 (0.06)
+0.27 (0.05)
+-0.011 (8E-4) 0.51 (0.05)
+0.45 (0.04)
+0.41 (0.04) 0.62 (0.06)
+3.72 (0.12)
+
+-0.60 (0.09) -0.71 (0.10) -0.11 (0.06)
+-0.31 (0.06)
+-0.0075 (8E-4) 0.25 (0.05)
+0.17 (0.03)
+0.52 (0.04) 0.88 (0.06)
+3.39 (0.13)
+
+Table 1 reports the attribute fixed effects µk, estimated when the model in (1) is fit separately to the online and offline data sets. Standard errors are reported in parentheses.
+As we can see from Table 1, the magnitudes of the online and offline partworth differences are large for many attributes. The sign of the partworth of the size attribute, for example, even flips: participants prefer the large size bag online and the small size bag offline. The strap pad and water bottle pocket attributes carry much less weight offline than they do online.
+
+3.3. Statistical Tests to Establish Discrepancy To formally compare the two sets of partworths, we use a nested-model likelihood-ratio test (LRT) to perform both within- and across-subject tests.
+
+Within-Subject Test. We first test whether the online and offline partworths differ at the individual level. To do so, we estimate two models on the pooled online and offline data: one in which the online and offline parameters are constrained to be equal and the other in which they are unconstrained. Specifically, the restricted model assumes that i,on i,off for all participants i and fits the following model to the pooled online and offline data, whereas the unrestricted model allows the participants to have differing partworths for each task:
+K
+Restricted: uijt i0 + ikxjk + ijt, t  {on, off}. (2)
+k1
+
+The unrestricted model allows the participants to have differing partworths for each task:
+
+Unrestricted: uijt i0t +
+
+K k
+
+1iktxjk
+
++
+
+ijt, t  {on, off}
+
+(3)
+
+but assumes that participant i samples the partworth vectors according to
+
+i,on i,off
+
+~1
+
+µon µoff
+
+,
+
+
+
+,
+
+on off,on
+
+on,off off
+
+,
+
+(4)
+
+where on, off, and on,off are diagonal. The estimates of the variance­covariance matrix  are reported in
+Appendix A. We constrain the covariance to estimate only the covariance between the online and offline
+partworths between the same attribute level (e.g., blue online and blue offline). We use the LRT to test the null hypothesis3 i,on i,off for all participants i. The log likelihoods of the restricted and unrestricted models are -6,969 and -6,691, respectively. There are 29 addi-
+tional degrees of freedom in the unconstrained model, including 10 additional fixed-effects coefficients and
+19 additional covariance parameters. We are able to reject the null hypothesis because the LRT is significant ( p < 10-98).
+
+Across-Subjects Test. One concern with the above within-subjects setup is that it may have led to a demand effect: if participants guessed that the researchers were looking for a difference between online and offline ratings, they may have felt compelled to change their decision rule in the offline task. To rule out this possibility, we used data from participants in condition 2 (N = 40) who completed the offline task first. Comparing this group's offline ratings to the online ratings of the online-first group provides an across-subjects comparison of online and offline partworths, both of which came first for the respective group of participants. We test for significance again using the LRT. Because this study has an across-subjects design, we constrain only the fixed effects (µk) to be equal. In other words, we test the null hypothesis µon µoff. The constrained and
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+93
+
+unconstrained models' log likelihoods are -4,677 and -4,524, respectively, and the LRT again results in a significant difference, p 5 · 10-48, allowing us to reject the null hypothesis. This finding suggests that when comparing the first task done by participants, unpolluted by any prior tasks, participants doing the online task use differing partworths than those doing the offline task.
+3.4. Sources of Online-vs.-Offline Discrepancy We have shown within and across subjects that a large, statistically significant discrepancy exists between partworths in online and offline task formats. Although the main focus of our paper is on the discrepancy's consequences, we first discuss a possible theoretical framework that could explain the observed discrepancy. We do note, however, that our conjoint studies are not designed to isolate the underlying causes of the onlineversus-offline discrepancy, and as such, our theoretical framework provides only one possible explanation. Nevertheless, it demonstrates that the observed discrepancy is consistent with previous findings in the behavioral literature. We explore two mechanisms that have been studied in the consumer behavior literature that may be the source of this discrepancy: (1) information obtained from examining the products physically and (2) inherent differences in attribute salience across the online versus offline formats.
+Offline Information Gain. The first phenomenon that may be the cause of the discrepancy is the valuable information that consumers obtain about products by visually and physically examining them (Peck and Childers 2003). Learning through touch and feel occurs not only for inherently experiential attributes, such as color, size, and texture of the product, but also for utilitarian features. For instance, in the messenger bag study, examining
+
+physical products gives consumers information about just how padded the laptop compartment is, how much room it takes up in the bag, how easily accessible the water bottle pocket is, and so on.
+Inherent Attribute Salience Difference. Aside from additional information gained by physically examining products, the online and physical presentations also impart information to participants in differing formats, which may lead to behavioral biases. In the online channel, the attributes are presented in list form, whereas in the offline channel, the user sees the product as a whole. The attribute list representation may render certain attributes more or less salient to the user (Higgins 1996). For example, attributes that are physically smaller, such as the water bottle pocket and the strap pad, are easy for the participant to miss when examining the bag physically, whereas the color and size of the bag are very noticeable. The phenomenon of consumers' choices being influenced by the format in which the information is presented to them is consistent with the Bettman et al. (1998) preference construction theory. Note that the attribute salience effect is inherent to each channel and does not persist as the consumer moves from one channel to another. In this regard, the attribute salience effect differs from information gain, as the information obtained in the offline channel persists as the consumer moves to the online channel.
+To assess how our theoretical framework explains the observed discrepancies, we further analyze the partworths in the two conditions to better understand the source of the discrepancy. These analyses are summarized in Figures 3 and 4. Rather than testing behavioral theories, our goal is simply to demonstrate that the discrepancy between online and offline choice rules is consistent with that in previous work.
+
+Figure 3. Mechanisms Accounting for Discrepancy Between Tasks
+
+94 Figure 4. Observed Discrepancy Between Tasks
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+First, we note that in the online-first condition (condition 1), both offline information gain and attribute salience influence the discrepancy between online and offline tasks for the same group of participants (edge 1), whereas in offline-first condition (condition 2), only attribute salience contributes to the discrepancy (edge 3). This is because in condition 2, any information gained from physically examining the products is obtained prior to completing the online task, and as mentioned above, the information obtained persists as the participant moves from the offline to the online task. The differences in the attribute salience between the channels exists in this condition as well because it is inherent to the format in which information was presented to the consumer.
+We find statistically significant differences in both cases (p < 10-98 in condition 1 and p = 10-6 in condition 2). In
+
+the offline-first condition, the magnitude of the difference between the partworths is much smaller than in the online-first condition. The online and offline partworths for the offline-first condition are presented in Table 2 (with standard errors in parentheses).
+Compared with Table 1, we can see that for some attributes, very little discrepancy remains: for example, the size attribute is now weighted consistently in both conditions, consistent with our theory that the discrepancy we observed in the online-first condition was due to the participants being underinformed about the attribute based on the online description only. Other attributes, such as the water bottle pocket and strap pad, are weighted much higher online than they are offline, in both the online-first and offline-first conditions, suggesting the presence of channel-specific attribute salience effect. Our findings also suggest that
+
+Table 2. Mean Population Partworths (µ), Offline-First Condition
+
+Attribute Exterior design
+Size Price Strap pad Water-bottle pocket Interior compartments
+Intercept
+
+Level
+Reflective Colorful
+Blue Black Large Small $120, $140, $160, $180 Yes
+No Yes No Divider for files Crater laptop sleeve Empty bucket/no dividers
+
+Online partworth (µk,on) -0.25 (0.14) -0.26 (0.13) -0.07 (0.11)
+-0.15 (0.03)
+-0.012 (0.002) 0.50 (0.09)
+0.33 (0.07)
+0.65 (0.07) 1.01 (0.11)
+3.38 (0.21)
+
+Offline partworth (µk,off) -0.26 (0.16) -0.18 (0.14) 0.03 (0.10)
+-0.17 (0.07)
+-0.008 (0.002) 0.24 (0.08)
+-0.005 (0.06)
+0.62 (0.08) 1.15 (0.10)
+3.07 (0.25)
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+95
+
+exposing participants to physical prototypes prior to completing an online conjoint task (Feinberg et al. 2012) produces partworth estimates that are closer to offline partworths yet still leaves some discrepancy-- possibly because of how the information is presented-- such as the relative salience of the attributes online versus offline.
+We find additional evidence for information gain by comparing the two online tasks (edge 4). The online task in condition 2, which participants completed after the offline task, resulted in statistically significantly more differing (p = 10-4) partworths than did the online task in condition 1, which participants completed first. The restricted and unrestricted models' log likelihoods are -4,482 and -4,449, respectively. This difference is consistent with participants having obtained information by examining bags physically and then applying this additional information to online product evaluation. Finally, we note that the online task did not appear to influence offline behavior, as we do not find statistically significant differences between the offline tasks between the two conditions (edge 4). The log likelihood of the restricted model is -4,732, and that of the unrestricted model is -4,712. Note that because edge 4 compares two offline tasks, there is no difference in attribute salience, nor is there additional offline information gain. The fact that we did not find statistically significant differences is consistent with our framework.
+Discussion. We have shown that a discrepancy exists both within and across subjects. The discrepancy is reduced when the offline task is conducted first, suggesting that a large portion of the discrepancy is due to consumers being uninformed about some product attributes. Thus, if a firm conducts conjoint analysis online for a product that will be sold offline, the predictions it makes from the resulting partworths estimates are likely to be biased because of the online-versus-offline discrepancy. This estimate bias is a major issue if the aim is to make predictions about purchases made in the offline environment. Note that the information gain aspect of the discrepancy may be reduced by better informing consumers about the features--for example, through more vivid descriptions or images.
+The discrepancy between online and offline partworths has important consequences for a firm's decisions. For instance, Dzyabura and Jagabathula (2018) showed that if a firm sells products both online and offline, selecting the optimal product assortment requires knowledge of both online and offline partworths. Even when selling offline only, firms base both aggregatelevel predictions, such as market shares, and individual predictions, such as segmentation or targeting decisions, on results of online preference elicitation.
+
+In these cases, ignoring the discrepancy can result in significant prediction errors. For instance, in the onlinefirst condition, using the model estimated on participants' online ratings to predict their offline ratings results in an average root mean square error (RMSE) of 1.56 (recall that ratings are on a five-point scale). For comparison, the within-sample RMSE of using the offline ratings to predict the same ratings is 0.51. Therefore, it is important that firms correct the estimation bias to improve the accuracy of their decision making.
+We next address the issue of how the estimate bias can be corrected by supplementing an online conjoint study with a sample of respondents who complete both online and offline tasks.
+4. Improving Predictions of Offline Behavior
+A straightforward solution to dealing with the systematic differences between consumers' online and offline preferences is to conduct offline conjoint studies rather than online studies featuring descriptions or images of products. In fact, past research advocates the use of physical prototypes to quantify the impact of subjective characteristics on consumers' purchase decisions (Srinivasan et al. 1997, Luo et al. 2008). But a large sample of respondents is necessary to obtain reliable parameter estimates, and conducting large-scale offline conjoint studies is logistically challenging and costly. Offline studies require the respondent to physically arrive at a location in order to participate, as opposed to the online studies, which can reach a large population of respondents on the web. This need for participants to be physically present increases the marginal cost of the study per respondent, rendering offline studies practically infeasible for all but a "small" number of respondents.
+We propose a hybrid solution for improving the accuracy of offline preference estimates by supplementing a large online study with a small set of respondents who complete both an online and an offline task.
+4.1. Correction Techniques to Predict IndividualLevel Offline Partworths from Online Data
+We now focus on the setting where our objective is to predict individual-level offline partworths. Concretely, we assume that we have asked a set Ioff of respondents to complete an online conjoint task followed by an offline conjoint task and another set Ion of respondents to complete only an online conjoint task. Instead of using the online partworth estimates for all the individuals in Ioff  Ion, or using only the offline estimates for the individuals in Ioff, we predict the offline partworths for the individuals in Ion and use all offline partworth estimates for our decisions.
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+96
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+To predict the offline partworth estimates of the individuals in Ion, we propose two techniques: a Bayesian technique that we term Bayesian intertask conditional likelihood correction (Bayes ICL correction) and a k-nearest-neighbor (k-NN) technique. Both techniques rely on the observations of individuals in Ioff, for whom we observe matched online and offline responses, to estimate the relationship between online and offline partworths. From this relationship, we predict the offline partworths using the online data from the individuals in Ion. The Bayesian ICL technique takes as input the raw observations of the individuals in Ioff and Ion, and it produces as output the predicted offline partworths for individuals in Ion. The Bayesian technique relies on standard distributional assumptions. The k-NN technique is a machine-learning technique that makes no global distributional assumptions but approximates the distribution locally. It takes as input the estimated partworth vectors [i,on, i,off] for all individuals i  Ioff and i,on i  Ion; then it outputs the predicted offline partworths for the individuals in Ion. The inputs for the k-NN technique can be obtained using any method. For the purposes of our empirical study, we use the estimates obtained from the Bayesian ICL method; see Section 4.2.
+To test both methods on a holdout data set, in addition to the results we obtained from Study 1, we conducted Study 2 with a group of 67 respondents who completed both an online and an offline task. We designed the study to mimic what a firm might do in practice. As in the first study, we asked each respondent to complete an online task, followed by an offline task. We use a choice task in this validation study, as that is the prevalent form of conjoint used in industry, and consumer choice data are more similar to what a firm would want to predict. The online portion was a traditional CBC task, consisting of 20 choice sets of four products each,4 conducted using Sawtooth. We then presented the respondents with five choice sets of four products each in the offline environment.
+The respondents' choices in the offline environment are the target variable we predict. We demonstrate that both the HB and k-NN corrections outperform the benchmark method of simply using the same respondents' online choice data to make predictions about their offline choices.
+We now describe the two correction techniques we propose.
+Bayesian ICL Correction. For this correction, we consider the following hierarchical Bayesian (HB) model to describe the observations. We begin with the unrestricted linear model described in Equations (3) and (4) in Section 3. A key component of the model is its flexibility
+
+that allows the same consumer to assign differing partworths to the same feature when evaluating a product description online versus a physical product offline. To allow for this within-consumer discrepancy, the model associates the respondent's valuation of a given feature with two partworths, ikt, t  {on, off}, where ik,on is the utility partworths that respondent i applies to feature k online, and ik,off is the utility partworth that he or she applies offline. That is, partworths vary by respondent, product feature, and task format (on for online and off for offline). The specification of the utility model in Equation (1) then becomes
+
+uijt i0t +
+
+K k
+
+1iktxjk
+
++
+
+ijt, t  {on, off}.
+
+(5)
+
+To accommodate a choice framework, we assume that
+the error terms ijt ~ independent and identically distributed extreme value, instead of being normally distributed as in the linear model. We also let ct 1, . . . Cti index the choice tasks completed by respondent i in task format t  {on, off}, Xi,ct be the matrix containing sets of product attributes offered to respondent i in choice set
+ct; and Xi,ct,j correspond to the jth row of matrix Xi,ct, containing the attributes of the jth product in choice set ct. The total number of products in respondent i's choice set ct is Ji,ct. Note that, because product attributes are categorical variables, online and offline attribute
+levels are coded as multiple levels of the same attribute.
+For example, if there are four colors, as in our data, in the online and offline data would be coded as one attribute
+with eight levels: four corresponding to online colors and four corresponding to offline colors.
+Finally, let yi,ct be respondent i's chosen product from set ct. According to the utility specification in (5), the likelihood of observing choice yi,ct is given by
+
+[ yi,ct|Xi,ct, i,t]
+
+exp(i,t · Xi,ct,yi,ct)
+
+.
+
+j 1,. . . Ji,ctexp(i,t · Xi,ct,j)
+
+(6)
+
+As above, we assume that the online and offline partworths are drawn from a joint multivariate normal distribution:
+
+i,on i,off
+
+~1
+
+µon µoff
+
+,
+
+
+
+,
+
+
+
+on off,on
+
+on,off off
+
+.
+
+(7)
+
+Assuming that the respondents make choices according to the model specification in (6) and (7), we propose a Bayesian technique to estimate the parameters. Note that this method differs from the existing data fusion techniques (e.g., Swait and Andrews 2003, Feit et al. 2010), as we allow the same individual i's ik,on and ik,off to differ from each other in both task formats, instead of constraining them to be equal. We estimate the population-level parameters as follows: combining the individual- and population-level models gives us the
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+97
+
+likelihood of observing online and offline choices for all respondents:
+
+[ y|µon, µoff, , X ]
+
+
+
+
+
+Coi n
+
+
+[ yi,con|Xi,con, i,on]
+
+iIoff i,on i,off con 1
+
+Coi ff
+·
+coff 1
+
+yi,coff |Xi,coff, i,off 
+
+· i,on, i,off |µon, µoff,  di,offdi,on
+
+·
+iIon
+
+Coi n
+
+i,on con 1
+
+yi,con|Xi,con, i,on · i,on|µon, on di,on, (8)
+
+where y {yi,ct} is the set of all observed choices, and [i,on, i,off|µon, µoff, ] is the probability of sampling the 's conditioned on the population-level parameters.
+The model is estimated using a Bayesian approach. Because maximizing the likelihood expression in (8) over the population parameters is hard in general, we estimated the population parameters using the Bayesian framework. We used normal priors for µon and µoff with mean 0 and variance 100, and we followed Sawtooth software guidelines for setting the prior values for off, on. For on,off, we set the prior value for the covariance of the same level of the same attribute in both the online and offline tasks to a positive value. The exact prior covariance is reported in Appendix C. As no closed-form expression for the posterior distributions of the parameters exists, we used a standard Gibbs sampler to generate samples of the unknown parameters (on, off, µon, µoff, ) iteratively (see Rossi et al. 2012). We then computed the individual- and population-level parameters by taking the average of 10,000 generated samples (after burning in the first 10,000 samples).
+
+k-Nearest Neighbors (k-NN) Correction. k-nearest neighbors (k-NN) is a popular data mining (meta-)algorithm, voted one of the top 10 data mining algorithms at the 2006 IEEE International Conference on Data Mining (ICDM) (Wu et al. 2008). It is a nonparametric method used for both classification and regression. It relies on the premise that "similar" users behave similarly. In its most general form, the algorithm requires specification of a similarity function that produces a similarity score between pairs of users, a response variable of interest, and the number of nearest neighbors, k. Then, the algorithm predicts the response for a test user by outputting the weighted average of the responses of the k nearest neighbors in the training sample, as determined according to the given similarity metric. The weights may be chosen to be equal, proportional to the similarity scores between the test user and the corresponding neighbor, or optimized for prediction accuracy.
+
+In our context, we begin with the premise that customers with similar values of online partworths will have similar values of offline partworths. On the basis of this premise, we approach the following prediction task: We are given both the offline partworth vector i,off and the online partworth vector i,on for each individual i  Ioff and the online partworth vector i,on only for individuals i  Ion. Our objective is to predict the offline partworth vector for all of the individuals in the set Ion. The given partworth vectors themselves could be estimated using any method. For the purposes of the empirical study presented below, we use the partworth estimates obtained from the HB method described above.
+To predict the offline partworth of a respondent in Ion, we select the k nearest respondents in the set Ioff, where the distance between two respondents is measured as the Euclidean distance between their respective online partworths:
+
+d(i, i)
+
+(i, k, on - i, k, on)2.
+
+(9)
+
+k 1,. . . ,K
+
+For each respondent i  Ion, we let Si denote the set of k nearest neighbors from the set Ioff. Then, we predict the respondent's offline partworth as
+
+i,off
+
+wi,i i,off,
+i Si
+
+(10)
+
+where the weights wi,i 1/d(i, i) are chosen to be inverses of the distances between the corresponding individuals. Note that by construction we have Si  Ioff, and we are given i,off for all individuals i  Ioff. Therefore, we can compute the expression in (10). The value of k is
+
+typically tuned using cross-validation, which is standard
+
+practice for model selection (Abu-Mostafa et al. 2012). For
+
+the purposes of the empirical study, we picked k = 30 through 10-fold cross-validation. Specifically, we split the
+
+individuals in the set Ioff into 10 (roughly) equal parts and then train our model on data from 9 parts and make
+
+predictions for the individuals in the 10th part. Letting Ioff,train denote the individuals in the first 9 parts and Ioff,validation denote the individuals in the 10th part, we compute the prediction error
+
+Error
+
+i, k, off - i, k, off 2,
+iIoff,validation k 1,. . . ,K
+
+(11)
+
+where we compute i,off using Equation (10) but with neighborhood of individual i chosen as the k closest individuals from the set Ioff,train, where the distance between individuals is measured as in Equation (9). We repeat the above process 10 times (folds) with each of the 10 parts used exactly once as the validation sample Ioff,validation. We average the error across the 10 folds and use the resulting average error as the proxy for the outof-sample performance. We compute the average error
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+98
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+for each value of the number k of neighbors from the set {10, 15, 20, 25, 30, 35, 40, 35}, and we pick the value that resulted in the least average error. We found that k = 30 resulted in the least average error.
+The k-NN approach is custom-built for making individual-level predictions. It is particularly well suited to settings in which the population distribution is multimodal (Wu et al. 2008). In this case, a Bayesian approach with a normal distribution assumption shrinks the all the respondents' individual-level partworths to a single population mean. Instead, the k-NN approach shrinks the partworths of different respondents to means of different subsets of respondents and thereby better captures multiple modes within the data set. Once the partworth vectors for the individuals in Ion and Ioff are given, the k-NN does not make any parametric assumptions in predicting the offline partworths for the individuals in Ion. In this sense, it is a nonparametric method that is not designed to incorporate any prior information. Therefore, all else being equal, we expect it to perform better when the modeler has access to a larger training sample of respondents with offline partworths. We implemented the k-NN method using the sklearn.neighbors. KNeighborsRegressor function from Python scikit-learn (Pedregosa et al. 2011).
+4.2. Performance of the Bayesian ICL and k-NN Corrections
+We now describe the empirical performance both in terms of prediction and decision accuracies of the proposed Bayesian ICL and k-NN corrections. To test the performance, we used data from two studies: first, the data on the respondents in Study 1, condition 1, who did an online followed by an offline conjoint (N = 122), described above in Section 3; and second, the data from a set of respondents who completed an online CBC followed by an offline CBC as part of Study 2 (N = 67), described next.
+Study 2. As in Study 1, we asked each respondent to complete an online task, followed by an offline task. Prior to completing the choice tasks, respondents first viewed a screen with instructions and then viewed each attribute description one by one, followed by a sample choice task that we did not use for estimation. For the offline task, we created five choice sets of four bags each, using the same 20 physical bags as in the first study. For each respondent, bags in the same choice set were placed next to each other, and each choice set was covered with fabric to avoid comparison with previous or subsequent choices, and to ensure that the respondents focused on the products in the present choice set. We also positioned the sets of bags such that two consecutive choice tasks were not next to one another; for example, choice set 1 was not next to choice set 2. We used this approach to help the respondent focus on the
+
+single choice set she was presented with and to refrain from comparing the bags to those in the choice sets she had just seen. The experimenter pointed out each of the features on a sample bag and then uncovered one choice set at a time, in order from 1 to 5. Respondents circled their choices on a paper form. Completing this portion took respondents about 15 minutes.
+To avoid idiosyncratic noise in the performance measures, we randomly assigned respondents to one of three groupings of the bags into choice sets. Although all respondents' choice sets were made up of the same 20 bags, the bags were divided differently into five choice sets, resulting in 15 distinct choice sets total.
+
+Prediction Accuracy: Predicting Offline Choices Using
+
+Online Data. We first assess the overall improvements
+
+in the accuracy of predicting offline choices of indi-
+
+viduals in Ion, who completed Study 2. The data used for
+
+our computational study are summarized in Table 3.
+
+Our objective is to predict the choices in cell D in Table 3.
+
+We let Ioff denote the set of individuals from Study 1 who completed an online task followed by an offline
+
+task (cells A and C in Table 3), and we let Ion denote the
+
+set of individuals who were part of Study 2 (corre-
+
+sponding to cells B and D in Table 3). Because respon-
+
+dents in Ioff completed a ratings-based task, and the HB method assumes choice data, we first convert these
+
+ratings to a choice format. We adapted a procedure
+
+similar to the rank-ordered logit model (Beggs et al. 1981,
+
+Hausman and Ruud 1987), also known as the exploded
+
+logit model (Punj and Staelin 1978, Chapman and Staelin
+
+1982, Allison and Christakis 1994) for ranking data.
+
+Specifically, let uij denote the rating provided by par-
+
+ticipant i for bag j. We converted the ratings data into
+
+a ranked list by breaking ties based on the population
+
+averages. Let u¯ denote
+
+iIoff
+|Ioff |
+
+uij
+
+,
+
+or
+
+the
+
+rating
+
+that
+
+product
+
+j
+
+received averaged over the entire population. Then,
+
+with each individual i, we associated ranked list i that
+
+encodes the ranking in terms of pairwise comparisons,
+
+with ijl taking the value 1 if the participants preferred j to l and 0 otherwise. More precisely, ijl 1 if j l or uij > uil or if uij uil and u¯ j > u¯ l, and 0 otherwise.
+We then converted the ranked list into "exploded"
+
+choice sets as follows: Fix an individual i. Let (j1, j2, . . . , j20) be the ordered ranked list corresponding to i, with the products ordered in decreasing order of
+
+Table 3. Data Used for Model Training and Prediction
+
+Study 1 (N 122)
+
+Study 2 (N 67)
+
+Online task Offline task
+
+20 ratings A
+20 ratings C
+
+20 choices B
+5 choices D
+
+Note. Cells A, B, and C are used for training, and cell D is used for prediction.
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations
+
+Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+99
+
+preference. We "explode" this ranked list into 20 choice sets: C1 {j1, j2, . . . , j20}, C2 {j2, . . . , j20}, . . . , C20 {j20}, where we successively remove the most preferred product from each choice set. The respondent's choice is the most preferred product from each set, so the choice yi,Cl is equal to jl for l 1, 2, . . . , 20.
+We compared three different methods for predicting the offline choices of participants in Study 2: the benchmark method, the Bayesian ICL correction, and the k-NN correction. The online benchmark method ignores all the data from the offline studies. Using the standard Bayesian techniques, the method estimates the expected online partworths i,on for each individual i and sets i,off,bench i,on. The Bayesian and k-NN techniques estimate i,off,Bayes and i,off,kNN as described
+above, using online data from participants in Study 2. To assess the quality of the estimates, we compute
+two metrics on the held-out offline choices: individual log-likelihood and choice-set RMSE, defined as follows.
+Individual log likelihood:
+
+1 | Ion |
+
+1 i  Ion |Coi ff | c
+
+log
+1,. . . ,Coi ff
+
+exp i,off,method · Xi,c,yi,c j 1,. . . ,Ji,cexp i,off · Xi,c,j
+
+,
+
+(12)
+
+where c indexes the offline choice task of respondent i, and yi,c denotes the product chosen by the respondent in choice task c, j 1, . . .Ji,c denote the products offered in choice task c, and method  {bench, Bayes, kNN}. Of course, the higher the value of the likelihood, the better the method.
+To compute the choice set share RMSE, let mj,c denote the observed market share for product j and choice set c, and let mj,c,method denote the predicted market share, given by
+
+mj,c
+
+|i  Ic : yi,c | Ic |
+
+j|,
+
+mj,c,method
+
+1 |Ic| iIc
+
+exp i,off,method · Xi,c,yi,c
+
+,
+
+j 1,. . . Ji,cexp i,off,method · Xi,c,j
+
+(13)
+
+where Ic is the set of respondents presented with choice set c. Then the choice set share RMSE metric is given by
+
+1 |C| cC
+
+mj, c - mj, c, method 2,
+j 1,. . . Jc
+
+(14)
+
+where C denotes the collection of all the choice tasks. We report the performance of the methods (Bayesian
+ICL correction and k-NN correction), and two benchmarks, on both performance metrics in Table 4.
+In addition to the online benchmark mentioned above, we also add an offline benchmark that ignores the data from all the online studies. Because the offline benchmark ignores the data from cell B in Table 3, it can predict aggregated market shares only, and not individual-level partworths for individuals in Ion. Therefore, we report the choice set share RMSE metric only for the offline benchmark. The prediction task for all four models is the offline choice data in study 2 (cell D in Table 3). The online-only benchmark uses the online data from both sets of participants (i.e., cells A and B). The offline-only benchmark uses the data in cell C. Therefore, we compute only aggregate-level choice set shares for the offlineonly benchmark, as we cannot make individual-level predictions. The two corrections (Bayesian and k-NN) use the online data from both sets of participants and the offline data from the first group of participants, cells A, B, and C of Table 3. Significance is computed relative to the online-only benchmark using a two-tailed paired sample t-test, over the 67 individuals for the individual log likelihood metric, and 15 choice sets for the choice set share RMSE metric.
+From Table 4, we observe that both proposed methods that use the offline data from the first study to estimate participants' offline partworths outperform the online-only benchmark, which simply uses their online partworths. We also compute aggregate-level predictions from the offline data. Note that the Bayesian method leads to a larger improvement in the aggregate measure, whereas the k-NN method leads to a larger improvement in the individual prediction, while demonstrating no significant improvement in the aggregate prediction. One reason for the difference in
+
+Table 4. Predictive Performance
+
+Bayesian k-NN Benchmark (offline
+only) Benchmark (online
+only)
+
+Individual log likelihood
+-1.347 -1.191
+NA
+-1.640
+
+Choice-set share RMSE
+0.177 0.267 0.246
+0.266
+
+% change individual log likelihood
+17.9% 27.3%
+NA
+
+% change choice-set share
+
+p-value
+
+RMSE
+
+p-value
+
+0.001 0.000
+
+33.6% -0.7% 7.5%
+
+0.013 0.95 0.62
+
+NA
+
+NA
+
+100
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+aggregate-level performance may be that the Bayesian estimation specifically estimates population-level parameters, as part of the model estimation. The k-NN method, on the other hand, does not have the population mean as an explicit model parameter that is estimated. The difference in individual-level performance is likely due to k-NN being particularly well suited to individual-level predictions when the population distribution is multimodal (Wu et al. 2008), as discussed in Section 4.1. Because the two methods are better tailored to different predictive tasks, researchers can choose which method is appropriate depending on whether individual-level or aggregate-level predictions are more important in their particular application.
+5. Robustness and Value of the Offline Information
+In this section, we evaluate the robustness of our findings as well as the value of offline information and in particular, the role of online data in inferring offline parameters, and the relative information gain between offline and online data. We begin with a robustness evaluate our two correction methods--namely, the Bayesian ICL correction and k-NN correction--in terms of their prescriptive implications for optimal product lines.
+5.1. Robustness Test: Comparison of the RevenueMaximizing Subsets
+We now investigate how products' revenue-maximizing subsets differ under differing methods of estimating utility partworths. The problem of finding revenueor sales-maximizing subsets of products, also called the assortment optimization (AO) problem, has received much attention both in the marketing (Kohli and Sukumar 1990) and the operations management (Ko¨ k et al. 2015) literatures. It is aimed at helping a firm make the important
+
+decision of which products to carry in its stores. As it involves solving a computationally challenging set optimization problem, most existing work has focused on developing tractable techniques for addressing the computational challenge.
+The critical inputs to these techniques are utility partworths, which are often estimated from a conjoint study, as we did here, or using secondary transaction-level data. These partworth estimates' accuracies crucially determine the accuracy of the assortment decision. We now showcase how the particular corrections to partworth estimates that we propose impact a firm's assortment decision. For that, we compute the revenue-maximizing product subsets of size four using the partworth estimates obtained from three different methods: the online-only benchmark, Bayesian ICL correction, and k-NN correction. To compute the revenue-maximizing subset for each method, let i,method denote the estimated utility partworths for participant i in Study 2. For a subset S of bags, we compute the expected revenue under a particular method as follows:
+
+Rmethod(S)
+
+1 |Ion| iIon
+
+jSrj exp(i,method jSexp(i,method ·
+
+· Xj Xj)
+
+) ,
+
+(15)
+
+where rj denotes the price of product j, and Ion denotes the set of participants who completed Study 2. We then search over all possible subsets of size four from the 20 bags used in our two studies to obtain the revenuemaximizing subset.
+Table 5 presents the results. We observe from the table that the assortment decisions under the benchmark method and both corrections overlap in only two products--namely, A and C. This marginal overlap suggests that the differences in the partworths can significantly alter the assortment decision and thereby the firm's revenue and profit potential. In addition, we notice that the subsets obtained under both the corrections overlap
+
+Table 5. Revenue-Maximizing Subsets of Size 4 Under Different Methods
+
+Method
+
+Color
+
+Size Strap Water bottle Interior Price Product ID
+
+Benchmark
+
+Colorful Small Yes
+
+(online only)
+
+Black
+
+Large Yes
+
+Reflective Large No
+
+Blue
+
+Large Yes
+
+Bayesian
+
+Colorful Small Yes
+
+correction
+
+Blue
+
+Small No
+
+Black
+
+Small No
+
+Black
+
+Large Yes
+
+k-NN
+
+Blue
+
+Small Yes
+
+correction
+
+Colorful Small Yes
+
+Black
+
+Small No
+
+Black
+
+Large Yes
+
+Yes
+
+Laptop $180
+
+A
+
+Yes
+
+Laptop $140
+
+C
+
+Yes
+
+Divider $180
+
+D
+
+No
+
+Empty $180
+
+E
+
+Yes
+
+Laptop $180
+
+A
+
+Yes
+
+Divider $160
+
+F
+
+No
+
+Laptop $180
+
+B
+
+Yes
+
+Laptop $140
+
+C
+
+Yes
+
+Divider $140
+
+G
+
+Yes
+
+Laptop $180
+
+A
+
+No
+
+Laptop $180
+
+B
+
+Yes
+
+Laptop $140
+
+C
+
+Note. The subsets obtained under both corrections overlap in three out of four products (A, B, and C), indicating that the assortment decision is reasonably robust to the particular correction used.
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+101
+
+in three products--namely A, B, and C--out of a possible four. This suggests that the corrections are robust, at least as far as the assortment decision is concerned.
+
+5.2. Role of Online Data in Inferring Offline Parameters
+To obtain intuition on how online data helps improve offline estimates, we analytically illustrate the correction under a linear mixed-effects model. Under this model, it can be shown that, conditioned on the online parameters, the offline parameters are distributed as a multivariate normal random variable:
+
+i,off |i,on ~ 1(µi,off|on, i,off|on), µi,off|on µoff + on,offo-n1 · (i,on - µon), i,off|on off - off,ono-f1fon,off.
+
+(16)
+
+We can rewrite the conditional distribution of i,off|i,on as the sum of a deterministic component and a mean zero random component: i,off|i,on µi,off|on + , where  ~ 1(0, i,off|on). Substituting the expression for µi,off|on from Equation (16), we obtain the following relationship:
+
+i,off |i,on - µoff on,offo-n1 · (i,on - µon) + . (17)
+
+In Appendix B, we show that under some constraints on the structure of the covariance matrix , one can rewrite Equation (17) for individual attribute k as follows:
+
+i,k,off|on - µk,off
+
+kkk,,oofnf (i,k,on - µk,on) + k,
+
+(18)
+
+where k is the correlation coefficient between the online and offline partworths i,k,off and i,k,on. Here, we can see the extent to which individual-level offline and online
+
+partworths for an attribute are directly related: If an
+
+individual had a higher than average partworth for
+
+a particular feature k online, i,k,on > µk,on, she will also have a higher than average partworth for the feature
+
+offline, assuming the online and offline partworths are
+
+positively correlated (k > 0 in Equation (18)). We can see from Equations (17) and (18) that if the
+
+correlation is zero (or close to zero), then i,k,on is not a good predictor of i,k,off, and our conditional estimate of the individual offline partworth is simply the pop-
+
+ulation mean. On the other hand, the higher the mag-
+
+nitude of the correlation between the online and offline
+
+partworths of the same attribute level |k|, the more precisely we can estimate the individual-level i,k,off from i,k,on. In particular, if i,k,off and i,k,on are perfectly correlated, we obtain an estimate of i,k,on simply by subtracting the difference between the two pop-
+
+ulation means. For example, note that (from Table 1 and
+
+Table A.1 in Appendix A) the feature "colorful" has
+
+online­offline bias, or high µk,on - µk,off -1.06 + 0.71
+
+0.35,
+
+and
+
+also
+
+a
+
+high
+
+value
+
+of
+
+ k,off
+k k,on
+
+1. Although a big
+
+discrepancy exists between online and offline partworths,
+
+given a respondent's online responses, and given good estimates of µk,on and µk,off, we can predict the individuallevel k,off well.
+5.3. Relative Information Gain in Offline and Online Data
+Section 4 shows that our proposed approach, which combines offline and online conjoint results, yields more accurate individual- and aggregate-level purchase predictions than does pure online-only conjoint. As our objective is to obtain accurate predictions of offline purchase behavior, an alternate approach is to forgo the online task altogether, and simply conduct offline conjoint studies. By requiring the respondents to evaluate physical prototypes, these studies are closer to the real-world purchasing context and therefore preferable. The trade-off, of course, is that conducting a conjoint study offline is significantly costlier per participant.
+In this section, using the unrestricted linear mixed model described in Equations (3) and (4), we compare our proposed approach to conducting an offline-only conjoint on the precisions of the offline parameter estimates they obtain. We measure the precision of a parameter estimate in terms of the asymptotic variance of the corresponding maximum-likelihood (ML) estimator, obtained from the inverse of the Fisher information matrix, to be described shortly. Lower variance values indicate higher precisions. To conduct the comparison on equal footings, we focus on settings in which the costs of the two approaches are equalized; of course, without a cost constraint, conducting an offline-only conjoint should yield better performance.
+The key insight from our analysis is that our proposed approach can take advantage of the cost differential between conducting online and offline conjoint studies to obtain more precise estimates than those yielded by an offline-only conjoint. When there is a cost differential, our approach uses a small share of the budget to collect a large sample of "noisy" (online) data as opposed to a small sample of "cleaner" (offline) data. The larger sample size more than makes up for the noise in the data to yield more precise estimates for the values of cost differentials observed in practice.
+Setup. We considered the following setup for our analysis: Suppose the cost to the firm of a single online respondent is con, and the cost of a single offline respondent is coff, such that coff > con. Let Q = coff/con denote the cost multiplier of an offline respondent with respect to an online one. Given cost values to be discussed shortly, we compared two study designs: a combined design and an offline-only design. The combined design collects offline and online data for a set of respondents and online-only data for an additional set of respondents. Thus, all respondents complete the online study, and we let Non represent the size of this set. Offline data are collected for
+
+102
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+Noff respondents. The offline-only design collects offline data only for N respondents. To equalize the costs of the two designs, the following relationship should be satisfied:
+
+coffN conNon + coffNoff.
+
+(19)
+
+This implies that
+
+N Noff + , where  Non/Q.
+
+(20)
+
+In other words, we can collect offline-only data, at the same total cost, for  more respondents than in the combined design.
+To obtain a realistic estimate to the multiplier Q, we obtained price quotes from market research firms for a commercial offline conjoint study. The costs involve payment to participants, the hourly rate of an experimenter (including salary, benefits, and overhead), and recruiting costs. The total comes to $100­$150 per participant. Online participants can be obtained for $2­$3 per participant. With these cost values, we set Non = 122 and Noff = 61, and we varied the cost multiplier Q to take values from the set {50, 30, 15}. Although the value of Q = 50 is reasonable given the quotes we obtained, we also considered the value Q = 15 as a lower-end estimate, to capture any settings in which conducting an offline conjoint is relatively cheap. Finally, we also considered an intermediate multiplier of 30. With these values of Q, we obtained  Non/Q to be approximately 2, 4, and 8 (corresponding to the values of Q = 50, 30, and 15). Thus, although we kept the benchmark case at 61 online and offline, plus 61 online respondents, we compared this benchmark to 63, 65, and 69 offline respondents only. For example, for Q = 50, given the figures of $2 and $100 for online and offline cost per respondent, the total budget remains the same for the two studies: approximately $6,300 (see Equation (19)).
+
+Results and Discussion. Table 6 shows the asymptotic variances corresponding to the ML estimates of the offline partworths, as the cost multiplier is varied over
+
+Q = 50, 30, 15. We obtained these values by taking the inverses of the Fisher information matrices computed for the two designs; the details of the computations are presented in Appendix C.
+We note that when cost multiplier Q = 50 (i.e., conducting an offline conjoint is relatively costly, as market prices indicate), our proposed combined design yields more precise estimates (i.e., with lower asymptotic variances) of the offline partworths than does the offlineonly design for all but "reflective" and "divider" features. The reduction in the variance as a result of the combined design can be significant: as much as 28% for the partworth "colorful." The increase in the variance, on the other hand, is less than 1% for "reflective" and "divider" features. These findings enable us to conclude that when conducting an offline conjoint is significantly more costly than conducting an online one, using some portion of the budget to conduct an online conjoint for a large sample of respondents can provide more precise estimates of the offline partworths. In these settings, the loss in the "quality" of the data per respondent from collecting online instead of offline data is more than made up for by the ability to collect a much larger sample.
+When the cost multiplier Q reduces to 30, the combined design results in lower variances for six features, with a reduction of up to 24% for the feature "colorful" and higher variances for the remaining three features, with a maximum increase of less than 4%. Therefore, even if the cost of conducting an offline conjoint dropped by 40%, the combined design offers better precision overall when compared with the offline-only design. It is only when conducting an offline conjoint becomes significantly cheaper (i.e., when Q = 15) that the offline-only conjoint outperforms the combined design. This analysis shows how the benefits of the combined approach over the offline-only conjoint hinge on the cost differential Q. In most practical settings, we expect Q to be reasonably large, given the ease of finding respondents online through crowdsourcing platforms, such as MTurk. As a result, the comparison corresponding to Q = 50 is more indicative of what we expect to see in practice.
+
+Table 6. Asymptotic Variance Performance
+
+Combined design Non = 122 Noff = 61
+
+Offline-only design
+
+N = 63 (Q = 50)
+
+N = 65 (Q = 30)
+
+N = 69 (Q = 15)
+
+Reflective Colorful Blue Size Price Strap pad Water bottle Divider Laptop
+
+0.0161 0.0147 0.0062 0.0059 1.27E-6 0.0038 0.00249 0.00379 0.0072
+
+0.0160 0.0203 0.0064 0.0067 1.33E-6 0.0042 0.00254 0.00378 0.0076
+
+0.0155 0.0196 0.0062 0.0065 1.29E-6 0.0040 0.0025 0.0037 0.0074
+
+0.0146 0.0185 0.0059 0.0061 1.22E-6 0.0038 0.0023 0.0034 0.0070
+
+Note. Bold indicates values where the offline-only design is worse than combined design.
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+103
+
+6. Conclusions and Implications
+In this work, we challenged the common implicit assumption in preference elicitation that findings from online studies can accurately predict offline purchase behavior. We compared consumers' product evaluations in an online conjoint study with verbal product descriptions and pictures with those of the same consumers in an offline study with physical products. We found that the majority of partworth parameters changed significantly between online and offline studies. This discrepancy will lead models trained on data from online studies only to have diminished predictive ability for offline behavior. We recognize, however, that conducting online preference elicitation is significantly cheaper than conducting offline preference elicitation. Therefore, we proposed and tested a hybrid solution: supplementing an online conjoint study with a small set of participants who complete both online and offline preference elicitation. We tested two data fusion techniques that use the data from an online study completed by a "large" number of respondents, supplemented by an offline study completed by a "small" subset of the respondents. The techniques predict a respondent's offline preference partworths when given her online partworths. In the empirical application, we demonstrated that our data fusion techniques result in more accurate predictions of respondents' offline choices.
+Our study consisted of two conditions in which participants completed the online and offline conjoint tasks in differing orders, allowing us to gain further insight into the source of the discrepancy. The results suggest that two key factors cause respondents to behave differently when evaluating products online versus offline: (1) information gained by physically and visually examining the product and (2) differing relative attribute salience in the two formats. Note that neither of these factors is related to consumer preferences actually differing between online and offline settings. What the conjoint partworths more precisely represent are decision rules, or the extent to which a product's having a certain feature increases the probability of its being chosen.
+The decision rule may not perfectly capture a consumer's preference. For example, making a certain feature, such as strap pad, more salient, such as by increasing the font size of that feature in the product description, will increase the weight that the strap pad carries in the respondent's decision. Clearly, the larger font does not increase the respondent's actual preference
+
+for the feature: he or she does not start to like the strap pad any more or less than before. It does, however, increase the role it plays in the consumer decision, which is what the partworths capture.
+One of the limitations of our approach is that it is applicable to the cases in which a prototype is available for preference-elicitation techniques. It thus does not apply to services but rather to physical goods purchased in brick-and-mortar stores only. Clearly, for a service such as cellular, the packages (usually threetier assortments) do not lend themselves to information gain offline compared with online, and attribute salience should not exist, as both are presented in list form. Neither can our approach be used to forecast demand for radical innovations, for which physical prototypes are not yet available. Note that the discrepancy between online and offline attribute evaluations might be consumer specific, and thus a possible future avenue of research could examine consumer characteristics--and in particular, the level of familiarity with the product category--that might help explain this discrepancy.
+In this paper, we used primary data to carefully control for all factors and to hone in on the online/ offline distinction. But the higher-level problem of predicting a consumer's offline preferences, given the same consumer's online preferences and other consumers' online and offline preferences, has implications beyond online preference elicitation. Typically, the firm has, or can obtain, some data on both online and offline preferences for customers who have a history with both, as is depicted in Figure 5.
+These preferences could be estimated from secondary sources, such as past purchases, clicks, or returns data. Consider mixed retailers that sell both online and offline, such as Warby Parker, Zappos, or Bonobos, or online-only retailers: both are affected by the discrepancy of online and offline product evaluation because of "showrooming" and the prevalence of flexible return policies. For instance, when consumers purchase from online/mixed retailers, they may decide what to order based on their online evaluation of the available items. However, once they receive their order, consumers determine what they want to keep and what to return based on physical evaluation. Because of the generous return policies offered by many retailers, customers may try on several items before purchasing one. To apply our methods, an online/mixed retailer can use the online and offline preference data obtained from the items that
+
+Figure 5. Schematic Data Available to a Typical Online Retailer
+
+104
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+a given customer ordered online and the items that he or she decided to return after physical evaluation. Such customers can be considered the training set, as they provide sufficient data to calibrate the discrepancy between online and offline partworths. For a new customer, who has not yet evaluated the firm's products physically, the firm may have data on online preferences only. In this case, the firm can apply an approach similar to ours to predict what the customer will prefer upon physical examination of the products. With this
+
+prediction, the firm can better manage returns or may recommend products that the customer is likely to prefer in person. For use of a similar approach, see Dzyabura et al. (2018).
+Acknowledgments The authors thank Tom Meyvis, John Hauser, Russ Winer, Liu Liu, Oded Netzer, and seminar participants at UC San Diego Rady School of Management, London Business School, and the New Economic School for their thoughtful comments.
+
+Appendix A. Linear Mixed-Effects Model--Covariance Parameters
+
+Table A.1. Variance and Covariance Parameters of the Unrestricted Model in Equation (1), Estimated on 122 Participants in Condition 1 (Online First)
+
+Attribute Exterior design
+Size Price Strap pad Water bottle pocket Interior compartments
+
+Level
+Reflective Colorful
+Blue Black Large Small $120, $140, $160, $180 Yes
+No Yes No Divider for files Crater laptop sleeve Empty bucket/no dividers
+
+Online variance 2k,on 0.27 0.90 0.15
+0.16
+2.28E-5 0.15
+0.06
+0.06 0.24
+
+Offline variance 2k,off 0.72 1.03 0.16
+0.31
+2.39E-5 0.14
+0.05
+0.05 0.31
+
+Online offline covariance k,on,off 0.16 0.90 0.14
+0.18
+2.29E-5 0.12
+0.05
+0.05 0.17
+
+Appendix B. ICL Correction with Restricted
+Covariance Matrix The ICL method computes the expected offline ratings conditioned on all the observed data. We exploit the properties of multivariate normal distributions to compute the conditional expectations in closed form. Specifically, recall that we assume that participant i samples the online and offline partworths, i,k,on and i,k,off, of feature k jointly from a bivariate normal distribution:
+
+i,k ~ 1(µk, k),
+
+i,k
+
+i,k,on i,k,off
+
+, µk
+
+µk,on µk,off
+
+, k
+
+2k,on k,on,off
+
+k,on,off 2k,off
+
+,
+
+where k,on,off is the covariance between the online and offline partworths of feature k. The assumption embedded in the
+covariance matrix is that there are no correlations among
+various features; that is, we fix at zero the elements of  that correspond to cov(i,k,t, i,k,t ) for k  k and for all t and t.
+We use observed data to determine the maximum likeli-
+hood estimates of the population-level parameters µk,off, µk,on, k,off, k,on, and k,on,off for each feature k. Note that the data
+
+from the group of respondents who completed both the online and offline tasks enables us to estimate the covariance
+parameters. Given the population-level parameters, we can show that the conditional distribution of i,k,off given i,kj,on is a normal one, with mean µi,k,off|on and variance 2i,k,off|on as given by
+
+µi,k,off|on
+
+µk,off
+
++
+
+k
+
+k,off k,on
+
+(i,k,on
+
+-
+
+µk,on),
+
+i,k,off|on k,off 1 - 2k ,
+
+where k is the correlation coefficient between feature k's online and offline partworths.
+Note that µi,k,off|on is also the maximum likelihood estimator of i,k,off conditioned on i,k,on because of normality. Therefore, under this model, conditioned on i,k,on, the maximum likelihood estimates of a respondent's offline partworths are given by
+
+i,k,off
+
+µk,off
+
++
+
+k
+
+k,off k,on
+
+(i,k,on
+
+-
+
+µk,on).
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+105
+
+Appendix C. Computation of the Asymptotic Variances
+We now present the details of the computations we carried out to obtain the asymptotic variances corresponding to the maximum likelihood estimates of the offline partworths under the LME model. We compute the variances by inverting the Fisher information (FI) matrix, which we compute following theorem 1 in Lenk et al. (1996).
+Our computations were carried out on the data collected as part of the study, described in Section 3. The study was carried out on n 20 products, selected using the D-optimal study design criterion. Product j is described by the length K feature vector xj, obtained by dummy-coding 13 discrete attribute levels into K 9 features. Collecting the feature vectors together, we obtain the following design matrix:
+
+X
+
+
+
+-- --
+--
+
+(x1)u (x2)u
+ (xn)u
+
+-- --
+--
+
+,
+
+In our study, each respondent is exposed to the same design X
+
+and asked to rate the products in an offline, online, or an online
+
+followed by offline conjoint. We assume that the rating assigned
+
+by respondent i for product j follows the following model:
+
+ui,j,off ui,j,on
+
+K
+i,0 + i + i,k,off xjk+i,j,off, if j was evaluated offline,
+k1
+and
+K
+i,0 + i,k,on xjk+i,j,on, if j was evaluated online,
+k1
+
+where i,0 is the intercept term; i is the offline fixed effect; and i,off [i, 1, off, . . . , i, K, off]u and i,on [i, 1, on, . . . , i, K, on]u are the offline and online partworth vectors, respectively. We
+
+assume that individual i independently samples i,0 according to 1(µ0, 20), i according to 1(µf , 2f ), i,j,on and i,j,off according to 1(0, 2) for all j, and i [ui,off, ui,on] according to 1(µ, ), where µ [µu off, µu on]u and
+
+
+
+ off
+
+on, off with
+
+on, off on
+
+off diag 21,off, . . . , 2K,off , on diag 21,on, . . . , 2K,on ,
+
+and on,off diag 1,on,off, . . . , K,on,off ,
+
+where diag(v) denotes the diagonal matrix with v as the diagonal.
+When a respondent evaluates the n products in an offline conjoint and then the same n products in an online conjoint, the relation between the ratings collected and the underlying model parameters can be written more compactly as
+
+ui
+
+ui, off ui,on
+
+1n×1 1n×1
+
+1n×1 0n×1
+
+X 0n×K
+
+0n×K X
+
+
+
+i,0 i i, off i,on
+
+
+
++
+
+i, off i,on
+
+,
+
+where ui,t [ui, 1, t, . . . , ui, K, t]u, i,t [i, 1, t, . . . , i, K, t]u, for t  {off, on}. For compactness of notation, we define
+
+X full
+
+1n×1 1n×1 X
+
+0n×K
+
+1n×1 0n×1 0n×K X
+
+and say that the respondent evaluated the design Xfull when her or she completes an online followed by an offline conjoint. Similarly, we define
+
+X off X on
+
+1n×1 0n×1 0n×1 1n×1
+
+1n×1 0n×1 0n×1 0n×1
+
+X 0n×K 0n×K 0n×K
+
+0n×K and 0n×K
+
+0n×K X
+
+,
+
+where Xoff (respectively, Xon) is obtained by replacing the upper (respectively, lower) block row with all zeros. We say that a respondent evaluated the design Xoff (respectively, Xon) if he or she completes only an offline (respectively, online) conjoint. Finally, define
+
+full
+
+
+
+20 0
+02K×1
+
+0 2f 02K×1
+
+01×2K 01×2K 
+
+.
+
+We now invoke theorem 1 from Lenk et al. (1996) to compute
+
+the FI matrix corresponding to µf , µu]u. Under the combined
+
+the parameters µ~ [µ0, design, Noff respondents
+
+complete an online followed by offline conjoint, and Non
+
+respondents complete only the online conjoint. It can be
+
+shown that the FI under this design is given by
+
+FIfull where
+
+Noff
+
+·
+
+X u full f-u1ll X full
+
++
+
+Non
+
+·
+
+X
+
+u on
+
+o-n1
+
+X
+
+on
+
+,
+
+full
+
+2 I 2n×2n
+
++
+
+X
+
+full full X
+
+u full
+
+and
+
+on
+
+2 I 2n×2n
+
++
+
+X
+
+on
+
+full
+
+X
+
+u on
+
+,
+
+where Im×m is an m × m identity matrix for any m. The first term in FIfull corresponds to the FI from the respondents who complete an online followed by an offline conjoint (equivalently, a conjoint on the design Xfull). The second term, on the other hand, corresponds to the FI from the respondents who
+complete only an online conjoint (equivalently, a conjoint on the design Xon). The counts Noff and Non factor out because each of the Noff (respectively, Non) respondents evaluates the same set of profiles Xfull (respectively, Xon).
+In a similar manner, the FI under the offline only conjoint
+can be shown to be given by
+
+where
+
+FIoff
+
+N
+
+·
+
+X
+
+u off
+
+o-f1f
+
+X off
+
+,
+
+off
+
+2 I 2n×2n
+
++
+
+X
+
+off
+
+fullX
+
+u off
+
+and N is the number of respondents who complete an offline conjoint on the set of profiles Xoff.
+For computing the above FI matrices, we used design matrix X reported in Section 3 and full reported in Appendix A. Once we compute the FI matrices, we obtained the asymptotic variances under the combined and offline only designs corresponding to the estimate of µk,off by taking the diagonal element corresponding to µk,off in FIf-u1ll and FIo-f1f, respectively.
+
+Endnotes
+1 In Section 3.3, we elaborate on the likely sources of this difference between the verbal or pictorial description of the online study versus physical prototype offline presentation.
+
+106
+
+Dzyabura, Jagabathula, and Muller: Online vs. Offline Product Evaluations Marketing Science, 2019, vol. 38, no. 1, pp. 88­106, © 2019 INFORMS
+
+2 Computed from Sawtooth: 20 choices among four profiles each, so
+
+as to obtain standard errors below 0.05. Note that this number could
+
+be somewhat reduced by appropriately constraining the choice de-
+
+sign while maintaining reasonable design efficiency, although lower
+
+than the one chosen here.
+
+3 An alternative specification of the model would be uij,online i0 +
+
+i0 +
+
+K k
+
+1 ik xjk
+
++
+
+K k
+
+1 ik xjk
+
+·
+
+xonline
+
++
+
+ijt ,
+
+where ik
+
+represents the
+
+offline attribute partworths, ik represents the bias as a result of the
+
+online format, and xonline is a binary variable that takes the value 1 in
+
+the online format and 0 in the offline format. In this specification, the
+
+null hypothesis can be stated more precisely as the population mean
+
+and variance parameters corresponding to  are zero.
+
+4 We optimized the design of the study using the standard Sawtooth
+
+Complete Enumeration module to ensure efficient estimation.
+
+References
+Abu-Mostafa YS, Magdon-Ismail M, Lin H-T (2012) Learning from Data, vol. 4 (AMLBook, New York).
+Allison PD, Christakis NA (1994) Logit models for sets of ranked items. Sociol. Methodology 24(1994):199­228.
+Beggs S, Cardell S, Hausman J (1981) Assessing the potential demand for electric cars. J. Econometrics 17(1):1­19.
+Ben-Akiva M, Bradley M, Morikawa T, Benjamin J, Novak T, Oppewal H, Rao V (1994) Combining revealed and stated preferences data. Marketing Lett. 5(4):335­349.
+Bettman JR, Frances Luce M, Payne JW (1998) Constructive consumer choice processes. J. Consumer Res. 25(3):187­217.
+Bhat CR, Castelar S (2002) A unified mixed logit framework for modeling revealed and stated preferences: Formulation and application to congestion pricing analysis in the San Francisco Bay area. Transportation Res. Part B: Methodological 36(7):593­616.
+Brownstone D, Bunch DS, Train K (2000) Joint mixed logit models of stated and revealed preferences for alternative-fuel vehicles. Transportation Res. Part B: Methodological 34(5):315­338.
+Chapman RG, Staelin R (1982) Exploiting rank ordered choice set data within the stochastic utility model. J. Marketing Res. 29(3): 288­301.
+Ding M (2007) An incentive-aligned mechanism for conjoint analysis. J. Marketing Res. 44(2):214­223.
+Ding M, Hauser JR, Dong S, Dzyabura D, Yang Z, Su C, Gaskin SP (2011) Unstructured direct elicitation of decision rules. J. Marketing Res. 48(1):116­127.
+Dzyabura D, Hauser JR (2011) Active machine learning for consideration heuristics. Marketing Sci. 30(5):801­819.
+Dzyabura D, Jagabathula S (2018) Offline assortment optimization in the presence of an online channel. Management Sci. 64(6):2767­2786.
+Dzyabura D, El Kihal S, Ibragimov M (2018) Leveraging the power of images in predicting product return rates. Working paper, New York University, New York.
+Feinberg FM, Kinnear T, Taylor JR (2012) Modern Marketing Research: Concepts, Methods, and Cases (Cengage Learning, Mason, OH).
+Feit EM, Beltramo MA, Fred Feinberg M (2010) Reality check: Combining choice experiments with market data to estimate the importance of product attributes. Management Sci. 56(5):785­800.
+Gilbride TJ, Lenk PJ, Brazell JD (2008) Market share constraints and the loss function in choice-based conjoint analysis. Marketing Sci. 27(6):995­1011.
+Green PE, Rao VR (1971) Conjoint measurement for quantifying judgmental data. J. Marketing Res. 8(3):355­363.
+
+Hauser JR, Toubia O, Evgeniou T, Befurt R, Dzyabura D (2010) Disjunctions of conjunctions, cognitive simplicity, and consideration sets. J. Marketing Res. 47(3):485­496.
+Hausman JA, Ruud PA (1987) Specifying and testing econometric models for rank-ordered data. J. Econometrics 34(1):83­104.
+Higgins ET (1996) Knowledge activation: Accessibility, applicability, and salience. Higgins ET, Kruglanski AW eds. Social Psychology: Handbook of Basic Principles (Guilford Press, New York), 133­168.
+Huber J, Zwerina K (1996) The importance of utility balance in efficient choice designs. J. Marketing Res. 33(3):307­317.
+Kohli R, Sukumar R (1990) Heuristics for product-line design using conjoint analysis. Management Sci. 36(12):1464­1478.
+Ko¨ k AG, Fisher ML, Vaidyanathan R (2015) Assortment planning: Review of literature and industry practice. Retail Supply Chain Management (Springer, Boston), 175­236.
+Kuhfeld WF, Tobias RD, Garratt M (1994) Efficient experimental design with marketing research applications. J. Marketing Res. 31(4):545­557.
+Lenk PJ, DeSarbo WS, Green PE, Young MR (1996) Hierarchical Bayes conjoint analysis: Recovery of partworth heterogeneity from reduced experimental designs. Marketing Sci. 15(2):173­191.
+Luo L, Kannan PK, Ratchford BT (2008) Incorporating subjective characteristics in product design and evaluations. J. Marketing Res. 45(2):182­194.
+Netzer O, Toubia O, Bradlow ET, Dahan E, Evgeniou T, Feinberg FM, Feit EM (2008) Beyond conjoint analysis: Advances in preference measurement. Marketing Lett. 19(3­4):337­354.
+Orme B, Johnson R (2006) External effect adjustments in conjoint analysis. Proc. Sawtooth Software Conf. (Sawtooth Software, Sequim, WA), 183­210.
+Peck J, Childers TL (2003) To have and to hold: The influence of haptic information on product judgments. J. Marketing 67(2):35­48.
+Pedregosa F, Varoquaux G, Gramfort A, Michel V, Thirion B, Grisel O, Blondel M, et al. (2011) Scikit-learn: Machine learning in Python. J. Machine Learn. Res. 12(February):2825­2830.
+PricewaterhouseCoopers (2015) Physical store beats online as preferred purchase destination for U.S. shoppers, according to PwC. Press release (February 9), PricewaterhouseCoopers LLP, New York. http://www.prnewswire.com/news-releases/physical -store-beats-online-as-preferred-purchase-destination-for-us -shoppers-according-to-pwc-300032566.html.
+Punj GN, Staelin R (1978) The choice process for graduate business schools. J. Marketing Res. 15(4):588­598.
+Rossi PE, Allenby GM, McCulloch R (2012) Bayesian Statistics and Marketing (John Wiley & Sons, Chichester, UK).
+She J, MacDonald EF (2013) Trigger features on prototypes increase preference for sustainability. ASME 2013 Internat. Design Engrg. Tech. Conf. Comput. Inform. Engrg. Conf., vol. 5 (American Society of Mechanical Engineers, New York), V005T06A043­V005T06A054.
+Srinivasan V, Lovejoy WS, Beach D (1997) Integrated product design for marketability and manufacturing. J. Marketing Res. 34(1): 154­163.
+Swait J, Andrews RL (2003) Enriching scanner panel models with choice experiments. Marketing Sci. 22(4):442­460.
+Wu X, Kumar V, Ross Quinlan J, Ghosh J, Yang Q, Motoda H, McLachlan GJ, et al. (2008) Top 10 algorithms in data mining. Knowledge Inform. Systems 14(1):1­37.
+U.S. Census Bureau (2017) Quarterly retail e-commerce sales, 2nd quarter. U.S. Census Bureau News (August 17), https://www .census.gov/retail/mrts/www/data/pdf/ec_current.pdf.
+
+

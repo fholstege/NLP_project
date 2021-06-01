@@ -2,22 +2,27 @@ import pandas as pd
 from helpfunctions_preprocessing import prepare_scopus
 
 # turn scimago data into dataframe to extract fields
-field_dict = {'Marketing' : 'data/raw/marketing_journals.csv', 
-          'AI' :  'data/raw/ai_journals.csv', 
-          'Statistics' : 'data/raw/statistics_journals.csv', 
-          'Sociology / Pol.Sc.' : 'data/raw/socio_political_journals.csv', 
-          'Mgmt. Science / OR' : 'data/raw/mgmtscience_operationsres_journals.csv', 
-          'Economics / Econometrics' : 'data/raw/econ_econometrics_journals.csv',
-          'Psychology' : 'data/raw/psych_journals.csv',
-          'Medicine' : 'data/raw/medicine_journals.csv',
-          'Computer Science' : 'data/raw/cs_journals.csv',
-          'Behavioral Neuroscience' : 'data/raw/behav_neuro_journals.csv',
-          'Org. Behavior / HR Management' : 'data/raw/hr_org_behav_journals.csv',
-          'Mgmt of Tech. and Innovation' : 'data/raw/mgmt_tech_inno_journals.csv',
-          'Business / Int. Management' : 'data/raw/business_int_mgmt_journals.csv',
-          'Mgmt Information Systems' : 'data/raw/mgmt_info_systems_journals.csv',
-          'Strategy and Management' : 'data/raw/strategy_mgmt_journals.csv',
-          'Social Sciences' : 'data/raw/social_sciences_journals.csv'}
+field_dict = {'Arts and Humanities' : 'data/raw/fields/arts_humanities.csv', 
+              'Computer Science' : 'data/raw/fields/computer_science.csv', 
+              'Economics / Econometrics / Finance' : 'data/raw/fields/econ_finance.csv', 
+              'Social Sciences' : 'data/raw/fields/social_sciences.csv', 
+              'Environmental Science' : 'data/raw/fields/environ_science.csv', 
+              'Marketing' : 'data/raw/fields/marketing.csv', 
+              'Neuroscience' : 'data/raw/fields/neuro.csv', 
+              'Psychology' : 'data/raw/fields/psych.csv', 
+              'Medicine' : 'data/raw/fields/medicine.csv', 
+              'Mathematics' : 'data/raw/fields/mathematics.csv',
+              'Accounting' : 'data/raw/fields/accounting.csv',
+              'Mgmt. Information Systems ' : 'data/raw/fields/mgmt_info_systems.csv',
+              'Mgmt. Technology and Innovation' : 'data/raw/fields/mgmt_tech_inno.csv',
+              'Mgmt. Science and OR' : 'data/raw/fields/mgmt_science_or.csv',
+              'Org. Behavior and HR' : 'data/raw/fields/org_behav_hr.csv',
+              'Strategy and Mgmt.' : 'data/raw/fields/strat_mgmt.csv',
+              'Agricultural and Biological Sciences' : 'data/raw/fields/agricultural_biological.csv',
+              'Multidisciplinary' : 'data/raw/fields/multidisciplinary.csv',
+              'Business and Int. Mgmt.' : 'data/raw/fields/business_int_mgmt.csv',
+              'Tourism, Leisure, Hospitality Mgmt.' : 'data/raw/fields/tourism_hospitality.csv'
+              }
 
 # initialise dataframe
 all_journals = pd.DataFrame(columns = ['Rank', 'Title', 'Field', 'ID'])
@@ -41,6 +46,10 @@ df_dupl = all_journals[all_journals['Title'].duplicated(keep = False)]
 
 # sort by rank
 df_dupl = df_dupl.sort_values(by = 'Rank')
+
+# check which journals are rank the same for more than one field
+test =  all_journals[all_journals[['Title', 'Rank']].duplicated(keep = False)]
+test.sort_values(by = ['Title', 'Rank'])
 
 # get duplicates to remove from data
 df_dupl = df_dupl[df_dupl['Title'].duplicated(keep = 'first')]
