@@ -9,41 +9,40 @@ from nltk.stem import WordNetLemmatizer
 from pandas.core.common import flatten
  
 # read the zipped files
-df_jom_merged = pd.read_parquet('../Data/clean/journalofmarketing_merged.gzip')
-df_jomr_merged = pd.read_parquet('../Data/clean/journalofmarketingresearch_merged.gzip')
-df_jcr_merged = pd.read_parquet('../Data/clean/journalofconsumerresearch_merged.gzip')
-df_jcp_merged = pd.read_parquet('../Data/clean/journalofconsumerpsych_merged.gzip')
-df_jam_merged = pd.read_parquet('../Data/clean/journalacademyofmarketingscience_merged.gzip')
-
-# add journal titles
-df_jom_merged['Journal'] = 'Journal of Marketing' 
-df_jomr_merged['Journal'] = 'Journal of Marketing Research' 
-df_jcr_merged['Journal'] = 'Journal of Consumer Research' 
-df_jcp_merged['Journal'] = 'Journal of Consumer Psychology' 
-df_jam_merged['Journal'] = 'Journal Academy of Marketing Science' 
+df_jom_merged = pd.read_parquet('../Data/clean/journalofmarketing_adject_nouns_merged.gzip')
+df_jomr_merged = pd.read_parquet('../Data/clean/journalofmarketingresearch_adject_nouns_merged.gzip')
+df_jcr_merged = pd.read_parquet('../Data/clean/journalofconsumerresearch_adject_nouns_merged.gzip')
+df_jcp_merged = pd.read_parquet('../Data/clean/journalofconsumerpsych_adject_nouns_merged.gzip')
+df_jam_merged = pd.read_parquet('../Data/clean/journalacademyofmarketingscience_adject_nouns_merged.gzip')
 
 # get dataframes together
 frames_journals = [df_jom_merged, df_jomr_merged, df_jcr_merged, df_jcp_merged, df_jam_merged]
 
 # merge the journals in one dataframe, vertically
 df_journals_merged = pd.concat(frames_journals)
-df_journals_merged.to_parquet("../Data/clean/data_journals_merged.gzip", compression='gzip')
 
 # init the Wordnet Lemmatizer
 lemmatizer = WordNetLemmatizer()
 
 # create list of words for each document -body
 body_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['body'].tolist()]
-body_flat_list = list(flatten(body_list))  
+body_lemmatized_list = list(flatten(body_list))  
 
 
 # create list of words for each document -abstract
 abstract_list =  [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['abstract'].tolist()]
-abstract_flat_list =  list(flatten(abstract_list))  
+abstract_lemmatized_list =  list(flatten(abstract_list))  
 
 # create list of words for each document -titles
 title_list =  [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['title'].tolist()]
-title_flat_list =  list(flatten(title_list)) 
+title_lemmatized_list =  list(flatten(title_list)) 
+
+
+# add lemmatized versions backs
+df_journals_merged['body_lemmatized'] = body_lemmatized_list
+df_journals_merged['abstract_lemmatized'] = abstract_lemmatized_list
+df_journals_merged['title_lemmatized'] = title_lemmatized_list
+df_journals_merged.to_parquet("../Data/clean/data_journals_adject_nouns_merged.gzip", compression='gzip')
 
  
 

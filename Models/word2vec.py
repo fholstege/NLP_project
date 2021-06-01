@@ -5,28 +5,53 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import matplotlib as plt
 import numpy as np
+from nltk.stem import WordNetLemmatizer 
+from pandas.core.common import flatten
 
 
-df = pd.read_parquet('../Data/clean/data_journals_merged.gzip')
+# read merged files, get body of text, adapt index
+
+file_list = ['journalofmarketing',
+             'journalofmarketingresearch',
+             'journalofconsumerresearch',
+             'journalofconsumerpsych',
+             'journalacademyofmarketingscience']
+
+# stack data from all journals
+df = pd.read_parquet('../data/clean/' + file_list[0] + '_merged.gzip')
+for f in file_list[1:len(file_list)]:
+    df = pd.concat([df, pd.read_parquet('../data/clean/' + f + '_merged.gzip')]) 
+    
+df = df.reset_index()
 body_texts = df['body'].tolist()
-df.index = [i for i in range(1, len(df.index)+1)]
-df.index
 
+# split the texts
 texts = [row.split() for row in df['body']]
 
+
+
+
+# create list of words for each document -body
+
+# init the Wordnet Lemmatizer
+lemmatizer = WordNetLemmatizer()
+
+list_words_lemmatized = [[lemmatizer.lemmatize(word) for word in document] for document in texts]
+bodies_flat_list = list(flatten(list_words_lemmatized))  
+
+
+
+# create train and test set, save which ones are train and test
 random_indeces = list(np.random.permutation(len(texts)))
 train_size = int(round(len(texts) * 0.7,0))
-
 train_indeces = random_indeces[:train_size]
 test_indeces = random_indeces[train_size:]
-
 train_bool =  [1 if i in train_indeces else 0 for i in range(0,max(random_indeces)+1)]
-
-
-
 train_texts = [texts[i] for i in train_indeces]
 test_texts = [texts[j] for j in test_indeces]
 
+
+# get the number of cores
 cores = multiprocessing.cpu_count()
 
 
@@ -44,6 +69,7 @@ alpha = 0.025
 negative = 5
 
 
+# train word2vec on training set
 w2v_model = Word2Vec(train_texts,
                      window=window,
                      size=size,
@@ -54,16 +80,14 @@ w2v_model = Word2Vec(train_texts,
 
 
 
-# summarize model
-# summarize vocabulary
-vocab = list(w2v_model.wv.vocab)
-len(vocab)
+# summarize for couple of common words which words are similar
 
 w2v_model.most_similar('retail')
 w2v_model.most_similar('advertisement')
 w2v_model.most_similar('effect')
 
 
+# get document representations
 def document_vector_mean(doc, w2v_model):
     """Create document vectors by averaging word vectors. Remove out-of-vocabulary words."""
     doc = [word for word in doc if word in w2v_model.wv.vocab]
@@ -103,6 +127,10 @@ df_doc_representation_min.columns = names_min
 
 
 df_doc_representation_mean['Cited by']= df['Cited by']
+
+df_doc_representation_mean['train_set'] = train_bool
+df_doc_representation_max['train_set'] = train_bool
+df_doc_representation_min['train_set'] = train_bool
 
 
 df_doc_representation_mean.to_csv('../data/representations/word2vec_doc_representation_mean.csv')
