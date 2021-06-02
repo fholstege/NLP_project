@@ -18,13 +18,22 @@
 # 1) Load in packages, define help functions 
 ################################
 
+
 # Packes required for subsequent analysis. P_load ensures these will be installed and loaded. 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(reticulate,
                tidyverse,
                glmnet,
-               pscl) 
+               pscl,
+               rlist,
+               parallel,
+               gbm, 
+               devtools) 
 
+
+# add repository to make mclapply() run in parallel (only necessary on windows)
+install_github('nathanvan/parallelsugar')
+library(parallelsugar)
 
 # create ability to read parquet files into r
 pandas <- import("pandas")
@@ -151,21 +160,23 @@ summary(linear_model_topic_altmetric)
 ############################
 
 
-
+# get dataframes 
 df_word2vec_mean_representation = read_parquet('../data/representations/word2vec_doc_representation_mean.gzip') %>% na.omit()
 df_word2vec_max_representation = read_parquet('../data/representations/word2vec_doc_representation_max.gzip')  %>% na.omit()
 df_word2vec_min_representation = read_parquet('../data/representations/word2vec_doc_representation_min.gzip')%>% na.omit()
-colnames(df_word2vec_mean_representation)
 
+
+# get x and y values
 x_vars_mean <- model.matrix(`Cited by`~. , na.omit(df_word2vec_mean_representation))[,-1]
 x_vars_max <-  model.matrix(`Cited by`~. , na.omit(df_word2vec_max_representation))[,-1]
 x_vars_min <- model.matrix(`Cited by`~. , na.omit(df_word2vec_min_representation))[,-1]
-y_var <- log(1 + df_word2vec_mean_representation$`Cited by`)
+y_var <- df_word2vec_mean_representation$`Cited by`
+y_var_logged <- log(1 + y_var)
 
+
+# try out these values for alpha and lambda
 lambda_cv = 10^seq(2, -2, by = -0.5)
-alpha_cv = seq(0,1,by=0.2)
-
-
+alpha_cv = seq(0,1,by=0.5)
 
 # Splitting the data into test and train
 set.seed(123)
@@ -173,51 +184,193 @@ train_indeces = which(df_word2vec_mean_representation$train_set == 1)
 
 
 # mean representation
-x_vars_mean_train = x_vars_mean[train_indeces,]
-x_vars_mean_test = x_vars_mean[-train_indeces,]
+x_vars_mean_train = data.frame(x_vars_mean[train_indeces,]) %>% select(-train_set)
+x_vars_mean_test = data.frame(x_vars_mean[-train_indeces,])  %>% select(-train_set)
 
 # max representation
-x_vars_max_train = x_vars_max[train_indeces,]
-x_vars_max_test = x_vars_max[-train_indeces,]
+x_vars_max_train = data.frame(x_vars_max[train_indeces,]) %>% select(-train_set)
+x_vars_max_test = data.frame(x_vars_max[-train_indeces,]) %>% select(-train_set)
 
 # min representation
-x_vars_min_train = x_vars_min[train_indeces,]
-x_vars_min_test = x_vars_min[-train_indeces,]
+x_vars_min_train = data.frame(x_vars_min[train_indeces,]) %>% select(-train_set)
+x_vars_min_test = data.frame(x_vars_min[-train_indeces,]) %>% select(-train_set)
 
 # dependent variable
 y_var_train = y_var[train_indeces]
 y_var_test = y_var[-train_indeces]
+y_var_train_logged = y_var_logged[train_indeces]
+y_var_test_logged = y_var_logged[-train_indeces]
 
+
+
+####
+# First; baseline model with linear regression
+####
+
+linear_model_mean_rep <- lm(y_var_train_logged ~ . , data = data.frame(x_vars_mean_train))
+linear_model_max_rep <- lm(y_var_train_logged ~ ., data = data.frame(x_vars_max_train))
+linear_model_min_rep <- lm(y_var_train_logged ~ ., data = data.frame(x_vars_min_train))
+
+pred_linear_model_mean_log <- predict(linear_model_mean_rep, data.frame(x_vars_mean_test))
+pred_linear_model_max_log <- predict(linear_model_max_rep, data.frame(x_vars_max_test))
+pred_linear_model_min_log <- predict(linear_model_min_rep, data.frame(x_vars_min_test))
+
+pred_linear_model_mean_backtransformed <- exp(pred_linear_model_mean_log) - 1
+pred_linear_model_max_backtransformed <- exp(pred_linear_model_max_log) - 1
+pred_linear_model_min_backtransformed <- exp(pred_linear_model_min_log) - 1
+
+
+MAE_linear_model_mean <- mean(abs(pred_linear_model_mean_backtransformed - y_var_test))
+MAE_linear_model_max <- mean(abs(pred_linear_model_max_backtransformed - y_var_test))
+MAE_linear_model_min <- mean(abs(pred_linear_model_min_backtransformed - y_var_test))
+
+
+
+####
+# Second; elastic net
+####
+
+
+# number of folds
 K = 5
+
+# function to speed up cv.glmnet in lapply with different alpha's 
+cv_glmnet_wrapper <- function(alpha, x_vars, y_var, lambda_cv, K, ...){
+  
+  
+  cv_result <- cv.glmnet(x_vars, 
+            y_var,
+            alpha = alpha, 
+            lambda = lambda_cv, 
+            nfolds = K,
+            ...)
+  
+  return(cv_result)
+}
+
+as.matrix(x_vars_mean_train)
+
 # cv for mean representation
-cv_mean_rep <- cv.glmnet(x_vars_mean_train, y_var_train,
-                       alpha = 1, lambda = lambda_cv, 
-                       nfolds = K)
+cv_mean_rep <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_mean_train), y = y_var_train_logged, lambda_cv = lambda_cv, K=K)
+
 
 # cv for max representation
-cv_max_rep <- cv.glmnet(x_vars_max_train, y_var_train,
-                         alpha = 1, lambda = lambda_cv, 
-                         nfolds = K)
+cv_max_rep <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_max_train), y = y_var_train_logged, lambda_cv = lambda_cv, K=K)
 
 # cv for min representation
-cv_min_rep <- cv.glmnet(x_vars_min_train, y_var_train,
-                         alpha = 1, lambda = lambda_cv, 
-                         nfolds = K)
+cv_min_rep <-lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_min_train), y = y_var_train_logged, lambda_cv = lambda_cv, K=K)
 
 
-opt_lambda_mean <- cv_mean_rep$lambda.min
-opt_lambda_max <- cv_max_rep$lambda.min
-opt_lambda_min <- cv_min_rep$lambda.min
+# function to get results from the wrapper function
+get_results_cv_wrapper <- function(x){ 
+  score = min(x$cvm)
+  lambda = x$lambda.min
+  
+  return(c(score, lambda))
+  }
 
-cv_mean_rep$cvm
-cv_max_rep$cvm
-cv_min_rep$cvm
+# get cv results for mean representation
+cv_result_mean <- data.frame(list.rbind(lapply(cv_mean_rep, get_results_cv_wrapper)), alpha = alpha_cv, type.measure = 'mae')
+colnames(cv_result_mean)[1:2] <- c('MAE', 'Lambda')
+
+
+# get cv results for max representation
+cv_result_max <- data.frame(list.rbind(lapply(cv_max_rep, get_results_cv_wrapper)), alpha = alpha_cv,  type.measure = 'mae')
+colnames(cv_result_max)[1:2] <- c('MAE', 'Lambda')
+
+# get cv results for min representation
+cv_result_min <- data.frame(list.rbind(lapply(cv_min_rep, get_results_cv_wrapper)), alpha = alpha_cv,  type.measure = 'mae')
+colnames(cv_result_min)[1:2] <- c('MAE', 'Lambda')
+
+
+# based on results, pick lambda and alpha
+opt_alpha = 0.5
+opt_lambda_min = 0.01
 
 # Rebuilding the model with best lamda value identified
-lasso_model_word2vec <- glmnet(x_vars_min_train, y_var_train, alpha = 1, lambda = opt_lambda_min)
-pred_elastic <- predict(lasso_model_mean_word2vec, newx = x_vars_min_test)
-mean((pred_elastic - y_var_test)^2)
+lasso_model_word2vec <- glmnet(as.matrix(x_vars_min_train), y_var_train_logged, alpha = opt_alpha, lambda = opt_lambda_min)
+pred_elastic_log <- predict(lasso_model_word2vec, newx = as.matrix(x_vars_min_test))
 
-# add linear regression
+# get MAE in log
+MAE_log <- mean(abs(pred_elastic_log - y_var_test))
 
+# get the backtransformed predictions
+pred_elastic_backtransformed <- exp(pred_elastic_log)-1
+residuals_backtransformed <- (abs(pred_elastic_backtransformed - y_var_test))
+MAE <- mean(residuals_backtransformed)
+
+# plot residuals
+colnames(residuals_backtransformed) <- 'residuals'
+ggplot(data = data.frame(residuals_backtransformed), aes(x = residuals)) + 
+  geom_histogram(fill = 'grey', bins = 50) + 
+  labs(x = 'Residuals - MAE, Elastic Net', y = 'Frequency') + 
+  theme_bw()
+
+
+
+####
+# Third; random forest 
+####
+
+df_gbm_mean_rep_train = data.frame(y_var_train_logged, x_vars_mean_train)
+df_gbm_max_rep_train = data.frame(y_var_train_logged, x_vars_max_train)
+df_gbm_min_rep_train = data.frame(y_var_train_logged, x_vars_min_train)
+
+
+n_max_trees = 300
+interaction_depth_seq = c(1,3,5)
+n_min_obs_node_seq = c(100,250,500)
+
+df_param <- expand.grid(interaction_depth_seq, n_min_obs_node_seq)
+colnames(df_param) <- c('interaction_depth', 'min_obs')
+
+
+
+
+# ensures we can apply gbm in lapply
+gbm_inGridsearch <- function(l_param, obj_formula, distribution, df_var, K, n_max_trees){
+  result <- gbm(formula = obj_formula, distribution = distribution, data = df_var, cv.folds = K, n.trees = n_max_trees, interaction.depth = l_param$interaction_depth, n.minobsinnode = l_param$min_obs)
+  return(result)
+}
+
+
+# creates df to analyse tree results
+create_df_TreeResult <- function(obj_tree_result){
+  
+  n_tree_best =  which.min(obj_tree_result$cv.error)
+  best_cv_error = obj_tree_result$cv.error[n_tree_best]
+  
+  dfTreeResult <- data.frame(n_tree =n_tree_best , cv_error = best_cv_error, min_obs = obj_tree_result$n.minobsinnode, interaction_depth = obj_tree_result$interaction.depth)
+  return(dfTreeResult)
+}
+
+
+# param grid search for gbm function
+grid_search_gbm <- function(obj_formula, df_var,df_param,K, n_max_trees){
+  
+  # create list with all parameters
+  l_params =  split(df_param, seq(nrow(df_param)))
+  
+  # apply gbm to all combinations 
+  l_result_grid <- parallelsugar::mclapply(l_params ,gbm_inGridsearch,obj_formula = obj_formula, distribution = "gaussian", df_var = df_var, K = K, n_max_trees = n_max_trees,  mc.cores = detectCores()-1)
+  
+  # save results of the data.frame
+  l_result_grid_clean <- lapply(l_result_grid, create_df_TreeResult)
+  
+  df_results <- do.call("rbind", l_result_grid_clean)
+  
+  return(df_results)
+}
+
+df_gridsearch_result_mean <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_mean_rep_train, df_param , K, n_max_trees)
+df_gridsearch_result_max <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_max_rep_train, df_param , K, n_max_trees)
+df_gridsearch_result_min <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_min_rep_train, df_param , K, n_max_trees)
+
+boosted_model <- gbm(y_var_train_logged ~ . , data =df_gbm_min_rep, distribution = 'gaussian', n.trees = 215, interaction.depth = 3, n.minobsinnode = 100)
+
+
+df_gbm_min_rep_test <-data.frame(y_var_test_logged, x_vars_min_test)
+predict_gbm_logged <- predict(boosted_model, df_gbm_min_rep_test)
+predict_gbm_backtransformed <- exp(predict_gbm_logged) + 1
+MAE_gbm <- mean(abs(predict_gbm_backtransformed - y_var_test))
 
