@@ -27,21 +27,23 @@ lemmatizer = WordNetLemmatizer()
 # create list of words for each document -body
 body_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['body'].tolist()]
 body_lemmatized_list = list(flatten(body_list))  
-
+body_lemmatized_list_str = [' '.join(body) for body in body_list ]
 
 # create list of words for each document -abstract
 abstract_list =  [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['abstract'].tolist()]
 abstract_lemmatized_list =  list(flatten(abstract_list))  
+abstract_lemmatized_list_str = [' '.join(abstract) for abstract in abstract_list ]
 
 # create list of words for each document -titles
 title_list =  [[lemmatizer.lemmatize(word) for word in document.split()] for document in df_journals_merged['title'].tolist()]
 title_lemmatized_list =  list(flatten(title_list)) 
+title_lemmatized_list_str = [' '.join(title) for title in title_list ]
 
 
 # add lemmatized versions backs
-df_journals_merged['body_lemmatized'] = body_lemmatized_list
-df_journals_merged['abstract_lemmatized'] = abstract_lemmatized_list
-df_journals_merged['title_lemmatized'] = title_lemmatized_list
+df_journals_merged['body_lemmatized'] = body_lemmatized_list_str
+df_journals_merged['abstract_lemmatized'] = abstract_lemmatized_list_str
+df_journals_merged['title_lemmatized'] = title_lemmatized_list_str
 df_journals_merged.to_parquet("../Data/clean/data_journals_adject_nouns_merged.gzip", compression='gzip')
 
  
@@ -90,16 +92,16 @@ def create_plot_n_gram(top_words, color, save= False, dpi = 200, figname = None)
 
 
 # top uni and bigrams - body of text
-top_words_body = get_top_n_gram(body_flat_list, 1, 20)
-top_two_words_body =  get_top_n_gram(body_flat_list, 2, 20)
+top_words_body = get_top_n_gram(body_lemmatized_list, 1, 20)
+top_two_words_body =  get_top_n_gram(body_lemmatized_list, 2, 20)
 
 # top uni and bigrams - abstract
-top_words_abstract =  get_top_n_gram(abstract_flat_list, 1, 20)
-top_two_words_abstract =  get_top_n_gram(abstract_flat_list, 2, 20)
+top_words_abstract =  get_top_n_gram(abstract_lemmatized_list, 1, 20)
+top_two_words_abstract =  get_top_n_gram(abstract_lemmatized_list, 2, 20)
 
 # top uni and bigrams - titles
-top_words_title = get_top_n_gram(title_flat_list, 1, 20)
-top_two_words_title =  get_top_n_gram(title_flat_list, 2, 20)
+top_words_title = get_top_n_gram(title_lemmatized_list, 1, 20)
+top_two_words_title =  get_top_n_gram(title_lemmatized_list, 2, 20)
 
 
 create_plot_n_gram(top_words_body, 'blue', save = True, figname = 'unigram_body_plot')

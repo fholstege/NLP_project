@@ -152,15 +152,15 @@ summary(linear_model_topic_altmetric)
 
 
 
-df_word2vec_mean_representation = read.csv('../data/representations/word2vec_doc_representation.csv') %>% select(-X) %>% na.omit()
-df_word2vec_max_representation = read.csv('../data/representations/word2vec_doc_representation.csv') %>% select(-X) %>% na.omit()
-df_word2vec_min_representation = read.csv('../data/representations/word2vec_doc_representation.csv')%>% select(-X) %>% na.omit()
+df_word2vec_mean_representation = read_parquet('../data/representations/word2vec_doc_representation_mean.gzip') %>% na.omit()
+df_word2vec_max_representation = read_parquet('../data/representations/word2vec_doc_representation_max.gzip')  %>% na.omit()
+df_word2vec_min_representation = read_parquet('../data/representations/word2vec_doc_representation_min.gzip')%>% na.omit()
+colnames(df_word2vec_mean_representation)
 
-
-x_vars_mean <- model.matrix(num_ref~. , na.omit(df_word2vec_mean_representation))[,-1]
-x_vars_max <-  model.matrix(num_ref~. , na.omit(df_word2vec_max_representation))[,-1]
-x_vars_min <- model.matrix(num_ref~. , na.omit(df_word2vec_min_representation))[,-1]
-y_var <- log(df_word2vec_mean_representation)
+x_vars_mean <- model.matrix(`Cited by`~. , na.omit(df_word2vec_mean_representation))[,-1]
+x_vars_max <-  model.matrix(`Cited by`~. , na.omit(df_word2vec_max_representation))[,-1]
+x_vars_min <- model.matrix(`Cited by`~. , na.omit(df_word2vec_min_representation))[,-1]
+y_var <- log(1 + df_word2vec_mean_representation$`Cited by`)
 
 lambda_cv = 10^seq(2, -2, by = -0.5)
 alpha_cv = seq(0,1,by=0.2)
@@ -170,6 +170,7 @@ alpha_cv = seq(0,1,by=0.2)
 # Splitting the data into test and train
 set.seed(123)
 train_indeces = which(df_word2vec_mean_representation$train_set == 1)
+
 
 # mean representation
 x_vars_mean_train = x_vars_mean[train_indeces,]
@@ -187,29 +188,36 @@ x_vars_min_test = x_vars_min[-train_indeces,]
 y_var_train = y_var[train_indeces]
 y_var_test = y_var[-train_indeces]
 
-
+K = 5
 # cv for mean representation
 cv_mean_rep <- cv.glmnet(x_vars_mean_train, y_var_train,
-                       alpha = alpha_cv, lambda = lambda_cv, 
-                       nfolds = 5)
+                       alpha = 1, lambda = lambda_cv, 
+                       nfolds = K)
 
 # cv for max representation
-cv_mean_rep <- cv.glmnet(x_vars_max_train, y_var_train,
-                         alpha = alpha_cv, lambda = lambda_cv, 
-                         nfolds = 5)
+cv_max_rep <- cv.glmnet(x_vars_max_train, y_var_train,
+                         alpha = 1, lambda = lambda_cv, 
+                         nfolds = K)
 
+# cv for min representation
 cv_min_rep <- cv.glmnet(x_vars_min_train, y_var_train,
-                         alpha = alpha_cv, lambda = lambda_cv, 
-                         nfolds = 5)
+                         alpha = 1, lambda = lambda_cv, 
+                         nfolds = K)
 
 
-opt_lambda_mean <- cv_output$lambda.min
-opt_alpha_mean <- cv_output$alpha.min
+opt_lambda_mean <- cv_mean_rep$lambda.min
+opt_lambda_max <- cv_max_rep$lambda.min
+opt_lambda_min <- cv_min_rep$lambda.min
 
+cv_mean_rep$cvm
+cv_max_rep$cvm
+cv_min_rep$cvm
 
 # Rebuilding the model with best lamda value identified
-lasso_model_mean_word2vec <- glmnet(x_vars_mean_train, y_var_train, alpha = opt_alpha_mean, lambda = opt_lambda_mean)
-pred_elastic_mean <- predict(lasso_model_mean_word2vec, newx = x_vars_mean_test)
-mean((pred - y_test)^2)
+lasso_model_word2vec <- glmnet(x_vars_min_train, y_var_train, alpha = 1, lambda = opt_lambda_min)
+pred_elastic <- predict(lasso_model_mean_word2vec, newx = x_vars_min_test)
+mean((pred_elastic - y_var_test)^2)
 
 # add linear regression
+
+

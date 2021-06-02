@@ -11,33 +11,14 @@ from pandas.core.common import flatten
 
 # read merged files, get body of text, adapt index
 
-file_list = ['journalofmarketing',
-             'journalofmarketingresearch',
-             'journalofconsumerresearch',
-             'journalofconsumerpsych',
-             'journalacademyofmarketingscience']
-
 # stack data from all journals
-df = pd.read_parquet('../data/clean/' + file_list[0] + '_merged.gzip')
-for f in file_list[1:len(file_list)]:
-    df = pd.concat([df, pd.read_parquet('../data/clean/' + f + '_merged.gzip')]) 
-    
+df = pd.read_parquet('../Data/clean/data_journals_adject_nouns_merged.gzip')
 df = df.reset_index()
 body_texts = df['body'].tolist()
 
 # split the texts
-texts = [row.split() for row in df['body']]
+texts = [row.split() for row in df['body_lemmatized']]
 
-
-
-
-# create list of words for each document -body
-
-# init the Wordnet Lemmatizer
-lemmatizer = WordNetLemmatizer()
-
-list_words_lemmatized = [[lemmatizer.lemmatize(word) for word in document] for document in texts]
-bodies_flat_list = list(flatten(list_words_lemmatized))  
 
 
 
@@ -81,9 +62,7 @@ w2v_model = Word2Vec(train_texts,
 
 
 # summarize for couple of common words which words are similar
-
 w2v_model.most_similar('retail')
-w2v_model.most_similar('advertisement')
 w2v_model.most_similar('effect')
 
 
@@ -127,15 +106,18 @@ df_doc_representation_min.columns = names_min
 
 
 df_doc_representation_mean['Cited by']= df['Cited by']
+df_doc_representation_max['Cited by']= df['Cited by']
+df_doc_representation_min['Cited by']= df['Cited by']
+
 
 df_doc_representation_mean['train_set'] = train_bool
 df_doc_representation_max['train_set'] = train_bool
 df_doc_representation_min['train_set'] = train_bool
 
 
-df_doc_representation_mean.to_csv('../data/representations/word2vec_doc_representation_mean.csv')
-df_doc_representation_max.to_csv('../data/representations/word2vec_doc_representation_max.csv')
-df_doc_representation_min.to_csv('../data/representations/word2vec_doc_representation_min.csv')
+df_doc_representation_mean.to_parquet('../data/representations/word2vec_doc_representation_mean.gzip',compression='gzip')
+df_doc_representation_max.to_parquet('../data/representations/word2vec_doc_representation_max.gzip', compression='gzip')
+df_doc_representation_min.to_parquet('../data/representations/word2vec_doc_representation_min.gzip', compression='gzip')
 
 
 
