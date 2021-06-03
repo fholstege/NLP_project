@@ -218,7 +218,7 @@ def prepare_scopus(data_path, field_data, field_dict):
         result.loc[cond & result['journal'].str.contains(word), 'field'] = field_name
     
     # assign unmatched journals that include 'journal of business', 'sloan management review' and other journals
-    field_name = 'Strategy and Management'
+    field_name = 'Strategy and Mgmt.'
     words = ['journal of business', 'management review', 'sloan management review', 'strategy', 'strategic', 
              'industry management', 'academy of management', 'leadership', 'management executive', 'focused management', 'practice of management', 'mckinsey', 'managerial', 'journal of management', 'management research']
     cond = ~result['journal'].isna() & result['field'].isna()

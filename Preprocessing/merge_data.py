@@ -13,7 +13,7 @@ field_dict = {'Arts and Humanities' : 'data/raw/fields/arts_humanities.csv',
               'Medicine' : 'data/raw/fields/medicine.csv', 
               'Mathematics' : 'data/raw/fields/mathematics.csv',
               'Accounting' : 'data/raw/fields/accounting.csv',
-              'Mgmt. Information Systems ' : 'data/raw/fields/mgmt_info_systems.csv',
+              'Mgmt. Information Systems' : 'data/raw/fields/mgmt_info_systems.csv',
               'Mgmt. Technology and Innovation' : 'data/raw/fields/mgmt_tech_inno.csv',
               'Mgmt. Science and OR' : 'data/raw/fields/mgmt_science_or.csv',
               'Org. Behavior and HR' : 'data/raw/fields/org_behav_hr.csv',
@@ -68,46 +68,70 @@ alt_df['Journal/Collection Title'].value_counts()
 cols = ['DOI', 'Altmetric Attention Score', 'News mentions', 'Blog mentions', 'Policy mentions', 'Twitter mentions', 'Facebook mentions', 'Reddit mentions', 'Wikipedia mentions', 'Number of Mendeley readers', 'Number of Dimensions citations']
 alt_df = alt_df[cols]
 
+# prepare scopus data
+
+# list of journals 
+journals = ['journalofmarketing',
+            'journalofmarketingresearch',
+            'journalofconsumerresearch',
+            'journalofconsumerpsych',
+            'journalacademyofmarketingscience']
+
+# init dataframe
+scopus_df = prepare_scopus('../data/raw/' + journals[0] + '_WoS.csv', field_data, field_dict)
+if journals[0] in ['journalofmarketing', 'journalofmarketingresearch']:
+    scopus_df.drop(labels = ['Abbreviated Source Title'], axis = 1, inplace = True)
+
+# loop over remaining journals and concatenate dataframe
+for journal in journals[1:len(journals)]:
+    load_df = prepare_scopus('../data/raw/' + journal + '_WoS.csv', field_data, field_dict)
+
+    # for first two journal also drop abbreviated source title
+    if journal in ['journalofmarketing', 'journalofmarketingresearch']:
+        load_df.drop(labels = ['Abbreviated Source Title'], axis = 1, inplace = True)
+    
+    # concatenate scopus data
+    scopus_df = pd.concat([scopus_df, load_df]) 
 
 
-# loop over journals and construct merge dataframes
-file_list = ['journalofmarketing',
-             'journalofmarketingresearch',
-             'journalofconsumerresearch',
-             'journalofconsumerpsych',
-             'journalacademyofmarketingscience']
+# MERGE DATA
 
 # loop over data types
-data_type_list = ['allWords', 'adject_nouns', 'BERT']
+data_types = ['_BERT', '_allWords', '_adject_nouns']
 
-for data_type in data_type_list:
-    for f in file_list:
-        # construct file name
-        file_name = f + '_' + data_type
-        
-        # load text data
-        text_df = pd.read_parquet('../data/clean/' + file_name + '.gzip')
-        
-        # prepare relevant scopus data
-        scopus_df = prepare_scopus('../data/raw/' + f + '_WoS.csv', field_data, field_dict)
-        
-        # for first two journal also drop abbreviated source title
-        if f in ['journalofmarketing', 'journalofmarketingresearch']:
-            scopus_df.drop(labels = ['Abbreviated Source Title'], axis = 1, inplace = True)
-        
-        # merge scopus and text data
-        intermediate = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
-        
-        # merge data and altmetric data
-        result =  pd.merge(intermediate, alt_df, how = 'left', on = 'DOI', sort = False)
-        
-        # check how many could not be merged
-        # sum(result['refs_found'].isna())
-        
-        # check for missings in body of text
-        result = result.loc[result['body'] != '']
-        result = result.loc[result['body'] != 'na']
-        
-        # save result
-        result.to_parquet('../data/clean/' + file_name + '_merged.gzip', compression = 'gzip')
-        print(f'Merged data saved for {f} of type {data_type}')
+for data_type in data_types:
+
+    # load text data
+    text_df = pd.read_parquet('../data/clean/all_journals' + data_type + '.gzip')
+    
+    # merge scopus and text data
+    intermediate = pd.merge(text_df, scopus_df, how = 'left', on = 'DOI', sort = False)
+
+    # merge data and altmetric data
+    result =  pd.merge(intermediate, alt_df, how = 'left', on = 'DOI', sort = False)
+    
+    # remove those with missings in scopus variables, should be none
+    result.dropna(subset=['DOI', 'Year'], inplace = True)
+    
+    # select columns of interest
+    select_cols = ['DOI', 'Year', 'title', 'title_lemmatized', 'abstract', 'abstract_lemmatized' ,'body', 'body_lemmatized', 'Source title', 'Cited by', 'Author Keywords', 'num_ref'] + list(result.columns[18:len(result.columns)])
+    result = result[select_cols]
+    
+    result.rename(columns={"Year": "year", "Source title": "journal", "Cited by": "citations", 
+                           "Author Keywords": "keywords", "Altmetric Attention Score": "altmetric_score", 
+                           "News mentions": "news_mentions", "Blog mentions": "blog_mentions",
+                           "Policy mentions": "policy_mentions", "Twitter mentions": "twitter_mentions",
+                           "Facebook mentions": "fb_mentions", "Reddit mentions": "reddit_mentions",
+                           "Wikipedia mentions": "wiki_mentions", "Number of Mendeley readers": "mendeley_readers", "Number of Dimensions citations": "dimensions_citations"},
+                  inplace = True)
+    
+    if data_type == '_BERT':
+        result.drop(labels = ['body_lemmatized', 'abstract_lemmatized', 'title_lemmatized'], 
+                     axis = 1, inplace = True)
+
+    # make year an integer
+    result['year'] = result['year'].astype(int)
+
+    # save result
+    result.to_parquet('../data/clean/all_journals' + data_type + '_merged.gzip', compression = 'gzip')
+    print(f'Merged data saved for data type {data_type}')

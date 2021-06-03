@@ -171,6 +171,9 @@ def xml_cleaner_jom_jomr(document):
 
         # remove titles of sections
         titles = body_html_sage.find_all('title')
+        
+        # remove headings
+        heading_tags = body_html_sage.find_all(["h1", "h2", "h3", "h4"])
 
         # remove page numbers
         sup_tags = body_html_sage.find_all('sup')
@@ -192,7 +195,7 @@ def xml_cleaner_jom_jomr(document):
 
         # make list of stuff to remove
         remove_list = titles + sup_tags + url_tags + captions + labels + in_text_tables + in_text_formula\
-            + display_formula
+            + display_formula + heading_tags
 
         # remove loop
         for s in remove_list:
@@ -202,6 +205,15 @@ def xml_cleaner_jom_jomr(document):
         doc = body_html_sage.get_text(separator=' ')
         
         return doc
+
+
+
+# iteratively removes brackets and corresponding contents (test (test) test)
+def remove_text_between_parens(text):
+    n = 1  # run at least once
+    while n:
+        text, n = re.subn(r'\([^()]*\)', ' ', text)  # remove non-nested/flat balanced parts
+    return text
 
 
 def standard_cleaner(document):
@@ -219,90 +231,87 @@ def standard_cleaner(document):
         Document cleaned for various things. 
 
     """
-    if document == "NA":
-        return "NA"
-    else:
-        # remove any parentheses and stuff within
-        doc = re.sub(r'\((\(*(?:[^)(]*|\([^)]*\))*\)*)\)', " ", document)
-        
-        # remove greek letters
-        doc = re.sub(r'[α-ωΑ-Ω]', '', doc)
-        
-        # change .5 to 0.5 etc.
-        doc = re.sub(r'(?=\.\d+)', '0', doc)
-
-        # remove decimal points and spaces in numbers
-        doc = re.sub(r'(?<=\d)[,\.\s\-](?=\d)', '' , doc)
-
-        # replace numbers by tokens
-        doc = re.sub(r' \d+\s?%?(?=[\s\.])', ' [NUM] ' , doc)
-        doc = re.sub(r'[<>]?\d+(?=[\s%,;:–\.])', ' [NUM] ', doc)
-        
-        # remove line breaks
-        doc = re.sub(r'\n', " ", doc)
-        
-        # remove stuff like "A third possibility—our proposal—is that" enclosed by —
-        doc = re.sub(r'—[\w\d\s]+—', ' ', doc)
-
-        # correct t -tests to t-tests
-        doc = re.sub(r' t\s-test', ' t-test', doc)
-
-        # remove dot from et al.
-        doc = re.sub(r'(?<=et al)\.(?=.)', '', doc)
-
-        # remove semicolons and other special characters as well as commas
-        doc = re.sub(r'[#@;,"]', ' ', doc)
-
-        # replace :, ?, ! by ., also several consecutive occurrences
-        doc = re.sub(r'[:\?!]+', ".", doc)
-
-        # replace U.S.A. and U.S. by US
-        doc = re.sub(r'U\.S\.', 'US', doc)
-        doc = re.sub(r'U\.S\.A\.', 'US', doc)
-
-        # remove quotation marks for quotes
-        doc = re.sub(r'‘(.*?)’', r'\1', doc)
-        doc = re.sub(r'“(.*?)”', r'\1', doc)
-        doc = re.sub(r'"(.*?)"', r'\1', doc)
-        
-        # remove leading - or —
-        doc= re.sub(r'(?<=\s)[\-\—](?=[^\s])', '', doc)
-        
-        # remove free standing - or — o or minus sign or those at sentence end
-        doc= re.sub(r'(?<=\s)[\-\—\−](?=[\s\.])', '', doc)
-
-        # replace multiple dots by space
-        doc = re.sub(r'\.{2,}', ' ', doc)
-
-        # remove non-alphanumeric characters (not for BERT)
-        doc = re.sub(r'[\^&*_#@&\+\[\]\|=±\/]', ' ', doc)
-        
-        # remove additional math symbols
-        doc = re.sub(r'[><∣]', ' ', doc)
-
-        # substitute for 'times' for multiplication
-        doc = re.sub(r'×', 'times', doc)
-
-        # ensure vs is coded correctly
-        doc = re.sub(r'vs\.', 'vs', doc)
-        
-        # remove dot from Eq. and Fig.
-        doc = re.sub(r'(?<=Fig)\.(?=[\s])', ' ', doc)
-        doc = re.sub(r'(?<=Eq)\.(?=[\s])', ' ', doc)
-
-        # remove double spaces
-        doc = re.sub(r'\s{2,}', " ", doc)
-
-        # remove spaces in front of dots or commas
-        doc = re.sub(r'(?<=.)\s(?=[\.\,])', "", doc)
-
-        # replace remaining (resulting from previous removing of spaces) multiple dots by single dot
-        doc = re.sub(r'\.{2,}', '.', doc)
-        
-        # remove trailing spaces
-        doc = doc.strip()
+    # remove any parentheses and stuff within
+    doc = remove_text_between_parens(document)
     
-        return doc
+    # remove greek letters
+    doc = re.sub(r'[α-ωΑ-Ω]', '', doc)
+    
+    # change .5 to 0.5 etc.
+    doc = re.sub(r'(?=\.\d+)', '0', doc)
+
+    # remove decimal points and spaces in numbers
+    doc = re.sub(r'(?<=\d)[,\.\s\-](?=\d)', '' , doc)
+
+    # replace numbers by tokens
+    doc = re.sub(r' \d+\s?%?(?=[\s\.])', ' [NUM] ' , doc)
+    doc = re.sub(r'[<>]?\d+(?=[\s%,;:–\.])', ' [NUM] ', doc)
+    
+    # remove line breaks
+    doc = re.sub(r'\n', " ", doc)
+    
+    # remove stuff like "A third possibility—our proposal—is that" enclosed by —
+    doc = re.sub(r'—[\w\d\s]+—', ' ', doc)
+
+    # correct t -tests to t-tests
+    doc = re.sub(r' t\s-test', ' t-test', doc)
+
+    # remove dot from et al.
+    doc = re.sub(r'(?<=et al)\.(?=.)', '', doc)
+
+    # remove semicolons and other special characters as well as commas
+    doc = re.sub(r'[#@;,"]', ' ', doc)
+
+    # replace :, ?, ! by ., also several consecutive occurrences
+    doc = re.sub(r'[:\?!]+', ".", doc)
+
+    # replace U.S.A. and U.S. by US
+    doc = re.sub(r'U\.S\.', 'US', doc)
+    doc = re.sub(r'U\.S\.A\.', 'US', doc)
+
+    # remove quotation marks for quotes
+    doc = re.sub(r'‘(.*?)’', r'\1', doc)
+    doc = re.sub(r'“(.*?)”', r'\1', doc)
+    doc = re.sub(r'"(.*?)"', r'\1', doc)
+    
+    # remove leading - or —
+    doc= re.sub(r'(?<=\s)[\-\—](?=[^\s])', '', doc)
+    
+    # remove free standing - or — o or minus sign or those at sentence end
+    doc= re.sub(r'(?<=\s)[\-\—\−](?=[\s\.])', '', doc)
+
+    # replace multiple dots by space
+    doc = re.sub(r'\.{2,}', ' ', doc)
+
+    # remove non-alphanumeric characters (not for BERT)
+    doc = re.sub(r'[\^&*_#@&\+\[\]\|=±\/]', ' ', doc)
+    
+    # remove additional math symbols
+    doc = re.sub(r'[><∣]', ' ', doc)
+
+    # substitute for 'times' for multiplication
+    doc = re.sub(r'×', 'times', doc)
+
+    # ensure vs is coded correctly
+    doc = re.sub(r'vs\.', 'vs', doc)
+    
+    # remove dot from Eq. and Fig.
+    doc = re.sub(r'(?<=Fig)\.(?=[\s])', ' ', doc)
+    doc = re.sub(r'(?<=Eq)\.(?=[\s])', ' ', doc)
+
+    # remove double spaces
+    doc = re.sub(r'\s{2,}', " ", doc)
+
+    # remove spaces in front of dots or commas
+    doc = re.sub(r'(?<=.)\s(?=[\.\,])', "", doc)
+
+    # replace remaining (resulting from previous removing of spaces) multiple dots by single dot
+    doc = re.sub(r'\.{2,}', '.', doc)
+    
+    # remove trailing spaces
+    doc = doc.strip()
+
+    return doc
 
 # function to remove NUM tags
 def remove_NUM_tag(document):
@@ -347,4 +356,12 @@ def remove_stopwords_non_alpha_single_words(body_str, stopword_list = None, alph
         cleaned_str = " ".join(word_tokens)
         
         return cleaned_str
+
+def keep_nouns_adjectives(body_str):
+    word_tokens = word_tokenize(body_str)
+    tags = nltk.pos_tag(word_tokens)
+    adj_nouns = [word for word,pos in tags if (pos == 'NN' or pos == 'ADJ')]
     
+    adj_nouns_str = " ".join(adj_nouns)
+
+    return adj_nouns_str

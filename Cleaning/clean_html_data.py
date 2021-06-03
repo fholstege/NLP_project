@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup as bs
 from nltk.tokenize import word_tokenize 
 from nltk.util import ngrams
 from collections import Counter
-from nltk.stem import WordNetLemmatizer 
+from nltk.stem import WordNetLemmatizer
 
 # enable printed progress for apply functions
 from tqdm import tqdm
@@ -69,7 +69,7 @@ for journal in journals:
     df = pd.read_parquet('../Data/Scraped/' + journal + '_data_lim.gzip')
     
     # remove columns not of interest
-    df = df[['DOI', 'keywords', 'title', 'abstract', 'body']]
+    df = df[['DOI', 'title', 'abstract', 'body']]
 
     # journal specific cleaning
     if journal in ['journalofmarketing', 'journalofmarketingresearch']:
@@ -155,41 +155,39 @@ for journal in journals:
 
 #######################################################################################
 
-# MERGE JOURNALS INTO ONE DATASET PER TYPE + SCOPUS DATA MERGE
+# MERGE JOURNALS INTO ONE DATASET PER TYPE
 
 data_types = ['_BERT', '_allWords', '_adject_nouns']
 
+# define lemmatizer
+lemmatizer = WordNetLemmatizer()
 
 for data_type in data_types:
     # stack data from all journals
-    df = pd.read_parquet('../data/clean/' + journal + data_type + '.gzip')
+    df = pd.read_parquet('../data/clean/' + journals[0] + data_type + '.gzip')
     
     for journal in journals[1:len(journals)]:
         df = pd.concat([df, pd.read_parquet('../data/clean/' + journal + data_type + '.gzip')]) 
     
     df = df.reset_index()
     
-    if data_type == '_allWords'or data_type == '_adject_nouns':
+    # no lemmatization for BERT type data
+    if data_type == '_allWords' or data_type == '_adject_nouns':
         # lemmatization - list of list
         body_lemmatized_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df['body'].tolist()]
         abstract_lemmatized_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df['abstract'].tolist()]
         title_lemmatized_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df['abstract'].tolist()]
         
         # turn to strings
-        body_lemmatized_str = [' '.join(body) for body in body_lemmatized_list ]
-        abstract_lemmatized_str = [' '.join(abstract) for abstract in abstract_lemmatized_list ]
-        title_lemmatized_str = [' '.join(title) for title in title_lemmatized_list]
+        df['body_lemmatized'] = [' '.join(body) for body in body_lemmatized_list]
+        df['abstract_lemmatized'] = [' '.join(abstract) for abstract in abstract_lemmatized_list]
+        df['title_lemmatized'] = [' '.join(title) for title in title_lemmatized_list]
+    
+    if data_type == '_BERT':
+        df['body_lemmatized'] = 'NA'
+        df['abstract_lemmatized'] = 'NA'
+        df['title_lemmatized'] = 'NA'
         
-        # add to df
-        df['body_lemmatized'] = body_lemmatized_str
-        df['abstract_lemmatized'] = abstract_lemmatized_str
-        df['title_lemmatized'] = title_lemmatized_str
-    
-
-    
+    # save new dataframe
     df.to_parquet('../data/clean/all_journals' + data_type + '.gzip')
-
-# TODO
-# lemmatization
-# merge with scopus, leftjoin, remove those with missing body
-
+    print('all_journals' + data_type + ' saved')
