@@ -176,14 +176,14 @@ for data_type in data_types:
         title_lemmatized_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df['abstract'].tolist()]
         
         # turn to strings
-        body_lemmatized_list_str = [' '.join(body) for body in body_lemmatized_list ]
-        abstract_lemmatized_list_str = [' '.join(abstract) for abstract in abstract_lemmatized_list ]
-        title_lemmatized_list_str = [' '.join(title) for title in title_lemmatized_list]
+        body_lemmatized_str = [' '.join(body) for body in body_lemmatized_list ]
+        abstract_lemmatized_str = [' '.join(abstract) for abstract in abstract_lemmatized_list ]
+        title_lemmatized_str = [' '.join(title) for title in title_lemmatized_list]
         
         # add to df
-        df['body_lemmatized'] = body_lemmatized_list_str
-        df['abstract_lemmatized'] = abstract_lemmatized_list_str
-        df['title_lemmatized'] = title_lemmatized_list_str
+        df['body_lemmatized'] = body_lemmatized_str
+        df['abstract_lemmatized'] = abstract_lemmatized_str
+        df['title_lemmatized'] = title_lemmatized_str
     
 
     
