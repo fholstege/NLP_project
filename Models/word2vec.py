@@ -49,6 +49,8 @@ alpha = 0.025
 # based on mikolov et al; negative sampling
 negative = 5
 
+# use the cbow
+sg = 0
 
 # train word2vec on training set
 w2v_model = Word2Vec(train_texts,
@@ -56,6 +58,7 @@ w2v_model = Word2Vec(train_texts,
                      size=size,
                      alpha = alpha,
                      negative = negative,
+                     sg = sg,
                      workers=cores-1)
 
 
