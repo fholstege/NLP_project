@@ -239,6 +239,9 @@ def standard_cleaner(document):
     
     # change .5 to 0.5 etc.
     doc = re.sub(r'(?=\.\d+)', '0', doc)
+    
+    # remove \xad
+    doc = re.sub(r'\xad', '', doc)
 
     # remove decimal points and spaces in numbers
     doc = re.sub(r'(?<=\d)[,\.\s\-](?=\d)', '' , doc)
