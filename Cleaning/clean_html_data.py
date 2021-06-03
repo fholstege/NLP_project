@@ -11,6 +11,10 @@ from tqdm import tqdm
 tqdm.pandas()
 
 
+
+lemmatizer = WordNetLemmatizer()
+
+
 def count_n_unique_top_words(text_str, n_top_words):
     word_tokens = word_tokenize(text_str)
     n_unique_words = len(list(set(word_tokens)))
@@ -165,7 +169,23 @@ for data_type in data_types:
     
     df = df.reset_index()
     
-    # lemmatization here
+    if data_type == '_allWords'or data_type == '_adject_nouns':
+        # lemmatization - list of list
+        body_lemmatized_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df['body'].tolist()]
+        abstract_lemmatized_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df['abstract'].tolist()]
+        title_lemmatized_list = [[lemmatizer.lemmatize(word) for word in document.split()] for document in df['abstract'].tolist()]
+        
+        # turn to strings
+        body_lemmatized_list_str = [' '.join(body) for body in body_lemmatized_list ]
+        abstract_lemmatized_list_str = [' '.join(abstract) for abstract in abstract_lemmatized_list ]
+        title_lemmatized_list_str = [' '.join(title) for title in title_lemmatized_list]
+        
+        # add to df
+        df['body_lemmatized'] = body_lemmatized_list_str
+        df['abstract_lemmatized'] = abstract_lemmatized_list_str
+        df['title_lemmatized'] = title_lemmatized_list_str
+    
+
     
     df.to_parquet('../data/clean/all_journals' + data_type + '.gzip')
 
