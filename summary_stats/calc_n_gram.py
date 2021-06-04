@@ -8,18 +8,8 @@ import matplotlib.pyplot as plt
 from nltk.stem import WordNetLemmatizer 
 from pandas.core.common import flatten
  
-# read the zipped files
-df_jom_merged = pd.read_parquet('../Data/clean/journalofmarketing_adject_nouns_merged.gzip')
-df_jomr_merged = pd.read_parquet('../Data/clean/journalofmarketingresearch_adject_nouns_merged.gzip')
-df_jcr_merged = pd.read_parquet('../Data/clean/journalofconsumerresearch_adject_nouns_merged.gzip')
-df_jcp_merged = pd.read_parquet('../Data/clean/journalofconsumerpsych_adject_nouns_merged.gzip')
-df_jam_merged = pd.read_parquet('../Data/clean/journalacademyofmarketingscience_adject_nouns_merged.gzip')
-
-# get dataframes together
-frames_journals = [df_jom_merged, df_jomr_merged, df_jcr_merged, df_jcp_merged, df_jam_merged]
-
 # merge the journals in one dataframe, vertically
-df_journals_merged = pd.concat(frames_journals)
+df_journals_merged = pd.read_parquet('../data/clean/all_journals_adject_nouns_merged.gzip')
 
 # init the Wordnet Lemmatizer
 lemmatizer = WordNetLemmatizer()
@@ -44,7 +34,7 @@ title_lemmatized_list_str = [' '.join(title) for title in title_list ]
 df_journals_merged['body_lemmatized'] = body_lemmatized_list_str
 df_journals_merged['abstract_lemmatized'] = abstract_lemmatized_list_str
 df_journals_merged['title_lemmatized'] = title_lemmatized_list_str
-df_journals_merged.to_parquet("../Data/clean/data_journals_adject_nouns_merged.gzip", compression='gzip')
+df_journals_merged.to_parquet("../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip", compression='gzip')
 
  
 
@@ -65,10 +55,26 @@ def extract_values_counter(Counter_obj, convert_tuple = True):
     return list_keys, list_values 
 
 
-def get_top_n_gram(text_list, n, top_n):
+def get_top_n_gram(text_list, n, top_n, remove_double = False):
     
     n_gram_text = ngrams(text_list, n)
     word_counter = Counter(n_gram_text)
+        
+    
+    
+    if remove_double:
+        keys_to_remove = []
+                
+        for word_combination in word_counter.keys():
+            
+            if word_combination[0] == word_combination[1]:
+               keys_to_remove.append(word_combination)
+        
+        for word_combi in keys_to_remove:
+            if word_combi in word_counter:
+                del word_counter[word_combi]
+        
+        
     top_words_text = word_counter.most_common(top_n)
     
     return top_words_text
@@ -93,15 +99,15 @@ def create_plot_n_gram(top_words, color, save= False, dpi = 200, figname = None)
 
 # top uni and bigrams - body of text
 top_words_body = get_top_n_gram(body_lemmatized_list, 1, 20)
-top_two_words_body =  get_top_n_gram(body_lemmatized_list, 2, 20)
+top_two_words_body =  get_top_n_gram(body_lemmatized_list, 2, 20, remove_double = True)
 
 # top uni and bigrams - abstract
 top_words_abstract =  get_top_n_gram(abstract_lemmatized_list, 1, 20)
-top_two_words_abstract =  get_top_n_gram(abstract_lemmatized_list, 2, 20)
+top_two_words_abstract =  get_top_n_gram(abstract_lemmatized_list, 2, 20, remove_double = True)
 
 # top uni and bigrams - titles
 top_words_title = get_top_n_gram(title_lemmatized_list, 1, 20)
-top_two_words_title =  get_top_n_gram(title_lemmatized_list, 2, 20)
+top_two_words_title =  get_top_n_gram(title_lemmatized_list, 2, 20, remove_double = True)
 
 
 create_plot_n_gram(top_words_body, 'blue', save = True, figname = 'unigram_body_plot')

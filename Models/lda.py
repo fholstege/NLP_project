@@ -17,23 +17,23 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 
 # stack data from all journals
-df = pd.read_parquet('../Data/clean/data_journals_adject_nouns_merged.gzip')
+df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
 df = df.reset_index()
-
+df.columns
 
 # check articles per journal
-df['Source title'].value_counts()
+df['journal'].value_counts()
 
 # determine time slices
-df = df.sort_values('Year')
+df = df.sort_values('year')
 
 # remove 2 missings in year
-df = df.dropna(subset = ['Year'])
-df['Year'].value_counts()
-time_slice = df.groupby('Year').count()['title'].to_list()
+df = df.dropna(subset = ['year'])
+df['year'].value_counts()
+time_slice = df.groupby('year').count()['title'].to_list()
 
 # create list of words for each document
-texts_list = [[word for word in document.split()] for document in df['body_lemmatized'].tolist()]
+texts_list = [[word for word in document.split()] for document in df['body_lemmatized'].str.lower().tolist()]
     
 # construct word <-> id mappings used by the LDA model
 dictionary = Dictionary(texts_list) 
@@ -47,28 +47,30 @@ dictionary.compactify()
 corpus = [dictionary.doc2bow(text) for text in texts_list]
 _ = dictionary[0] # need this line to force-load the data in the kernel
 id2word = dictionary.id2token
-
+len(id2word)
 
 # implement cross validation
 K = 4
-range_n_topics = range(2, 5)
+max_topics = 30
+range_n_topics = range(2, max_topics + 1)
 result_cv = check_n_topic_scores_CV(corpus, range_n_topics, id2word, K, coherence_measure = 'u_mass')
+df_result_cv_lda = pd.DataFrame(result_cv).T
+df_result_cv_lda.round(2).to_latex()
+
+# based on the CV
+n_topics = 10
+Topic_names = ['Topic ' + str(i) for i in range(1,n_topics+1)]
 
 
-
-n_topics = 3
 # original LDA model
 lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=n_topics, minimum_probability=0)
 lda_model.print_topics()
 lda_corpus = lda_model[corpus]
-lda_model.get_topics()
 
 def edit_tuple(x):
     return x[1]
 df_topics = pd.DataFrame(lda_corpus).applymap(edit_tuple)
-df_topics.columns = ['Topic 1', 'Topic 2', 'Topic 3']
-
-
+df_topics.columns =Topic_names 
 
 
 def get_max(doc):
@@ -80,30 +82,8 @@ df_topics['Topic'] = doc_topics
 df_topics['Topic'] = df_topics['Topic']  + 1
 
 df_combined_info = pd.concat([df,df_topics], axis=1)
-df_combined_info.to_parquet("../Data/clean/data_journals_merged_topics.gzip", compression='gzip')
+df_combined_info.to_parquet("../Data/clean/all_journals_merged_topics.gzip", compression='gzip')
 
-df_topics_journals = df_combined_info[['Source title', 'Topic 1', 'Topic 2', 'Topic 3']].groupby('Source title').mean()
-
-X = np.arange(5)
-fig = plt.figure()
-ax = fig.add_axes([0,0,1,1])
-ax.bar(X + 0.00, df_topics_journals['Topic 1'].to_list(), color = 'b', width = 0.25, label = '1')
-ax.bar(X + 0.25, df_topics_journals['Topic 2'].to_list(), color = 'g', width = 0.25, label = '2')
-ax.bar(X + 0.50, df_topics_journals['Topic 3'].to_list(), color = 'r', width = 0.25, label = '3')
-ax.set_xticklabels(df_topics_journals.index)
-ax.tick_params(axis='x', rotation=45)
-plt.legend(loc = 'upper right')
-
-
-### plots over time
-df_topics_over_time = df_combined_info[['Year', 'Topic 1', 'Topic 2', 'Topic 3']].groupby('Year').mean()
-
-plt.plot(df_topics_over_time.index, df_topics_over_time['Topic 1'], label = 'Topic 1', color = 'red')
-plt.plot(df_topics_over_time.index, df_topics_over_time['Topic 2'], label = 'Topic 2', color = 'blue')
-plt.plot(df_topics_over_time.index, df_topics_over_time['Topic 3'], label = 'Topic 3', color = 'green')
-plt.xlabel("Year Of Publication")
-plt.ylabel("Average Probability of Belonging to a Topic")
-plt.legend(loc="lower right")
 
 
 

@@ -12,13 +12,11 @@ from pandas.core.common import flatten
 # read merged files, get body of text, adapt index
 
 # stack data from all journals
-df = pd.read_parquet('../Data/clean/data_journals_adject_nouns_merged.gzip')
+df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
 df = df.reset_index()
-body_texts = df['body'].tolist()
 
 # split the texts
-texts = [row.split() for row in df['body_lemmatized']]
-
+texts = [row.split() for row in df['body_lemmatized'].str.lower().tolist()]
 
 
 
@@ -65,8 +63,29 @@ w2v_model = Word2Vec(train_texts,
 
 
 # summarize for couple of common words which words are similar
-w2v_model.most_similar('retail')
-w2v_model.most_similar('effect')
+def get_table_similar(words):
+    
+    dict_words = {element:0 for element in words}
+    
+    for word in words:
+        similar_words = w2v_model.most_similar(word)
+        
+        list_similar_words = []
+        
+        for similar_word in similar_words:
+            list_similar_words.append(similar_word[0])
+        
+        dict_words[word] = list_similar_words
+    
+    return dict_words
+
+
+# get table of common words 
+check_words = ['effect', 'product', 'research', 'brand']
+df_common_words = pd.DataFrame(get_table_similar(check_words))
+df_common_words.index = list(range(1,10+1,1))
+df_common_words.to_latex()
+
 
 
 # get document representations
@@ -93,7 +112,6 @@ list_doc_representation_mean = [document_vector_mean(doc, w2v_model) for doc in 
 list_doc_representation_max = [document_vector_max(doc, w2v_model) for doc in texts ]
 list_doc_representation_min = [document_vector_min(doc, w2v_model) for doc in texts ]
 
-
 names_mean = ['mean_dim_' + str(i) for i in range(1,size + 1)]
 names_max = ['max_dim_' + str(i) for i in range(1,size + 1)]
 names_min = ['min_dim_' + str(i) for i in range(1,size + 1)]
@@ -108,9 +126,9 @@ df_doc_representation_max.columns = names_max
 df_doc_representation_min.columns = names_min
 
 
-df_doc_representation_mean['Cited by']= df['Cited by']
-df_doc_representation_max['Cited by']= df['Cited by']
-df_doc_representation_min['Cited by']= df['Cited by']
+df_doc_representation_mean['citations']= df['citations']
+df_doc_representation_max['citations']= df['citations']
+df_doc_representation_min['citations']= df['citations']
 
 
 df_doc_representation_mean['train_set'] = train_bool

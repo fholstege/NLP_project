@@ -10,44 +10,31 @@ from matplotlib import cm
 
 
 # read the zipped files
-df_jom_merged = pd.read_parquet('../Data/clean/journalofmarketing_merged.gzip')
-df_jomr_merged = pd.read_parquet('../Data/clean/journalofmarketingresearch_merged.gzip')
-df_jcr_merged = pd.read_parquet('../Data/clean/journalofconsumerresearch_merged.gzip')
-df_jcp_merged = pd.read_parquet('../Data/clean/journalofconsumerpsych_merged.gzip')
-df_jam_merged = pd.read_parquet('../Data/clean/journalacademyofmarketingscience_merged.gzip')
+df_journals_merged = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
 
-# add journal titles
-df_jom_merged['Journal'] = 'Journal of Marketing' 
-df_jomr_merged['Journal'] = 'Journal of Marketing Research' 
-df_jcr_merged['Journal'] = 'Journal of Consumer Research' 
-df_jcp_merged['Journal'] = 'Journal of Consumer Psychology' 
-df_jam_merged['Journal'] = 'Journal Academy of Marketing Science' 
-
-# get dataframes together
-frames_journals = [df_jom_merged, df_jomr_merged, df_jcr_merged, df_jcp_merged, df_jam_merged]
-
-# merge the journals in one dataframe, vertically
-df_journals_merged = pd.concat(frames_journals)
 df_journals_merged.columns
 
-fields = ['AI', 'Behavioral Neuroscience', 'Business / Int. Management',
-       'Computer Science', 'Economics / Econometrics', 'Marketing', 'Medicine',
-       'Mgmt Information Systems', 'Mgmt of Tech. and Innovation',
-       'Mgmt. Science / OR', 'Org. Behavior / HR Management', 'Psychology',
-       'Social Sciences', 'Sociology / Pol.Sc.', 'Statistics',
-       'Strategy and Management']
+fields = ['Accounting',
+       'Agricultural and Biological Sciences', 'Arts and Humanities',
+       'Business and Int. Mgmt.', 'Computer Science',
+       'Economics / Econometrics / Finance', 'Environmental Science',
+       'Marketing', 'Mathematics', 'Medicine', 'Mgmt. Information Systems',
+       'Mgmt. Science and OR', 'Mgmt. Technology and Innovation',
+       'Multidisciplinary', 'Neuroscience', 'News', 'Org. Behavior and HR',
+       'Psychology', 'Social Sciences', 'Strategy and Mgmt.',
+       'Tourism, Leisure, Hospitality Mgmt.']
 
 # table
 df_fields_avg_citations_table = df_journals_merged[fields].mean()
 df_fields_avg_citations_table.sort_values(ascending = False)
 round(df_fields_avg_citations_table.sort_values(ascending = False)*100, 1).to_latex()
 
-df_fields_avg_citations = df_journals_merged.groupby(['Year'])[fields].mean()
+df_fields_avg_citations = df_journals_merged.groupby(['year'])[fields].mean()
 
 
-df_fields_avg_citations_melted = pd.melt(df_fields_avg_citations.reset_index(), id_vars='Year')
+df_fields_avg_citations_melted = pd.melt(df_fields_avg_citations.reset_index(), id_vars='year')
 
-fields_selected = [x for x in fields if x in ['AI','Computer Science', 'Behaviorial Neuroscience', 'Psychology', 'Medicine', 'Sociology / Pol.Sc.', 'Statistics']]
+fields_selected = [x for x in fields if x in ['Computer Science', 'Mathematics', 'Psychology', 'Medicine', 'Social Sciences', 'Statistics']]
 
 
 # get colors for graphs
@@ -55,7 +42,7 @@ colors = cm.get_cmap('tab20').colors
 index_color = 0
 for field in fields_selected:
     df_field = df_fields_avg_citations_melted[df_fields_avg_citations_melted['variable'] == field]
-    plt.plot(df_field['Year'], df_field['value']*100, label = field, color = colors[index_color])
+    plt.plot(df_field['year'], df_field['value']*100, label = field, color = colors[index_color])
     index_color += 1
 
 plt.xlabel("Year")
