@@ -298,6 +298,9 @@ def standard_cleaner(document):
     # ensure vs is coded correctly
     doc = re.sub(r'vs\.', 'vs', doc)
     
+    # ensure etc. is etc only in sentences (no sentence ends)
+    doc = re.sub(r'etc\.(?=\s[a-z])', 'etc', doc)
+    
     # remove dot from Eq. and Fig.
     doc = re.sub(r'(?<=Fig)\.(?=[\s])', ' ', doc)
     doc = re.sub(r'(?<=Eq)\.(?=[\s])', ' ', doc)
