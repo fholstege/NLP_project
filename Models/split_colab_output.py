@@ -6,6 +6,12 @@ alt_df['Journal/Collection Title'].value_counts()
 cols = ['DOI', 'Altmetric Attention Score']
 alt_df = alt_df[cols]
 
+# read original data
+orig_df = pd.read_parquet('../data/clean/all_journals_BERT_merged.gzip')
+
+# select variables to merge onto BERT embeddings
+orig_df = orig_df[['DOI', 'year']]
+
 # list of models
 model_list = ['BERT', 'SciBERT', 'ROBERTA']
 
@@ -15,6 +21,9 @@ for model in model_list:
 
     # merge embeddings with altmetric scores
     df = pd.merge(df, alt_df, how = 'left', on = 'DOI', sort = False)
+    
+    # merge additional data onto embeddings
+    df = pd.merge(df, orig_df, how = 'left', on = 'DOI', sort = False)
 
     # clean up
     df.drop(labels = ['altmetric_score'], axis = 1, inplace = True)
@@ -25,7 +34,7 @@ for model in model_list:
     last_embed = [x for x in df.columns if x.startswith('last')]
     secondlast_embed = [x for x in df.columns if x.startswith('second')]
     thirdlast_embed = [x for x in df.columns if x.startswith('third')]
-    outcomes = ['DOI', 'citations', 'altmetric_score']
+    outcomes = ['DOI', 'year', 'citations', 'altmetric_score']
 
     # split into representations and save
     selection = outcomes + cls_embed
