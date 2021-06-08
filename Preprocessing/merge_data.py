@@ -129,9 +129,14 @@ for data_type in data_types:
         result.drop(labels = ['body_lemmatized', 'abstract_lemmatized', 'title_lemmatized'], 
                      axis = 1, inplace = True)
 
-    # make year an integer
+    # make year and citations an integer
     result['year'] = result['year'].astype(int)
-
+    result['citations'] = result['citations'].astype(int)
+    
+    # remove potential duplicated DOIs (6 duplicates)
+    result = result.sort_values(by = 'year', ascending = False)
+    result = result.loc[~result['DOI'].duplicated()]
+    
     # save result
     result.to_parquet('../data/clean/all_journals' + data_type + '_merged.gzip', compression = 'gzip')
     print(f'Merged data saved for data type {data_type}')

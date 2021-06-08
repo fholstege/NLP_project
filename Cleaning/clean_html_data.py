@@ -133,7 +133,7 @@ for journal in journals:
 
     # remove numbers based on NUM tag
     print('\nRemove NUM tags')
-    df['body'] = df['body'].apply(remove_NUM_tag)
+    df['body'] = df['body'].apply(remove_NUM_tag) # REMOVE BECAUSE THEY ALLOW FOR BETTER POS TAGGING?
 
     # remove all words except adjectives and nouns 
     print('\nKeep only adjectives and nouns')
@@ -161,6 +161,8 @@ data_types = ['_BERT', '_allWords', '_adject_nouns']
 
 # define lemmatizer
 lemmatizer = WordNetLemmatizer()
+
+data_type = data_types[0]
 
 for data_type in data_types:
     # stack data from all journals
