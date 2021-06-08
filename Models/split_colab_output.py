@@ -38,16 +38,16 @@ for model in model_list:
 
     # split into representations and save
     selection = outcomes + cls_embed
-    df[selection].to_parquet('../data/representations/' + model + '_cls_embeddings.gzip', compression='gzip')
+    df[selection].to_parquet('../data/representations/' + model + '_cls_embeddings.gzip', compression='gzip',  engine='fastparquet')
 
     selection = outcomes + last_embed
-    df[selection].to_parquet('../data/representations/' + model + '_last_embeddings.gzip', compression='gzip')
+    df[selection].to_parquet('../data/representations/' + model + '_last_embeddings.gzip', compression='gzip',  engine='fastparquet')
 
     selection = outcomes + secondlast_embed
-    df[selection].to_parquet('../data/representations/' + model + '_secondlast_embeddings.gzip', compression='gzip')
+    df[selection].to_parquet('../data/representations/' + model + '_secondlast_embeddings.gzip', compression='gzip',  engine='fastparquet')
 
     selection = outcomes + thirdlast_embed
-    df[selection].to_parquet('../data/representations/' + model + '_thirdlast_embeddings.gzip', compression='gzip')
+    df[selection].to_parquet('../data/representations/' + model + '_thirdlast_embeddings.gzip', compression='gzip',  engine='fastparquet')
     
     print(f'Splitting completed for {model} model')
 
