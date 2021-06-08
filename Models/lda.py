@@ -53,7 +53,7 @@ len(id2word)
 K = 4
 max_topics = 30
 range_n_topics = range(2, max_topics + 1)
-result_cv = check_n_topic_scores_CV(corpus, range_n_topics, id2word, K, coherence_measure = 'u_mass')
+result_cv = check_n_topic_scores_CV(corpus, range_n_topics, id2word, K, coherence_measure = 'c_v')
 df_result_cv_lda = pd.DataFrame(result_cv).T
 df_result_cv_lda.round(2).to_latex()
 

@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from IPython.display import display, Latex
 
+df_journals_merged = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
 
 # merge the journals in one dataframe, vertically
-df_journals_merged = pd.concat(frames_journals)
 df_journals_merged.columns
 
 def lemmatize_keywords(keywords_list):
@@ -54,7 +54,7 @@ def extract_keywords(keywords_list, lemmatize = True, top = True, n=20,selected 
         return dict_selected_keywords
 
 # get top keywords
-top_keywords_alltime = extract_keywords(df_journals_merged['Author Keywords'], n=20, top = True)
+top_keywords_alltime = extract_keywords(df_journals_merged['keywords'], n=20, top = True)
 top_keywords_list = list(top_keywords_alltime.keys())
 
 # get table
@@ -62,26 +62,26 @@ df_top_keywords_alltime = pd.DataFrame({'keyword': top_keywords_alltime.keys(), 
 df_top_keywords_alltime.to_latex()
 
 # get years
-years = df_journals_merged['Year'].unique()
+years = df_journals_merged['year'].unique()
 years_noNaN = years[~np.isnan(years)]
 
 # get top keywords per year, fill dataframe
 df_top_keywords =  pd.DataFrame(columns = top_keywords_list)
-df_top_keywords['Year'] = years_noNaN
+df_top_keywords['year'] = years_noNaN
 
 
 for year in years_noNaN:
-    df_journals_year = df_journals_merged[df_journals_merged['Year'] == year]
+    df_journals_year = df_journals_merged[df_journals_merged['year'] == year]
     
-    selected_keywords = extract_keywords(df_journals_year['Author Keywords'], top = False,selected = top_keywords_list)
+    selected_keywords = extract_keywords(df_journals_year['keywords'], top = False,selected = top_keywords_list)
     
     for keyword, value in selected_keywords.items():
-        df_top_keywords.loc[df_top_keywords['Year'] == year, keyword] = value
+        df_top_keywords.loc[df_top_keywords['year'] == year, keyword] = value
     
 
-df_top_keywords_melted = pd.melt(df_top_keywords, id_vars='Year')
+df_top_keywords_melted = pd.melt(df_top_keywords, id_vars='year')
 df_top_keywords_melted_noNA = df_top_keywords_melted.fillna(0)
-df_top_keywords_melted_post08 = df_top_keywords_melted_noNA[df_top_keywords_melted_noNA['Year']>= 2008]
+df_top_keywords_melted_post08 = df_top_keywords_melted_noNA[df_top_keywords_melted_noNA['year']>= 2008]
 
 # get colors for graphs
 colors = cm.get_cmap('tab20').colors
@@ -95,9 +95,9 @@ for top_keyword in selected_keywords:
     
     df_top_keyword = df_top_keywords_melted_post08[df_top_keywords_melted_post08['variable'] == top_keyword]
     df_top_keyword_ordered = df_top_keyword[::-1]
-    plt.plot(df_top_keyword_ordered['Year'], df_top_keyword_ordered['value'].cumsum(), label = top_keyword, color = colors[index_color])
+    plt.plot(df_top_keyword_ordered['year'], df_top_keyword_ordered['value'].rolling(window=3).mean(), label = top_keyword, color = colors[index_color])
     index_color += 1
     
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.xlabel('Year')
-plt.ylabel('Total number of times mentioned as keyword')
+plt.ylabel('Number of times mentioned as keyword \n (3-year moving average)')

@@ -36,7 +36,7 @@ df_journals_merged['abstract_lemmatized'] = abstract_lemmatized_list_str
 df_journals_merged['title_lemmatized'] = title_lemmatized_list_str
 df_journals_merged.to_parquet("../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip", compression='gzip')
 
- 
+df_journals_merged = pd.read_parquet('../data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
 
 
 def convertTuple(tup):
@@ -98,16 +98,16 @@ def create_plot_n_gram(top_words, color, save= False, dpi = 200, figname = None)
 
 
 # top uni and bigrams - body of text
-top_words_body = get_top_n_gram(body_lemmatized_list, 1, 20)
-top_two_words_body =  get_top_n_gram(body_lemmatized_list, 2, 20, remove_double = True)
+top_words_body = get_top_n_gram(df_journals_merged['body_lemmatized'].tolist(), 1, 20)
+top_two_words_body =  get_top_n_gram(df_journals_merged['body_lemmatized'].tolist(), 2, 20, remove_double = True)
 
 # top uni and bigrams - abstract
-top_words_abstract =  get_top_n_gram(abstract_lemmatized_list, 1, 20)
-top_two_words_abstract =  get_top_n_gram(abstract_lemmatized_list, 2, 20, remove_double = True)
+top_words_abstract =  get_top_n_gram(df_journals_merged['abstract_lemmatized'], 1, 20)
+top_two_words_abstract =  get_top_n_gram(df_journals_merged['abstract_lemmatized'], 2, 20, remove_double = True)
 
 # top uni and bigrams - titles
-top_words_title = get_top_n_gram(title_lemmatized_list, 1, 20)
-top_two_words_title =  get_top_n_gram(title_lemmatized_list, 2, 20, remove_double = True)
+top_words_title = get_top_n_gram(df_journals_merged['title_lemmatized'], 1, 20)
+top_two_words_title =  get_top_n_gram(df_journals_merged['title_lemmatized'], 2, 20, remove_double = True)
 
 
 create_plot_n_gram(top_words_body, 'blue', save = True, figname = 'unigram_body_plot')

@@ -31,7 +31,8 @@ pacman::p_load(reticulate,
                devtools,
                reshape2,
                stargazer,
-               gridExtra) 
+               gridExtra,
+               caTools) 
 
 
 # add repository to make mclapply() run in parallel (only necessary on windows)
@@ -213,7 +214,7 @@ df_citations_altmetric_topic <-  df_topics_model %>%
             prob_altmetric = sum(ifelse(na.omit(altmetric_score) > 0, 1,0))/n()) %>%
   na.omit()
 
-topic_most_likely_not = df_citations_altmetric_topic[which.max(df_citations_altmetric_topic$prob_not_cited),]$Topic_name[[1]]
+topic_most_likely_not = df_citations_altmetric_topic[which.min(df_citations_altmetric_topic$prob_cited),]$Topic_name[[1]]
 
 
 
@@ -222,10 +223,9 @@ df_topics_model$citations_is_not_zero = ifelse(df_topics_model$citations > 0, 1,
 
 
 # create dataset where only citations are included that are not zero
-df_model_non_zero_citations <- df_topics_model[df_topics_model$citations != 0,]
+df_model_non_zero_citations <- df_topics_model[df_topics_model$citations > 0,]
 
-## number of citations
-help(relevel)
+
 
 
 # run the binary, logit model for entire dataset
@@ -235,22 +235,22 @@ binary_model_topic = glm(citations_is_not_zero ~  relevel(as.factor(Topic_name),
 linear_model_topic = lm(log(1 + citations) ~ relevel(as.factor(Topic_name), ref = topic_most_likely_not[[1]]) + year   , data = na.omit(df_model_non_zero_citations%>% select(-altmetric_score)))
 
 summary(binary_model_topic)
-coef_to_prob = function(coef){return (1/ (1 + exp(coef)))}
-coef_to_prob(binary_model_topic$coefficients)
+#coef_to_prob = function(coef){return (1/ (1 + exp(coef)))}
+#coef_to_prob(binary_model_topic$coefficients)
 summary(linear_model_topic)
 
 
 ## altmetric interest
-df_topics_model$altmetric_is_zero = ifelse(df_topics_model$altmetric_score == 0, 1,0)
-df_topics_non_zero_alt <- df_topics_model[df_topics_model$altmetric_score != 0,]
-reference_binary = df_citations_altmetric_topic[which.min(df_citations_altmetric_topic$prob_0_altmetric),]$Topic_name[[1]]
+df_topics_model$altmetric_is_zero = ifelse(df_topics_model$altmetric_score > 0, 1,0)
+df_topics_non_zero_alt <- df_topics_model[df_topics_model$altmetric_score > 0,]
+topic_most_likely_not = df_citations_altmetric_topic[which.min(df_citations_altmetric_topic$prob_altmetric),]$Topic_name[[1]]
 
-
+df_citations_altmetric_topic
 # run the binary, logit model for entire dataset
-binary_model_topic_altmetric = glm(altmetric_is_zero ~ relevel(as.factor(Topic_name), ref = reference_binary[[1]]) + year , data = na.omit(df_topics_model %>% select(-citations)), family = binomial(link = "logit"), control = list(maxit = 50))
+binary_model_topic_altmetric = glm(altmetric_is_zero ~ relevel(as.factor(Topic_name), ref = topic_most_likely_not[[1]]) + year , data = na.omit(df_topics_model %>% select(-citations)), family = binomial(link = "logit"), control = list(maxit = 50))
 
 # linear model for number of altmetric >0 
-linear_model_topic_altmetric = lm(log(1 + altmetric_score) ~relevel(as.factor(Topic_name), ref = reference_binary[[1]]) + year   , data = na.omit(df_topics_non_zero_alt%>% select(-citations)))
+linear_model_topic_altmetric = lm(log(1 + altmetric_score) ~relevel(as.factor(Topic_name), ref = topic_most_likely_not[[1]]) + year   , data = na.omit(df_topics_non_zero_alt%>% select(-citations)))
 
 summary(binary_model_topic_altmetric)
 summary(linear_model_topic_altmetric)

@@ -49,4 +49,4 @@ df_LSA_selected['citations'] = df['citations']
 df_LSA_selected['altmetric_score'] = df['altmetric_score']
 
 
-df_LSA_selected.to_parquet('../data/clean_all_journals_LSA_representation.gzip', format='gzip')
+df_LSA_selected.to_parquet('../data/clean_all_journals_LSA_representation.gzip', compression='gzip')
