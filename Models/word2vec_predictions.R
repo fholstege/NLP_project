@@ -306,8 +306,6 @@ y_var_test = y_var[-train_indeces]
 y_var_train_logged = y_var_logged[train_indeces]
 y_var_test_logged = y_var_logged[-train_indeces]
 
-
-
 ####
 # First; baseline model with linear regression
 ####
@@ -337,7 +335,7 @@ MAE_linear_model_min <- mean(abs(pred_linear_model_min_backtransformed - y_var_t
 
 
 # number of folds
-K = 5
+K = 3
 
 # function to speed up cv.glmnet in lapply with different alpha's 
 cv_glmnet_wrapper <- function(alpha, x_vars, y_var, lambda_cv, K, ...){
@@ -419,7 +417,6 @@ MAE_elastic_max <- mean(abs(pred_elastic_max_backtransformed - y_var_test))
 MAE_elastic_min <- mean(abs(pred_elastic_min_backtransformed - y_var_test))
 
 
-
 ####
 # Third; random forest 
 ####
@@ -464,7 +461,7 @@ grid_search_gbm <- function(obj_formula, df_var,df_param,K, n_max_trees){
   l_params =  split(df_param, seq(nrow(df_param)))
   
   # apply gbm to all combinations 
-  l_result_grid <- parallelsugar::mclapply(l_params ,gbm_inGridsearch,obj_formula = obj_formula, distribution = "gaussian", df_var = df_var, K = K, n_max_trees = n_max_trees,  mc.cores = detectCores()-1)
+  l_result_grid <- parallelsugar::mclapply(l_params ,gbm_inGridsearch,obj_formula = obj_formula, distribution = "gaussian", df_var = df_var, K = K, n_max_trees = n_max_trees,  mc.cores = detectCores()-2)
   
   # save results of the data.frame
   l_result_grid_clean <- lapply(l_result_grid, create_df_TreeResult)
@@ -474,7 +471,14 @@ grid_search_gbm <- function(obj_formula, df_var,df_param,K, n_max_trees){
   return(df_results)
 }
 
-df_gridsearch_result_mean <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_mean_rep_train, df_param , K, n_max_trees)
+df_gridsearch_result_mean <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_mean_rep_train, df_param , K, 10)
+
+opt_index <- which.min(df_gridsearch_result_mean$cv_error)
+opt_n_tree <- df_gridsearch_result_mean[opt_index, ]$n_tree
+opt_min_obs <- df_gridsearch_result_mean[opt_index, ]$min_obs
+opt_interaction_depth <- df_gridsearch_result_mean[opt_index, ]$interaction_depth
+
+
 df_gridsearch_result_max <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_max_rep_train, df_param , K, n_max_trees)
 df_gridsearch_result_min <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_min_rep_train, df_param , K, n_max_trees)
 
@@ -518,4 +522,3 @@ ggplot(data = df_residuals_melted, aes(x = value, fill = variable)) +
   labs(fill = 'Type of model')+
   facet_grid(~variable)+
   theme(text = element_text(size=14))
-

@@ -131,6 +131,42 @@ get_results_cv_wrapper <- function(x){
   return(c(score, lambda))
 }
 
+# ensures we can apply gbm in lapply
+gbm_inGridsearch <- function(l_param, obj_formula, distribution, df_var, K, n_max_trees){
+  result <- gbm(formula = obj_formula, distribution = distribution, data = df_var,  n.trees = n_max_trees, interaction.depth = l_param$interaction_depth, n.minobsinnode = l_param$min_obs) #cv.folds = K)
+  return(result)
+}
+
+
+# creates df to analyse tree results
+create_df_TreeResult <- function(obj_tree_result){
+  
+  n_tree_best =  which.min(obj_tree_result$cv.error)
+  best_cv_error = obj_tree_result$cv.error[n_tree_best]
+  
+  dfTreeResult <- data.frame(n_tree =n_tree_best , cv_error = best_cv_error, min_obs = obj_tree_result$n.minobsinnode, interaction_depth = obj_tree_result$interaction.depth)
+  return(dfTreeResult)
+}
+
+
+# param grid search for gbm function
+grid_search_gbm <- function(obj_formula, df_var,df_param,K, n_max_trees){
+  
+  # create list with all parameters
+  l_params =  split(df_param, seq(nrow(df_param)))
+  
+  # apply gbm to all combinations 
+  l_result_grid <- parallelsugar::mclapply(l_params ,gbm_inGridsearch,obj_formula = obj_formula, distribution = "gaussian", df_var = df_var, K = K, n_max_trees = n_max_trees,  mc.cores = detectCores()-2)
+  
+  # save results of the data.frame
+  l_result_grid_clean <- lapply(l_result_grid, create_df_TreeResult)
+  
+  df_results <- do.call("rbind", l_result_grid_clean)
+  
+  return(df_results)
+}
+
+
 
 
 
@@ -139,7 +175,11 @@ get_results_cv_wrapper <- function(x){
 ####################
 
 
-get_predictions <- function(df_predictions, split_ratio, log_transformation = TRUE, modelObj=NA, elastic_net = FALSE, cv_param_choose = FALSE,alpha_cv = NA, lambda_cv = NA,K=NA,...){
+get_predictions <- function(df_predictions, split_ratio, log_transformation = TRUE, modelObj=NA,
+                            cv_param_choose = FALSE,type_model = NA,
+                            alpha_cv = NA, lambda_cv = NA,
+                            df_param_gbm = NA,n_max_trees = NA,
+                            K=NA,...){
   
   train_sample <- sample.split(df_predictions$citations, SplitRatio = split_ratio)
   df_train <- subset(df_predictions, train_sample == TRUE)
@@ -150,7 +190,7 @@ get_predictions <- function(df_predictions, split_ratio, log_transformation = TR
   ####################
   # Because the elastic net uses a very different data structure, we need to use this version
   ####################
-  if(elastic_net){
+  if(type_model == 'elastic net'){
     
     model_matrix_train <- model.matrix(citations~. , df_train)
     model_matrix_test <- model.matrix(citations~. , df_test)
@@ -188,10 +228,42 @@ get_predictions <- function(df_predictions, split_ratio, log_transformation = TR
     
     result = list('predictions'= c(predictions_elastic_net), 'MAE' = MAE)
 
-  }else{ # for all other models
+  } 
+  
+  if(type_model == 'gbm'){
+    
+
+    if(log_transformation){
+      
+      result_grid_search <- grid_search_gbm(log(1 + citations) ~ . , df_var =df_train, df_param_gbm , K, n_max_trees)
+    }else{
+      result_grid_search <- grid_search_gbm( citations ~ . , df_var =df_train, df_param_gbm , K, n_max_trees)
+    }
+    
+    
+    opt_index <- which.min(result_grid_search$cv_error)
+    opt_n_tree <- result_grid_search[opt_index, ]$n_tree
+    opt_min_obs <- result_grid_search[opt_index, ]$min_obs
+    opt_interaction_depth <- result_grid_search[opt_index, ]$interaction_depth
+    
+    boosted_model <- gbm(citations ~ . , data =df_train, distribution = 'gaussian', n.trees = opt_n_tree, interaction.depth = opt_interaction_depth, n.minobsinnode = opt_min_obs)
+    
+    predictions <- predict(boosted_model, df_test)
+    
+    if(log_transformation){
+      predictions <- exp(predictions) - 1
+    }
+    
+    MAE <- mean(abs(predictions - df_test$citations))
+    
+    result = list('predictions'= c(predictions), 'MAE' = MAE)
+    
+  } else{ #for all other models
+    print("WRONG")
+    
   
   
-  if(log_transformation){
+  if(type-model == 'lm type'){
     
     
     model_train <- modelObj(log( 1 + citations) ~ ., data = df_train, ...)
@@ -213,7 +285,7 @@ get_predictions <- function(df_predictions, split_ratio, log_transformation = TR
     result = list('predictions'= predictions, 'MAE' = MAE)
     
   }
-  }
+}
   return(result)
   
   
@@ -225,13 +297,15 @@ get_predictions <- function(df_predictions, split_ratio, log_transformation = TR
 
 
 
-compare_BERT_predictions <- function(df, vector_poolings, modelObj, name_model,elastic_net = FALSE, cv_param_choose = FALSE,lambda_cv = NA, alpha_cv = NA,K=NA,...){
+compare_BERT_predictions <- function(df, vector_poolings, modelObj, type_model = NA, cv_param_choose = FALSE,log_transformation = FALSE,lambda_cv = NA, alpha_cv = NA,K=NA,...){
   
   list_result_per_pooling <- lapply(vec_poolings, function(name_pooling){
     
     df_prediction <- create_df_for_prediction(name_pooling, df)
     
-    result <- get_predictions(df_predictions = df_prediction, split_ratio = 0.7,log_transformation = TRUE, modelObj = modelObj,elastic_net = elastic_net, cv_param_choose = cv_param_choose, lambda_cv = lambda_cv, alpha_cv = alpha_cv, K=K)
+    result <- get_predictions(df_predictions = df_prediction, split_ratio = 0.7,log_transformation = log_transformation, modelObj = modelObj,elastic_net = elastic_net, cv_param_choose = cv_param_choose, 
+                              lambda_cv = lambda_cv, alpha_cv = alpha_cv, 
+                              K=K, type_model = type_model,...)
     return(result)
     
   })
@@ -269,9 +343,9 @@ mControl <- trainControl(summaryFunction = maeSummary)
 
 
 # get results for MAE 
-results_linearRegression_BERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, train, method = "lm", metric = "MAE", maximize = FALSE, trControl = mControl)
-results_linearRegression_SCIBERT <- compare_BERT_predictions(df_SCIBERT_final, vec_poolings, train, method = "lm", metric = "MAE", maximize = FALSE, trControl = mControl)
-results_linearRegression_ROBERTa <- compare_BERT_predictions(df_ROBERTA_final, vec_poolings, train, method = "lm", metric = "MAE", maximize = FALSE, trControl = mControl)
+results_linearRegression_BERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = lm, log_transformation = FALSE, type_model = 'lm type')
+results_linearRegression_SCIBERT <- compare_BERT_predictions(df_SCIBERT_final, vec_poolings, modelObj = lm, log_transformation = FALSE)
+results_linearRegression_ROBERTa <- compare_BERT_predictions(df_ROBERTA_final, vec_poolings,  modelObj = lm, log_transformation = FALSE)#train, method = "lm", metric = "MAE", maximize = FALSE, trControl = mControl)
 
 
 
@@ -281,6 +355,8 @@ results_linearRegression_ROBERTa <- compare_BERT_predictions(df_ROBERTA_final, v
 ############
 
 result_elasticNet_BERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = NA,elastic_net = TRUE, cv_param_choose = TRUE, alpha_cv = c(0,0.5,1), lambda_cv = c(0.01, 0.1, 1, 10,100), K = 4)
+result_elasticNet_BERT <- compare_BERT_predictions(df_SCIBERT_final, vec_poolings, modelObj = NA,elastic_net = TRUE, cv_param_choose = TRUE, alpha_cv = c(0,0.5,1), lambda_cv = c(0.01, 0.1, 1, 10,100), K = 4)
+result_elasticNet_BERT <- compare_BERT_predictions(df_ROBERTA_final, vec_poolings, modelObj = NA,elastic_net = TRUE, cv_param_choose = TRUE, alpha_cv = c(0,0.5,1), lambda_cv = c(0.01, 0.1, 1, 10,100), K = 4)
 
 
 df_elasticNet_BERT <- result_elasticNet_BERT$df_MAE
@@ -289,3 +365,15 @@ df_elasticNet_BERT <- result_elasticNet_BERT$df_MAE
 
 
 
+############
+# GBM
+############
+interaction_depth_seq = c(1,3)
+n_min_obs_node_seq = c(100,200)
+
+df_param <- expand.grid(interaction_depth_seq, n_min_obs_node_seq)
+colnames(df_param) <- c('interaction_depth', 'min_obs')
+
+
+
+result_GBM_BERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_max_trees = 200)
