@@ -7,9 +7,7 @@
 #   2) Define dependent variable
 #   3) check topics from LDA
 #   4) Use word embeddings from Word2vec
-#   5) Use tf-idf and PCA 
-#   6) Use BERT embeddings
-#   7) combine information
+#   5) combine information
 #################################
 
 
@@ -32,7 +30,8 @@ pacman::p_load(reticulate,
                reshape2,
                stargazer,
                gridExtra,
-               caTools) 
+               caTools,
+               margins) 
 
 
 # add repository to make mclapply() run in parallel (only necessary on windows)
@@ -71,12 +70,11 @@ read_parquet <- function(path, columns = NULL) {
 df_full = read_parquet('../data/clean/all_journals_merged_topics.gzip')
 colnames(df_full)
 
-
 ############################
 # 2) Define dependent variable
 ############################
 
-# unlogged
+# Citations
 citation_plot <- ggplot(data = df_full,aes(x = citations) ) + 
   geom_histogram(bins = 50, color="black", fill="blue") +
   labs(x = 'Number of Citations', y = 'Frequency') + 
@@ -85,18 +83,6 @@ citation_plot <- ggplot(data = df_full,aes(x = citations) ) +
         axis.text.x = element_text(size=20),
         axis.text.y = element_text(size=20),
         legend.text = element_text(size=14))
-
-# logged (+1)
-citation_plot_logged <- ggplot(data = df_full,aes(x = log(1 + citations) )) + 
-  geom_histogram(bins = 50, color="black", fill="blue") +
-  labs(x = 'Number of Citations (Logarithm)', y = 'Frequency') + 
-  theme_bw()+
-  theme(text = element_text(size=16), 
-        axis.text.x = element_text(size=20),
-        axis.text.y = element_text(size=20),
-        legend.text = element_text(size=14))
-grid.arrange(citation_plot, citation_plot_logged, ncol=2)
-
 
 
 # Altmetric 
@@ -110,29 +96,10 @@ altmetric_plot <- ggplot(data = df_full,aes(x = altmetric_score )) +
         legend.text = element_text(size=14))
 
 
-# Altmetric  looged
-altmetric_plot_logged <- ggplot(data = df_full,aes(x = log(1 + altmetric_score) )) + 
-  geom_histogram(bins = 20, color="black", fill="red") +
-  labs(x = 'Altmetric Attention Score (Logarithm) ', y = 'Frequency') + 
-  theme_bw()+
-  theme(text = element_text(size=16), 
-        axis.text.x = element_text(size=20),
-        axis.text.y = element_text(size=20),
-        legend.text = element_text(size=14))
 
-grid.arrange(altmetric_plot, altmetric_plot_logged, ncol=2)
+grid.arrange(citation_plot,altmetric_plot, ncol=2)
 
-
-# conclusion; for prediction, keep logged. For inference, build two-stage model
-# check percentage of zero citations per
-n_0_log_citation = nrow(df_full[log( 1 + df_full$`Cited by`) == 0,])
-n_0_log_citation/ nrow(df_full)
-
-# conclusion; for prediction, keep logged. For inference, build two-stage model
-# check percentage of zero citations per
-n_0_log_altmetric = nrow(df_full[log( 1 + df_full$`Altmetric Attention Score`) == 0,])
-n_0_log_altmetric/ nrow(df_full[!is.na(df_full$`Altmetric Attention Score` ),])
-
+# Use zero-inflated regression
 
 ############################
 # 3) LDA topics
@@ -142,36 +109,37 @@ n_0_log_altmetric/ nrow(df_full[!is.na(df_full$`Altmetric Attention Score` ),])
 ## plot topics over time
 topic_interpretations = c('Identity marketing','Luxury products', 'Customer Services', 'Advertising', 'Consumption', 'Digital Marketing', 'Store Promotion', 'Marketing Experiments', 'Business Marketing', 'Customer Relations')
 
-# get which
+# get which topic number is which topic name
 list_name_topics <- lapply(df_full$Topic, function(x){
   
   name_topic = topic_interpretations[x]
   
   return(name_topic)
 })
+
+# change the variable
 df_full$Topic_name <- unlist(list_name_topics)
+colnames(df_full)[46:55] <- topic_interpretations
 
-
+# create df for regression and analysis
 df_topics <-  df_full %>%
-  select('journal', 'year', 'DOI', 'Topic_name') %>%
+  select('journal', 'year', 'DOI','Topic_name', topic_interpretations) %>%
   na.omit()
+df_topics
 
-
-  
-
-
-# topics over time
 df_topics_time <- df_topics %>%
-  group_by(year, Topic_name) %>%
-  summarise(n_assigned =n()) %>%
-  mutate(percent_assigned = n_assigned/sum(n_assigned))
+  select(-journal, -DOI, -Topic_name)%>%
+  melt(id.vars = 'year') %>%
+  group_by(year, variable) %>%
+  summarise(avg_prob = mean(value))
+colnames(df_topics_time) <- c('year', 'Topic_name', 'avg_prob')
 
 
 # plot it 
-ggplot(data = df_topics_time, aes(x = year, y = percent_assigned*100, fill = Topic_name))+
+ggplot(data = df_topics_time, aes(x = year, y = avg_prob*100, fill = Topic_name))+
   geom_area()+
   theme_bw()+
-  labs(x = 'Year', y = "% Of Papers Assigned To Topic", fill = 'Topic') + 
+  labs(x = 'Year', y = "Avg. Probability Of Being Assigned To Topic", fill = 'Topic') + 
   scale_fill_brewer(palette="Set3")+
   theme(text = element_text(size=16), 
         axis.text.x = element_text(size=16),
@@ -180,20 +148,22 @@ ggplot(data = df_topics_time, aes(x = year, y = percent_assigned*100, fill = Top
 
 # topics per journal
 df_topics_journals <- df_topics %>%
-  group_by(journal, Topic_name) %>%
-  summarise(n_assigned =n()) %>%
-  mutate(percent_assigned = n_assigned/sum(n_assigned)) %>%
+  select(-year, -DOI, -Topic_name)%>%
+  melt(id.vars = 'journal') %>%
+  group_by(journal, variable)%>%
+  summarise(avg_prob =mean(value)) %>%
   filter(journal != 'NULL')
-
+colnames(df_topics_journals) <- c('journal', 'Topic_name', 'avg_prob')
 
 df_topics_journals <- df_topics_journals %>%
   mutate(journal = paste0(journal))
+df_topics_journals
 
 # plot it 
-ggplot(data = df_topics_journals, aes(y = percent_assigned*100, x=journal, fill = Topic_name))+
+ggplot(data = df_topics_journals, aes(y = avg_prob*100, x=journal, fill = Topic_name))+
   geom_bar(position = 'stack', stat="identity") + 
   theme_bw()+
-  labs(x = 'Topics', y = "% Of Papers Assigned To Topic", fill = 'Topic') +
+  labs(x = 'Topics', y = "Avg. Probability of being Assigned To Topic", fill = 'Topic') +
   scale_fill_brewer(palette="Set3") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5)) + 
   theme(text = element_text(size=16), 
@@ -202,127 +172,149 @@ ggplot(data = df_topics_journals, aes(y = percent_assigned*100, x=journal, fill 
 
 
 
+df_full %>%
+  select(DOI, citations, Topic_name) %>%
+  melt(id.vars = c('DOI', 'citations')) %>%
+  group_by(value) %>%
+  summarise(avg_citations = mean(citations, na.rm = TRUE),
+            n_zero_citations = sum(ifelse(citations == 0, 1,0), na.rm = TRUE),
+            n_papers = n(),
+            perc_zero_citations = n_zero_citations/n_papers)
+  
+  
 
-# removes a couple of empty rows
-df_topics_model <- df_full %>%
-  select('citations', 'altmetric_score','Topic_name', 'year', 'journal') 
+# for hurdle with citations
+df_topics_model_citations <- df_full %>%
+  select('citations',topic_interpretations, 'year', 'journal') %>%
+  na.omit() %>%
+  select(-`Customer Relations`) # this is the baseline variable
+df_topics_model_citations$year <- as.factor(df_topics_model_citations$year)
+df_topics_model_citations$journal <- as.factor(paste0(df_topics_model_citations$journal))
 
-df_citations_altmetric_topic <-  df_topics_model %>%
-  group_by(Topic_name) %>%
-  summarise(prob_cited = sum(ifelse(na.omit(citations) > 0, 1,0))/n(), 
-            prob_altmetric = sum(ifelse(na.omit(altmetric_score) > 0, 1,0))/n()) %>%
-  na.omit()
+# estimate both parts of the hurdle model for citations
+binary_hurdle_citations = glm(ifelse(citations ==0, 1,0) ~ ., data = df_topics_model_citations, family = 'binomial')
+poisson_hurdle_citations = glm(citations ~ ., data = hurdle_citations$model %>% filter(citations >0), family = 'poisson')
 
-topic_most_likely_not = df_citations_altmetric_topic[which.min(df_citations_altmetric_topic$prob_cited),]$Topic_name[[1]]
+# get marginal effects for citations
+margins_binary_hurdle_citations <- margins(binary_hurdle_citations)
+margins_poisson_hurdle_citations <- margins(poisson_hurdle_citations)
 
+df_AME_binary_citations = summary(margins_binary_hurdle_citations)%>% filter(factor %in% topic_interpretations)
+df_AME_poisson_citations = summary(margins_poisson_hurdle_citations)%>% filter(factor %in% topic_interpretations)
 
+# for hurdle with altmetric
+df_topics_model_altmetric <- df_full %>%
+  select('altmetric_score',topic_interpretations, 'year', 'journal') %>%
+  na.omit() %>%
+  select(-`Customer Relations`) # this is the baseline variable
 
-# check for the entire dataset if the number of citations is zero
-df_topics_model$citations_is_not_zero = ifelse(df_topics_model$citations > 0, 1, 0)
+df_topics_model_altmetric$year <- as.factor(df_topics_model_altmetric$year)
+df_topics_model_altmetric$journal <- as.factor(paste0(df_topics_model_altmetric$journal))
 
+# estimate both parts of the hurdle model for citations
+binary_hurdle_altmetric = glm(ifelse(altmetric_score ==0, 1,0) ~ ., data = df_topics_model_altmetric, family = 'binomial')
+poisson_hurdle_altmetric = glm(altmetric_score ~ ., data = df_topics_model_altmetric %>% filter(altmetric_score >0), family = 'poisson')
 
-# create dataset where only citations are included that are not zero
-df_model_non_zero_citations <- df_topics_model[df_topics_model$citations > 0,]
+# get marginal effects for citations
+margins_binary_hurdle_altmetric <- margins(binary_hurdle_altmetric)
+margins_poisson_hurdle_altmetric <- margins(poisson_hurdle_altmetric)
 
-
-
-
-# run the binary, logit model for entire dataset
-binary_model_topic = glm(citations_is_not_zero ~  relevel(as.factor(Topic_name), ref = topic_most_likely_not[[1]]) + year , data = na.omit(df_topics_model %>% select(-altmetric_score)), family = binomial(link = "logit"), control = list(maxit = 50))
-
-# linear model for number of citations >0 
-linear_model_topic = lm(log(1 + citations) ~ relevel(as.factor(Topic_name), ref = topic_most_likely_not[[1]]) + year   , data = na.omit(df_model_non_zero_citations%>% select(-altmetric_score)))
-
-summary(binary_model_topic)
-#coef_to_prob = function(coef){return (1/ (1 + exp(coef)))}
-#coef_to_prob(binary_model_topic$coefficients)
-summary(linear_model_topic)
-
-
-## altmetric interest
-df_topics_model$altmetric_is_zero = ifelse(df_topics_model$altmetric_score > 0, 1,0)
-df_topics_non_zero_alt <- df_topics_model[df_topics_model$altmetric_score > 0,]
-topic_most_likely_not = df_citations_altmetric_topic[which.min(df_citations_altmetric_topic$prob_altmetric),]$Topic_name[[1]]
-
-df_citations_altmetric_topic
-# run the binary, logit model for entire dataset
-binary_model_topic_altmetric = glm(altmetric_is_zero ~ relevel(as.factor(Topic_name), ref = topic_most_likely_not[[1]]) + year , data = na.omit(df_topics_model %>% select(-citations)), family = binomial(link = "logit"), control = list(maxit = 50))
-
-# linear model for number of altmetric >0 
-linear_model_topic_altmetric = lm(log(1 + altmetric_score) ~relevel(as.factor(Topic_name), ref = topic_most_likely_not[[1]]) + year   , data = na.omit(df_topics_non_zero_alt%>% select(-citations)))
-
-summary(binary_model_topic_altmetric)
-summary(linear_model_topic_altmetric)
-
-stargazer(binary_model_topic,binary_model_topic_altmetric,linear_model_topic,linear_model_topic_altmetric,digits=2)
-
+df_AME_binary_altmetric = summary(margins_binary_hurdle_altmetric) %>% filter(factor %in% topic_interpretations)
+df_AME_poisson_altmetric = summary(margins_poisson_hurdle_altmetric) %>% filter(factor %in% topic_interpretations)
 
 
 ############################
 # 4) Word2vec
 ############################
-
+getwd()
 
 # get dataframes 
-df_word2vec_mean_representation = read_parquet('../data/representations/word2vec_doc_representation_mean.gzip') %>% na.omit()
-df_word2vec_max_representation = read_parquet('../data/representations/word2vec_doc_representation_max.gzip')  %>% na.omit()
-df_word2vec_min_representation = read_parquet('../data/representations/word2vec_doc_representation_min.gzip')%>% na.omit()
-colnames(df_word2vec_mean_representation)
+df_word2vec_mean_300_representation = read_parquet('../data/representations/word2vec_doc_representation_300_mean.gzip') %>% na.omit()
+df_word2vec_max_300_representation = read_parquet('../data/representations/word2vec_doc_representation_300_max.gzip')  %>% na.omit()
+df_word2vec_min_300_representation = read_parquet('../data/representations/word2vec_doc_representation_300_min.gzip')%>% na.omit()
+df_word2vec_mean_500_representation = read_parquet('../data/representations/word2vec_doc_representation_500_mean.gzip') %>% na.omit()
+df_word2vec_max_500_representation = read_parquet('../data/representations/word2vec_doc_representation_500_max.gzip')  %>% na.omit()
+df_word2vec_min_500_representation = read_parquet('../data/representations/word2vec_doc_representation_500_min.gzip')%>% na.omit()
 
 # get x and y values
-x_vars_mean <- model.matrix(citations~. , na.omit(df_word2vec_mean_representation))[,-1]
-x_vars_max <-  model.matrix(citations~. , na.omit(df_word2vec_max_representation))[,-1]
-x_vars_min <- model.matrix(citations~. , na.omit(df_word2vec_min_representation))[,-1]
-y_var <- df_word2vec_mean_representation$citations
-y_var_logged <- log(1 + y_var)
-
+x_vars_mean_300 <- model.matrix(citations~. , na.omit(df_word2vec_mean_300_representation) %>% select( -DOI))[,-1]
+x_vars_max_300 <-  model.matrix(citations~. , na.omit(df_word2vec_max_300_representation) %>% select( -DOI))[,-1]
+x_vars_min_300 <- model.matrix(citations~. , na.omit(df_word2vec_min_300_representation) %>% select( -DOI))[,-1]
+x_vars_mean_500 <- model.matrix(citations~. , na.omit(df_word2vec_mean_500_representation) %>% select( -DOI))[,-1]
+x_vars_max_500 <-  model.matrix(citations~. , na.omit(df_word2vec_max_500_representation) %>% select( -DOI))[,-1]
+x_vars_min_500 <- model.matrix(citations~. , na.omit(df_word2vec_min_500_representation)%>% select(-DOI))[,-1]
+y_var <- df_word2vec_mean_300_representation$citations %>% na.omit()
 
 # try out these values for alpha and lambda
-lambda_cv = 10^seq(2, -2, by = -0.5)
+lambda_cv =  c( 0.1, 1, 10,100)
 alpha_cv = seq(0,1,by=0.5)
 
 # Splitting the data into test and train
 set.seed(123)
-train_indeces = which(df_word2vec_mean_representation$train_set == 1)
+train_indeces = which(df_word2vec_mean_300_representation$train_set == 1)
 
 
 # mean representation
-x_vars_mean_train = data.frame(x_vars_mean[train_indeces,]) %>% select(-train_set)
-x_vars_mean_test = data.frame(x_vars_mean[-train_indeces,])  %>% select(-train_set)
+x_vars_mean_300_train = data.frame(x_vars_mean_300[train_indeces,]) %>% select(-train_set)
+x_vars_mean_300_test = data.frame(x_vars_mean_300[-train_indeces,])  %>% select(-train_set)
+x_vars_mean_500_train = data.frame(x_vars_mean_500[train_indeces,]) %>% select(-train_set)
+x_vars_mean_500_test = data.frame(x_vars_mean_500[-train_indeces,])  %>% select(-train_set)
 
 # max representation
-x_vars_max_train = data.frame(x_vars_max[train_indeces,]) %>% select(-train_set)
-x_vars_max_test = data.frame(x_vars_max[-train_indeces,]) %>% select(-train_set)
+x_vars_max_300_train = data.frame(x_vars_max_300[train_indeces,]) %>% select(-train_set)
+x_vars_max_300_test = data.frame(x_vars_max_300[-train_indeces,])  %>% select(-train_set)
+x_vars_max_500_train = data.frame(x_vars_max_500[train_indeces,]) %>% select(-train_set)
+x_vars_max_500_test = data.frame(x_vars_max_500[-train_indeces,])  %>% select(-train_set)
 
 # min representation
-x_vars_min_train = data.frame(x_vars_min[train_indeces,]) %>% select(-train_set)
-x_vars_min_test = data.frame(x_vars_min[-train_indeces,]) %>% select(-train_set)
+x_vars_min_300_train = data.frame(x_vars_min_300[train_indeces,]) %>% select(-train_set)
+x_vars_min_300_test = data.frame(x_vars_min_300[-train_indeces,])  %>% select(-train_set)
+x_vars_min_500_train = data.frame(x_vars_min_500[train_indeces,]) %>% select(-train_set)
+x_vars_min_500_test = data.frame(x_vars_min_500[-train_indeces,])  %>% select(-train_set)
 
 # dependent variable
 y_var_train = y_var[train_indeces]
 y_var_test = y_var[-train_indeces]
-y_var_train_logged = y_var_logged[train_indeces]
-y_var_test_logged = y_var_logged[-train_indeces]
 
 ####
 # First; baseline model with linear regression
 ####
 
-linear_model_mean_rep <- lm(y_var_train ~ . , data = data.frame(x_vars_mean_train))
-linear_model_max_rep <- lm(y_var_train ~ ., data = data.frame(x_vars_max_train))
-linear_model_min_rep <- lm(y_var_train ~ ., data = data.frame(x_vars_min_train))
+# get the models
+linear_model_mean_rep_300 <- lm(y_var_train ~ . , data = data.frame(x_vars_mean_300_train))
+linear_model_max_rep_300 <- lm(y_var_train ~ ., data = data.frame(x_vars_max_300_train))
+linear_model_min_rep_300 <- lm(y_var_train ~ ., data = data.frame(x_vars_min_300_train))
+linear_model_mean_rep_500 <- lm(y_var_train ~ . , data = data.frame(x_vars_mean_500_train))
+linear_model_max_rep_500 <- lm(y_var_train ~ ., data = data.frame(x_vars_max_500_train))
+linear_model_min_rep_500 <- lm(y_var_train ~ ., data = data.frame(x_vars_min_500_train))
 
-pred_linear_model_mean <- predict(linear_model_mean_rep, data.frame(x_vars_mean_test))
-pred_linear_model_max <- predict(linear_model_max_rep, data.frame(x_vars_max_test))
-pred_linear_model_min <- predict(linear_model_min_rep, data.frame(x_vars_min_test))
+# get the predictions
+pred_linear_model_mean_300 <- predict(linear_model_mean_rep_300, data.frame(x_vars_mean_300_test))
+pred_linear_model_max_300 <- predict(linear_model_max_rep_300, data.frame(x_vars_max_300_test))
+pred_linear_model_min_300 <- predict(linear_model_min_rep_300, data.frame(x_vars_min_300_test))
+pred_linear_model_mean_500 <- predict(linear_model_mean_rep_500, data.frame(x_vars_mean_500_test))
+pred_linear_model_max_500 <- predict(linear_model_max_rep_500, data.frame(x_vars_max_500_test))
+pred_linear_model_min_500 <- predict(linear_model_min_rep_500, data.frame(x_vars_min_500_test))
 
-MSE_linear_model_mean <- mean((pred_linear_model_mean - y_var_test)^2)
-MSE_linear_model_max <- mean((pred_linear_model_max - y_var_test)^2)
-MSE_linear_model_min <- mean((pred_linear_model_min - y_var_test)^2)
 
-MAE_linear_model_mean <- mean(abs(pred_linear_model_mean - y_var_test))
-MAE_linear_model_max <- mean(abs(pred_linear_model_max - y_var_test))
-MAE_linear_model_min <- mean(abs(pred_linear_model_min - y_var_test))
+# get the MSE
+MSE_linear_model_mean_300 <- mean((pred_linear_model_mean_300 - y_var_test)^2)
+MSE_linear_model_max_300 <- mean((pred_linear_model_max_300 - y_var_test)^2)
+MSE_linear_model_min_300 <- mean((pred_linear_model_min_300 - y_var_test)^2)
+MSE_linear_model_mean_500 <- mean((pred_linear_model_mean_500 - y_var_test)^2)
+MSE_linear_model_max_500 <- mean((pred_linear_model_max_500 - y_var_test)^2)
+MSE_linear_model_min_500 <- mean((pred_linear_model_min_500 - y_var_test)^2)
+
+
+# get the MAE
+MAE_linear_model_mean_300 <- mean(abs(pred_linear_model_mean_300 - y_var_test))
+MAE_linear_model_max_300 <- mean(abs(pred_linear_model_max_300 - y_var_test))
+MAE_linear_model_min_300 <- mean(abs(pred_linear_model_min_300 - y_var_test))
+MAE_linear_model_mean_500 <- mean(abs(pred_linear_model_mean_500 - y_var_test))
+MAE_linear_model_max_500 <- mean(abs(pred_linear_model_max_500 - y_var_test))
+MAE_linear_model_min_500 <- mean(abs(pred_linear_model_min_500 - y_var_test))
+
+
 
 
 ####
@@ -350,14 +342,17 @@ cv_glmnet_wrapper <- function(alpha, x_vars, y_var, lambda_cv, K, ...){
 
 
 # cv for mean representation
-cv_mean_rep <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_mean_train), y = y_var_train_logged, lambda_cv = lambda_cv, K=K)
-
+cv_mean_rep_300 <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_mean_300_train), y = y_var_train, lambda_cv = lambda_cv, K=K)
+cv_mean_rep_500 <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_mean_500_train), y = y_var_train, lambda_cv = lambda_cv, K=K)
 
 # cv for max representation
-cv_max_rep <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_max_train), y = y_var_train_logged, lambda_cv = lambda_cv, K=K)
+cv_max_rep_300 <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_max_300_train), y = y_var_train, lambda_cv = lambda_cv, K=K)
+cv_max_rep_500 <- lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_max_500_train), y = y_var_train, lambda_cv = lambda_cv, K=K)
+
 
 # cv for min representation
-cv_min_rep <-lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_min_train), y = y_var_train_logged, lambda_cv = lambda_cv, K=K)
+cv_min_rep_300 <-lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_min_300_train), y = y_var_train, lambda_cv = lambda_cv, K=K)
+cv_min_rep_500 <-lapply(alpha_cv, cv_glmnet_wrapper, x_vars= as.matrix(x_vars_min_500_train), y = y_var_train, lambda_cv = lambda_cv, K=K)
 
 
 # function to get results from the wrapper function
@@ -369,59 +364,93 @@ get_results_cv_wrapper <- function(x){
   }
 
 # get cv results for mean representation
-cv_result_mean <- data.frame(list.rbind(lapply(cv_mean_rep, get_results_cv_wrapper)), alpha = alpha_cv)
-colnames(cv_result_mean)[1:2] <- c('MSE', 'Lambda')
+cv_result_mean_300 <- data.frame(list.rbind(lapply(cv_mean_rep_300, get_results_cv_wrapper)), alpha = alpha_cv)
+cv_result_mean_500 <- data.frame(list.rbind(lapply(cv_mean_rep_500, get_results_cv_wrapper)), alpha = alpha_cv)
+colnames(cv_result_mean_300)[1:2] <- c('MSE', 'Lambda')
+colnames(cv_result_mean_500)[1:2] <- c('MSE', 'Lambda')
 
 # get cv results for max representation
-cv_result_max <- data.frame(list.rbind(lapply(cv_max_rep, get_results_cv_wrapper)), alpha = alpha_cv)
-colnames(cv_result_max)[1:2] <- c('MSE', 'Lambda')
+cv_result_max_300 <- data.frame(list.rbind(lapply(cv_max_rep_300, get_results_cv_wrapper)), alpha = alpha_cv)
+cv_result_max_500 <- data.frame(list.rbind(lapply(cv_max_rep_500, get_results_cv_wrapper)), alpha = alpha_cv)
+colnames(cv_result_max_300)[1:2] <- c('MSE', 'Lambda')
+colnames(cv_result_max_500)[1:2] <- c('MSE', 'Lambda')
 
 # get cv results for min representation
-cv_result_min <- data.frame(list.rbind(lapply(cv_min_rep, get_results_cv_wrapper)), alpha = alpha_cv)
-colnames(cv_result_min)[1:2] <- c('MSE', 'Lambda')
+cv_result_min_300 <- data.frame(list.rbind(lapply(cv_min_rep_300, get_results_cv_wrapper)), alpha = alpha_cv)
+cv_result_min_500 <- data.frame(list.rbind(lapply(cv_min_rep_500, get_results_cv_wrapper)), alpha = alpha_cv)
+colnames(cv_result_min_300)[1:2] <- c('MSE', 'Lambda')
+colnames(cv_result_min_500)[1:2] <- c('MSE', 'Lambda')
 
 
-# based on results, pick lambda and alpha
-opt_alpha_mean = cv_result_mean[which.min(cv_result_mean$MSE),]$alpha
-opt_lambda_mean = cv_result_mean[which.min(cv_result_mean$MSE),]$Lambda
-opt_alpha_max = cv_result_max[which.min(cv_result_max$MSE),]$alpha
-opt_lambda_max = cv_result_max[which.min(cv_result_max$MSE),]$Lambda
-opt_alpha_min = cv_result_min[which.min(cv_result_min$MSE),]$alpha
-opt_lambda_min =cv_result_min[which.min(cv_result_min$MSE),]$Lambda
+## based on results, pick lambda and alpha
+# mean
+opt_alpha_mean_300 = cv_result_mean_300[which.min(cv_result_mean_300$MSE),]$alpha
+opt_lambda_mean_300 = cv_result_mean_300[which.min(cv_result_mean_300$MSE),]$Lambda
+opt_alpha_mean_500 = cv_result_mean_500[which.min(cv_result_mean_500$MSE),]$alpha
+opt_lambda_mean_500 = cv_result_mean_500[which.min(cv_result_mean_500$MSE),]$Lambda
+
+# max
+opt_alpha_max_300 = cv_result_max_300[which.min(cv_result_max_300$MSE),]$alpha
+opt_lambda_max_300 = cv_result_max_300[which.min(cv_result_max_300$MSE),]$Lambda
+opt_alpha_max_500 = cv_result_max_500[which.min(cv_result_max_500$MSE),]$alpha
+opt_lambda_max_500 = cv_result_max_500[which.min(cv_result_max_500$MSE),]$Lambda
+
+# min
+opt_alpha_min_300 = cv_result_min_300[which.min(cv_result_min_300$MSE),]$alpha
+opt_lambda_min_300 = cv_result_min_300[which.min(cv_result_min_300$MSE),]$Lambda
+opt_alpha_min_500 = cv_result_min_500[which.min(cv_result_min_500$MSE),]$alpha
+opt_lambda_min_500 = cv_result_min_500[which.min(cv_result_min_500$MSE),]$Lambda
+
+
+
 
 # Rebuilding the model with best lamda value identified
-elastic_model_word2vec_mean <- glmnet(as.matrix(x_vars_mean_train), y_var_train, alpha = opt_alpha_mean, lambda = opt_lambda_mean)
-elastic_model_word2vec_max <- glmnet(as.matrix(x_vars_max_train), y_var_train, alpha = opt_alpha_max, lambda = opt_lambda_max)
-elastic_model_word2vec_min <- glmnet(as.matrix(x_vars_min_train), y_var_train, alpha = opt_alpha_min, lambda = opt_lambda_min)
+elastic_model_word2vec_mean_300 <- glmnet(as.matrix(x_vars_mean_300_train), y_var_train, alpha = opt_alpha_mean_300, lambda = opt_lambda_mean_300)
+elastic_model_word2vec_max_300 <- glmnet(as.matrix(x_vars_max_300_train), y_var_train, alpha = opt_alpha_max_300, lambda = opt_lambda_max_300)
+elastic_model_word2vec_min_300 <- glmnet(as.matrix(x_vars_min_300_train), y_var_train, alpha = opt_alpha_min_300, lambda = opt_lambda_min_300)
+elastic_model_word2vec_mean_500 <- glmnet(as.matrix(x_vars_mean_500_train), y_var_train, alpha = opt_alpha_mean_500, lambda = opt_lambda_mean_500)
+elastic_model_word2vec_max_500 <- glmnet(as.matrix(x_vars_max_500_train), y_var_train, alpha = opt_alpha_max_500, lambda = opt_lambda_max_500)
+elastic_model_word2vec_min_500 <- glmnet(as.matrix(x_vars_min_500_train), y_var_train, alpha = opt_alpha_min_500, lambda = opt_lambda_min_500)
 
-# get predictions in log
-pred_elastic_mean <- predict(elastic_model_word2vec_mean, newx = as.matrix(x_vars_mean_test))
-pred_elastic_max <- predict(elastic_model_word2vec_max, newx = as.matrix(x_vars_max_test))
-pred_elastic_min <- predict(elastic_model_word2vec_min, newx = as.matrix(x_vars_min_test))
 
+# get predictions i
+pred_elastic_mean_300 <- predict(elastic_model_word2vec_mean_300, newx = as.matrix(x_vars_mean_300_test))
+pred_elastic_max_300 <- predict(elastic_model_word2vec_max_300, newx = as.matrix(x_vars_max_300_test))
+pred_elastic_min_300 <- predict(elastic_model_word2vec_min_300, newx = as.matrix(x_vars_min_300_test))
+pred_elastic_mean_500 <- predict(elastic_model_word2vec_mean_500, newx = as.matrix(x_vars_mean_500_test))
+pred_elastic_max_500 <- predict(elastic_model_word2vec_max_500, newx = as.matrix(x_vars_max_500_test))
+pred_elastic_min_500 <- predict(elastic_model_word2vec_min_500, newx = as.matrix(x_vars_min_500_test))
 
 # use the elastic MSE
-MSE_elastic_mean <- mean((pred_elastic_mean - y_var_test)^2)
-MSE_elastic_max <- mean((pred_elastic_max - y_var_test)^2)
-MSE_elastic_min <- mean((pred_elastic_min - y_var_test)^2)
+MSE_elastic_mean_300 <- mean((pred_elastic_mean_300 - y_var_test)^2)
+MSE_elastic_max_300 <- mean((pred_elastic_max_300 - y_var_test)^2)
+MSE_elastic_min_300 <- mean((pred_elastic_min_300 - y_var_test)^2)
+MSE_elastic_mean_500 <- mean((pred_elastic_mean_500 - y_var_test)^2)
+MSE_elastic_max_500 <- mean((pred_elastic_max_500 - y_var_test)^2)
+MSE_elastic_min_500 <- mean((pred_elastic_min_500 - y_var_test)^2)
 
 
 # use the elastic MAE
-MAE_elastic_mean <- mean(abs(pred_elastic_mean - y_var_test))
-MAE_elastic_max <- mean(abs(pred_elastic_max - y_var_test))
-MAE_elastic_min <- mean(abs(pred_elastic_min - y_var_test))
+MAE_elastic_mean_300 <- mean(abs(pred_elastic_mean_300 - y_var_test))
+MAE_elastic_max_300 <- mean(abs(pred_elastic_max_300 - y_var_test))
+MAE_elastic_min_300 <- mean(abs(pred_elastic_min_300 - y_var_test))
+MAE_elastic_mean_500 <- mean(abs(pred_elastic_mean_500 - y_var_test))
+MAE_elastic_max_500 <- mean(abs(pred_elastic_max_500 - y_var_test))
+MAE_elastic_min_500 <- mean(abs(pred_elastic_min_500 - y_var_test))
 
 
 ####
 # Third; random forest 
 ####
 
-df_gbm_mean_rep_train = data.frame(y_var_train, x_vars_mean_train)
-df_gbm_max_rep_train = data.frame(y_var_train, x_vars_max_train)
-df_gbm_min_rep_train = data.frame(y_var_train, x_vars_min_train)
+df_gbm_mean_rep_train_300 = data.frame(y_var_train, x_vars_mean_300_train)
+df_gbm_max_rep_train_300 = data.frame(y_var_train, x_vars_max_300_train)
+df_gbm_min_rep_train_300 = data.frame(y_var_train, x_vars_min_300_train)
+df_gbm_mean_rep_train_500 = data.frame(y_var_train, x_vars_mean_500_train)
+df_gbm_max_rep_train_500 = data.frame(y_var_train, x_vars_max_500_train)
+df_gbm_min_rep_train_500 = data.frame(y_var_train, x_vars_min_500_train)
 
-
-n_max_trees = 300
+n_max_trees = 200
 interaction_depth_seq = c(1,3)
 n_min_obs_node_seq = c(100,200)
 
@@ -431,7 +460,15 @@ colnames(df_param) <- c('interaction_depth', 'min_obs')
 
 # ensures we can apply gbm in lapply
 gbm_inGridsearch <- function(l_param, obj_formula, distribution, df_var, K, n_max_trees){
-  result <- gbm(formula = obj_formula, distribution = distribution, data = df_var, cv.folds = K, n.trees = n_max_trees, interaction.depth = l_param$interaction_depth, n.minobsinnode = l_param$min_obs)
+
+    result <- gbm(formula = obj_formula, 
+                distribution = distribution, 
+                data = df_var, 
+                cv.folds = K, 
+                n.trees = n_max_trees, 
+                interaction.depth = l_param$interaction_depth,
+                n.minobsinnode = l_param$min_obs, 
+                n.cores = 4)
   return(result)
 }
 
@@ -453,8 +490,9 @@ grid_search_gbm <- function(obj_formula, df_var,df_param,K, n_max_trees){
   # create list with all parameters
   l_params =  split(df_param, seq(nrow(df_param)))
   
+
   # apply gbm to all combinations 
-  l_result_grid <- parallelsugar::mclapply(l_params ,gbm_inGridsearch,obj_formula = obj_formula, distribution = "gaussian", df_var = df_var, K = K, n_max_trees = n_max_trees,  mc.cores = detectCores()-2)
+  l_result_grid <- lapply(l_params ,gbm_inGridsearch,obj_formula = obj_formula, distribution = "gaussian", df_var = df_var, K = K, n_max_trees = n_max_trees)
   
   # save results of the data.frame
   l_result_grid_clean <- lapply(l_result_grid, create_df_TreeResult)
@@ -464,44 +502,68 @@ grid_search_gbm <- function(obj_formula, df_var,df_param,K, n_max_trees){
   return(df_results)
 }
 
-df_gridsearch_result_mean <- grid_search_gbm(y_var_train_logged ~ . , df_var =df_gbm_mean_rep_train, df_param , K, 10)
-
-opt_index <- which.min(df_gridsearch_result_mean$cv_error)
-opt_n_tree <- df_gridsearch_result_mean[opt_index, ]$n_tree
-opt_min_obs <- df_gridsearch_result_mean[opt_index, ]$min_obs
-opt_interaction_depth <- df_gridsearch_result_mean[opt_index, ]$interaction_depth
-
-
-df_gridsearch_result_max <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_max_rep_train, df_param , K, n_max_trees)
-df_gridsearch_result_min <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_min_rep_train, df_param , K, n_max_trees)
+# gridsearch
+df_gridsearch_result_mean_300 <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_mean_rep_train_300, df_param = df_param , K=K, n_max_trees=n_max_trees)
+df_gridsearch_result_max_300 <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_max_rep_train_300, df_param = df_param, K = K, n_max_trees = n_max_trees)
+df_gridsearch_result_min_300 <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_min_rep_train_300, df_param , K, n_max_trees)
+df_gridsearch_result_mean_500 <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_mean_rep_train_500, df_param = df_param , K=K, n_max_trees=n_max_trees)
+df_gridsearch_result_max_500 <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_max_rep_train_500, df_param = df_param, K = K, n_max_trees = n_max_trees)
+df_gridsearch_result_min_500 <- grid_search_gbm(y_var_train ~ . , df_var =df_gbm_min_rep_train_500, df_param , K, n_max_trees)
 
 
-boosted_model_mean <- gbm(y_var_train ~ . , data =df_gbm_mean_rep_train, distribution = 'gaussian', n.trees = 200, interaction.depth = 3, n.minobsinnode = 100)
-boosted_model_max <- gbm(y_var_train ~ . , data =df_gbm_max_rep_train, distribution = 'gaussian', n.trees = 230, interaction.depth = 3, n.minobsinnode = 100)
-boosted_model_min <- gbm(y_var_train ~ . , data =df_gbm_min_rep_train, distribution = 'gaussian', n.trees = 245, interaction.depth = 3, n.minobsinnode = 100)
 
-df_gbm_mean_rep_test <-data.frame(y_var_test, x_vars_mean_test)
-df_gbm_max_rep_test <-data.frame(y_var_test, x_vars_max_test)
-df_gbm_min_rep_test <-data.frame(y_var_test, x_vars_min_test)
+# boosted models - FILL IN PARAMETERS
+boosted_model_mean_300 <- gbm(y_var_train ~ . , data =df_gbm_mean_rep_train_300, distribution = 'gaussian', n.trees = 195, interaction.depth = 3, n.minobsinnode = 100)
+boosted_model_max_300 <- gbm(y_var_train ~ . , data =df_gbm_max_rep_train_300, distribution = 'gaussian', n.trees = 195, interaction.depth = 3, n.minobsinnode = 100)
+boosted_model_min_300 <- gbm(y_var_train ~ . , data =df_gbm_min_rep_train_300, distribution = 'gaussian', n.trees = 120, interaction.depth = 3, n.minobsinnode = 100)
+boosted_model_mean_500 <- gbm(y_var_train ~ . , data =df_gbm_mean_rep_train_500, distribution = 'gaussian', n.trees = 200, interaction.depth = 3, n.minobsinnode = 200)
+boosted_model_max_500 <- gbm(y_var_train ~ . , data =df_gbm_max_rep_train_500, distribution = 'gaussian', n.trees = 100, interaction.depth = 3, n.minobsinnode = 100)
+boosted_model_min_500 <- gbm(y_var_train ~ . , data =df_gbm_min_rep_train_500, distribution = 'gaussian', n.trees = 60, interaction.depth = 3, n.minobsinnode = 100)
 
-pred_gbm_mean <- predict(boosted_model_mean, df_gbm_mean_rep_test)
-pred_gbm_max <- predict(boosted_model_max, df_gbm_max_rep_test)
-pred_gbm_min <- predict(boosted_model_min, df_gbm_min_rep_test)
+# get the test dataframe
+df_gbm_mean_rep_test_300 <-data.frame(y_var_test, x_vars_mean_300_test)
+df_gbm_max_rep_test_300 <-data.frame(y_var_test, x_vars_max_300_test)
+df_gbm_min_rep_test_300 <-data.frame(y_var_test, x_vars_min_300_test)
+df_gbm_mean_rep_test_500 <-data.frame(y_var_test, x_vars_mean_500_test)
+df_gbm_max_rep_test_500 <-data.frame(y_var_test, x_vars_max_500_test)
+df_gbm_min_rep_test_500 <-data.frame(y_var_test, x_vars_min_500_test)
 
-MSE_gbm_mean <- mean((pred_gbm_mean - y_var_test)^2)
-MSE_gbm_max <- mean((pred_gbm_max - y_var_test)^2)
-MSE_gbm_min <- mean((pred_gbm_min - y_var_test)^2)
+# get the predictions
+pred_gbm_mean_300 <- predict(boosted_model_mean_300, df_gbm_mean_rep_test_300)
+pred_gbm_max_300 <- predict(boosted_model_max_300, df_gbm_max_rep_test_300)
+pred_gbm_min_300 <- predict(boosted_model_min_300, df_gbm_min_rep_test_300)
+pred_gbm_mean_500 <- predict(boosted_model_mean_500, df_gbm_mean_rep_test_500)
+pred_gbm_max_500 <- predict(boosted_model_max_500, df_gbm_max_rep_test_500)
+pred_gbm_min_500 <- predict(boosted_model_min_500, df_gbm_min_rep_test_500)
 
-MAE_gbm_mean <- mean(abs(pred_gbm_mean - y_var_test))
-MAE_gbm_max <- mean(abs(pred_gbm_max - y_var_test))
-MAE_gbm_min <- mean(abs(pred_gbm_min - y_var_test))
+# MSE and MAE
+MSE_gbm_mean_300 <- mean((pred_gbm_mean_300 - y_var_test)^2)
+MSE_gbm_max_300 <- mean((pred_gbm_max_300 - y_var_test)^2)
+MSE_gbm_min_300 <- mean((pred_gbm_min_300 - y_var_test)^2)
+MSE_gbm_mean_500 <- mean((pred_gbm_mean_500 - y_var_test)^2)
+MSE_gbm_max_500 <- mean((pred_gbm_max_500 - y_var_test)^2)
+MSE_gbm_min_500 <- mean((pred_gbm_min_500 - y_var_test)^2)
 
-residual_MAE_gbm_max = abs(pred_gbm_max_backtransformed - y_var_test)
+MAE_gbm_mean_300 <- mean(abs(pred_gbm_mean_300 - y_var_test))
+MAE_gbm_max_300 <- mean(abs(pred_gbm_max_300 - y_var_test))
+MAE_gbm_min_300 <- mean(abs(pred_gbm_min_300 - y_var_test))
+MAE_gbm_mean_500 <- mean(abs(pred_gbm_mean_500 - y_var_test))
+MAE_gbm_max_500 <- mean(abs(pred_gbm_max_500 - y_var_test))
+MAE_gbm_min_500 <- mean(abs(pred_gbm_min_500 - y_var_test))
+
+
+
+df_result = data.frame(MSE = c(MSE_gbm_mean_300, MSE_gbm_max_300, MSE_gbm_min_300, MSE_gbm_mean_500, MSE_gbm_max_500, MSE_gbm_min_500),
+                       MAE = c(MAE_gbm_mean_300, MAE_gbm_max_300, MAE_gbm_min_300, MAE_gbm_mean_500, MAE_gbm_max_500, MAE_gbm_min_500))
+
+round(df_result,1)
 
 # plot residuals
-df_residuals = data.frame(GBM = residual_MAE_gbm_max, 
-                          elastic = abs(pred_elastic_min_backtransformed - y_var_test), 
-                          linear =abs(pred_linear_model_max_backtransformed - y_var_test))
+df_residuals = data.frame(GBM = abs(pred_gbm_mean - y_var_test), 
+                          elastic = abs(pred_elastic_mean - y_var_test), 
+                          linear =abs(pred_linear_model_mean - y_var_test))
+
+df_full_residuals = cbind(df_full[-train_indeces,] %>% filter(!is.na(citations) & !is.na(year)),df_residuals)
 
 colnames(df_residuals) <- c('Gradient Boosting', 'Elastic Net', 'Linear Regression')
 df_residuals_melted = melt(df_residuals)
@@ -513,3 +575,6 @@ ggplot(data = df_residuals_melted, aes(x = value, fill = variable)) +
   labs(fill = 'Type of model')+
   facet_grid(~variable)+
   theme(text = element_text(size=14))
+
+
+

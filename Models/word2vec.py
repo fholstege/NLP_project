@@ -7,13 +7,14 @@ import matplotlib as plt
 import numpy as np
 from nltk.stem import WordNetLemmatizer 
 from pandas.core.common import flatten
-
+import pandas as pd
 
 # read merged files, get body of text, adapt index
 
 # stack data from all journals
-df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
+df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged.gzip')
 df = df.reset_index()
+len(df.index)
 
 # split the texts
 texts = [row.split() for row in df['body_lemmatized'].str.lower().tolist()]
@@ -31,7 +32,7 @@ test_texts = [texts[j] for j in test_indeces]
 
 
 # get the number of cores
-cores = multiprocessing.cpu_count()
+cores = multiprocessing.cpu_count() - 4
 
 
 # window: 5, why? what other words (of any type) are used in related discussions? Smaller windows tend to capture more about word itself: what other words are functionally similar?
@@ -39,7 +40,8 @@ cores = multiprocessing.cpu_count()
 window = 5
 # size = dimensionality of the vector; needs to be a lot lower than the vocabulary
 # mikolov: 300
-size = 300 
+size_1 = 300 
+size_2 = 500
 
 # alpha: learning rate
 alpha = 0.025 
@@ -51,24 +53,32 @@ negative = 5
 sg = 0
 
 # train word2vec on training set
-w2v_model = Word2Vec(train_texts,
+w2v_model_300 = Word2Vec(train_texts,
                      window=window,
-                     size=size,
+                     size=size_1,
                      alpha = alpha,
                      negative = negative,
                      sg = sg,
-                     workers=cores-1)
+                     workers=cores)
+# train word2vec on training set
+w2v_model_500 = Word2Vec(train_texts,
+                     window=window,
+                     size=size_2,
+                     alpha = alpha,
+                     negative = negative,
+                     sg = sg,
+                     workers=cores)
 
 
 
 
 # summarize for couple of common words which words are similar
-def get_table_similar(words):
+def get_table_similar(words, model):
     
     dict_words = {element:0 for element in words}
     
     for word in words:
-        similar_words = w2v_model.most_similar(word)
+        similar_words = model.most_similar(word)
         
         list_similar_words = []
         
@@ -82,9 +92,15 @@ def get_table_similar(words):
 
 # get table of common words 
 check_words = ['effect', 'product', 'research', 'brand']
-df_common_words = pd.DataFrame(get_table_similar(check_words))
-df_common_words.index = list(range(1,10+1,1))
-df_common_words.to_latex()
+
+# 300 
+df_common_words_300 = pd.DataFrame(get_table_similar(check_words, w2v_model_300))
+df_common_words_300.index = list(range(1,10+1,1))
+
+# 500
+df_common_words_500 = pd.DataFrame(get_table_similar(check_words, w2v_model_500))
+df_common_words_500.index = list(range(1,10+1,1))
+print(df_common_words_500.to_latex())
 
 
 
@@ -108,38 +124,59 @@ def document_vector_min(doc, w2v_model):
 
 
 
-list_doc_representation_mean = [document_vector_mean(doc, w2v_model) for doc in texts ]
-list_doc_representation_max = [document_vector_max(doc, w2v_model) for doc in texts ]
-list_doc_representation_min = [document_vector_min(doc, w2v_model) for doc in texts ]
-
-names_mean = ['mean_dim_' + str(i) for i in range(1,size + 1)]
-names_max = ['max_dim_' + str(i) for i in range(1,size + 1)]
-names_min = ['min_dim_' + str(i) for i in range(1,size + 1)]
+list_doc_representation_mean_300 = [document_vector_mean(doc, w2v_model_300) for doc in texts ]
+list_doc_representation_max_300 = [document_vector_max(doc, w2v_model_300) for doc in texts ]
+list_doc_representation_min_300 = [document_vector_min(doc, w2v_model_300) for doc in texts ]
 
 
-df_doc_representation_mean = pd.DataFrame(list_doc_representation_mean)
-df_doc_representation_max = pd.DataFrame(list_doc_representation_max)
-df_doc_representation_min = pd.DataFrame(list_doc_representation_min)
-
-df_doc_representation_mean.columns = names_mean
-df_doc_representation_max.columns = names_max
-df_doc_representation_min.columns = names_min
+list_doc_representation_mean_500 = [document_vector_mean(doc, w2v_model_500) for doc in texts ]
+list_doc_representation_max_500 = [document_vector_max(doc, w2v_model_500) for doc in texts ]
+list_doc_representation_min_500 = [document_vector_min(doc, w2v_model_500) for doc in texts ]
 
 
-df_doc_representation_mean['citations']= df['citations']
-df_doc_representation_max['citations']= df['citations']
-df_doc_representation_min['citations']= df['citations']
+
+names_mean_300 = ['mean_dim_' + str(i) for i in range(1,size_1 + 1)]
+names_max_300 = ['max_dim_' + str(i) for i in range(1,size_1 + 1)]
+names_min_300 = ['min_dim_' + str(i) for i in range(1,size_1 + 1)]
 
 
-df_doc_representation_mean['train_set'] = train_bool
-df_doc_representation_max['train_set'] = train_bool
-df_doc_representation_min['train_set'] = train_bool
+
+names_mean_500 = ['mean_dim_' + str(i) for i in range(1,size_2 + 1)]
+names_max_500 = ['max_dim_' + str(i) for i in range(1,size_2 + 1)]
+names_min_500 = ['min_dim_' + str(i) for i in range(1,size_2 + 1)]
 
 
-df_doc_representation_mean.to_parquet('../data/representations/word2vec_doc_representation_mean.gzip',compression='gzip')
-df_doc_representation_max.to_parquet('../data/representations/word2vec_doc_representation_max.gzip', compression='gzip')
-df_doc_representation_min.to_parquet('../data/representations/word2vec_doc_representation_min.gzip', compression='gzip')
+def create_df_representation(list_representation, names):
+    df_representation = pd.DataFrame(list_representation)
+    df_representation.columns = names
+    df_representation['citations'] = df['citations']
+    df_representation['train_set']  = train_bool
+    df_representation['year']  = df['year']
+    df_representation['DOI'] = df['DOI']
+    
+    return df_representation
 
+
+    
+df_doc_representation_mean_300 = create_df_representation(list_doc_representation_mean_300, names_mean_300)
+df_doc_representation_max_300 = create_df_representation(list_doc_representation_max_300, names_max_300)
+df_doc_representation_min_300 = create_df_representation(list_doc_representation_min_300, names_min_300)
+
+df_doc_representation_mean_500 = create_df_representation(list_doc_representation_mean_500, names_mean_500)
+df_doc_representation_max_500 = create_df_representation(list_doc_representation_max_500, names_max_500)
+df_doc_representation_min_500 = create_df_representation(list_doc_representation_min_500, names_min_500)
+
+
+
+
+df_doc_representation_mean_300.to_parquet('../data/representations/word2vec_doc_representation_300_mean.gzip',compression='gzip')
+df_doc_representation_max_300.to_parquet('../data/representations/word2vec_doc_representation_300_max.gzip', compression='gzip')
+df_doc_representation_min_300.to_parquet('../data/representations/word2vec_doc_representation_300_min.gzip', compression='gzip')
+
+
+df_doc_representation_mean_500.to_parquet('../data/representations/word2vec_doc_representation_500_mean.gzip',compression='gzip')
+df_doc_representation_max_500.to_parquet('../data/representations/word2vec_doc_representation_500_max.gzip', compression='gzip')
+df_doc_representation_min_500.to_parquet('../data/representations/word2vec_doc_representation_500_min.gzip', compression='gzip')
 
 
 

@@ -208,8 +208,7 @@ get_predictions <- function(df_predictions,
   ####################
   if(type_model == 'elastic net'){
     
-    print("CORRECT")
-    
+
     model_matrix_train <- model.matrix(citations~. , df_train)
     model_matrix_test <- model.matrix(citations~. , df_test)
     
@@ -257,8 +256,6 @@ get_predictions <- function(df_predictions,
     }
     
     
-    print('grid search done')
-    
     opt_index <- which.min(result_grid_search$cv_error)
     opt_n_tree <- result_grid_search[opt_index, ]$n_tree
     opt_min_obs <- result_grid_search[opt_index, ]$min_obs
@@ -273,7 +270,7 @@ get_predictions <- function(df_predictions,
     }
     
     MSE <- mean((predictions - df_test$citations)^2)
-    MSE <- mean(abs(predictions - df_test$citations))
+    MAE <- mean(abs(predictions - df_test$citations))
     
     
     result = list('predictions'= c(predictions), 'MSE' = MSE,'MAE' = MAE)
@@ -294,8 +291,7 @@ get_predictions <- function(df_predictions,
       
       
     }else{
-      print('incorrect')
-      
+
       
       model_train <- modelObj(citations ~ ., data = df_train, ...)
       predictions <- predict(model_train, df_test)
@@ -404,6 +400,7 @@ n_min_obs_node_seq = c(100,200)
 df_param <- expand.grid(interaction_depth_seq, n_min_obs_node_seq)
 colnames(df_param) <- c('interaction_depth', 'min_obs')
 
-
-
 result_GBM_BERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_trees = 200)
+result_GBM_SCIBERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_trees = 200)
+result_GBM_ROBERTA <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_trees = 200)
+
