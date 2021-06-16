@@ -506,18 +506,17 @@ df_result_all_MSE_gbm_melted = df_result_gbm_all_MSE %>%
 # reveals best param
 compare_BERT_predictions(df_BERT_final, c('min_CLS'), modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_trees = 200)
 
-
+# get the dataframe, train test split
 df_BERT_min_CLS =  create_df_for_prediction( 'min_CLS', df_BERT_final)
+set.seed(12345678)
 
-set.seed(6)
+# get a gbm model
+gbm_BERT_min_CLS = gbm(citations ~ . , data = df_BERT_min_CLS, distribution = 'gaussian', n.trees = 20, interaction.depth = 3, n.minobsinnode = 100)
+pred_BERT_min_CLS = predict(gbm_BERT_min_CLS,df_BERT_min_CLS )
 
-train_sample <- sample.split(df_BERT_min_CLS$citations, SplitRatio = 0.7)
-df_BERT_min_CLS_train <- subset(df_BERT_min_CLS, train_sample == TRUE)
-df_BERT_min_CLS_test <- subset(df_BERT_min_CLS, train_sample == FALSE)
-gbm_BERT_min_CLS = gbm(citations ~ . , data = df_BERT_min_CLS_train, distribution = 'gaussian', n.trees = 21, interaction.depth = 3, n.minobsinnode = 100)
-pred_BERT_min_CLS = predict(gbm_BERT_min_CLS,df_BERT_min_CLS_test )
+df_DOI_gbm_min_CLS_pred = data.frame(DOI = df_BERT$DOI, prediction_gbm_min_CLS = pred_BERT_min_CLS)
 
-df_DOI_test = subset(df_BERT$DOI, train_sample == FALSE)
-df_DOI_gbm_min_CLS_pred = data.frame(DOI = df_DOI_test, prediction_gbm_min_CLS = pred_BERT_min_CLS)
-
-df_features_prediction_test = cbind(df_features_test, pred_BERT_min_CLS)
+df_features_prediction_test = cbind(df_DOI_gbm_min_CLS_pred, df_BERT_min_CLS)
+df_full_noText = df_full %>% select(-title, -abstract, -body, -keywords)
+df_allInfo_prediction_test = merge(df_features_prediction_test, df_full_noText, on = 'DOI')
+write_csv( df_allInfo_prediction_test , 'allInfo_min_CLS_GBM_prediction_all.csv')

@@ -107,7 +107,9 @@ grid.arrange(citation_plot,altmetric_plot, ncol=2)
 
 
 ## plot topics over time
-topic_interpretations = c('Identity marketing','Luxury products', 'Customer Services', 'Advertising', 'Consumption', 'Digital Marketing', 'Store Promotion', 'Marketing Experiments', 'Business Marketing', 'Customer Relations')
+topic_interpretations = c('Decision-Making','Entertainment', 'Investment', 'Socioeco.Status', 'Promotions',
+                          'Ad. Campaigns', 'Social Responsibility', 'International', 'Advertisement', 'Utility models',
+                          'Digital Marketing', 'Food', 'Psychology', 'Treatments', 'Services', 'Retail', 'Money', 'Pricing', 'Sales', 'Experiment', )
 
 # get which topic number is which topic name
 list_name_topics <- lapply(df_full$Topic, function(x){
