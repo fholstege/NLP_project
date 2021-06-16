@@ -286,7 +286,7 @@ def standard_cleaner(document):
     # replace multiple dots by space
     doc = re.sub(r'\.{2,}', ' ', doc)
 
-    # remove non-alphanumeric characters (not for BERT)
+    # remove non-alphanumeric characters
     doc = re.sub(r'[\^&*_#@&\+\[\]\|=±\/]', ' ', doc)
     
     # remove additional math symbols
@@ -321,7 +321,7 @@ def standard_cleaner(document):
 
 # function to remove NUM tags
 def remove_NUM_tag(document):
-    return re.sub('\[NUM\]', '', document)
+    return re.sub('NUM', '', document)
 
 def remove_stopwords(stopword_list, word_tokens):
     

@@ -191,5 +191,5 @@ for data_type in data_types:
         df['title_lemmatized'] = 'NA'
         
     # save new dataframe
-    df.to_parquet('../data/clean/all_journals' + data_type + '.gzip')
+    df.to_parquet('../data/clean/all_journals' + data_type + '.gzip', compression='gzip')
     print('all_journals' + data_type + ' saved')
