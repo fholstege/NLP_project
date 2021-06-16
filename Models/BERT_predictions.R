@@ -15,7 +15,8 @@ pacman::p_load(reticulate,
                gridExtra,
                caTools,
                caret,
-               Metrics) 
+               Metrics,
+               xtable) 
 
 
 # add repository to make mclapply() run in parallel (only necessary on windows)
@@ -62,6 +63,7 @@ df_ROBERTA$year <- df_full$year
 
 
 vec_poolings =colnames(df_BERT)[2:31]
+
 
 df_BERT_final <- df_BERT %>%
   select(citations, year, vec_poolings)
@@ -255,11 +257,14 @@ get_predictions <- function(df_predictions,
       result_grid_search <- grid_search_gbm( citations ~ . , df_var =df_train, df_param_gbm , K, n_trees)
     }
     
+
     
     opt_index <- which.min(result_grid_search$cv_error)
     opt_n_tree <- result_grid_search[opt_index, ]$n_tree
     opt_min_obs <- result_grid_search[opt_index, ]$min_obs
     opt_interaction_depth <- result_grid_search[opt_index, ]$interaction_depth
+    
+    print(paste0('n trees: ', opt_n_tree, ' - ', opt_min_obs, ' - ', opt_interaction_depth))
     
     boosted_model <- gbm(citations ~ . , data =df_train, distribution = 'gaussian', n.trees = opt_n_tree, interaction.depth = opt_interaction_depth, n.minobsinnode = opt_min_obs)
     
@@ -315,7 +320,7 @@ get_predictions <- function(df_predictions,
 
 
 
-compare_BERT_predictions <- function(df, vector_poolings, modelObj, type_model = NA, cv_param_choose = FALSE,log_transformation = FALSE,lambda_cv = NA, alpha_cv = NA,K=NA,n_trees = 200,...){
+compare_BERT_predictions <- function(df, vec_poolings, modelObj, type_model = NA, cv_param_choose = FALSE,log_transformation = FALSE,lambda_cv = NA, alpha_cv = NA,K=NA,n_trees = 200,...){
   
   
   list_result_per_pooling <- lapply(vec_poolings, function(name_pooling){
@@ -358,18 +363,6 @@ compare_BERT_predictions <- function(df, vector_poolings, modelObj, type_model =
 
 
 
-# define linear regression with MAE
-#maeSummary <- function (data,
-#                        lev = NULL,
-#                        model = NULL) {
-  
-  
-#  out <- mae(data$obs, data$pred)  
-#  names(out) <- "MAE"
-#  out
-#}
-
-#mControl <- trainControl(summaryFunction = maeSummary)
 
 
 # get results for MAE 
@@ -377,6 +370,15 @@ results_linearRegression_BERT <- compare_BERT_predictions(df_BERT_final, vec_poo
 results_linearRegression_SCIBERT <- compare_BERT_predictions(df_SCIBERT_final, vec_poolings, modelObj = lm,  type_model = 'lm type',log_transformation = FALSE)
 results_linearRegression_ROBERTa <- compare_BERT_predictions(df_ROBERTA_final, vec_poolings,  modelObj = lm,  type_model = 'lm type',log_transformation = FALSE)#train, method = "lm", metric = "MAE", maximize = FALSE, trControl = mControl)
 
+df_linearRegression_BERT_MSE_result <- results_linearRegression_BERT$df_MSE
+df_linearRegression_SCIBERT_MSE_result <- results_linearRegression_SCIBERT$df_MSE
+df_linearRegression_ROBERTA_MSE_result <- results_linearRegression_ROBERTa$df_MSE
+colnames(df_linearRegression_BERT_MSE_result) <- c('MSE_BERT', 'Pooling')
+colnames(df_linearRegression_SCIBERT_MSE_result) <- c('MSE_SCIBERT', 'Pooling')
+colnames(df_linearRegression_ROBERTA_MSE_result) <- c('MSE_ROBERTA', 'Pooling')
+
+df_result_BERT_SCIBERT_MSE_linearRegression = merge(df_linearRegression_BERT_MSE_result,df_linearRegression_SCIBERT_MSE_result, on = 'Pooling' )
+df_result_all_MSE_linearRegression = merge(df_result_BERT_SCIBERT_MSE_linearRegression,df_linearRegression_ROBERTA_MSE_result, on = 'Pooling' )
 
 
 ###########
@@ -387,6 +389,16 @@ result_elasticNet_BERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, 
 result_elasticNet_SCIBERT <- compare_BERT_predictions(df_SCIBERT_final, vec_poolings, modelObj = NA,type_model = 'elastic net', cv_param_choose = TRUE, alpha_cv = c(0,0.5,1), lambda_cv = c( 0.1, 1, 10,100), K = 4)
 result_elasticNet_ROBERTA <- compare_BERT_predictions(df_ROBERTA_final, vec_poolings, modelObj = NA,type_model = 'elastic net', cv_param_choose = TRUE, alpha_cv = c(0,0.5,1), lambda_cv = c( 0.1, 1, 10,100), K = 4)
 
+
+df_elastic_net_BERT_MSE_result <- result_elasticNet_BERT$df_MSE
+df_elastic_net_SCIBERT_MSE_result <- result_elasticNet_SCIBERT$df_MSE
+df_elastic_net_ROBERTA_MSE_result <- result_elasticNet_ROBERTA$df_MSE
+colnames(df_elastic_net_BERT_MSE_result) <- c('MSE_BERT', 'Pooling')
+colnames(df_elastic_net_SCIBERT_MSE_result) <- c('MSE_SCIBERT', 'Pooling')
+colnames(df_elastic_net_ROBERTA_MSE_result) <- c('MSE_ROBERTA', 'Pooling')
+
+df_result_BERT_SCIBERT_MSE_elastic_net = merge(df_elastic_net_BERT_MSE_result,df_elastic_net_SCIBERT_MSE_result, on = 'Pooling' )
+df_result_all_MSE_elastic_net = merge(df_result_BERT_SCIBERT_MSE_elastic_net,df_elastic_net_ROBERTA_MSE_result, on = 'Pooling' )
 
 
 
@@ -404,3 +416,108 @@ result_GBM_BERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelOb
 result_GBM_SCIBERT <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_trees = 200)
 result_GBM_ROBERTA <- compare_BERT_predictions(df_BERT_final, vec_poolings, modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_trees = 200)
 
+
+
+
+
+df_GBM_BERT_MSE_result_gbm <- result_GBM_BERT$df_MSE
+df_GBM_SCIBERT_MSE_result_gbm <- result_GBM_SCIBERT$df_MSE
+df_GBM_ROBERTA_MSE_result_gbm <- result_GBM_ROBERTA$df_MSE
+colnames(df_GBM_BERT_MSE_result_gbm) <- c('MSE_BERT', 'Pooling')
+colnames(df_GBM_SCIBERT_MSE_result_gbm) <- c('MSE_SCIBERT', 'Pooling')
+colnames(df_GBM_ROBERTA_MSE_result_gbm) <- c('MSE_ROBERTA', 'Pooling')
+
+
+df_result_BERT_SCIBERT_MSE_gbm = merge(df_GBM_BERT_MSE_result_gbm,df_GBM_SCIBERT_MSE_result_gbm, on = 'Pooling' )
+df_result_gbm_all_MSE = merge(df_GBM_ROBERTA_MSE_result_gbm,df_result_BERT_SCIBERT_MSE_gbm, on = 'Pooling' )
+
+
+df_GBM_BERT_MAE_result_gbm <- result_GBM_BERT$df_MAE
+df_GBM_SCIBERT_MAE_result_gbm <- result_GBM_SCIBERT$df_MAE
+df_GBM_ROBERTA_MAE_result_gbm <- result_GBM_ROBERTA$df_MAE
+colnames(df_GBM_BERT_MAE_result_gbm) <- c('MAE_BERT', 'Pooling')
+colnames(df_GBM_SCIBERT_MAE_result_gbm) <- c('MAE_SCIBERT', 'Pooling')
+colnames(df_GBM_ROBERTA_MAE_result_gbm) <- c('MAE_ROBERTA', 'Pooling')
+
+df_result_BERT_SCIBERT_MAE_gbm = merge(df_GBM_BERT_MAE_result_gbm,df_GBM_SCIBERT_MAE_result_gbm, on = 'Pooling' )
+df_result_gbm_all_MAE_gbm = merge(df_result_BERT_SCIBERT_MAE_gbm,df_GBM_ROBERTA_MAE_result_gbm, on = 'Pooling' )
+
+
+#################
+# Create latex output for all
+################
+order_latex = c('min_CLS', 'max_CLS', 'mean_CLS', 
+                'last_min_min', 'last_min_max', 'last_min_mean', 
+                'last_max_min', 'last_max_max', 'last_max_mean', 
+                'last_mean_min', 'last_mean_max', 'last_mean_mean',
+                'second_last_min_min', 'second_last_min_max', 'second_last_min_mean', 
+                'second_last_max_min', 'second_last_max_max', 'second_last_max_mean', 
+                'second_last_mean_min', 'second_last_mean_max', 'second_last_mean_mean', 
+                'third_last_min_min', 'third_last_min_max', 'third_last_min_mean', 
+                'third_last_max_min', 'third_last_max_max', 'third_last_max_mean', 
+                'third_last_mean_min', 'third_last_mean_max', 'third_last_mean_mean'
+                )
+
+##### Linear regression
+df_results_linearRegression_all_MSE_table = df_result_all_MSE_linearRegression%>%
+  slice(match(order_latex, Pooling)) %>%
+  mutate(SCIBERT_MIN_BERT = MSE_SCIBERT - MSE_BERT,
+         ROBERTA_MIN_BERT = MSE_ROBERTA - MSE_BERT) %>%
+  select( MSE_BERT, SCIBERT_MIN_BERT,ROBERTA_MIN_BERT )
+df_results_linearRegression_all_MSE_table
+xtable(df_results_linearRegression_all_MSE_table, type = "latex")
+
+##### Elastic net
+df_results_elastic_net_all_MSE_table = df_result_all_MSE_elastic_net%>%
+  slice(match(order_latex, Pooling)) %>%
+  mutate(SCIBERT_MIN_BERT = MSE_SCIBERT - MSE_BERT,
+         ROBERTA_MIN_BERT = MSE_ROBERTA - MSE_BERT) %>%
+  select(Pooling, MSE_BERT, SCIBERT_MIN_BERT,ROBERTA_MIN_BERT )
+df_results_elastic_net_all_MSE_table
+xtable(df_results_elastic_net_all_MSE_table, type = "latex")
+
+##### GBM 
+df_results_GBM_all_MSE_table = df_result_gbm_all_MSE%>%
+  slice(match(order_latex, Pooling)) %>%
+  mutate(SCIBERT_MIN_BERT = MSE_SCIBERT - MSE_BERT,
+         ROBERTA_MIN_BERT = MSE_ROBERTA - MSE_BERT) %>%
+  select(Pooling, MSE_BERT, SCIBERT_MIN_BERT,ROBERTA_MIN_BERT )
+df_results_GBM_all_MSE_table
+xtable(df_results_GBM_all_MSE_table, type = "latex")
+
+df_result_all_MSE_linearRegression$model_type = 'linear regression'
+df_result_all_MSE_elastic_net$model_type = 'elastic net'
+df_result_gbm_all_MSE$model_type = 'GBM'
+
+
+# check best for each
+df_result_all_MSE_linearRegression_melted = df_result_all_MSE_linearRegression %>%
+  melt(id_vars = c('Pooling', 'model_type'))
+df_result_all_MSE_linearRegression_melted
+
+df_result_all_MSE_elastic_net_melted = df_result_all_MSE_elastic_net %>%
+  melt(id_vars = c('Pooling', 'model_type'))
+df_result_all_MSE_elastic_net_melted
+
+df_result_all_MSE_gbm_melted = df_result_gbm_all_MSE %>%
+  melt(id_vars = c('Pooling', 'model_type'))
+
+# From the best one, get predictions
+# reveals best param
+compare_BERT_predictions(df_BERT_final, c('min_CLS'), modelObj = gbm,cv_param_choose = TRUE, df_param_gbm = df_param, K = 4, type_model = 'gbm', n_trees = 200)
+
+
+df_BERT_min_CLS =  create_df_for_prediction( 'min_CLS', df_BERT_final)
+
+set.seed(6)
+
+train_sample <- sample.split(df_BERT_min_CLS$citations, SplitRatio = 0.7)
+df_BERT_min_CLS_train <- subset(df_BERT_min_CLS, train_sample == TRUE)
+df_BERT_min_CLS_test <- subset(df_BERT_min_CLS, train_sample == FALSE)
+gbm_BERT_min_CLS = gbm(citations ~ . , data = df_BERT_min_CLS_train, distribution = 'gaussian', n.trees = 21, interaction.depth = 3, n.minobsinnode = 100)
+pred_BERT_min_CLS = predict(gbm_BERT_min_CLS,df_BERT_min_CLS_test )
+
+df_DOI_test = subset(df_BERT$DOI, train_sample == FALSE)
+df_DOI_gbm_min_CLS_pred = data.frame(DOI = df_DOI_test, prediction_gbm_min_CLS = pred_BERT_min_CLS)
+
+df_features_prediction_test = cbind(df_features_test, pred_BERT_min_CLS)
