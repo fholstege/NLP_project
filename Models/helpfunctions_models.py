@@ -4,6 +4,7 @@ from gensim.models import ldamodel
 import logging
 from gensim.models.coherencemodel import CoherenceModel
 import sklearn.metrics as metrics
+from sklearn.model_selection import KFold
 import numpy as np
 
 def regression_results(y_true, y_pred):
@@ -43,7 +44,6 @@ def get_K_folds_from_corpus_list(corpus_list, K):
 
     """
     
-    
     size = len(corpus_list)
     size_fold = int(round(size/K,0))
     indeces_corpus = [i for i in range(0, len(corpus_list))]
@@ -74,7 +74,7 @@ def get_K_folds_from_corpus_list(corpus_list, K):
 
             
 
-def get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, coherence_measure='u_mass'):
+def get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, passes, coherence_measure='u_mass'):
     """
     
 
@@ -88,6 +88,8 @@ def get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, cohe
         dictionary for lda.
     K : int
         number of folds.
+    passes: int
+        number of passes over corpus
 
     Returns
     -------
@@ -98,13 +100,14 @@ def get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, cohe
     list_of_fold_indeces = get_K_folds_from_corpus_list(corpus_list, K)
     fold_perplexity = []
     fold_coherence = []
+    number_of_topics = []
     
     for fold_indeces in list_of_fold_indeces:
         
         fold = [corpus_list[i] for i in fold_indeces]
         training_corpus = [corpus_list[j] for j in range(0, len(corpus_list)) if j not in fold_indeces]
     
-        lda_model = ldamodel.LdaModel(corpus=training_corpus, id2word=id2word, num_topics=n_topics)
+        lda_model = ldamodel.LdaModel(corpus=training_corpus, id2word=id2word, num_topics=n_topics, passes = passes, iterations=1000, chunksize=3300, minimum_probability=0.00)
         
         log_perplexity_fold = lda_model.log_perplexity(fold)
         coherence_model = CoherenceModel(model = lda_model, corpus=fold, coherence=coherence_measure)
@@ -117,19 +120,17 @@ def get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word, K, cohe
     
     return avg_perplexity, avg_coherence
 
-def check_n_topic_scores_CV(corpus_list, range_topics, id2word, K, coherence_measure = 'u_mass'):
+def check_n_topic_scores_CV(corpus_list, range_topics, id2word, K, passes = 1, coherence_measure = 'u_mass'):
     
-        
     # implement cross validation
     result_per_n_topics = []
     
     for n_topics in range_topics:
         
-        avg_perplexity, avg_coherence = get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word=id2word, K=K, coherence_measure = coherence_measure)
-        result_dict = {'avg_perplexity': avg_perplexity, 'avg_coherence':avg_coherence }
+        avg_perplexity, avg_coherence = get_perplexity_coherence_from_LDA_CV(corpus_list, n_topics, id2word=id2word, K=K, passes = passes, coherence_measure = coherence_measure)
+        result_dict = {'avg_perplexity': avg_perplexity, 'avg_coherence': avg_coherence}
         
         result_per_n_topics.append(result_dict)
-    
     
     dict_results = dict(enumerate(result_per_n_topics, start = 2))
     return dict_results
