@@ -58,6 +58,13 @@ for journal in journals:
     
 df_journals_raw = pd.concat(list_journals_raw)
 
+# concatenate all text together
+all_body_raw = df_journals_raw['body'].str.cat(sep= " ")
+
+# get top words for raw scraped data  
+n_unique_words_raw, top_words_body_raw = count_n_unique_top_words(all_body_raw, 10)
+n_unique_words_raw
+[word[0] for word in top_words_body_raw]
 
 
 n_articles_raw = len(df_journals_raw.index)
@@ -65,21 +72,29 @@ n_articles_raw = len(df_journals_raw.index)
 ####### Step 1: Remove in-text references, sub-titles, things inbetween brackets (basically everything for BERT) 
 
 
-list_journals_BERT = []
+# list_journals_BERT = []
 
-for journal in journals:
+# for journal in journals:
     
 
-    # load scraped data
-    df_BERT = pd.read_parquet('../Data/clean/' + journal + '_BERT.gzip')
-    list_journals_BERT.append(df_BERT)
+#     # load scraped data
+#     df_BERT = pd.read_parquet('../Data/clean/' + journal + '_BERT.gzip')
+#     list_journals_BERT.append(df_BERT)
     
+
+# read full data
+df_BERT = pd.read_parquet('../data/clean/all_journals_BERT_merged.gzip')
+
+# concatenate all text together
+all_body_BERT = df_BERT['body'].str.cat(sep= " ")
+
+
 
 # concat all together, get n of articles    
-all_body_BERT = concat_texts('body', list_journals_BERT)
-df_journals_BERT= pd.concat(list_journals_BERT)
-n_articles_BERT = len(df_journals_BERT.index)
-n_articles_BERT
+# all_body_BERT = concat_texts('body', list_journals_BERT)
+# df_journals_BERT= pd.concat(list_journals_BERT)
+# n_articles_BERT = len(df_journals_BERT.index)
+# n_articles_BERT
 
 # get top words for BERT    
 n_unique_words_BERT, top_words_body_BERT = count_n_unique_top_words(all_body_BERT, 10)
@@ -87,34 +102,41 @@ n_unique_words_BERT
 [word[0] for word in top_words_body_BERT]
 
 
-######## Step 2: remove stopwords, non-alphabetic, single words
+######## Step 2A: remove stopwords, non-alphabetic, single words
 
-list_journals_step2 = []
+# list_journals_step2 = []
 
-for journal in journals:
+# for journal in journals:
     
-    # load scraped data
-    df_step2 = pd.read_parquet('../Data/clean/' + journal + '_allWords_merged.gzip')
-    list_journals_step2.append(df_step2)
-    
+#     # load scraped data
+#     df_step2 = pd.read_parquet('../Data/clean/' + journal + '_allWords_merged.gzip')
+#     list_journals_step2.append(df_step2)
 
-# concat all together, get n of articles    
-all_body_step2 = concat_texts('body', list_journals_step2)
-df_journals_step2= pd.concat(list_journals_step2)
-n_articles_step2 = len(df_journals_step2.index)
+# read full data
+df_stop = pd.read_parquet('../data/clean/all_journals_AllWords_merged.gzip')
 
+# concatenate all text together
+all_body_stop = df_stop['body'].str.cat(sep= " ")
 
-
-
-# get top words for BERT    
-n_unique_words_step2, top_words_body_step2 = count_n_unique_top_words(all_body_step2, 10)
+# get top words  
+n_unique_words_step2, top_words_body_step2 = count_n_unique_top_words(all_body_stop, 10)
 n_unique_words_step2
-top_words_body_step2
+[word[0] for word in top_words_body_step2]
 
-######## Step 3: only adjectives and nouns 
+
+######## Step 3A: lemmatized
+
+all_body_step3A = ' '.join(df_stop['body_lemmatized'])
+n_unique_words_step3A, top_words_body_step3A = count_n_unique_top_words(all_body_step3A, 10)
+n_unique_words_step3A
+top_words_body_step3A
+
+
+
+######## Step 2B: only adjectives and nouns 
 
 # load scraped data
-df_full = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
+df_full = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged.gzip')
     
 
 # concat all together, get n of articles    
@@ -122,12 +144,12 @@ all_body_step3 = ' '.join(df_full['body'])
 n_articles_step3 = len(df_full.index)
 n_articles_step3
 
-# get top words for BERT    
+# get top words 
 n_unique_words_step3, top_words_body_step3 = count_n_unique_top_words(all_body_step3, 10)
 n_unique_words_step3
 top_words_body_step3
 
-######## Step 4: lemmatized
+######## Step 3B: lemmatized
 
 all_body_step4 = ' '.join(df_full['body_lemmatized'])
 n_unique_words_step4, top_words_body_step4 = count_n_unique_top_words(all_body_step4, 10)
