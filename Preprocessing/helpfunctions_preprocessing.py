@@ -361,4 +361,7 @@ def prepare_scopus(data_path, field_data, field_dict):
     for field in list(field_dict):
         output_df[field] = output_df[field]/output_df['refs_found']
         
+    # also for news field
+    output_df['News'] = output_df['News']/output_df['refs_found']
+        
     return output_df

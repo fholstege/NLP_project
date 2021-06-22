@@ -63,7 +63,7 @@ field_data = all_journals[['Title', 'Field']]
 field_data.columns = ['journal', 'field']
 
 # read altmetric data and clean
-alt_df = pd.read_csv('../data/raw/altmetric.csv')
+alt_df = pd.read_csv('../data/raw/altmetric.csv', encoding='cp1252')
 alt_df['Journal/Collection Title'].value_counts()
 cols = ['DOI', 'Altmetric Attention Score', 'News mentions', 'Blog mentions', 'Policy mentions', 'Twitter mentions', 'Facebook mentions', 'Reddit mentions', 'Wikipedia mentions', 'Number of Mendeley readers', 'Number of Dimensions citations']
 alt_df = alt_df[cols]
@@ -114,7 +114,7 @@ for data_type in data_types:
     result.dropna(subset=['DOI', 'Year'], inplace = True)
     
     # select columns of interest
-    select_cols = ['DOI', 'Year', 'title', 'title_lemmatized', 'abstract', 'abstract_lemmatized' ,'body', 'body_lemmatized', 'Source title', 'Cited by', 'Author Keywords', 'num_ref'] + list(result.columns[18:len(result.columns)])
+    select_cols = ['DOI', 'Year', 'title', 'title_lemmatized', 'abstract', 'abstract_lemmatized' ,'body', 'body_lemmatized', 'Source title', 'Cited by', 'Author Keywords', 'num_ref'] + list(result.columns[17:len(result.columns)])
     result = result[select_cols]
     
     result.rename(columns={"Year": "year", "Source title": "journal", "Cited by": "citations", 
