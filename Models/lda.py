@@ -17,7 +17,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 
 # stack data from all journals
-df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
+df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged.gzip')
 df = df.reset_index()
 df.columns
 
@@ -38,10 +38,10 @@ texts_list = [[word for word in document.split()] for document in df['body_lemma
 # construct word <-> id mappings used by the LDA model
 dictionary = Dictionary(texts_list) 
     
-# filter words that occur in less than 10% the documents (follow dynamic model paper)
+# filter words that occur in less than 25 documents
 # filter words that occur in more than 50% of the provided documents
 # keep_n = keep n most frequent tokens
-dictionary.filter_extremes(no_below=250, no_above=0.5, keep_n=100000)  
+dictionary.filter_extremes(no_below=25, no_above=0.5, keep_n=100000)  
 dictionary.compactify()
 # convert into bag of words format
 corpus = [dictionary.doc2bow(text) for text in texts_list]
@@ -51,35 +51,44 @@ len(id2word)
 
 # implement cross validation
 K = 4
-max_topics = 30
+max_topics = 20
 range_n_topics = range(2, max_topics + 1)
-result_cv = check_n_topic_scores_CV(corpus, range_n_topics, id2word, K, coherence_measure = 'c_v')
+result_cv = check_n_topic_scores_CV(corpus, range_n_topics, id2word, K, passes = 100, coherence_measure = 'u_mass')
 df_result_cv_lda = pd.DataFrame(result_cv).T
-df_result_cv_lda.round(2).to_latex()
+
+# create latex output
+table_df = df_result_cv_lda[['perplexity', 'avg_coherence']]
+table_df.round(2).to_latex()
+
+# compute perplexity
+df_result_cv_lda['perplexity'] = 2**(-df_result_cv_lda['avg_perplexity'])
+
+# save CV results
+df_result_cv_lda.to_parquet('../models/lda_cv_results.gzip', compression='gzip')
 
 # based on the CV
-n_topics = 10
+n_topics = 20
 Topic_names = ['Topic ' + str(i) for i in range(1,n_topics+1)]
 
 
 # original LDA model
-lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=n_topics, minimum_probability=0)
+lda_model = ldamodel.LdaModel(corpus=corpus, id2word=id2word, num_topics=n_topics, iterations=1000, passes=100, chunksize=2400, minimum_probability=0.0)
 lda_model.print_topics()
 lda_corpus = lda_model[corpus]
 
 def edit_tuple(x):
     return x[1]
 df_topics = pd.DataFrame(lda_corpus).applymap(edit_tuple)
-df_topics.columns =Topic_names 
+df_topics.columns = Topic_names 
 
 
-def get_max(doc):
-        idx,l = zip(*doc)
-        return idx[np.argmax(l)]
+# def get_max(doc):
+#         idx,l = zip(*doc)
+#         return idx[np.argmax(l)]
 
-doc_topics = [get_max(doc) for doc in lda_model.get_document_topics(corpus)]
-df_topics['Topic'] = doc_topics
-df_topics['Topic'] = df_topics['Topic']  + 1
+# doc_topics = [get_max(doc) for doc in lda_model.get_document_topics(corpus)]
+# df_topics['Topic'] = doc_topics
+# df_topics['Topic'] = df_topics['Topic']  + 1
 
 df_combined_info = pd.concat([df,df_topics], axis=1)
 df_combined_info.to_parquet("../Data/clean/all_journals_merged_topics.gzip", compression='gzip')

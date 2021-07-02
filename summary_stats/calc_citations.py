@@ -10,7 +10,7 @@ from matplotlib import cm
 
 
 # read the zipped files
-df_journals_merged = pd.read_parquet('../data/clean/all_journals_BERT_merged.gzip')
+df_journals_merged = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged.gzip')
 
 df_journals_merged.groupby('journal')['DOI'].count().sum(axis = 0)
 
