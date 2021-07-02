@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from IPython.display import display, Latex
 
-df_journals_merged = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
+df_journals_merged = pd.read_parquet('../data/clean/all_journals_adject_nouns_merged.gzip')
 
 # merge the journals in one dataframe, vertically
 df_journals_merged.columns
@@ -54,12 +54,12 @@ def extract_keywords(keywords_list, lemmatize = True, top = True, n=20,selected 
         return dict_selected_keywords
 
 # get top keywords
-top_keywords_alltime = extract_keywords(df_journals_merged['keywords'], n=20, top = True)
+top_keywords_alltime = extract_keywords(df_journals_merged['keywords'].str.lower(), n=20, top = True)
 top_keywords_list = list(top_keywords_alltime.keys())
 
 # get table
 df_top_keywords_alltime = pd.DataFrame({'keyword': top_keywords_alltime.keys(), 'count':top_keywords_alltime.values()})
-df_top_keywords_alltime.to_latex()
+df_top_keywords_alltime
 
 # get years
 years = df_journals_merged['year'].unique()
@@ -73,7 +73,7 @@ df_top_keywords['year'] = years_noNaN
 for year in years_noNaN:
     df_journals_year = df_journals_merged[df_journals_merged['year'] == year]
     
-    selected_keywords = extract_keywords(df_journals_year['keywords'], top = False,selected = top_keywords_list)
+    selected_keywords = extract_keywords(df_journals_year['keywords'].str.lower(), top = False,selected = top_keywords_list)
     
     for keyword, value in selected_keywords.items():
         df_top_keywords.loc[df_top_keywords['year'] == year, keyword] = value
@@ -88,8 +88,7 @@ colors = cm.get_cmap('tab20').colors
 index_color = 0
 
 top_keywords_list
-
-selected_keywords = [' Social media', ' Sustainability', 'Advertising', ' Innovation', ' Decision making', ' Emotions']
+selected_keywords = [' social influence', ' sustainability', ' innovation', ' word of mouth', ' social media']
 
 for top_keyword in selected_keywords:
     

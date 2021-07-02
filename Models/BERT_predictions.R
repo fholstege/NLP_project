@@ -520,3 +520,11 @@ df_features_prediction_test = cbind(df_DOI_gbm_min_CLS_pred, df_BERT_min_CLS)
 df_full_noText = df_full %>% select(-title, -abstract, -body, -keywords)
 df_allInfo_prediction_test = merge(df_features_prediction_test, df_full_noText, on = 'DOI')
 write_csv( df_allInfo_prediction_test , 'allInfo_min_CLS_GBM_prediction_all.csv')
+
+df_pred = read.csv('allInfo_min_CLS_GBM_prediction_all.csv')
+
+hist((df_pred$citations - df_pred$prediction_gbm_min_CLS), breaks = 30)
+errors = df_pred$citations - df_pred$prediction_gbm_min_CLS
+n_above_1000 = sum(errors >1000)
+
+quantile(errors, c(.9, .95, .995))

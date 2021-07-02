@@ -15,8 +15,6 @@
 ################################
 # 1) Load in packages, define help functions 
 ################################
-
-
 # Packes required for subsequent analysis. P_load ensures these will be installed and loaded. 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(reticulate,
@@ -31,7 +29,8 @@ pacman::p_load(reticulate,
                stargazer,
                gridExtra,
                caTools,
-               margins) 
+               margins,
+               RColorBrewer) 
 
 
 # add repository to make mclapply() run in parallel (only necessary on windows)
@@ -67,8 +66,7 @@ read_parquet <- function(path, columns = NULL) {
 
 
 # read in full dataset
-df_full = read_parquet('../data/clean/all_journals_merged_topics.gzip')
-colnames(df_full)
+df_full = read_parquet('../data/clean/all_journals_merged_topics_v1.gzip')
 
 ############################
 # 2) Define dependent variable
@@ -85,9 +83,11 @@ citation_plot <- ggplot(data = df_full,aes(x = citations) ) +
         legend.text = element_text(size=14))
 
 
+sum(ifelse(df_full$citations==1,1,0),na.rm = TRUE)/length(df_full$altmetric_score)
+
 # Altmetric 
 altmetric_plot <- ggplot(data = df_full,aes(x = altmetric_score )) + 
-  geom_histogram(bins = 20, color="black", fill="red") +
+  geom_histogram(bins = 50, color="black", fill="red") +
   labs(x = 'Altmetric Attention Score', y = 'Frequency') + 
   theme_bw()+ 
   theme(text = element_text(size=16), 
@@ -107,50 +107,61 @@ grid.arrange(citation_plot,altmetric_plot, ncol=2)
 
 
 ## plot topics over time
-topic_interpretations = c('Decision-Making','Entertainment', 'Investment', 'Socioeco.Status', 'Promotions',
-                          'Ad. Campaigns', 'Social Responsibility', 'International', 'Advertisement', 'Utility models',
-                          'Digital Marketing', 'Food', 'Psychology', 'Treatments', 'Services', 'Retail', 'Money', 'Pricing', 'Sales', 'Experiment', )
+topic_interpretations = c('Decision Making','Entertainment', 'Investment', 'Socioeco Status', 'Promotions',
+                          'Ad Campaigns', 'Social Responsibility', 'International', 'Advertisement', 'Utility models',
+                          'Digital Marketing', 'Food', 'Psychology', 'Treatments', 'Services', 'Retail', 'Money', 'Pricing', 'Sales', 'Experiment')
+
 
 # get which topic number is which topic name
-list_name_topics <- lapply(df_full$Topic, function(x){
+#list_name_topics <- lapply(df_full$Topic, function(x){
   
-  name_topic = topic_interpretations[x]
+#  name_topic = topic_interpretations[x]
   
-  return(name_topic)
-})
+#  return(name_topic)
+#})
 
 # change the variable
-df_full$Topic_name <- unlist(list_name_topics)
-colnames(df_full)[46:55] <- topic_interpretations
+colnames(df_full)[46:65] <- topic_interpretations
+
 
 # create df for regression and analysis
 df_topics <-  df_full %>%
-  select('journal', 'year', 'DOI','Topic_name', topic_interpretations) %>%
+  select('journal', 'year', 'DOI', topic_interpretations) %>%
   na.omit()
-df_topics
+
+df_topics_probs = df_topics[,-c(1,2,3)]
+df_topics_normalized = df_topics_probs/rowSums(df_topics_probs)
+
+df_topics[,-c(1,2,3)] <- df_topics_normalized
 
 df_topics_time <- df_topics %>%
-  select(-journal, -DOI, -Topic_name)%>%
+  select(-journal, -DOI)%>%
   melt(id.vars = 'year') %>%
   group_by(year, variable) %>%
   summarise(avg_prob = mean(value))
-colnames(df_topics_time) <- c('year', 'Topic_name', 'avg_prob')
 
+
+getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+
+
+topic_name_time_alphabetical = factor(df_topics_time$Topic_name, levels=sort(as.character(unique(df_topics_time$Topic_name))))
+df_topics_time$Topic_name = topic_name_time_alphabetical
 
 # plot it 
 ggplot(data = df_topics_time, aes(x = year, y = avg_prob*100, fill = Topic_name))+
   geom_area()+
   theme_bw()+
-  labs(x = 'Year', y = "Avg. Probability Of Being Assigned To Topic", fill = 'Topic') + 
-  scale_fill_brewer(palette="Set3")+
+  labs(x = 'Year', y = "Avg. Composition of Topics per Article", fill = 'Topic') + 
+  scale_fill_manual(values=getPalette(20))+
   theme(text = element_text(size=16), 
-        axis.text.x = element_text(size=16),
-        axis.text.y = element_text(size=16),
-        legend.text = element_text(size=14))
+        axis.text.x = element_text(size=20),
+        axis.text.y = element_text(size=20),
+        legend.text = element_text(size=16))
+
 
 # topics per journal
 df_topics_journals <- df_topics %>%
-  select(-year, -DOI, -Topic_name)%>%
+  select(-year, -DOI)%>%
   melt(id.vars = 'journal') %>%
   group_by(journal, variable)%>%
   summarise(avg_prob =mean(value)) %>%
@@ -159,56 +170,79 @@ colnames(df_topics_journals) <- c('journal', 'Topic_name', 'avg_prob')
 
 df_topics_journals <- df_topics_journals %>%
   mutate(journal = paste0(journal))
-df_topics_journals
+df_topics_journals[df_topics_journals$journal=='Journal of the Academy of Marketing Science',]$journal <- 'Journal of the Academy\n of Marketing Science'
+
+topic_name_journal_alphabetical = factor(df_topics_journals$Topic_name, levels=sort(as.character(unique(df_topics_journals$Topic_name))))
+df_topics_journals$Topic_name = topic_name_journal_alphabetical
 
 # plot it 
 ggplot(data = df_topics_journals, aes(y = avg_prob*100, x=journal, fill = Topic_name))+
   geom_bar(position = 'stack', stat="identity") + 
   theme_bw()+
-  labs(x = 'Topics', y = "Avg. Probability of being Assigned To Topic", fill = 'Topic') +
-  scale_fill_brewer(palette="Set3") + 
+  labs(x = 'Journal', y = "Avg. Composition of Topics per Article", fill = 'Topic') +
+  scale_fill_manual(values=getPalette(20)) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5)) + 
   theme(text = element_text(size=16), 
         axis.text.y = element_text(size=16),
-        legend.text = element_text(size=14))
+        legend.text = element_text(size=14)) 
 
 
-
-df_full %>%
-  select(DOI, citations, Topic_name) %>%
-  melt(id.vars = c('DOI', 'citations')) %>%
-  group_by(value) %>%
+############## CHeck baselines
+df_prob_citations_topic_journal = df_full %>%
+  select(DOI, citations,journal, topic_interpretations)%>%
+  melt(id.vars = c('DOI', 'citations', 'journal')) %>%
+  group_by(DOI,journal ,citations) %>%
+  summarise(assigned_topic = variable[which.max(value)]) %>%
+  group_by(assigned_topic, journal) %>%
   summarise(avg_citations = mean(citations, na.rm = TRUE),
             n_zero_citations = sum(ifelse(citations == 0, 1,0), na.rm = TRUE),
             n_papers = n(),
             perc_zero_citations = n_zero_citations/n_papers)
-  
-  
+  # retail has the MOST
+
+
+
+df_full %>%
+  select(DOI, altmetric_score, topic_interpretations) %>%
+  melt(id.vars = c('DOI', 'altmetric_score')) %>%
+  group_by(DOI, altmetric_score) %>%
+  summarise(assigned_topic = variable[which.max(value)]) %>%
+  group_by(assigned_topic) %>%
+  summarise(avg_altmetric= mean(altmetric_score, na.rm = TRUE),
+            n_zero_altmetric = sum(ifelse(altmetric_score == 0, 1,0), na.rm = TRUE),
+            n_papers = n(),
+            perc_zero_altmetric = n_zero_altmetric/n_papers)
+
 
 # for hurdle with citations
 df_topics_model_citations <- df_full %>%
   select('citations',topic_interpretations, 'year', 'journal') %>%
   na.omit() %>%
-  select(-`Customer Relations`) # this is the baseline variable
+  select(-Advertisement)
+
+# this is the baseline variable
 df_topics_model_citations$year <- as.factor(df_topics_model_citations$year)
 df_topics_model_citations$journal <- as.factor(paste0(df_topics_model_citations$journal))
 
 # estimate both parts of the hurdle model for citations
 binary_hurdle_citations = glm(ifelse(citations ==0, 1,0) ~ ., data = df_topics_model_citations, family = 'binomial')
-poisson_hurdle_citations = glm(citations ~ ., data = hurdle_citations$model %>% filter(citations >0), family = 'poisson')
-
+poisson_hurdle_citations = glm(citations ~ ., data = df_topics_model_citations %>% filter(citations >0), family = 'poisson')
 # get marginal effects for citations
-margins_binary_hurdle_citations <- margins(binary_hurdle_citations)
+
+
+margins_binary_hurdle_citations <- margins( binary_hurdle_citations)
 margins_poisson_hurdle_citations <- margins(poisson_hurdle_citations)
 
-df_AME_binary_citations = summary(margins_binary_hurdle_citations)%>% filter(factor %in% topic_interpretations)
-df_AME_poisson_citations = summary(margins_poisson_hurdle_citations)%>% filter(factor %in% topic_interpretations)
+
+df_AME_binary_citations = summary(margins_binary_hurdle_citations)
+df_AME_poisson_citations = summary(margins_poisson_hurdle_citations)
+
 
 # for hurdle with altmetric
 df_topics_model_altmetric <- df_full %>%
   select('altmetric_score',topic_interpretations, 'year', 'journal') %>%
   na.omit() %>%
-  select(-`Customer Relations`) # this is the baseline variable
+  select(-Advertisement) # this is the baseline variable
 
 df_topics_model_altmetric$year <- as.factor(df_topics_model_altmetric$year)
 df_topics_model_altmetric$journal <- as.factor(paste0(df_topics_model_altmetric$journal))
@@ -216,14 +250,25 @@ df_topics_model_altmetric$journal <- as.factor(paste0(df_topics_model_altmetric$
 # estimate both parts of the hurdle model for citations
 binary_hurdle_altmetric = glm(ifelse(altmetric_score ==0, 1,0) ~ ., data = df_topics_model_altmetric, family = 'binomial')
 poisson_hurdle_altmetric = glm(altmetric_score ~ ., data = df_topics_model_altmetric %>% filter(altmetric_score >0), family = 'poisson')
+summary(binary_hurdle_altmetric)
+
+summary(margins(binary_hurdle_altmetric))
 
 # get marginal effects for citations
 margins_binary_hurdle_altmetric <- margins(binary_hurdle_altmetric)
 margins_poisson_hurdle_altmetric <- margins(poisson_hurdle_altmetric)
 
-df_AME_binary_altmetric = summary(margins_binary_hurdle_altmetric) %>% filter(factor %in% topic_interpretations)
-df_AME_poisson_altmetric = summary(margins_poisson_hurdle_altmetric) %>% filter(factor %in% topic_interpretations)
+df_AME_binary_altmetric = summary(margins_binary_hurdle_altmetric) 
+df_AME_poisson_altmetric = summary(margins_poisson_hurdle_altmetric)
+df_AME_poisson_altmetric
 
+df_results_table <- data.frame(
+           AME_binary_citations = df_AME_binary_citations$AME,
+           AME_binary_altmetric = df_AME_binary_altmetric$AME,
+           AME_poisson_citations = df_AME_poisson_citations$AME,
+           AME_Poisson_altmetric = df_AME_poisson_altmetric$AME)
+xtable(df_results_table)
+df_results_table
 
 ############################
 # 4) Word2vec

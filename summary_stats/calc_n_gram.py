@@ -17,9 +17,11 @@ body_list = list(flatten( [[word for word in document.split()] for document in d
 abstract_list = list(flatten( [[word for word in document.split()] for document in df_journals_merged['abstract_lemmatized'].tolist()]))
 title_list = list(flatten( [[word for word in document.split()] for document in df_journals_merged['title_lemmatized'].tolist()]))
 
-body_list_all = list(flatten( [[word for word in document.split()] for document in df_journals_merged_all['body_lemmatized'].tolist()]))
+body_list_all = list(flatten( [[word for word in document.split() if word != 'num'] for document in df_journals_merged_all['body_lemmatized'].tolist()]))
 abstract_list_all = list(flatten( [[word for word in document.split()] for document in df_journals_merged_all['abstract_lemmatized'].tolist()]))
 title_list_all = list(flatten( [[word for word in document.split()] for document in df_journals_merged_all['title_lemmatized'].tolist()]))
+
+
 
 
 def convertTuple(tup):

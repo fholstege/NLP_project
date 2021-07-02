@@ -10,12 +10,23 @@ from matplotlib import cm
 
 
 # read the zipped files
-df_journals_merged = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged_withLemmatized.gzip')
+df_journals_merged = pd.read_parquet('../data/clean/all_journals_BERT_merged.gzip')
 
-df_journals_merged.columns
+df_journals_merged.groupby('journal')['DOI'].count().sum(axis = 0)
 
-fields = ['Accounting',
-       'Agricultural and Biological Sciences', 'Arts and Humanities',
+df_articles_year = df_journals_merged.groupby('year')['DOI'].count()
+df_n_altmetric_year = df_journals_merged.groupby('year')['altmetric_score'].count()
+
+df_n_no_altmetric_year = df_articles_year - df_n_altmetric_year
+
+df_altmetric_counts = pd.concat([df_n_altmetric_year, df_n_no_altmetric_year], axis =1)
+df_altmetric_counts.columns = ['n_with_altmetric', 'n_no_altmetric']
+
+plt.bar(df_altmetric_counts.index, df_altmetric_counts['n_with_altmetric'], label = 'With altmetric score', color = 'grey')
+plt.bar(df_altmetric_counts.index, df_altmetric_counts['n_no_altmetric'], bottom =df_altmetric_counts['n_with_altmetric'] ,label = 'No altmetric score', color = 'orange')
+plt.legend(loc = 'upper left')
+
+fields = ['Agricultural and Biological Sciences', 'Arts and Humanities',
        'Business and Int. Mgmt.', 'Computer Science',
        'Economics / Econometrics / Finance', 'Environmental Science',
        'Marketing', 'Mathematics', 'Medicine', 'Mgmt. Information Systems',
@@ -27,14 +38,14 @@ fields = ['Accounting',
 # table
 df_fields_avg_citations_table = df_journals_merged[fields].mean()
 df_fields_avg_citations_table.sort_values(ascending = False)
-round(df_fields_avg_citations_table.sort_values(ascending = False)*100, 1).to_latex()
+print(round(df_fields_avg_citations_table.sort_values(ascending = False)*100, 1).to_latex())
 
 df_fields_avg_citations = df_journals_merged.groupby(['year'])[fields].mean()
 
 
 df_fields_avg_citations_melted = pd.melt(df_fields_avg_citations.reset_index(), id_vars='year')
 
-fields_selected = [x for x in fields if x in ['Computer Science', 'Mathematics', 'Psychology', 'Medicine', 'Social Sciences', 'Statistics']]
+fields_selected = [x for x in fields if x in ['Computer Science', 'Arts and Humanities' , 'Medicine', 'Neuroscience', 'Mathematics']]
 
 
 # get colors for graphs
