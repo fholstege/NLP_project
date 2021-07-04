@@ -1,0 +1,2926 @@
+CELEBRATING 30 YEARS
+Vol. 30, No. 1, January­February 2011, pp. 4­21 issn 0732-2399 eissn 1526-548X 11 3001 0004
+
+doi 10.1287/mksc.1090.0491 © 2011 INFORMS
+
+Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Peter J. Danaher, Michael S. Smith
+Melbourne Business School, University of Melbourne, Carlton, Victoria 3053, Australia {p.danaher@mbs.edu, mike.smith@mbs.edu}
+In this research we introduce a new class of multivariate probability models to the marketing literature. Known as "copula models," they have a number of attractive features. First, they permit the combination of any univariate marginal distributions that need not come from the same distributional family. Second, a particular class of copula models, called "elliptical copula," has the property that they increase in complexity at a much slower rate than existing multivariate probability models as the number of dimensions increase. Third, they are very general, encompassing a number of existing multivariate models and providing a framework for generating many more. These advantages give copula models a greater potential for use in empirical analysis than existing probability models used in marketing. We exploit and extend recent developments in Bayesian estimation to propose an approach that allows reliable estimation of elliptical copula models in high dimensions. Rather than focusing on a single marketing problem, we demonstrate the versatility and accuracy of copula models with four examples to show the flexibility of the method. In every case, the copula model either handles a situation that could not be modeled previously or gives improved accuracy compared with prior models.
+Key words: Bayesian estimation; discrete copula; Markov chain Monte Carlo; Gaussian copula; media modeling; probability models; website page views
+History: Received: September 9, 2008; accepted: February 9, 2009; Eric Bradlow served as the editor-in-chief and Greg Allenby served as associate editor for this article. Published online in Articles in Advance November 4, 2010.
+
+1. Introduction
+The rapid growth in information technology in business, combined with the relatively low cost of data storage, has resulted in a corresponding explosion in availability of customer data (Rossi and Allenby 2000). Examples of firms that have made good use of their large customer databases include Harrah's Entertainment, Capital One, and Netflix (Davenport and Harris 2007). However, such firms are in the minority, with Davenport and Harris (2007, p. 24) estimating that fewer than 10% of businesses worldwide routinely make use of their customer data as part of their firm's strategy. Current methods tend to be limited to analyses of one variable at a time, such as purchase amount, number of purchases per year, and time since the last purchase. Because these variables are often highly correlated, more useful information can be gained by looking at multivariate rather than univariate distributions. For example, multivariate distributions enable the estimation of partial correlations, the distribution of functions of component variables (ratios, sums, or other metrics), and conditional distributions used for prediction. A major barrier to implementing such multivariate distributions is that sometimes the constituent univariate marginals do not have the same distributional
+
+form. For instance, the total amount purchased might have a log-normal distribution while the time since last purchase might have an exponential distribution. It is challenging to construct a bivariate distribution with these two specific margins.
+There are many situations in marketing where data can be modeled with a well-established univariate distribution. Examples include the negative binomial distribution (NBD) for the total number of purchases of a product within a category (Ehrenberg 1988), the beta-binomial distribution for the number of exposures to a TV advertisement (Rust 1986), a proportional hazards model for the time-to-product purchase (Jain and Vilcassim 1991), and a multinomial logit (MNL) model for brand purchases within a category (Guadagni and Little 1983). However, new data, particularly from the Internet and customer relationship management (CRM) warehouses, require the simultaneous analysis of several disparate variables (Fader and Hardie 2007). Examples include combining the number of visits to a website and the duration of each visit (Danaher et al. 2006), the frequency of direct mail send-outs and purchase amounts (Schweidel et al. 2008a), and a bivariate timing model for customer acquisition and retention (Schweidel et al. 2008b). That is, many new marketing problems require the
+
+4
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+5
+
+combination of univariate distributions that are not from the same family, even including mixtures of discrete and continuous distributions.
+To date, methods for combining potentially different univariate distributions into a multivariate distribution, known as "copula modeling," have appeared sporadically in the statistics literature over the past few decades (see, for example, Genest and Mackay 1986), although applications have largely been limited to continuous distributions in two dimensions. Recently, copula modeling has become popular in the finance and econometric literatures (Poon et al. 2004, Cherubini et al. 2004, Hong et al. 2007, Trivedi and Zimmer 2005). Here, copula modeling allows for more accurate modeling of the multivariate distribution of asset returns, including interdependencies. This proves important in financial investment because it allows for the construction of more efficient portfolios and improved measurement of risk. Again, however, applications in finance are usually restricted to continuous distributions in low dimensions. High-dimension discrete distributions pose special challenges in copula modeling, where traditional maximum likelihood estimation proves to be infeasible. However, in a new development in the statistical literature, Pitt et al. (2006) show how to use the power of Bayesian Markov chain Monte Carlo (MCMC) estimation to extend estimation of copula models to highdimensional situations where the margins can be any combination of discrete or continuous distributions.
+The purpose of this paper is to demonstrate how copula models can be constructed and used in a variety of marketing applications. Previous marketing examples where copulas could potentially be used include modeling intervisit times across websites, as demonstrated in a bivariate setting by Park and Fader (2004); modeling magazine advertising campaigns across several magazines (Danaher 1991); and modeling page views across multiple websites (Danaher 2007). In more than two dimensions the models previously used in all these studies become cumbersome or computationally challenging. For instance, Danaher's models (1991, 2007) require approximations for even trivariate distributions. We show that copula models require no such approximation and demonstrate how they are empirically superior to prior multivariate models. We follow and extend the work of Pitt et al. (2006) by developing a new and efficient Bayesian MCMC estimation algorithm that allows estimation of a particular class of copula called "elliptical copula." In doing so, we show how elliptical copulas can be used in highdimensional settings with discrete marginal distributions. The ability to do so now makes the use of copula modeling feasible in many marketing applications.
+
+In addition to the applications already mentioned, there are several major areas in marketing where compound univariate stochastic models have previously been developed, but where copula models can give deeper insight. Examples include purchase incidence and purchase timing, where incidence has a NBD (Morrison and Schmittlein 1988) while interpurchase timing can be handled with a hazard (Jain and Vilcassim 1991) or exponential model (Schmittlein et al. 1987). Furthermore, Leeflang et al. (2000, p. 247) list 17 models that integrate purchase incidence, timing, and brand choice. All of these models use different distributions for these three components that somehow need to be combined. Turning our attention to the CRM literature, a key concern is whether or not a person in a firm's database is still a "live" customer. Schmittlein et al. (1987) address this issue using a NBD model for purchase occasions compounded with a Pareto model for customer life length. Similarly, for a subscription service, Danaher (2002) develops separate models for cell phone usage and the length of time the service is retained. Both these situations can be better accommodated with bivariate models. There is also a large literature on brand choice across two purchase occasions (Lilien et al. 1992, pp. 40­53). Here, the marginal distributions are usually the same (perhaps being a Dirichlet-multinomial), but examination is restricted to just two purchases. A multivariate model extending across many purchases would give improved insights into brand loyalty, for example. Finally, we note that a number of existing multivariate models used previously for marketing applications can be expressed as copula models. For example, the multivariate probit used by Edwards and Allenby (2003) and the multivariate ordered probit ("cut-point") model of Rossi et al. (2001) are, in fact, special cases of a "Gaussian copula" model with discrete marginal distributions. Hence, copula models are very general in that they provide both a framework encompassing a number of existing multivariate models, and a practical and flexible mechanism for generating many more.
+The paper proceeds as follows. We begin by explaining the basic idea behind copula modeling, including elliptical copula, in the bivariate case. Two bivariate examples, one continuous and one discrete, are used as illustrations. The third section details how to estimate copula models, with particular attention to the discrete case, where we introduce a new efficient Bayesian estimation algorithm. In the fourth section we discuss two high-dimension discrete examples and show how copula models perform better than previously used models. Last, we summarize the benefits of copulas in marketing and show how they might be used in other marketing applications.
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+6
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+2. What Is a Copula?
+
+2.1. The Basic Idea For traditional multivariate distributions, once the parametric distribution function has been selected, the marginals are derived by integration. That is, there is no flexibility for the marginals and they are determined precisely by their parent multivariate distribution (Johnson et al. 1997, Kotz et al. 2000). This usually restricts multivariate distributions to have marginals from the same family; for example, the margins of a multivariate normal are also normal. By contrast, with copula modeling, the starting point is the marginals, which need not be from the same family, and are "glued together" using a copula function.
+Consider initially the bivariate case with two random variables, X1 and X2, with distribution functions F1 X1 and F2 X2 , respectively. It is desired to obtain a bivariate distribution function, F X1 X2 , with these two margins. Sklar (1959) proved that there always exists a function C such that
+
+F X1 = x1 X2 = x2 = C F1 x1 F2 x2
+
+(1)
+
+where C u1 u2 is itself a distribution function for a bivariate pair of uniform random variables. Sklar labeled C the "copula function" and showed that it meets three conditions.1 What is immediately apparent from Equation (1) is that the bivariate distribution function is constructed from the marginals. The role of the copula function is simply to determine the dependence between X1 and X2.
+If the margins are continuous,2 differentiating Equation (1) gives the bivariate density for the data
+
+f X1 = x1 X2 = x2 = c F1 x1 F2 x2 f1 x1 f2 x2 (2)
+where c F1 x1 F2 x2 is called the "copula density," derived by differentiation as 2C/ u1 u2 at u1 = F1 x1 and u2 = F2 x2 . Equation (2) shows how the copula density controls the level of dependence between X1 and X2. For example, if C u1 u2 = u1u2, then the copula density is simply c u1 u2 = 1, in which case the bivariate density f is just the product of the univariate marginals so that X1 and X2 are independent. Hence, the copula function C u1 u2 = u1u2 is known as the "independence copula."
+A more general copula function, known as the Farlie-Gumbel-Morgenstern (FGM) copula, (Trivedi and Zimmer 2005, p. 15) is C u1 u2 = u1u2 1 + 1 - u1 1 - u2 . Here, the copula density is
+
+1 The conditions are given in full in Nelsen (2006, p. 45) for the m-dimensional case and are as follows: (i) For every u  0 1 m, C u = 0, if at least one element of u is 0; (ii) for every u  0 1 m, C u = uj , if all coordinates of u are 1, except uj ; and (iii) C is an m-increasing function. In Equation (1), m = 2.
+2 We discuss the case when one or more margins are discrete in §§2.3 and 3.1.
+
+c F1 x1 F2 x2 = 1 + 1 - 2F1 x1 1 - 2F2 x2 , and so the bivariate density is
+
+f X1 = x1 X2 = x2 = f1 x1 f2 x2 1 + 1 - 2F1 x1 1 - 2F2 x2 (3)
+
+The parameter controls the level of dependence be-
+
+tween X1 and X2, and the original univariate marginals can still be any distribution. Gumbel (1960)
+
+showed that for Equation (3) to be a density -1 
+
+ 1, which limits the correlation between X1 and X2 to the range -1/4 1/4 .
+
+Equation (3) has also been derived via a dif-
+
+ferent class of multivariate distributions, known as
+
+Sarmanov distributions (Lee 1996, Sarmanov 1966).
+
+It is not difficult to prove that the Sarmanov class
+
+of distributions can also be represented as copu-
+
+las. Sarmanov distributions have appeared before in
+
+the marketing literature (see Park and Fader 2004,
+
+Danaher 2007), but they do not extend easily to three
+
+or more dimensions. Moreover, as per the FGM cop-
+
+ula, the Sarmanov is limited in its ability to model
+
+even moderate-sized levels of correlation. Later we
+
+will contrast much more flexible copula models than
+
+the Sarmanov for two applications and demonstrate
+
+the superiority of these copula models.
+
+There are many possible copula functions, the most
+
+popular of which are given by Trivedi and Zimmer
+
+(2005, p. 16) and Frees and Valdez (1998, p. 25).
+
+A major point of difference among them is the range
+
+in their correlation coefficients. One type of cop-
+
+ula, called the Gaussian copula, has nearly the full
+
+-1 1 range in pairwise correlation and is therefore
+
+a general and robust copula for most applications
+
+(Song 2000). Furthermore, the Gaussian copula has
+
+the desirable property that as the number of dimen-
+
+sions m increases, the number of parameters in the
+
+multivariate density increases only by order m2. In
+
+comparison, for the Sarmanov, the number of parame-
+
+ters increases by the order of 2m. We discuss this issue
+
+in further detail in §§2.5 and 2.6.
+
+It is important to understand that the functional
+
+form of the copula function does not determine the
+
+distribution of the marginals. For example, a copula
+
+function can be based on the Gaussian distribution
+
+while one margin has a NBD and the other a gamma
+
+distribution. The copula function merely determines
+
+the dependence between the two random variables but
+
+has no influence on the marginals themselves.
+
+Equation (1) can easily be generalized to m di-
+
+mensions. If the elements of the random vector X =
+
+X1
+
+Xm have marginal distributions F1 X1
+
+Fm Xm , then the joint distribution function is given by
+
+F X1 = x1
+
+Xm = xm = C F1 x1
+
+Fm xm (4)
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+7
+
+The copula function C now maps 0 1 m onto 0 1 and still satisfies the conditions noted previously.
+The manner in which copula functions are used to model dependency varies depending on whether each Xj is continuous or discrete valued. Below, we outline each case separately and demonstrate them with a bivariate motivating example. For the continuous case we consider duration of visit and purchase amount for buyers at an online retailer, and additionally illustrate a bivariate copula with very different marginal distributions. In the next example we consider category purchases of bacon and eggs in grocery stores, exhibiting how copulas accommodate discrete variables.
+2.2. Motivating Example 1: Continuous Margins One of the more frustrating realities for firms engaged in online commerce is the small conversion rate from visits to sales (Moe and Fader 2004). For example, using data detailed later for Amazon.com, only 4.5% of all visits to its website result in eventual sales. Indeed, conversion rates are even lower for less experienced or well-known online merchants. To combat these low conversion rates, online sellers attempt to make their website more "sticky" and useful to visitors by offering product information, interactive features, consumer reviews, and comparative prices. The rationale is that the longer a visitor is browsing a website, the more likely they are to find what they want or be convinced or enticed into purchasing an item (Bucklin and Sismeiro 2003, Danaher et al. 2006). Hence, a naïve, but reasonable, starting point is to calculate the dependence between website visit duration and amount purchased.
+One of the best-known online retailers is Amazon.com, so in this example we use online visit and transaction data made available by comScore, Inc., for research purposes and sourced from Wharton Research Data Services (http://www.wrds.wharton. upenn.edu). For a panel of 100,000 homes and transactions in the month of September 2002, we have the length of each visit to Amazon.com and the transaction amount if a purchase is made. Over 95% of visits result in no purchases, so we restrict ourselves to just those 1,442 visits for which a transaction occurred. The transaction amounts range from $1 up to $2,499, while site visits average about 18 minutes when a purchase is made. For these data the empirical Pearson correlation coefficient between visit duration and purchase amount is only 0.08, which is low. A natural conclusion might be that visit duration and purchase amount are not strongly related, so efforts to increase website stickiness may not be worthwhile.
+As we shall see, this proves not to be the case. The flaw in the previous approach is the use of the empirical Pearson correlation coefficient as a measure of
+
+Figure 1
+
+Plot Containing Results for the Bivariate Website Visit and Spend Data of Motivating Example 1
+
+2,500
+
+(a) Raw data
+
+(b) Copula data 1.0
+
+u2 = F(x2) (total spend)
+
+x2 total spend (US$)
+
+2,000
+
+0.8
+
+1,500
+
+0.6
+
+1,000
+
+0.4
+
+500
+
+0.2
+
+0 0 20 40 60 80 x1 total duration (mins)
+
+0
+
+0
+
+0.5
+
+1.0
+
+u1 = F(x1) (total duration)
+
+spend)
+
+(total
+
+­1(u2)
+
+(c) Bivariate Gaussian data 6
+
+4
+
+2
+
+0
+
+­2
+
+­4 ­4 ­2 0 2 4
+
+x
+
+* 1
+
+=
+
+­1(u1)
+
+(total
+
+duration)
+
+x
+
+* 2
+
+=
+
+T5­1(u2)
+
+(total
+
+spend)
+
+(d) Bivariate t data 25
+
+20
+
+15
+
+10
+
+5
+
+0
+
+­5
+
+­10
+
+­5
+
+0
+
+5
+
+10
+
+x
+
+* 1
+
+=
+
+T5­1(u1)
+
+(total
+
+duration)
+
+=
+
+* 2
+
+x
+
+(e) Conditional expectation
+
+E[total spend | duration]
+
+60
+
+55
+
+50
+
+45
+
+40
+
+35
+
+30
+
+25
+
+0
+
+50
+
+100
+
+Duration (X1)
+
+Notes. Panel (a) shows the total duration (X1) and total spend (X2) of purchasers at Amazon.com. Panel (b) shows the copula data obtained using the
+probability integral transformation on both margins, panel (c) shows the copula data transformed to 2 using the inverse standard normal distribution
+function on both margins, panel (d) shows the copula data transformed to 2 using the inverse student t5 distribution function on both margins, and
+panel (e) shows the conditional expectation E X2 X1 for values of duration (X1) that vary from the lower to upper fifth percentile of duration observed in our data.
+
+dependence, as discussed later. It implicitly assumes that the margins are normally distributed, whereas frequently they are not. For instance, Figure 1(a) is a bivariate plot of visit duration against total spend for people making purchases at Amazon.com. Clearly, both marginal distributions are highly right-skewed, with a large concentration of data in the lower lefthand position. A variety of parametric models can be fit to each margin. For the duration of website visits (X1) an appropriate distribution is the lognormal distribution (Danaher et al. 2006). It is a twoparameter distribution with parameter vector 1 =
+1 1 , where 1 determines the location and 1 the scale. A particularly good fit for the sales data
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+8
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+(X2) is obtained using a generalized extreme value (GEV) distribution.3 The GEV is a three-parameter
+
+distribution with parameter vector 2 = k2 2 2 , where k2 determines shape, 2 location, and 2 scale. When fitted to the data using maximum likelihood
+
+estimation (MLE) on each univariate margin, the
+
+parameter estimates are
+
+^
+1
+
+=
+
+3 3242
+
+0 9501
+
+and
+
+^
+2
+
+=
+
+0 3641 15 0911 19 3828 .
+
+When the margins are continuous, a useful way
+
+to think of the copula method is that via the prob-
+
+ability integral transformation on each margin, the
+
+original random variables Xj are each transformed into uniform random variables Uj = Fj Xj . That is, no matter what the distribution of the original random
+
+variable Xj , the transformed variable Uj is always uniformly distributed. Nevertheless, if the original
+
+univariate distributions are dependent, this depen-
+
+dency will carry through to the transformed uniform
+
+distributions. The advantage is that this dependency
+
+is generally easier to capture for the transformed data.
+
+Using the two fitted distributions here, this so-
+
+called "copula data" for each margin j = 1 2 can be
+
+computed as uij = Fj xij
+
+j
+
+=
+
+^
+j
+
+,
+
+for
+
+observations
+
+i=
+
+1 2 n. Figure 1(b) plots the copula data for visit
+
+duration and transaction amount. It is evident that
+
+in each margin the univariate distribution is close
+
+to uniform on 0 1 . It now remains to capture any
+
+dependence between the bivariate copula data. This
+
+is achieved by applying a copula function C to these
+
+copula data. This will be demonstrated in §2.5, where
+
+we detail two copula functions that can easily be gen-
+
+eralized to higher dimensions. For the moment, we
+
+leave the continuous example, returning to it in §2.5.1,
+
+and now introduce a discrete example.
+
+2.3. Motivating Example 2: Discrete Margins Although many studies in marketing have examined brand choice among alternatives within a product category, there is also interest in looking at purchases across categories. Examples include purchases of diapers and baby food, ground beef and hamburger buns, and bacon and eggs. For bacon and eggs, since they are often eaten together, does this translate to them also being purchased together? Danaher and Hardie (2005) looked at this question and we use their reported data to reexamine this question using a copula model.
+For discrete data, the steps for copula modeling are similar to that of continuous data, but with one key
+
+3 The GEV distribution has probability density function
+
+1
+
+x-
+
+-1/k
+
+fx =
+
+exp - 1 + k
+
+· 1+k x-
+
+- k+1 /k
+
+for x > 0
+
+such that 1 + k x - / > 0; see Johnson et al. (1995, pp. 75­85).
+
+difference. The initial step is still to use the probabil-
+ity integral transformation of each margin. However,
+for a discrete distribution, Fj is a step function, and we instead define Uj to be related to the variable Xj through the inequality
+
+Fj Xj - 1 < Uj < Fj Xj
+
+(5)
+
+rather than via a direct equality, as in the continu-
+
+ous case where Fj is monotonic. Nevertheless, this still ensures Uj is uniformly distributed on 0 1 . Because of this interval-based formulation, once distributions are
+
+fitted to the margins, the copula data can no longer be
+
+computed exactly but instead are considered as latent
+
+variables uij , bounded so that Fj xij - 1 < uij < Fj xij . Danaher and Hardie's (2005) data (in their Table 1)
+
+are sourced from Information Resources, Inc., a con-
+
+sumer panel based in a large U.S. city; see Bell and
+
+Latin (1998) for details. The reported data are the
+
+number of times out of four shopping trips that bacon
+
+is purchased, and similarly for eggs. Table 1 gives
+
+the observed frequencies for the n = 548 observa-
+
+tions. Danaher and Hardie (2005) find that an appro-
+
+priate model for each margin is the beta-binomial
+
+distribution (BBD). The BBD is derived from a bino-
+
+mial distribution for the number of purchases, where
+
+the probability of a purchase varies according to a
+
+beta distribution, with parameter vector =
+
+,
+
+to account for consumer heterogeneity. For the bacon
+
+and
+
+eggs
+
+data,
+
+the
+
+MLEs
+
+of
+
+the
+
+parameters
+
+are
+
+^
+1
+
+=
+
+0 8592 3 9593
+
+for bacon and
+
+^
+2
+
+=
+
+0 3571 4 4551
+
+for eggs. With these fitted BBDs, bounds for the
+
+latent copula data uij are computed using the two
+
+Table 1
+
+Observed and Fitted Frequencies for the Sarmanov Model and Gaussian Copula with Beta-Binomial Margins for the Bacon and Eggs Data
+
+Bacon
+
+Eggs
+
+0
+
+1
+
+2
+
+3
+
+4
+
+Observed frequencies
+
+0
+
+254
+
+34
+
+8
+
+0
+
+1
+
+1
+
+115
+
+29
+
+8
+
+0
+
+1
+
+2
+
+42
+
+16
+
+3
+
+4
+
+1
+
+3
+
+13
+
+6
+
+3
+
+1
+
+0
+
+4
+
+6
+
+1
+
+1
+
+1
+
+0
+
+Sarmanov model estimates
+
+0
+
+251 5
+
+37 8
+
+87
+
+15
+
+01
+
+1
+
+112 4
+
+23 6
+
+81
+
+25
+
+05
+
+2
+
+47 2
+
+13 4
+
+56
+
+20
+
+04
+
+3
+
+16 1
+
+60
+
+28
+
+11
+
+03
+
+4
+
+34
+
+17
+
+09
+
+03
+
+01
+
+Gaussian copula model estimates
+
+0
+
+253 7
+
+34 0
+
+84
+
+21
+
+02
+
+1
+
+111 2
+
+25 0
+
+85
+
+24
+
+04
+
+2
+
+47 3
+
+14 4
+
+52
+
+19
+
+03
+
+3
+
+15 9
+
+62
+
+28
+
+11
+
+02
+
+4
+
+37
+
+16
+
+09
+
+04
+
+01
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+9
+
+Table 2
+
+Bounds for the Latent Variables Uj and Xj for the Discrete-Valued Bacon and Eggs Data
+
+x1
+
+F1 x1
+
+-1 F1 x1
+
+x2
+
+F2 x2
+
+-1 F2 x2
+
+0
+
+0.5448
+
+1
+
+0.8139
+
+2
+
+0.9398
+
+3
+
+0.9882
+
+0.1126 0.8924 1.5532 2.2638
+
+0
+
+0.7857
+
+1
+
+0.9363
+
+2
+
+0.9837
+
+3
+
+0.9974
+
+0.7917 1.5243 2.1382 2.7974
+
+Note. Here, the distribution functions F1 and F2 are conditional on the esti-
+
+mated
+
+marginal
+
+parameter
+
+values
+
+^
+1
+
+and
+
+^
+2
+
+.
+
+distribution functions. Table 2 reports these bounds
+
+for the zero through four possible observed purchases
+
+in a four-week period for both X1 and X2. To complete
+
+the picture, note that the highest upper bound Fj 4
+
+j
+
+=
+
+^
+j
+
+= 1 and lowest lower bound Fj -1
+
+j
+
+=
+
+^
+j
+
+= 0.
+
+We return to this example later, after discussing
+
+measures of dependence.
+
+2.4. Measuring Dependence Because the purpose of the copula function is to capture dependence among the univariate marginals, copulas inevitably raise the issue of how to measure dependence (Joe 1997). The most common measure of dependence between pairs of variables is Pearson's correlation, defined for variables Xj1 and Xj2 as
+
+p j1 j2
+
+= cov
+
+Xj1
+
+Xj2
+
+var Xj1 var Xj2
+
+(6)
+
+In fact,
+
+p j1 j2
+
+ought
+
+to
+
+be
+
+viewed
+
+as
+
+a
+
+population
+
+parameter arising naturally when the variables are
+
+normally distributed. The usual estimate of
+
+p j1 j2
+
+is
+
+the
+
+empirical correlation coefficient. Use of this correla-
+
+tion coefficient is so widespread that the requirement
+
+of normally distributed marginals is commonly over-
+
+looked. That is, when the underlying marginal dis-
+
+tributions of the data are nonnormal, the empirical
+
+correlation coefficient is likely to be a poor measure
+
+of dependence.
+
+Another measure of dependence for multivari-
+
+ate data is the Spearman rank-order correlation
+
+coefficient. This measure calculates the Pearson empir-
+
+ical correlation coefficient not for the raw data, but
+
+between the ranks of the data. It is rarely appreciated
+
+that the rank order correlation coefficient is a sample
+
+estimate of Spearman's population correlation mea-
+
+sure (Joe 1997). For continuous margins, this alterna-
+
+tive population measure of dependence is defined as
+
+s j1 j2
+
+=
+
+corr
+
+Fj1
+
+Xj1
+
+Fj2 Xj2
+
+(7)
+
+This measure is intimately linked with the copula approach to modeling dependence. This is because it is simply the correlation between the probability integral transformed random variables Uj = Fj Xj , which themselves have the copula function C as their distribution function, as exhibited in Equation (1). Since Uj
+
+is uniformly distributed, it has a known variance of 1/12 and expectation of 1/2. Therefore, Equation (7) can be simplified as
+
+s j1 j2
+
+=
+
+cov
+
+Uj1
+
+Uj2 / var Uj1 var Uj2
+
+1/2
+
+= 12E
+
+Uj1
+
+-
+
+1 2
+
+Uj2
+
+-
+
+1 2
+
+= 12E Uj1 Uj2 - 3
+
+(8)
+
+The covariance of Uj1 and Uj2 does not depend on the marginal distributions of the original random variables Xj1 and Xj2 . It is for this reason that Spearman's correlation is not sensitive to the marginal distributions of the raw data, whereas Pearson's correlation assumes normality. Later, we show how a naïve use of Pearson's sample correlation coefficient can mask the true strength of dependence between two random variables.4
+
+2.5. Elliptical Copula Functions
+
+After selecting and fitting the marginal distributions,
+
+the next stage in the modeling process is to choose a
+
+copula function. There are many possibilities, a num-
+
+ber of which are given by Joe (1997), Nelsen (2006),
+
+and Trivedi and Zimmer (2005). However, the so-
+
+called "elliptical copula" have proven the most pop-
+
+ular in applied modeling because of the ease with
+
+which they can be estimated in dimensions m  2,
+
+something we discuss in more detail subsequently.
+
+Here, the copula function is based on an elliptical
+
+distribution, such as the multivariate t or Gaussian,
+
+but should not be confused with using an ellipti-
+
+cal distribution for the data itself. The key idea is
+
+to transform the uniformly distributed random vec-
+
+tor U = U1
+
+Um to another random vector X =
+
+X1
+
+Xm  m and then model X using an ellip-
+
+tical distribution to capture the dependence among
+
+the elements of X and therefore also the original
+
+data X.
+
+The simplest elliptical copula function is the
+
+Gaussian, which corresponds to the following trans-
+
+formation. If Xj = -1 Uj , with the univariate standard normal distribution function, then the vector X
+
+is modeled as N 0 , where is a correlation matrix.
+
+This transformation corresponds to using the follow-
+
+ing Gaussian copula function for C in Equation (4):
+
+CG u = =
+
+m -1 u1 m x1 x2
+
+-1 u2 xm
+
+-1 um (9)
+
+where m · is the distribution function of a multivariate N 0 distribution and we define xj =
+
+4 Note that this definition for
+
+s j1 j2
+
+can
+
+also
+
+be
+
+used
+
+when
+
+one
+
+or
+
+more of the margins are discrete by using the definition for Uj in
+
+Equation (5).
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+10
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+-1 uj . The correlation matrix captures dependence among the elements of X and therefore also
+among the elements of the vector X.
+Another popular elliptical copula in the finance lit-
+erature is based on the multivariate t distribution
+(Daul et al. 2003), which corresponds to the following transformation. Let Xj = T -1 Uj , with T the distribution function of a univariate student t distribution
+with degrees of freedom. Then X is modeled as
+multivariate t with degrees of freedom, mean 0, and
+scale matrix T , whereas in the Gaussian case, T is a correlation matrix. This corresponds to assuming the
+following t-copula function for C in Equation (4):
+
+CT u = Tm = Tm
+
+T -1 u1 x1 x2
+
+T -1 u2 xm T
+
+T -1 um
+
+T
+(10)
+
+Here, Tm · T is the distribution function of a multivariate t distribution with location 0, degrees of freedom , and m × m scale matrix T , and xj = T -1 uj . As with the Gaussian copula function, the correlation
+matrix T captures the level of dependence in X and therefore X as well.
+When applied to data, both these elliptical copula
+correspond to a transformation of the copula data for
+each margin uij to new values xij . It is these transformed copula data that are used to fit either a zero-
+mean multivariate normal or t distribution.
+
+2.5.1. Motivating Example 1 Continued. We now
+
+return to the previous website duration and purchase
+
+amount example to illustrate the inverse-normal
+
+transformation and Gaussian copula function when
+
+the margins are continuous. Figure 1(c) plots the
+
+transformed copula data xij = -1 uij , i = 1
+
+n, for
+
+the website visit duration (j = 1) and spend (j = 2)
+
+data. A mild positive dependence is apparent visu-
+
+ally. This dependence is measured by the estimated
+
+off-diagonal element 12 of when fitting a bivariate N 0 distribution to the twice-transformed data
+
+in Figure 1(c). Using maximum likelihood estimation
+
+for this continuous example, as outlined later in §3.1,
+
+the estimated off-diagonal element is 12 = 0 233. The estimated Gaussian copula, along with fitted GEV
+
+and log-normal marginal distributions, fully define
+
+the joint distribution of the random vector X, a distri-
+
+bution that is parametric.
+
+Figure 1(d) plots the transformed copula data using
+
+the inverse t distribution function, xij = T5-1 uij with = 5 degrees of freedom.5 A t5 copula corresponds
+to fitting a multivariate tm 5 0 T distribution to this transformed data, with the level of dependence being
+
+5 We pick = 5 degrees of freedom here to ensure that the t copula has much heavier tails than a Gaussian. The degrees of freedom can also be estimated from the data, although we do not do so here.
+
+Table 3
+
+Comparison of the Empirical Pearson and Spearman Correlations with Parametric Spearman Correlations Based on Gaussian and t5 Copulas with Log-Normal and GEV Margins
+
+Type of estimate
+
+Correlation
+
+Pearson--Empirical
+
+0.08
+
+Spearman--Empirical
+
+0.26
+
+Parmetric Spearman with Gaussian copula
+
+0.26
+
+Parmetric Spearman with t5 copula
+
+0.26
+
+parameterized by the off-diagonal element of T . Again, using maximum likelihood, this is estimated from the data as 12 = 0 1880. This estimated t5 copula, along with the fitted margins, also fully define a parametric joint distribution for X.
+Using the two fitted copula models the question of how much dependence exists between duration and spend can be answered. Table 3 reports several measures of dependence. The first is the empirical Pearson correlation coefficient, which is rather low at 0 08. Following this is the empirical Spearman rank-order correlation, which is about triple Pearson's correlation, at 0 26. The Spearman correlation is matched exactly by the two parametric-based Spearman correlations, where either Gaussian or t copulas are used in Equation (7). This indicates there is a moderate correlation, whereas the very low empirical correlation suggests there is almost no association between visit duration and amount spent. There are two distinct reasons for the difference. First, Pearson's correlation measure is really only appropriate when data are approximately normally distributed. Figure 1(a) clearly shows that website visit duration and transaction amount are not normally distributed. Second, the regular correlation coefficient is a nonparametric estimate and is likely to be inferior to an estimate obtained from a wellfitted parametric distribution, such as the Gaussian copula.
+To further demonstrate the usefulness of having a parametric bivariate distribution, we calculate the expectation of total spend, conditional on visit duration, for the Gaussian copula model. That is, E X2 X1 , which is directly obtainable from the bivariate distribution.6 Figure 1(e) plots this conditional expectation for different duration levels ranging from the lowest to highest quintiles in our data. It reveals that the expected spend increases substantially (with diminishing returns) as visit duration increases--in fact, more than doubling from $28.76 to $58.21 over this range of duration. Hence, the previous naïve analysis using just the empirical correlation misses
+6 We compute E X2 X1 = x1 = x2f x1 x2 dx2 using numerical integration in MATLAB.
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+11
+
+the subtle, but substantial, relationship between website visit duration and purchase amount. This demonstrates that copula modeling can reveal previously undetected dependencies and can give managers improved insights into relationships among variables in their databases.
+2.5.2. Motivating Example 2 Continued. We now return to the bacon and eggs example, where the marginals are discrete BBDs. When the margins are discrete valued, the bounds on Uj are transformed to obtain new bounds for the random variable Xj . For example, for a Gaussian copula, the bounds on Xj =
+-1 Uj are
+
+-1 Fj Xj - 1 < Xj < -1 Fj Xj
+
+(11)
+
+Correspondingly, the latent copula data ui =
+
+ui1
+
+uim are transformed to a second set of
+
+latent variables xi = xi1
+
+xim , which are dis-
+
+tributed N 0 but with bounds -1 Fj xij - 1 <
+
+xij < -1 Fj xij . To illustrate with the bacon and eggs
+
+data, Table 2 also contains the bounds on these sec-
+
+ond latent variables, where there is one bound cor-
+
+responding to each discrete value in the data. Using
+
+the Bayesian method of estimation outlined later in
+
+§3.2, the off-diagonal element of the matrix for the
+
+Gaussian copula function is 12 = 0 2895. From the raw data, the empirical Pearson corre-
+
+lation coefficient is 0.233, and the Spearman rank
+
+correlation coefficient is 0.217. This indicates a mod-
+
+erate correlation between bacon and egg purchases,
+
+so they are often purchased together as well as
+
+eaten together. However, each of these metrics are
+
+unreliable--the empirical Pearson correlation coeffi-
+
+cient because the data are very far from normally
+
+distributed, and the Spearman rank correlation coeffi-
+
+cient because the data are discrete and there are many
+
+tied ranks. However, using the Gaussian copula we
+
+can compute a reliable estimate of the Spearman cor-
+
+relation
+
+s j1 j2
+
+=
+
+0
+
+286
+
+defined
+
+in
+
+Equation
+
+(8)
+
+using
+
+the
+
+Bayesian method outlined below in §3.3. This slightly
+
+higher level of dependence confirms the higher level
+
+of dependence also uncovered using the Sarmanov
+
+copula by Danaher and Hardie (2005).
+
+2.6. Advantages of Elliptical Copulas As demonstrated in the bivariate examples above, each margin can be modeled separately and multivariate dependence added at a later step through the choice of copula function. Elliptical copulas are often preferred because they have three major advantages over alternative choices. First, dependence in the data is parameterized by a correlation matrix , which has only m m - 1 /2 unique elements. Most other copula functions, including the Sarmanov, prove difficult to
+
+extend to higher dimensions--something we explore
+
+later in §4.
+
+Second, random iterates can be generated from the
+
+joint density F both quickly and simply. Below, we
+
+outline an algorithm to generate an iterate X from a
+
+Gaussian copula with arbitrary marginal distributions
+
+F1
+
+Fm.
+
+Algorithm 1 (Random iterate generation)
+
+Step 1. Generate Z  N 0 .
+
+Step 2. Set U = Z1 Step 3. Set X = F1-1 U1
+
+Zm . Fm-1 Um .
+
+This algorithm can be easily adjusted for other ellip-
+
+tical copula by replacing the Gaussian distribution in
+
+Steps 1 and 2.7 The ability to simulate from an ellipti-
+
+cal copula is particularly useful for evaluating the dis-
+
+tribution of any summary or metric based on X using
+
+Monte Carlo simulation. It is in this manner that we
+
+compute estimates of
+
+s j1 j2
+
+and
+
+p j1 j2
+
+in
+
+Table
+
+3.
+
+In
+
+§4
+
+we
+
+also use this Monte Carlo algorithm to evaluate the
+
+distribution of the summation of the elements of X.
+
+Third, an elliptical copula function allows for the
+
+interpretation of the copula model for the distri-
+
+bution F as a transformation from X to the ellip-
+
+tically distributed X . When one or more of the
+
+margins are discrete-valued, X is a bounded latent
+
+variable. For example, the multivariate probit model
+
+used by Edwards and Allenby (2003) is one exam-
+
+ple of a Gaussian copula. Here, the latent variables
+
+are jointly normally distributed, and the margins are
+
+binary-valued with differing distributions Fj determined by m univariate probit models. In §3.2 we
+
+exploit the latent variable representation to propose
+
+a Bayesian approach to estimation where the realiza-
+
+tions x1
+
+xm of the latent variable are explicitly
+
+generated in a MCMC algorithm. This extends the
+
+widely used MCMC method of estimation for choice
+
+models, where realizations of the latent variables are
+
+explicitly generated (Albert and Chib 1993, Edwards
+
+and Allenby 2003).
+
+To demonstrate the flexibility of the approach we
+
+use Algorithm 1 to generate 50,000 iterates from the
+
+Gaussian copula fitted to the bacon and eggs data.
+
+From these, we can compute the probability mass
+
+function, which is reported in Table 1. Also reported
+
+is the mass function from a fit using the same BBD
+
+marginals and the Sarmanov copula as given by
+
+Danaher and Hardie (2005). There is closer agreement
+
+between the fitted Gaussian copula and the empir-
+
+ical distribution in Table 1. Indeed, the sum of the
+
+absolute differences between the empirical and fitted
+
+probabilities is 0.0751 for the Sarmanov and 0.0625 for
+
+the Gaussian.
+
+7 For example, for the t5 copula, Step 1 would have Z  tm 5 0
+
+and Step 2 would have U = T5 Z1
+
+T5 Zm .
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+12
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+3. Estimation of Copula Models
+
+In a copula model there are two sets of parameters
+
+that require estimation. The first is the set of param-
+
+eters of each of the selected marginal distributions,
+
+=1
+
+m , and the second is the set of depen-
+
+dence parameters of the selected copula function.
+
+When an elliptical copula is used, the latter set con-
+
+tains the m m - 1 /2 nonfixed parameters in the corre-
+
+lation matrix . The most common approach is to use
+
+a two-stage estimation procedure, where the parame-
+
+ters for the margins are estimated separately, and then
+
+is estimated conditional upon these. The estimation
+
+of the marginal parameters in the first stage is usu-
+
+ally straightforward and can be performed in a vari-
+
+ety of ways, including maximum likelihood, Bayesian,
+
+or a method-of-moments-based approach. However,
+
+the estimation of is more difficult and is different
+
+depending on whether the variables X1
+
+Xm are
+
+continuous or discrete. We deal first with the continu-
+
+ous case, where parameters can be estimated reliably
+
+in most cases using maximum likelihood.
+
+3.1. Maximum Likelihood Estimation
+
+If x = x1
+
+xn are n observations on m contin-
+
+uous margins, then the likelihood is L
+
+x=
+
+n i=1
+
+f
+
+xi
+
+, where f is the density function
+
+derived from the copula model in Equation (4). As for
+
+the bivariate case in Equation (2), the contribution of
+
+the ith observation to L is
+
+f xi
+
+= c F1 xi1
+
+Fm xim
+
+m
+fj xij
+j =1
+
+(12)
+
+where the vector xi = xi1
+
+xim and c is the copula
+
+density. For example, following Song (2000), for the
+
+Gaussian copula the copula density is
+
+c ui1
+
+uim = =
+
+C ui1
+
+uim
+
+ui1 · · · uim
+
+-1/2 exp
+
+1 - 2 xi
+
+-1 - I xi
+
+Recall from §2.5 that xi is the observation xi twice transformed, with the jth element being xij =
+-1 Fj xij . Because this uses the probability integral
+transformations based on the marginal distributions,
+
+xi , and therefore f , are functions of the marginal parameters . For the two-stage estimator, maximiza-
+
+tion of the log-likelihood l
+
+= log L
+
+x can
+
+be undertaken numerically with respect to . For full
+
+maximum likelihood estimation, the resulting point
+
+estimates can be used as the initial conditions for
+
+maximization of l with respect to all the parameters
+
+, although the resulting estimates usually differ
+
+only slightly.
+
+The likelihood can also be derived for the dis-
+
+crete case, but this is more involved and the result-
+
+ing expression is difficult to actually compute. For a
+
+discrete distribution, to derive the density f of each
+
+observation, the so-called Radon-Nikodym derivative
+
+of F x = C F x1
+
+Fm xm has to be taken with
+
+respect to x = x1 xm , which is a discrete-valued
+
+measure. Details of this can be found in Song (2000),
+
+and it results in the expression
+
+f x = P X1 = x1
+
+Xm = xm
+
+2
+
+2
+
+= ···
+
+-1 k1+···+km C u~ 1k1
+
+k1=1 km=1
+
+u~mkm (13)
+
+where u~j1 = Fj xj , and u~j2 = Fj xj - is the left-hand limit of Fj at xj (Trivedi and Zimmer 2005, p. 56). Unfortunately, there are severe problems in computing and optimizing the resulting log-likelihood. First, there are 2m terms in the sum in Equation (13), so that evaluating them all can be impractical even for moderate values of m. Second, when an elliptical copula is used, m-dimensional multivariate distribution functions have to be evaluated to compute each term in the sum. Although there have been a number of advances in techniques to undertake this (see, for example, Genz 1992, Genz and Bretz 2002), this still remains a difficult problem involving significant numerical error and computation burden. Moreover, this has to be repeated n2m times to evaluate the likelihood just once.
+Overall, the computational demands in the discrete case are prohibitive even for a moderate number of dimensions. To compound the problem further, the log-likelihood can prove difficult to optimize for many choices of copula function, even when the dimension is as low as m = 3 (Trivedi and Zimmer 2005). These problems with implementing maximum likelihood estimation have hindered the adoption of copula modeling for problems with one or more discrete-valued margins--precisely the types of problems that often arise in marketing. However, Pitt et al. (2006) recently outline a straightforward, flexible, and general Bayesian approach for the estimation of Gaussian copula models when the margins are discrete, continuous, or mixed. This approach shows great promise for the analysis of marketing data, so we now outline and extend their method.
+
+3.2. Bayesian Simulation Solution Over the past 15 years, Bayesian estimation--where parameter estimates are obtained from their posterior distribution--has become increasingly popular. The approach has proven particularly useful for more complex and high-dimensional models where there can be many parameters. Here, so-called MCMC simulation algorithms are used to generate a Monte Carlo
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+13
+
+sample from the posterior distribution. It is from this Monte Carlo sample that posterior estimates and other inference is computed; see Robert and Casella (2004) for an accessible introduction to MCMC estimation. A major advantage of MCMC simulation is that each of the parameters can be generated conditional on the other parameters in the model, making each step of the sampling scheme relatively easy to implement for complex models. Such approaches have also had an impact in the marketing literature; see, for example, Bradlow and Rao (2000), Smith et al. (2000), and Rossi and Allenby (2003).
+Pitt et al. (2006) propose using an MCMC solution for the Gaussian copula model. They point out that if the jth margin is discrete-valued, the problem of estimation can be greatly simplified by treating xij , for i = 1 n, as latent variables. For the Gaussian copula these latent variables can be generated explicitly in the MCMC scheme from constrained Gaussian distributions. The correlation matrix of the Gaussian copula can be generated conditional on x = xij i = 1 n j = 1 m at each sweep of the simulation algorithm. The following MCMC algorithm is based on that found in Pitt et al. (2006):
+
+Algorithm 2 (Bayesian MCMC simulation
+
+algorithm)
+
+Step 1. For j = 1 m:
+
+Step 1(a). If margin j is continuous, set xij =
+
+-1 Fj xij , for i = 1
+
+n.
+
+Step 1(b). If margin j is discrete, generate from
+
+the conditional distribution
+
+xij x \xij
+
+x for i = 1
+
+n
+
+Step 2. Generate from the conditional distribution x x.
+
+Here, x \xij denotes all the values of x , excluding the element xij , while x is the vector of observed data. One repetition of the algorithm is called a "sweep" in the MCMC literature, and the approach requires many repeated sweeps. This algorithm allows estimation of the Gaussian copula but is extendable to other elliptical copulas.
+Step 1(b) involves generating the latent variables one element, xij , at a time from its Bayesian conditional posterior distribution. The appendix shows how to derive this distribution, which is a univariate constrained distribution and facilitates fast generation. There are nm such latent variables so that the computational demand of this step increases only linearly with both dimension and sample size, making it practical for even reasonably large problems. In §4 we demonstrate this by applying the approach to a problem with m = 45 dimensions and n = 10 000 observations.
+
+Step 2 requires generation of the correlation matrix from its posterior distribution, conditional on values for x . This is the most difficult part of the sampling scheme because generating a correlation matrix is a challenging statistical problem (Bernard et al. 2000). Pitt et al. (2006) present a method to generate based on a complex prior, which is difficult to both interpret and implement. Instead, we propose a simpler alternative that is based on the randomwalk Metropolis-Hastings algorithm (see Robert and Cassella 2004, pp. 287­291, for a discussion of this technique) and the following representation of :
+
+= diag -1/2 diag -1/2
+
+(14)
+
+Here, is a nonunique positive definite matrix and diag is a diagonal matrix comprised of the leading diagonal of . We further decompose -1 = R R, with R being an upper triangular Cholesky factor. If we set the leading diagonal of R to all ones, this leaves m m - 1 /2 nonfixed elements of R, matching the number of nonfixed elements of and identifying the representation. The advantage of this seemingly roundabout representation is that upper triangular elements of R are unconstrained and can be generated easily one element at a time using a random-walk Metropolis-Hastings step. Regardless of the values we generate for R, the transformation ensures that
+remains a positive definite correlation matrix. Similar transformations have been used in estimating covariance matrices in longitudinal models (Smith and Kohn 2002, Panagiotelis and Smith 2008).
+Using this representation, we propose the following algorithm to generate values of at Step 2 of Algorithm 2.
+
+Algorithm 3 (Generation of )
+Step 2. Repeat the following for i = 1 m - 1 and
+j > i: Step 2(a). Generate rij (elements of R) using a
+random-walk Metropolis-Hastings step. Step 2(b). Compute = R R -1. Step 2(c). Compute = diag -1/2 diag -1/2.
+
+Generation of in this fashion proves to be quick
+
+and reliable, and scales up to higher dimensions
+
+well. The appendix provides further details on how
+
+to implement both Algorithms 2 and 3. Once run
+
+for an initial period, Algorithm 2 provides a Monte
+
+Carlo sample of K iterates, which we denote as
+
+1 x1
+
+K x K with the superscript here
+
+labeling the iterate number. The sample can be shown
+
+to be distributed x x, which is the Bayesian poste-
+
+rior distribution of augmented with the latent vari-
+
+ables x , conditional on the observed data x. It is from
+
+this output of Algorithm 2 that Bayesian estimates
+
+are computed.
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+14
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+3.3. Bayesian Estimates Bayesian point estimates of parameters and other metrics are usually given by their posterior means. The parameter estimates can be computed directly from the Monte Carlo sample output from Algorithm 2. For example, the posterior mean of the correlation matrix of the elliptical copula is
+
+E x 1 K k
+
+(15)
+
+K k=1
+
+Another useful aspect of using MCMC for estima-
+
+tion is that iterates of U and X can be obtained at
+
+each sweep by appending Algorithm 1 to the end of
+
+Algorithm 2. Again, using the superscript notation
+
+to label the iterates, the resulting Monte Carlo sam-
+
+ple of K iterates is U 1 X 1
+
+U K X K . These
+
+iterates are from the fitted distribution with effec-
+
+tively integrated out, thereby removing the uncer-
+
+tainty associated with the estimation of . This is a
+
+major improvement over maximum likelihood esti-
+
+mation, where Algorithm 1 can be used to generate
+
+realizations from the copula model, but only condi-
+
+tional on the maximum likelihood point estimate of
+
+and ignoring any uncertainty associated with the esti-
+
+mate. We shall see in subsequent examples that this
+
+can lead to substantial overall improvement in the
+
+quality of the resulting estimates.
+
+Using these iterates the posterior distribution of
+
+other metrics can be computed. This includes the pos-
+
+terior mean of Spearman's pairwise correlation mea-
+
+sure, which can be computed as
+
+E
+
+s j1 j2
+
+x
+
+= 12E Uj1 Uj2
+
+x
+
+-3
+
+12 K
+
+K k=1
+
+Uj1k
+
+Uj2k
+
+-3
+
+(16)
+
+This Bayesian estimate is based on the parametric
+
+assumption of an elliptical copula model for the dis-
+
+tribution of X and can differ from the empirical rank
+
+correlation coefficient.
+
+Last, we note that other key metrics can also
+
+be obtained from the Monte Carlo iterates, depend-
+
+ing on the nature of the application. For exam-
+
+ple, in §4 we also use the Monte Carlo iterates
+
+X1
+
+X K to compute the distribution of total
+
+advertising exposures in print media and website
+
+page views examples.
+
+4. Multivariate Examples
+The two examples presented in §2 are both bivariate, with Example 1 demonstrating the ability of copulas to link together different marginal distributions. The examples in this section illustrate the power of copula modeling in higher dimensions where the marginal distributions are discrete. This is a situation where the versatility of the Bayesian estimation method also
+
+becomes apparent. The first example is for multiple magazines in an advertising campaign, and the second is for page views across many websites. Both examples show that copula models contrast very favorably with previous models in terms of estimation accuracy and holdout validity. Furthermore, the second example illustrates the ability of copulas to deal with a very high number of dimensions.
+
+4.1. Example 3: Magazine Advertising Campaigns
+
+Expenditure on magazine advertising in the United
+
+States exceeds $12.3 billion annually (Advertising Age
+
+2006). There is a long history of models being used
+
+to estimate exposure to magazine advertisements
+
+(for example, see Chandon 1986, Rust 1986, Danaher
+
+1992). As a medium, magazines pose two model-
+
+ing challenges. The first is that many readers sub-
+
+scribe to their preferred magazines, giving rise to high
+
+intramagazine correlation. Here, reading an issue of
+
+a magazine raises the probability of reading the next
+
+and subsequent issues. The second challenge is that
+
+people often read several magazines within a genre,
+
+such as women's magazines, sports, or news. This
+
+results in intermagazine correlation, meaning that
+
+exposure to advertisements across multiple maga-
+
+zines cannot be assumed to be independent (Danaher
+
+1992). The first challenge is usually tackled by using
+
+a BBD for each magazine's marginal distribution
+
+(Chandon 1986, Rust 1986), whereas the second chal-
+
+lenge requires a multivariate model for all the maga-
+
+zines (Danaher 1992), which we now discuss.
+
+Modeling magazine exposure requires the model-
+
+ing of Xj , which denotes the number of exposures a person has to magazine j, for j = 1 2 m. Usu-
+
+ally, advertisers are not so much interested in a full
+
+multivariate distribution of X = X1 X2
+
+Xm but
+
+rather a function of X. The most common func-
+
+tion is total exposure across all magazines in an
+
+advertising campaign, denoted here as S =
+
+m j =1
+
+Xj
+
+.
+
+Even though the managerial requirement is just a
+
+sum of the exposures, the full multivariate model
+
+is necessary in the first instance because of inter-
+
+magazine correlation (Danaher 1992). Models that
+
+capture the multivariate distribution first and then
+
+use this distribution to estimate the total exposures
+
+always dominate simpler models that directly esti-
+
+mate total exposures (Danaher 1991, 1992). Knowing
+
+the distribution of S also enables estimation of key
+
+advertising metrics, such as reach, Pr S  1 , average
+
+frequency, E S /reach, and the frequency distribution
+
+Pr S  1 , Pr S  2 , Pr S  3 , and so on (Rust
+
+1986, Danaher 1992).
+
+To date, the class of models shown to be best at
+
+modeling multivariate magazine exposure is based
+
+on "canonical expansions" (Danaher 1991). Danaher
+
+and Hardie (2005) show that the canonical expansion
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+15
+
+model is the same as the Sarmanov model mentioned earlier. The Sarmanov model for multivariate media exposure distributions is
+
+P X1 = x1 X2 = x2
+
+Xm = xm
+
+= f x1
+
+xm
+
+m
+
+= fj xj × 1 +
+
+j =1
+
+j1 <j2
+
+x j1 j2 j1 j1
+
+x j2 j2
+
++···+ 1 2 m
+
+j xj
+
+(17)
+
+where fj Xj is the univariate exposure distribution for
+
+magazine j (usually a BBD); , j1 j2 j1 j2 j3
+
+12 m
+
+are bivariate, trivariate, and higher-order association
+
+parameters, respectively, and j xj are called "mixing functions" with the property that xj=0 j xj fj Xj = 0. As noted earlier, the Sarmanov distribution is
+
+nested within the larger class of all copula models,
+
+with the Sarmanov copula function in Equation (17)
+
+being the FGM copula.
+
+What is immediately apparent from Equation (17)
+
+is that the number of terms and parameters increases
+
+rapidly as the number of magazines m increases.
+
+In fact, the number of parameters increases by
+
+order 2m. In response to this crippling computational
+
+problem, Danaher (1991) truncated Equation (17) after
+
+just second-order terms, producing an approximate
+
+Sarmanov model. Although this reduces the compu-
+
+tational difficulties, it introduces another problem--
+
+namely, that the distribution is no longer well defined
+
+and that the modeled probabilities can be negative.
+
+In contrast, an elliptical copula with correlation matrix
+
+has only m m - 1 /2 parameters, and this parame-
+
+ter number increases by order m2 rather than 2m. As a
+
+consequence, there is no need to approximate an ellip-
+
+tical copula model, meaning that the resulting distri-
+
+bution is well defined and the estimated probabilities
+
+are always nonnegative.
+
+The data for this example come from Nielsen Media
+
+Research, who regularly conduct fully national sur-
+
+veys of people in many countries and ask them about
+
+their magazine reading behavior over the past six
+
+months. The data used here come from a market that
+
+was surveyed throughout 2007, and the sample size is
+
+12 000 people. The data used to fit the Sarmanov and
+
+Gaussian copula models come from questions that
+
+ask respondents how many of the past four issues
+
+of a magazine they have read. We selected just 10 of
+
+the more than 200 magazines included in the survey.
+
+The magazines are New Idea, Listener, Woman's Weekly,
+
+Time, TV Guide, Woman's Day, North and South, Reader's
+
+Digest, Cuisine, and National Geographic. The women's
+
+magazines in this list are particularly highly corre-
+
+lated, with the highest empirical Pearson correlation
+
+between any two magazines being 0 59.
+
+As mentioned earlier, a particularly robust model for univariate magazine exposure models is the BBD. We therefore fit separate BBDs to each magazine. As the number of magazines exceeds Danaher's (1991) recommended limit of six, we approximate the Sarmanov/canonical expansion model to use terms only up to bivariate pairs in Equation (17). The bivariate association parameters j1 j2 are estimated using pairwise correlations, as shown by Danaher (1991) and Danaher and Hardie (2005). Once the full multivariate distribution is estimated, the probability mass function of the sum fS can be obtained easily by summing over these probabilities so that
+
+fS s =
+
+f x1 x2
+
+xm
+
+x1 xm x1+···+xm=s
+
+(18)
+
+We also use a Gaussian copula model with the same maximum likelihood estimates for the BBD margins. The off-diagonal correlations in that define the copula function and the joint distribution of X are estimated by using Algorithm 2. This produces a Monte Carlo sample from which can be estimated by its Bayesian posterior mean using Equation (15).
+Following the discussion in §3.3, Algorithm 1 can be appended to the end of each sweep of Algorithm 2 to provide a Monte Carlo sample of iterates of X that are distributed as the fitted Gaussian copula model. Computing the sum of the elements of each iterate converts this into a Monte Carlo sample of S, from which the relative frequencies provide a Bayesian estimate of the total exposure distribution fS.
+We can compare these estimated parametric distributions with the empirical distributions obtained by summing the total number of exposures across the 10 magazines for each person in the data. There is a well-established history of validating magazine exposure models in this way (Leckenby and Kishi 1984, Danaher 1991). Model estimation accuracy is assessed by comparing the estimated probabilities with those from the empirical distribution. Here, we use two measures previously used by Leckenby and Kishi (1984) and Danaher (1991). Denote fs = f S = s and f^s as the observed and estimated exposure distribution probabilities, respectively. Then define the relative error in reach (RER) as
+
+RER = f^0 - f0 1 - f0
+
+and the error in exposure probabilities over reach
+
+(EPOR) as
+
+EPOR =
+
+20 s=0
+
+f^s - fs
+
+1 - f0
+
+We limit the EPOR calculation to 20 exposures as
+
+there is little managerial interest in exposures beyond
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+16
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+Table 4 Exposure Distributions (in Percent) for the 10-Magazine Example
+
+Full year
+
+Half year--Validation test
+
+Exposure count
+
+Observed
+
+Sarmanov model
+
+Independent margins
+
+Gaussian copula
+
+Observed
+
+Sarmanov model
+
+Independent margins
+
+Gaussian copula
+
+0 1 2 3 4 5 6 7 8 9 10­20
+RER EPOR
+
+22.1
+
+16 1
+
+6.5
+
+91
+
+6.8
+
+69
+
+4.5
+
+67
+
+13.5
+
+11 1
+
+5.9
+
+69
+
+5.6
+
+59
+
+4.3
+
+57
+
+6.7
+
+60
+
+3.9
+
+50
+
+18.1
+
+20 4
+
+74
+
+19 8
+
+22.2
+
+15 7
+
+70
+
+86
+
+6.8
+
+90
+
+74
+
+72
+
+6.8
+
+68
+
+86
+
+69
+
+4.6
+
+67
+
+13 2
+
+97
+
+13.5
+
+11 0
+
+10 4
+
+66
+
+5.9
+
+70
+
+92
+
+55
+
+5.6
+
+59
+
+85
+
+50
+
+4.3
+
+58
+
+82
+
+46
+
+6.6
+
+61
+
+57
+
+37
+
+3.7
+
+50
+
+14 1
+
+20 0
+
+18.0
+
+20 6
+
+72
+
+19 5
+
+69
+
+86
+
+73
+
+70
+
+85
+
+68
+
+13 2
+
+93
+
+10 4
+
+65
+
+92
+
+56
+
+85
+
+50
+
+83
+
+48
+
+57
+
+40
+
+14 5
+
+20 2
+
+0.0770 0.3312
+
+0.1887 0.5841
+
+0.0297 0.2542
+
+0.0835 0.3368
+
+0.1928 0.5874
+
+0.0343 0.2566
+
+Note. The left-hand side contains results for the fit to the full-year data, whereas the right-hand side contains results for the fit to the first half-year of data only.
+
+this range (Rossiter and Danaher 1998). The left-hand portion of Table 4 contains the observed distribution and the estimated Sarmanov and Gaussian copula exposure distributions using the full year of data. Also included for comparison is the distribution of total exposure when magazines are treated as independent. The right-hand portion of Table 4 facilitates a validation test, whereby the data for the 6,000 people interviewed in the first half of the year are used to fit the model parameters, then the fitted model is used to predict the exposure distribution for the second half of the year.
+The RER and EPOR statistics show that the copula model is substantially more accurate at estimating the reach and exposure distribution for the full year, and in the validation half-year. They also show that ignoring the intermagazine dependence results in a very poor estimate of the distribution of total exposure. Moreover, the copula model is substantially quicker, taking 55 minutes on a 2.66 GHz PC while the Sarmanov model took 6.5 hours.
+There are two reasons for the superior performance of the Gaussian copula model in comparison to the Sarmanov model. The first is that the Gaussian copula is a well-defined distribution, whereas the Sarmanov is not because of the computational necessity of truncating the sum in Equation (17). The second is that, as discussed in §3.3, the Bayesian method integrates out the intermagazine dependency structure (parameterized by the matrix) as opposed to conditioning on its point estimate as with the method of estimation for the Sarmanov model outlined in Danaher and Hardie (2005). Given that there is some meaningful uncertainty regarding the exact values of , accounting for that uncertainty results in a more accurate estimate of the exposure distribution.
+
+We further demonstrate the usefulness of copulas
+
+in this example by showing how the estimates of
+
+the joint distribution can be used to maximize reach.
+
+Rust (1986) discusses a number of media optimization
+
+methods, but one that is computationally attractive is
+
+a heuristic called the "greedy algorithm," which pro-
+
+ceeds in a stepwise fashion as follows. First, select
+
+the magazine that maximizes reach subject to an over-
+
+all budget constraint. Next, choose a second maga-
+
+zine that results in the greatest increment in reach
+
+conditional on the first magazine already selected,
+
+again staying within the budget. This sequence con-
+
+tinues until the budget is exhausted. This algorithm
+
+dovetails nicely with the MCMC approach, where the
+
+Monte Carlo iterates of X = X1 X2
+
+Xm can be
+
+used to compute the required conditional distribu-
+
+tions. We implemented this greedy algorithm using
+
+realistic costs per magazine and a total budget of
+
+$75,000. Using the first six months of data, three mag-
+
+azines were chosen (Woman's Weekly, TV Guide, Cui-
+
+sine), giving a maximum predicted reach of 62.3%. We
+
+tested the accuracy of this heuristic by also conduct-
+
+ing a complete enumeration of all the possible maga-
+
+zine combinations, using the empirical reach derived
+
+from the observed exposure distribution. This (slow)
+
+method gives the exact same magazine combination
+
+as the heuristic, with the empirical reach being 62.0%.
+
+Last, we undertook a complete enumeration in the
+
+validation period, and again the same three maga-
+
+zines comprise the optimal media schedule. This fur-
+
+ther illustrates the usefulness of copula models with
+
+Bayesian estimation, as the MCMC iterates facilitate
+
+simple estimation of conditional distributions.
+
+4.2. Example 4: Website Page Views Our final example returns to the Internet, but in a different context. Not only has the Internet exploded
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+17
+
+as a sales channel, but in recent years it has become an accepted and essential advertising medium, as evidenced by 30% annual growth since 2003, to the point where online ad spend in the United States exceeded $21 billion in 2007 (IAB 2008). One key difference between the Internet and all other media is the enormous number of potential websites in which to advertise. This underscores the need for models that are capable of handling many websites. In this example we demonstrate a copula model for up to 45 websites, which substantially exceeds the 15-website maximum modeled previously using the Sarmanov model by Danaher (2007).
+We follow Danaher (2007) and model page views for multiple websites, since banner ads and other forms of online display ads are delivered via Web pages.8 Let Xj be the number of page views to website j, j = 1 2 m. An appropriate and robust model for univariate page view distributions is the NBD (Danaher 2007, Huang and Lin 2006). To date, the best nonproprietary multivariate model for page views is based on a Sarmanov distribution (Danaher 2007). However, as already noted, the full model becomes computationally infeasible for even moderate dimensions, so we follow Danaher (2007) and truncate after trivariate terms. As a result, the Sarmanov model runs the risk of producing negative probability estimates. Nonetheless, Danaher (2007) tests the Sarmanov model across a range of popular websites and shows that it outperforms several other possible models in an extensive validation test.
+Our copula model for multivariate website page views is similar in principle to the copula model for multivariate BBDs demonstrated above for magazines, except the univariate distributions are now NBDs. To link the univariate NBDs, we use the Gaussian copula function as in Example 3. As discussed previously, this has the attractive property of only requiring estimates of m m - 1 /2 off-diagonal elements for the correlation matrix , resulting in a manageable 990 parameters here for all m = 45 websites. By contrast, even the truncated Sarmanov model has 15 180 parameters.
+To facilitate a fair comparison, we use comScore data for the United States from the same source as Danaher (2007)--namely, the Wharton Research Data Service, where we also sourced the transaction data for our first example. Data for the month of September 2002 are used for estimation and November 2002 for validation, with subpanels of 10 000 randomly chosen homes for each time period taken from the
+8 We do not consider paid search advertising in this example. Display ads are still the dominant form of Internet advertising, being 45% of all Internet ad spend (IAB 2008).
+
+entire comScore panel of 100 000. There is no over-
+
+lap in homes across the two subpanels. The same
+
+45 websites listed in Danaher's (2007) Table 2 were
+
+selected because they were the most popular sites at
+
+that time in the United States. We fit NBDs to all 45
+
+marginal distributions and then use MCMC to esti-
+
+mate the Gaussian copula model once for all 45 sites.
+
+We estimate the total exposure distribution in the
+
+same manner as in the previous example. That is,
+
+we append Algorithm 1 to the end of Algorithm 2
+
+and generate a large Monte Carlo sample of X,
+
+which is a vector with 45 elements. We also gen-
+
+erate the corresponding Monte Carlo sample of U
+
+and use these to compute estimates of all 990 pos-
+
+sible pairwise Spearman correlations
+
+s j1 j2
+
+using
+
+the
+
+Bayesian estimator in Equation (16). Figure 2 plots
+
+these Spearman correlation estimates when using the
+
+Gaussian copula. For ease of exposition, only the
+
+correlations for the top 27 websites are presented,
+
+which are sites that were visited by at least 5%
+
+of panelists in September 2002. Positive pairwise
+
+dependence is strong for a number of websites. For
+
+example, MSN.com, Msnbc.com, and Hotmail.com all
+
+have Spearman correlations in excess of 0.6, which is
+
+likely because they are either fully or partially owned
+
+components of the interlinked Microsoft Network.
+
+To benchmark the performance of the copula
+
+model, we extend the validation study found in
+
+Danaher (2007) to include the Gaussian copula model.
+
+In this study, advertising schedules of between 2 and
+
+15 websites were considered. For each schedule size,
+
+200 different schedules were randomly selected from
+
+the 45 sites considered here and different models fit to
+
+each schedule using the September 2002 data. These
+
+include the Sarmanov model with NBD margins and
+
+a model assuming independence with NBD margins,
+
+as well as our Gaussian copula model (other models
+
+reported by Danaher 2007 are not considered here as
+
+they are all inferior to the Sarmanov model). Fore-
+
+casts were made for the November data, adjusting the
+
+margins for the change in the mean number of page
+
+impressions between the two months but keeping
+
+the estimated dependency structure constant between
+
+sites. The performance of the method was judged
+
+by computing the RER and EPOR for the estimated
+
+total exposure distribution across the websites in each
+
+schedule. Table 5 reports summaries of these met-
+
+rics in the same manner as Danaher's (2007) Table 4.
+
+Again, the Gaussian copula substantially outperforms
+
+all the other methods in terms of both estimating
+
+reach (lower mean RER values) and the overall expo-
+
+sure distribution (lower mean EPOR values). More-
+
+over, these metrics have lower standard deviations,
+
+suggesting that the improvement is consistent.
+
+Last, we note that the effective limit of the num-
+
+ber of sites that can be handled by even the approx-
+
+imate Sarmanov model is around 15. In comparison,
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+18
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+Figure 2
+
+Estimated Pairwise Spearman Correlations for the Top 27 Websites Using the Gaussian Copula Model with NBD Margins
+
+Pairwise spearman correlations (top 27 sites only)
+
+About
+
+Amazon
+
+Angelfire
+
+AOL
+
+0.6
+
+Ask
+
+CNN
+
+eBay
+
+Expedia
+
+0.5
+
+FlowGo
+
+Gator
+
+Go
+
+Google
+
+Hotmail
+
+0.4
+
+IWON
+
+Kazaa
+
+Lycos
+
+Mamma
+
+0.3
+
+MSN
+
+Msnbc
+
+Netflix
+
+Netscape
+
+Reunion
+
+0.2
+
+Travelzoo
+
+Tripod
+
+Weather
+
+WeatherBug
+
+0.1
+
+Yahoo!
+
+AboAumt azAonngelfire AOL Ask CNNeBEaxypediFalowGoGator GGooogHleotmail IWOKNazaaLyMcoasmma MSMNsnbcNeNtfelitxscaRpeeuTnriaovnelzooTripWoWedaetahtehrerBuYgahoo!
+
+the Gaussian copula model was successfully applied to model all 45 websites jointly--a massive improvement. Table 6 gives the observed and estimated exposure distribution for this 45-website schedule. As for
+
+Table 5
+
+Average Values of RER and EPOR for Alternative Models for the Website Page View Data
+
+Number of websites
+
+Model
+
+RER (%)
+
+EPOR (%)
+
+2­8 sites (1,400 schedules)
+9­15 sites (1,400 schedules)
+
+Sarmanov Independent Gaussian copula Sarmanov Independent Gaussian copula
+
+59 0 11
+96 0 16
+59 0 07
+32 0 07
+20 6 0 05
+20 0 02
+
+19 7 0 23
+23 4 0 26
+17 4 0 13
+11 3 0 01
+38 0 0 10
+87 0 03
+
+Note. Standard deviations of the RER and EPOR values are given in parentheses.
+
+Table 5, we additionally include the independence model. It can be seen that the Gaussian copula model strongly outperforms the independence model for reach and the full exposure distribution. Moreover, the RER and EPOR values are similar in size to those for the much smaller schedules in Table 5, indicating that the copula model still retains its accuracy in high dimensions.
+Finally, two points are worth noting. First, to be computationally feasible, only elliptical copulas can be used for total exposure distributions for advertising campaigns featuring banners on 15 to 45 websites. Second, in the validation study, the copula model need only be fit once and a single Monte Carlo sample of exposures for all 45 sites generated. Monte Carlo iterates of total exposure for any given subset of these 45 websites can then be computed by simply calculating the sum of exposures over only those websites in the smaller schedule. In comparison, the other models have to be reestimated for each of the 2,800 schedules in the validation study. This has huge computational advantages for copula models, for example,
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+19
+
+Table 6
+
+Comparison of Observed and Estimated Exposure Distributions for a Schedule Containing 45 Websites
+
+Observed distribution (%)
+
+Model (%)
+
+Page views
+
+Validation
+
+Gaussian copula Independent
+
+0
+
+14 4
+
+1
+
+31
+
+2
+
+19
+
+3
+
+15
+
+4
+
+16
+
+5
+
+13
+
+6
+
+13
+
+7
+
+11
+
+8
+
+09
+
+9
+
+11
+
+10­15
+
+50
+
+16­20
+
+37
+
+21­30
+
+56
+
+31+
+
+57 5
+
+RER (%)
+
+--
+
+EPOR (%)
+
+--
+
+11 2
+
+03
+
+41
+
+05
+
+29
+
+06
+
+23
+
+07
+
+20
+
+08
+
+17
+
+08
+
+16
+
+08
+
+14
+
+09
+
+13
+
+09
+
+12
+
+09
+
+60
+
+55
+
+39
+
+44
+
+62
+
+83
+
+54 2
+
+74 7
+
+38
+
+16 4
+
+10 7
+
+25 9
+
+when looking for the advertising schedule that optimizes reach.
+
+5. Conclusion
+The growing availability of large customer databases with many measured variables per customer has opened up the possibility for using more than just elementary marketing analytics (Davenport and Harris 2007, Rossi and Allenby 2000). When modeling such multivariate data, the dependencies can be both subtle and challenging; failure to adequately capture these can result in poor model fits and forecasts (Park and Fader 2004, Danaher 2007). This is demonstrated by the successful application of many known multivariate distributions from the statistics literature. However, these previous models are limited in that their marginals all have fixed distributions, usually of the same type. Moreover, a large number of marketing applications require discrete, rather than continuous, distributions with complex dependency structures in high dimensions--something that is beyond the scope of traditional models to capture.
+Copula models offer a versatile solution to these multiple demands, but, until now, there have been two barriers to using copulas in marketing. These are the multivariate discrete nature and the high dimensionality of much of marketing data. Although copula models can be easily defined for these cases, it is not possible to reliably estimate them using maximum likelihood techniques. However, in recent research, Pitt et al. (2006) show how Bayesian MCMC estimation can be used to estimate elliptical copula models when the data are discrete. Even so, their approach involves a complex prior on the dependency structure which is not easily applied to higher dimensions. Hence, we develop a fast and efficient alternative MCMC
+
+algorithm that enables estimation of multivariate discrete distributions in large dimensions, up to 45 in one application. Therefore, with the developments in this study, the method of copula modeling is a technique whose time has come for marketing.
+In summary, the key advantages of copula modeling for marketers are (1) the ability to combine completely different univariate distributions into a well-defined multivariate model, (2) no approximations are required in high dimensions, and (3) when using elliptical copulas, the number of parameters and computational demands do not "blow up" in high dimensions, as can happen for other multivariate probability models used in marketing applications.
+The examples used in this study show that copula modeling has merit. In the case of website visit duration and amount purchased, a naive correlation analysis leads to a conclusion that there is no relationship between website "stickiness" and downstream purchase amount. However, a more careful analysis with copula modeling gives online retailers some assurance that their efforts at retaining visitors to their site can have financial benefit. The application of copula modeling to high-dimensional discrete distributions is particularly noteworthy, where our model is substantially more accurate than competing models at estimating multivariate magazine exposure distributions and page views to numerous websites.
+Even though we have illustrated the key advantages of copula models in marketing, there are other potential applications that remain for future research. Consider the "Dirichlet" model of Goodhardt et al. (1984), which combines a model for category purchases (the NBD) with a model for brand choice, the Dirichlet multinomial distribution (DMD). A disadvantage of the Dirichlet is that the model for brand choice cannot accommodate covariates, such as price and promotion. By contrast, the MNL model developed by Guadagni and Little (1983) can accommodate such marketing-mix variables. Even though the NBD and MNL do not come from the same distributional family, copula models offer a way to combine them. This results in a Dirichlet-style model where the DMD is replaced with the MNL, allowing for the inclusion of covariates, a modeling possibility that has previously eluded marketing scientists. In the same way, a copula model could combine a diffusion model for a new product category with a model for brand choice within the category. Last, another possible application of copula models is to extend the purchase timing work of Chintagunta and Haldar (1998) from two to many product categories.
+Acknowledgments The authors thank comScore for providing the online panel data used for part of this study. The authors are listed in alphabetical order.
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+20
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+Appendix This appendix details how to derive the conditional Bayesian posterior distribution given at Step 1(b) of Algorithm 2 and also how to implement Algorithm 3 when a Gaussian copula is employed.
+For Step 1(b) we outline the derivation found in Pitt et al. (2006, pp. 543­544). Following from Bayes theorem,
+
+f xij x \xij
+
+x
+
+ f x x f xij x \xij
+
+(19)
+
+Now, conditional on the latent variables x , the data
+
+x are independently distributed, so that f x x =
+
+n i=1
+
+m j =1
+
+f
+
+xij
+
+xij . For this discrete conditional distribu-
+
+tion,
+
+f xij xij = Pr Xij = xij xij = T L  xij < T U
+where the indicator function A = 1 if A is true and A = 0 if A false. The bounds for xij are given by the
+inequality at Equation (11), so that
+
+T L = -1 Fj xij - 1
+
+T U = -1 Fj xij
+
+In the case of a Gaussian copula, the latent variables xi are jointly distributed independent N 0 , so that the condi-
+
+tional distribution of the jth element xij , given the other
+
+elements, is N
+
+ij
+
+2 ij
+
+,
+
+where
+
+the
+
+mean
+
+ij and
+
+2 ij
+
+are
+
+the
+
+usual conditional mean and variance from a normal dis-
+
+tribution; see Greene (2003, p. 872). Substituting this into
+
+Equation (19) results in a N
+
+ij
+
+2 ij
+
+distribution constrained
+
+between lower bound T L and upper bound T U .
+
+To implement Algorithm 3, we first note that, via Bayes
+
+theorem,
+
+f rij R\rij x x  f x x f x R p rij
+
+
+
+-1
+
+n/2 exp
+
+-
+
+1 2
+
+tr
+
+-1
+
+where
+
+=
+
+n i=1
+
+xi
+
+xi
+
+.
+
+To
+
+implement
+
+Step
+
+2(a),
+
+we
+
+first
+
+gen-
+
+erate a new proposal value, say, rinj ew, from a N riojld 0 012
+
+distribution, where riojld is the previous iterate value of rij .
+
+This is accepted with probability
+
+= min 1 f rinj ew R\rij x x f riojld R\rij x x
+If it is not accepted, the old value riojld is retained. This is an implementation of the random walk MetropolisHastings step that is a popular computational approach in the MCMC literature. Steps 2(b) and 2(c) are just straightforward computations.
+Algorithm 3 repeats this process to generate all of the upper triangular elements of R one at a time. In addition, if the order in which the elements are generated is randomized at each sweep, the MCMC scheme has better mixing properties--something we do in all our empirical work.
+Last, we note here that Algorithm 2 can be extended to cope with a t-copula model. An additional technical appendix outlining this extension is available from the authors upon request.
+
+References
+Advertising Age. 2006. FactPack: 4th annual guide to advertising and marketing. Retrieved May 22, 2008, http://adage.com/ images/random/FactPack06.pdf.
+
+Albert, J. H., S. Chib. 1993. Bayesian analysis of binary and polychotomous response data. J. Amer. Statist. Assoc. 88(422) 669­679.
+Bell, D. R., J. M. Lattin. 1998. Shopping behavior and consumer preference for store price format: Why "large basket" shoppers prefer EDLP. Marketing Sci. 17(1) 66­88.
+Bernard, J., R. McCulloch, X.-L. Meng. 2000. Modeling covariance matrices in terms of standard deviations and correlations, with application to shrinkage. Statistica Sinica 10 1281­1311.
+Bradlow, E. T., V. R. Rao. 2000. A hierarchical Bayes model for assortment choice. J. Marketing Res. 37(2) 259­268.
+Bucklin, R. E., C. Sismeiro. 2003. A model of web site browsing behavior estimated on clickstream data. J. Marketing Res. 40(August) 249­267.
+Chandon, J.-L. J. 1986. A Comparative Study of Media Exposure Models. Garland, New York.
+Cherubini, U., E. Luciano, W. Vecchiato. 2004. Copula Methods in Finance. John Wiley & Sons, New York.
+Chintagunta, P. K., S. Haldar. 1998. Investigating purchase timing behavior in two related product categories. J. Marketing Res. 35(February) 43­53.
+Danaher, P. J. 1991. A canonical expansion model for multivariate media exposure distributions: A generalization of the duplication of viewing law. J. Marketing Res. 28(August) 361­367.
+Danaher, P. J. 1992. Some statistical modeling problems in the advertising industry: A look at media exposure distributions. Amer. Statistician 46(4) 254­260.
+Danaher, P. J. 2002. Optimal pricing of new subscription services: Analysis of a market experiment. Marketing Sci. 21(2) 119­138.
+Danaher, P. J. 2007. Modeling page views across multiple websites with an application to Internet reach and frequency prediction. Marketing Sci. 26(3) 422­437.
+Danaher, P. J., B. G. S. Hardie. 2005. Bacon with your eggs? Applications of a new bivariate beta-binomial distribution. Amer. Statistician 59(4) 282­286.
+Danaher, P. J., G. Mullarkey, S. Essegaier. 2006. Factors affecting website visit duration: A cross-domain analysis. J. Marketing Res. 43(May) 182­194.
+Daul, S., E. De Giorgi, F. Lindskog, A. J. McNeil. 2003. The grouped t-copula with an application to credit risk. Risk 16(11) 73­76.
+Davenport, T. H., J. G. Harris. 2007. Competing on Analytics: The New Science of Winning. Harvard Business School Press, Boston.
+Edwards, Y. D., G. M. Allenby. 2003. Multivariate analysis of multiple response data. J. Marketing Res. 40(August) 321­334.
+Ehrenberg, A. S. C. 1988. Repeat Buying: Facts, Theory and Applications, 2nd ed. Charles Griffin and Company Limited, London.
+Fader, P. S., B. G. S. Hardie. 2007. How to project customer retention. J. Interactive Marketing 21(1) 76­90.
+Frees, E. W., E. A. Valdez. 1998. Understanding relationships using copulas. North Amer. Actuarial J. 2(1) 1­25.
+Genest, C., J. MacKay. 1986. The joy of copulas: Bivariate distributions with uniform marginals. Amer. Statistician 40(4) 280­283.
+Genz, A. 1992. Numerical computation of multivariate normal probabilities. J. Comput. Graphical Statist. 1(2) 141­149.
+Genz, A., F. Bretz. 2002. Methods for the computation of multivariate t-probabilities. J. Comput. Graphical Statist. 11(4) 950­971.
+Goodhardt, G. J., A. S. C. Ehrenberg, C. Chatfield. 1984. The Dirichlet: A comprehensive model of buying behavior. J. Royal Statist. Soc. A 147(5) 621­655.
+
+Danaher and Smith: Modeling Multivariate Distributions Using Copulas: Applications in Marketing
+
+Marketing Science 30(1), pp. 4­21, © 2011 INFORMS
+
+21
+
+Guadagni, P. M., J. D. C. Little. 1983. A logit model of brand choice calibrated on scanner data. Marketing Sci. 2(3) 203­238.
+Gumbel, E. J. 1960. Bivariate exponential distributions. J. Amer. Statist. Assoc. 55(292) 698­707.
+Hong, Y., J. Tu, G. Zhou. 2007. Asymmetries in stock returns: Statistical tests and economic evaluation. Rev. Financial Stud. 20(5) 1547­1581.
+Huang, C.-Y., C.-S. Lin. 2006. Modeling the audience's banner ad exposure for Internet advertising planning. J. Advertising 35(2) 23­37.
+IAB. 2008. IAB Internet advertising revenue report. (May 23). Retrieved June 3, http://www.iab.net/media/file/IAB_PwC _2007_full_year.pdf.
+Jain, D. C., N. J. Vilcassim. 1991. Investigating household purchase timing decisions: A conditional hazard function approach. Marketing Sci. 10(1) 1­23.
+Joe, H. 1997. Multivariate Models and Dependence Concepts. Chapman & Hall, London.
+Johnson, N., S. Kotz, N. Balakrishnan. 1995. Continuous Univariate Distributions, Vol. 1, 2nd ed. John Wiley & Sons, New York.
+Johnson, N., S. Kotz, N. Balakrishnan. 1997. Discrete Multivariate Distributions. John Wiley & Sons, New York.
+Kotz, S., N. Johnson, N. Balakrishnan. 2000. Continuous Multivariate Distributions, Vol. 1, 2nd ed. John Wiley & Sons, New York.
+Leckenby, J. D., S. Kishi. 1984. The Dirichlet multinomial distribution as a magazine exposure model. J. Marketing Res. 21(1) 100­106.
+Lee, M.-L. T. 1996. Properties and applications of the Sarmanov family of bivariate distributions. Comm. Statist.: Theory Methods 25(6) 1207­1222.
+Leeflang, P. S. H., D. R. Wittink, M. Wedel, P. A. Naert. 2000. Building Models for Marketing Decisions. Kluwer Academic Publishers, Boston.
+Lilien, G., P. Kotler, K. S. Moorthy. 1992. Marketing Models. Prentice Hall, Englewood Cliffs, NJ.
+Moe, W. W., P. S. Fader. 2004. Dynamic conversion behavior at e-commerce sites. Management Sci. 50(3) 326­335.
+Morrison, D. G., D. C. Schmittlein. 1988. Generalizing the NBD model for customer purchases: What are the implications and is it worth the effort? J. Bus. Econom. Statist. 6(2) 145­159.
+Nelsen, R. B. 2006. An Introduction to Copulas, 2nd ed., Springer Series in Statistics. Springer, New York.
+Panagiotelis, A., M. Smith. 2008. Bayesian identification, selection and estimation of semiparametric functions in highdimensional additive models. J. Econometrics 143(2) 291­316.
+
+Park, Y.-H., P. S. Fader. 2004. Modeling browsing behavior at multiple websites. Marketing Sci. 23(3) 280­303.
+Pitt, M., D. Chan, R. Kohn. 2006. Efficient Bayesian inference for Gaussian copula regression models. Biometrika 93(3) 537­554.
+Poon, S.-H., M. Rockinger, J. Tawn. 2004. Extreme value dependence in financial markets: Diagnostics, models, and financial implications. Rev. Financial Stud. 17(2) 581­610.
+Robert, C. R., G. Casella. 2004. Monte Carlo Statistical Methods, 2nd ed. Springer, New York.
+Rossi, P. E., G. M. Allenby. 2000. Statistics and marketing. J. Amer. Statist. Assoc. 95(450) 635­638.
+Rossi, P. E., G. M. Allenby. 2003. Bayesian statistics and marketing. Marketing Sci. 22(3) 303­328.
+Rossi, P. E., Z. Gilula, G. M. Allenby. 2001. Overcoming scale usage heterogeneity: A Bayesian hierarchical approach. J. Amer. Statist. Assoc. 96(March) 20­31.
+Rossiter, J. R., P. J. Danaher. 1998. Advanced Media Planning. Kluwer Academic Publishers, Norwell, MA.
+Rust, R. T. 1986. Advertising Media Models: A Practical Guide. Lexington Books, Lexington, MA.
+Sarmanov, O. V. 1966. Generalized normal correlations and twodimensional Fréchet classes. Doklady Soviet Mathematics 168 596­599.
+Schmittlein, D. C., D. G. Morrison, R. Colombo. 1987. Counting your customers: Who are they and what will they do next? Management Sci. 33(1) 1­24.
+Schweidel, D., P. S. Fader, E. T. Bradlow. 2008a. Understanding service retention within and across cohorts using limited information. J. Marketing 71(January) 82­94.
+Schweidel, D. A., P. S. Fader, E. T. Bradlow. 2008b. A bivariate timing model of customer acquisition and retention. Marketing Sci. 27(5) 829­843.
+Sklar, A. 1959. Fonctions de répartition à n dimensions et leurs marges. Publications de l'Institut de Statistique de L'Université de Paris 8 229­231.
+Smith, M., R. Kohn. 2002. Parsimonious covariance matrix estimation for longitudinal data. J. Amer. Statist. Assoc. 97(December) 1141­1153.
+Smith, M., S. K. Mathur, R. Kohn. 2000. Bayesian semiparametric regression: An exposition and application to print advertising data. J. Bus. Res. 49(3) 229­244.
+Song, P. X.-K. 2000. Multivariate dispersion models generated from Gaussian copula. Scandinavian J. Statist. 27(2) 305­320.
+Trivedi, P. K., D. M. Zimmer. 2005. Copula modeling: An introduction for practitioners. Foundations Trends Econometrics 1(1) 1­111.
+
+

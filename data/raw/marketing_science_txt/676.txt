@@ -1,0 +1,1378 @@
+Vol. 28, No. 3, May­June 2009, pp. 541­553 issn 0732-2399 eissn 1526-548X 09 2803 0541
+
+informs ®
+doi 10.1287/mksc.1090.0502 © 2009 INFORMS
+
+"Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+Makoto Abe
+Graduate School of Economics, The University of Tokyo, Bunkyo-ku, Tokyo 113-0033, Japan, abe@e.u-tokyo.ac.jp
+This research extends a Pareto/NBD model of customer-base analysis using a hierarchical Bayesian (HB) framework to suit today's customized marketing. The proposed HB model presumes three tried and tested assumptions of Pareto/NBD models: (1) a Poisson purchase process, (2) a memoryless dropout process (i.e., constant hazard rate), and (3) heterogeneity across customers, while relaxing the independence assumption of the purchase and dropout rates and incorporating customer characteristics as covariates. The model also provides useful output for CRM, such as a customer-specific lifetime and survival rate, as by-products of the MCMC estimation.
+Using three different types of databases--music CD for e-commerce, FSP data for a department store and a music CD chain, the HB model is compared against the benchmark Pareto/NBD model. The study demonstrates that recency-frequency data, in conjunction with customer behavior and characteristics, can provide important insights into direct marketing issues, such as the demographic profile of best customers and whether long-life customers spend more.
+Key words: CRM; direct marketing; customer lifetime; Bayesian method; MCMC History: Received: June 29, 2006; accepted: December 7, 2007; processed by Peter Fader. Published online in
+Articles in Advance June 23, 2008; revised March 18, 2009.
+
+1. Introduction
+In CRM, it is important to know which customers are likely to be active and to be able to predict their future purchase patterns. This, in turn, allows the firm to take customized marketing action most suitable to each customer, as well as to estimate its current and future customer base for strategic planning (Rust and Chung 2006, Sun 2006). Under a "noncontractual" setting, however, consumers do not declare that they become inactive, but simply stop conducting business with the firm. To judge customer attrition, practitioners often use ad hoc rules, for instance, a customer is considered to have dropped out if he/she has not made a purchase for over three months.
+There are two problems with this kind of judgment. First, it is not clear why the period of inactivity is three months rather than two or four months. Although the criterion of "three months" may be chosen according to the experience of the firm, it hardly seems objective. Second, the criterion ignores customers' differences in purchase frequency. Given the same period of nonpurchase, customers with a long interpurchase time may still be active, whereas those with a short interpurchase time are more likely to be inactive. Recognition of customer heterogeneity is critical in such a context.
+
+This problem was first recognized by Schmittlein, Morrison, and Colombo (1987) (hereafter referred to as SMC). Based on common hypotheses about consumer behavior, SMC proposed a Pareto/NBD model that accounts for the relationship between recency and frequency, and derived the probability of an individual customer being active at a particular point in time. In their model, consumer behavior is characterized by (1) Poisson purchase (with purchase rate parameter ) and (2) exponential lifetime (with dropout rate parameter ). Further, and follow independent gamma distributions, which are formulated as a mixture distribution model. Although their work is highly regarded and follow-up research has been conducted (Fader et al. 2005a, b; Reinartz and Kumar 2000, 2003; Schmittlen and Peterson 1994), it is the increasing importance of new types of marketing, such as Database Marketing, CRM, and One-to-One Marketing, that has brought this model to the attention of researchers and practitioners.
+In this research, the behaviorally based recencyfrequency (RF) analysis of SMC and others is extended to suit the micro focus of today's marketing. While adopting the theoretically sound behavioral assumptions of Pareto/NBD, the proposed approach
+
+541
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+542
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+captures customer heterogeneity through estimation of individual-specific parameters with a hierarchical Bayesian framework. In particular, this approach maintains the behavioral model of SMC but (1) replaces the analytical part of the heterogeneity mixture distribution with a simulation method and (2) incorporates unobservable measures such as a customer lifetime and an active/inactive binary indicator into the model as latent variables. By avoiding analytical aggregation, the model and its estimation become simpler, thereby permitting to accommodate various model extensions as follows.
+First, the proposed model is more flexible in that the independence of purchase rate and dropout rate parameters, a crucial assumption in a Pareto/NBD model, can be relaxed. The parameter estimate of a Pareto/NBD model might be biased if this independence assumption were violated. The proposed model not only accommodates correlated data, but also allows the performing of statistical inference of the independence assumption on data.
+Second, because the distribution of the purchase rate and dropout rate are estimated at the individual level as a byproduct of the MCMC method, the distribution of any customer-specific statistics that are functions of and can be obtained by simple algebra. Such statistics of managerial relevance include a probability of being active at a certain point in time, an expected lifetime, a one-year survival rate, and an expected number of transactions in a future period. The fact that a distribution rather than a point estimate of a statistic is obtained also permits the application of statistical inference at the individual level without being restricted by the asymptotic properties.
+Third, hierarchical models, whereby customerspecific parameters are a function of covariates, can be constructed and estimated with ease.
+(a) Schmittlein and Peterson (1994) calibrate a Pareto/NBD model separately for each segment specified by the SIC code. The proposed model, by including segmentation variables in a hierarchical manner, allows estimation of all segments simultaneously, thereby increasing the degrees of freedom. The model can also incorporate nonnominal explanatory variables.
+(b) To investigate the impact of customer characteristic variables on profitable lifetime duration, Reinartz and Kumar (2003) pursue a two-step approach: a lifetime duration is first estimated from RF data using a Pareto/NBD model, and then a proportional hazard model is constructed to link the lifetime duration (dependent variable) with characteristic variables (explanatory variables). A hierarchical model, whose dropout parameter is a function of customer characteristics, can achieve these in one step, providing the correct measures of error for statistical inference.
+
+Mathematically, the approach pursued in a Pareto/ NBD model is so-called empirical Bayes, whereby the same data are used for the likelihood (customerspecific purchase and survival functions) as well as for estimating the prior (a mixture distribution), resulting in the overestimation of precision.1 Although no threat is posed if the sample size is large or the mixture distribution is estimated from separate data, empirical Bayes is an approximation of a hierarchical Bayes method in the Bayesian paradigm (Gelman et al. 1995).
+In the next section, the proposed model is described and compared against the Pareto/NBD model. Section 3 explains the estimation by an MCMC method. Section 4 presents empirical analyses with three data sets of various types, comparing the model's performance against that of the Pareto/NBD model. Section 5 presents the conclusions, limitations of the model, and future directions.
+2. Proposed Model vs. Pareto/NBD Model
+2.1. Model Assumptions This section provides an explanation for the assumptions of the proposed model.
+Individual Customer
+Assumption 1 (A1). Poisson purchases. While active, each customer makes purchases according to a Poisson process with rate .
+Assumption 2 (A2). Exponential lifetime. Each customer remains active for a lifetime, which has an exponentially distributed duration with dropout rate .
+These assumptions are identical to the behavioral assumptions of a Pareto/NBD model, and their validity has been studied by other researchers. Because their justification is documented elsewhere, including SMC, further elaboration is not provided here for brevity.
+Heterogeneity Across Customers
+Assumption 3 (A3). Individuals' purchase rates and dropout rates follow a multivariate lognormal distribution.
+Unlike a Pareto/NBD model, whereby independent gamma distributions are assumed for and , this assumption permits a correlation between purchase and dropout processes. There are several reasons for the lognormal assumption.
+(a) Bayesian updating of a multivariate normal (hence lognormal) is a standard procedure and easy to compute.
+1 Ma and Liu (2007) apply HB to the Pareto/NBD model as an alternative estimation method to the empirical Bayes. Their approach, however, does not take advantage of the HB framework in that none of the aforementioned three issues are addressed.
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+543
+
+Figure 1 Notations for RF Data
+
+0
+
+t1
+
+t2
+
+tx
+
+T
+
+= Repeat purchase
+
+The distribution can readily accommodate additional parameters through a hierarchical model, as will be shown in §2.3.
+(b) Correlation between log and log can be obtained through the variance-covariance matrix of the normal mixture distribution. A correlated bivariate distribution with gamma marginals is rather complicated (Park and Fader 2004).
+The impact of the difference in the mixture distributions between a gamma and a lognormal would be the difference in fit between the Pareto/NBD and HB models, and that will be evaluated in the subsequent empirical analyses.2
+
+2.2. Mathematical Notations
+
+Figure 1 depicts the notations of SMC for recency and
+
+frequency data (x tx T ), which we will follow here. Lifetime starts at time 0 (when the first transaction
+
+occurs and/or the membership starts) and customer
+
+transactions are monitored until time T . x is the num-
+
+ber of repeat transactions observed in the time period
+
+0 T , with the last purchase (xth repeat) occurring
+
+at tx. Hence, recency is defined as T - tx. is an unobserved customer lifetime. Using these mathematical
+
+notations, the preceding model assumptions can be
+
+expressed as follows:
+
+ 
+
+T x!
+
+x
+e-
+
+T
+
+if
+
+>T
+
+Px
+
+= 
+
+x
+x! e-
+
+x=0 1 2 if  T
+
+(1)
+
+f = e-
+
+0
+
+(2)
+
+log
+
+log
+
+ MVN 0 =
+
+2
+
+0=
+
+2
+
+(3)
+
+where MVN denotes a multivariate normal distribution.
+Some useful individual-level statistics that will be shown in the subsequent empirical analyses are derived in the Technical Appendix, found at http://
+
+2 A gamma distribution is thought to be more flexible than a lognormal distribution because the former can have a mode at 0 or an interior mode, depending on whether the value of the shape parameter is less than 1 or not, whereas the latter accommodates only an interior mode. The author appreciates this insight provided by one of the reviewers.
+
+mktsci.pubs.informs.org. Similar derivations can be found in SMC and Fader et al. (2005b).
+
+2.3. Incorporating Covariates A model that links purchase and dropout rates and to customer characteristics can offer insights into the profile of customers with frequent transactions and long lifetime. If the characteristics are demographic variables, the model allows a manager to pursue acquisition of prospective customers whose behavioral (transaction) data are not yet collected.
+A straightforward approach is to specify the logarithm of i and i with a linear regression as follows, where index i is added to emphasize that the rate parameters are for customer i.
+
+log log
+
+i i
+
+ i=
+
+di +ei
+
+where ei  MVN 0 0
+
+(4)
+
+di is a K × 1 column vector that contains K characteristics of customer i. is a K × 2 parameter vector and ei is a 2 × 1 error vector that is normally distributed with
+mean 0 and variance 0. This formulation replaces 0 in the previous section with di. When di contains only a single element of 1 (i.e., an intercept only), this
+model reduces to the previous no-covariate case.
+
+3. Estimation
+3.1. Introducing Latent Variables
+Our estimation approach is guided by exploiting the reason for not being able to estimate and individually in the empirical Bayes framework of a Pareto/NBD model.
+In the Pareto/NBD model, as shown in the Technical Appendix, found at http://mktsci.pubs. informs.org, Prior: i  gamma r , i  gamma s
+if active at Ti, posterior: i datai  gamma r + xi + Ti , posterior: i datai  gamma s + Ti ,
+if inactive at Ti and dropout at yi < Ti, posterior: i datai  gamma r + xi + yi , posterior: i datai  gamma s + 1 + yi .
+The above implies that, unless unobserved variables (i.e., whether customer i is active at Ti and, if not, the dropout time yi < Ti) are known, one cannot take advantage of the simple Bayesian updating for the conjugate priors. This is the very reason for the complex estimation process associated with the Pareto/NBD model. Thus, let us introduce these unobservables as latent variables in our model. For notational simplicity, subscript i is dropped in the following discussion. z is defined as 1 if a customer is active at time T and 0 otherwise. Another latent variable is a dropout time y when z = 0 (i.e., inactive). If we know z and y, then the likelihood function for RF
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+544
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+data (x tx T ) becomes the following simple expression for x > 0.
+Case z = 1 (customer is active at T )
+
+P xth purchase at tx and active until T and no purchase between tx T
+= xtxx-1 e- tx × e- T × e- T -tx x
+= xtxx-1 e- + T x
+Case z = 0 (customer dropout at y  T )
+
+P xth purchase at tx and no purchase
+
+between tx y and dropout at y  T
+
+= xtxx-1 e- tx × e- y-tx × e- y x
+
+=
+
+x txx-1 x
+
+e- + y tx  y  T
+
+Combining the two cases, a more compact notation
+
+for the likelihood function can result:
+
+L x tx T
+
+z y = xtxx-1 1-ze- + zT + 1-z y
+
+(5)
+
+x
+
+For x = 0, there is no repeat purchase and tx = 0. Thus x = 0 and txx-1 are undefined. The appropriate likelihood function is e- + T for z = 1, and e- + y for z = 0. Hence, Equation (5) becomes L x = 0 tx T
+z y = 1-ze- + zT + 1-z y . Because we observe neither z nor y, however, we treat them as missing data and apply a data augmentation technique (Tanner and Wong 1987). To simulate z in our MCMC estimation procedure, we can use the following expression for the probability of a customer being active at T , or equivalently z = 1, derived in the Technical Appendix (available at http://mktsci.pubs.informs.org):
+
+P >T
+
+T tx
+
+= P z=1
+
+T tx
+
+= 1+
+
+/+
+
+1 e + T -tx - 1
+
+(6)
+
+3.2. Estimation by Data Augmentation
+Because parameter estimates for the purchase and
+dropout processes will be customer specific, index i (i = 1 I) is reinstated to indicate individual cus-
+tomers. Let us denote the customer-specific parameters as i = log i log i ', which is normally distributed with mean di and variance-covariance matrix 0 as in Equation (4). Our objective is to estimate parameters { i yi zi  i 0} from observed recency and frequency data {xi tx i Ti  i}.
+
+3.3. Prior Specification
+Following Equation (4), the prior for i and i is chosen to be lognormal. The parameters of this log-
+
+normal, and 0 (i.e., hyper-parameters), are, in turn, estimated in a Bayesian manner with a mul-
+tivariate normal prior and an inverse Wishart prior,
+respectively:
+
+ MVN 0 0
+
+0  IW 00 00
+
+These distributions are standard in a normal (and
+hence lognormal) model. Constants ( 0, 0, 00, 00) are chosen to provide a very diffuse prior for the
+hyper-parameters and 0.
+
+3.4. MCMC Procedure
+
+We are now in a position to estimate parameters
+
+{ i yi zi  i 0} using an MCMC method. To estimate the joint density, we sequentially generate
+
+each parameter, given the remaining parameters,
+
+from its conditional distribution until convergence is
+
+achieved. The procedure is described below.
+
+[1] Set initial value for
+
+0 i
+
+ i.
+
+[2] For each customer i,
+
+[2a] generate {zi i} according to Equation (6). [2b] If zi = 0, generate {yi zi i} using a trun-
+cated exponential distribution.
+
+[2c] Generate { i zi yi} using Equation (5). [3] { 0 i  i} using a standard multivariate nor-
+mal regression update.
+
+[4] Draw i from MVN di 0 [5] Iterate 2  4 until convergence is achieved.
+
+Below are explanations for each step.
+
+[2a] i obtained from the previous iteration is exponentiated to transform to i and i (see Equation (4)), which, in turn, can be plugged into Equa-
+
+tion (6) to compute P zi = 1 .3 [2b] zi = 0 means customer i dropped out after
+the last purchase at tx i before Ti. From the likelihood function (5) conditioned on zi = 0, = i, and = i;
+therefore, yi follows an exponential distribution with parameter i + i and truncation such that tx i < yi < Ti.4
+[2c] Given zi and yi, Equation (5) is used
+(through multiplication by the prior) to generate i
+and i, which are then transformed to i by tak-
+ing their logarithm. Because these distributions are
+
+not in a standard form, an independent Metropolis-
+
+Hastings algorithm is used to generate i first and then i, where the proposal distribution is chosen to be lognormal.
+
+3 To facilitate convergence by allowing even drawing from the parameter space of , it sometimes helps to multiply the expression (6) by a prior that imposes an upper bound on the probability for z = 1. This is because when z = 1, MLE of is 0, implying no dropout.
+4 The author appreciates Siddharth S. Singh, Sharad Borle, and Dipak C. Jain for pointing out the fact that the conditioning of was missing from this distribution in the earlier version of the manuscript.
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+545
+
+[3] See Bayesian textbooks elsewhere for details on the multivariate normal regression update (Congdon 2001, Gelman et al. 1995, Rossi et al. 2005).
+
+4. Empirical Analysis
+The appendix illustrates the simulation study to confirm the recovery of the predetermined parameters,
+i and i (i = 1 400). We now apply the proposed model (hereafter denoted as the HB model) to three different types of databases--music CD for e-commerce, FSP data for a department store and a music CD chain--and make comparisons with the Pareto/NBD model.
+
+4.1. E-Commerce Data for CDNOW The first data set is CDNOW data used by Fader et al. (2005a, b), kindly made available for our study. The database contains e-commerce transactions over 78 weeks (1/1/976/30/98) at the CDNOW website. It includes data on 2,357 customers who became a member of CDNOW during the first 12 weeks. As in Fader et al. (2005a, b), the first 39 weeks of the data are used for model calibration and the second 39 weeks are used for model validation. Thus, depending on when customers became a member, the length of the observation (T ) in the calibration sample varies from 27 to 39 weeks. Note that almost 60% of the customers (i.e., 1,411 customers) make no repeat purchases whatsoever during the calibration period (i.e., x = 0 and only an initial purchase), which makes the estimation challenging. Because the data set did not contain any customer demographic data, we used a dollar amount of the initial purchase as the only covariate. Table 1 summarizes the descriptive statistics of the calibration sample.
+The MCMC steps were repeated 14,000 iterations, of which the last 4,000 were used to infer the posterior distribution of the parameters. Convergence was monitored visually and checked with the Geweke test (Geweke 1992). The proposed HB model was compared against the benchmark Pareto/NBD model for fit in the calibration period and prediction in the validation period. For disaggregate performance measures, correlation and mean squared errors (MSE) between predicted and observed numbers of transactions for individual customers were used. For an aggregate measure, mean absolute percent errors (MAPE) between predicted
+
+Table 1 Descriptive Statistics for CDNOW Data
+
+Mean Std. dev. Min Max
+
+Number of repeats Observation duration T (days) Recency (T - t) (days) Amount of initial purcahse ($)
+
+1 04 229 01 181 09
+32 99
+
+2 19 23 29 77 11 34 66
+
+0
+
+29
+
+189 272
+
+0 272
+
+0 506 97
+
+Table 2 Model Fit for CDNOW Data
+
+Criterion
+
+HB M1
+
+HB M2
+
+Pareto/NBD (no covariates) (with a covariate)
+
+Disaggregate measure
+
+Correlation
+
+Validation
+
+0 63
+
+0 62
+
+0 62
+
+Calibration
+
+1 00
+
+0 98
+
+0 98
+
+MSE
+
+Validation
+
+2 57
+
+2 61
+
+2 62
+
+Calibration
+
+0 64
+
+0 58
+
+0 58
+
+Aggregate measure
+
+Time-series MAPE (%)
+
+Validation
+
+13
+
+26
+
+24
+
+Calibration
+
+89
+
+75
+
+76
+
+Pooled
+
+51
+
+56
+
+54
+
+and observed weekly cumulative transactions was used. Table 2 compares the result along with that of the intercept-only HB model (M1). Both Pareto/NBD and HB M2 models provide similar fit, however, the former seems to perform better, especially in aggregate tracking. This can be seen from the timeseries tracking of the cumulative number of transactions in Figure 2. The vertical dotted line at week 39 separates the validation from the calibration period.
+For a visual check at the disaggregate level, Figure 3 shows the predicted number of transactions during the validation period averaged across individuals, conditional on the number of transactions made during the calibration period. This measure was used by Fader et al. (2005a, b) as well.
+Table 3 reports the estimation result of the HB models for the posterior means of the parameters and their 2.5 and 97.5 percentiles in the parentheses as a standard-error-like measure. The marginal loglikelihood suggests that M2 is better than M1. Note that the left-hand side of the regression is a logarithm of and , and the magnitude of the coefficients must
+
+Figure 2 Weekly Time-Series Tracking Plot for CDNOW Data
+
+5,000 4,500 4,000
+
+Actual Pareto/ NBD HB
+
+Cum. rpt. transactions
+
+3,500
+
+3,000
+
+2,500
+
+2,000
+
+1,500
+
+1,000
+
+500
+
+0
+
+0
+
+10 20 30
+
+40 50
+
+60 70
+
+80
+
+Week
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+546
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+Average number of transactions in weeks 40 ­78 
+
+Figure 3 7 6
+5
+
+Conditional Expectation of Future Transactions for CDNOW
+Actual Pareto/ NBD HB
+
+4
+
+3
+
+2
+
+1
+
+0
+
+0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7+
+
+Number of transactions in weeks 1­ 39
+
+be interpreted accordingly. The only covariate, the amount of an initial purchase, is significantly positive for purchase frequency. This implies that customers with a larger initial purchase (in dollars) tend to shop more often. Lifetime does not seem to be related to the amount so that customers with large and small initial purchases are equally likely to remain active.
+Figure 4 is a scatter plot of the posterior means of i and i (i = 1 2357) for individual customers. The pattern does not suggest any particular relationship between the two parameters. This observation is also supported from the fact that, for the intercept-only model, the correlation between log( ) and log( ) was
+
+Table 3 Estimation Result for CDNOW Data
+
+HB M1 (no covariates)
+
+HB M2 (with a covariate)
+
+Purchase rate log Intercept
+Initial amount ($ 10-3)
+Dropout rate log Intercept
+Initial amount ($ 10-3)
+2  var log
+2  var log
+ cov log log
+Correlation computed from 0
+Marginal log-likelihood
+
+-3.53 (-3.76, -3.35)
+--
+-3.56 (-4.05, -3.27)
+--
+1.33 (1.07, 1.72)
+2.56 (1.60, 4.66)
+0.11 (-0.26, 0.68)
+0.05 (-0.16, 0.30)
+-1,381
+
+-3.74 (-3.91, -3.56)
+3.21 (1.59, 4.90)
+-3.62 (-4.03, -3.34)
+-0.21 (-2.52, 1.98)
+1.41 (1.14, 1.70)
+1.59 (0.83, 3.47)
+0.06 (-0.24, 0.57)
+0.03 (-0.18, 0.26)
+-1,360
+
+Note. Data in parentheses indicate the 2.5 and 97.5 percentiles. Indicates significance at the 5% level.
+
+Figure 4 0.14
+
+Scatter Plot of Posterior Means of and for CDNOW Data Posterior mean
+
+0.12
+
+0.10
+
+0.08
+
+0.06
+
+0.04
+
+0.02
+
+00
+
+0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0
+
+
+
+0.05, according to the estimated variance-covariance matrix ( 0) of the normal mixture distribution.5 The estimate is not significantly different from 0, which can be confirmed from Figure 5, the distribution of the estimated correlation for M1 obtained from a byproduct of the 4000 MCMC iterations. Both the scatter plot and the histogram imply that the independence assumption of and in the Pareto/NBD model holds for this data set.
+Table 4 reports six customer-specific statistics: the posterior means of i and i along with their 2.5% and 97.5% quantiles,6 an expected lifetime after the last transaction, a survival rate after one year, the probability of being active at the end of the calibration period, and the expected number of transactions during the validation period, for the best and worst 10 customers with respect to the last statistic. These statistics are useful in actual CRM, for example, by providing customer ranking. The last three rows of Table 4 report the average, minimum, and maximum of the six statistics for the 2,357 customers. For example, the probability of being active at the end of the calibration period (39th week) varies from 0.000 to 1.000 with the average being 0.425. The expected number of transactions during the validation period ranges from 0.00 to 22.59 with the average being 0.63.
+
+5 To check whether the independence assumption of Pareto/NBD is satisfied, correlation of 0 must be tested on the intercept-only model but not the covariate model. This is because if covariates explain the correlation between and completely, then no correlation remains in that 0.
+6 The implied 95% confidence intervals for the individual-level parameters i and i are wide because the likelihood involves only the RF data from that customer. The Pareto/NBD model is expected to produce even wider 95% confidence intervals, whereby their rough magnitude can be inferred from the variance of the posterior gamma distributions shown in §3.1.
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+547
+
+Figure 5 500
+
+Distribution of Correlation Between log and log for CDNOW Data
+Histogram of correlation between log() and log()
+
+450
+
+400
+
+350
+
+Frequency
+
+300
+
+250
+
+200
+
+150
+
+100
+
+50
+
+0
+
+­ 0.3 ­ 0.2 ­0.1
+
+0
+
+0.1
+
+0.2
+
+0.3
+
+0.4
+
+Correlation
+
+Because the HB model produces a complete dis-
+
+tribution of i and i at the customer level as
+
+a
+
+byproduct
+
+of
+
+the
+
+MCMC
+
+method
+
+{
+
+g i
+
+and
+
+g i
+
+;
+
+g = 1 4000; i = 1 2357}, it is a simple alge-
+
+braic computation to obtain the distribution of any
+
+statistic that is a function of and . Statistics in the
+
+last four columns are obtained using Equations (9),
+
+(10), (6), and (8), respectively, in such a straight-
+
+forward manner.7 In contrast, the last two statistics
+
+are claimed to be the main result by SMC through
+
+a complex derivation (Equations 11 ­ 13 , (22), and
+
+the appendix in their paper), and their computa-
+
+tion involves nonstandard hypergeometric functions
+
+of various kinds. The fact that a distribution rather
+
+than a point estimate of a statistic is obtained also
+
+permits the application of statistical inference at the
+
+individual level.
+
+Customer 2,357 is interesting because she made
+
+21 repeat purchases during the first 4.7 weeks and
+
+then stopped buying thereafter. This is the reason
+
+for her high purchase rate i, the low probability of being active at the end of the calibration period,
+
+and the small expected number of transactions in
+
+the validation period. Managerially, the ability of the
+
+proposed model to provide information on individ-
+
+ual customers with ease, is especially suited to CRM
+
+application.
+
+4.2. FSP Data for a Department Store This data set contains shopping records for the members of a frequent shopper program (FSP) at a department store in Japan. It sells a wide variety
+
+7 Some of these equations appear in the Technical Appendix at http://mktsci.pubs.informs.org.
+
+of merchandise ranging from apparel, interior decoration, electronics, toys, to gourmet food on over 10 floors. The period of data covers 52 weeks starting from July 1, 2000.
+We drew a random sample of 400 customers who had joined the FSP during the month of July 2000, and hence, their shopping data were available from their first purchase as a member until June 29, 2001. The first and the last 26 weeks of the data were used for calibration and validation, respectively. Multiple receipts at different cashiers within the same day were consolidated as one spending, and returns (negative spending, credit, etc.) were ignored. The descriptive statistics for the calibration period are shown in Table 5. The number of repeat purchases xi ranges from 0 for 17 customers to 101, implying that some customers made purchases almost every other day.8 Inspection of the distributions of interpurchase times within customers reveals that our data set appears to satisfy the Poisson assumption.
+The database contains very limited information on customer characteristics: gender, age, and address. Because the majority of the shoppers visit the store by means of public transportation and through transit during commuting, a geographical distance between the home address and the store does not necessary correspond to the store accessibility. Instead, we constructed a covariate called FOOD, the fraction of store visits on which food items were purchased, as the proxy for accessibility.9 Thus, FOOD ranges from 0 to 1: 1 if foods were purchased on every shopping occasion, 0.5 if purchased on half of the shopping occasions, and 0 if no foods were purchased on any of the shopping occasions. Another covariate, average spending per trip, was created from the customer purchase records. To keep the scales comparable among the covariates, the unit for the average spending was defined as the 10-5 yen and AGE as one-hundredth of the actual age.
+Table 6 compares the aggregate and disaggregate fits of the two models in the calibration and validation samples. Both models provide similar fit, however, the HB seems to perform slightly better for this data set. This fact can be seen from a weekly tracking of the cumulative number of transactions in Figure 6. Figure 7, the conditional expectation of future transactions given the number of transactions made during the calibration period, also results in similar fits.
+Table 7 reports the estimation result of the full HB model (M3) along with nested models that include
+8 This is hardly surprising because the department store is directly connected to a busy train hub station and easily accessible through transit during commute.
+9 We use the terms "purchase" and "visit" interchangeably because store visit by a customer can be verified only through his/her purchase.
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+548
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+Table 4 Customer-Specific Statistics for the Top and Bottom 10 Customers
+
+1-year Probability of being Expected number of
+
+Mean expected survival active at the end transactions in
+
+ID Mean( ) 2.5% tile 97.5% tile Mean( ) 2.5% tile 97.5% tile lifetime (years) rate
+
+of calibration
+
+validation period
+
+1 2 3 4 5 6 7 8 9 10 ··· 2348 2349 2350 2351 2352 2353 2354 2355 2356 2357
+Ave Min Max
+
+0 778 0 681 0 510 0 497 0 444 0 397 0 381 0 330 0 313 0 301
+··· 0 389 0 524 0 277 0 394 0 334 0 372 0 448 0 844 0 712 3 535
+0 054 0 024 3 535
+
+0 531 0 498 0 318 0 304 0 294 0 227 0 216 0 202 0 188 0 167
+··· 0 054 0 244 0 051 0 061 0 104 0 094 0 138 0 138 0 304 2 435
+0 013 0 002 2 435
+
+1 069 0 914 0 785 0 684 0 612 0 595 0 601 0 480 0 493 0 435
+··· 1 093 0 888 0 692 0 943 0 686 0 875 0 888 2 358 1 321 4 771
+0 138 0 067 4 771
+
+0 0187 0 0162 0 0183 0 0172 0 0174 0 0204 0 0181 0 0175 0 0174 0 0170
+··· 0 1150 0 0573 0 0889 0 1188 0 0678 0 0779 0 0791 0 1205 0 0854 0 0936
+0 0620 0 0158 0 1314
+
+0 0021 0 0022 0 0024 0 0023 0 0024 0 0023 0 0026 0 0021 0 0021 0 0022
+··· 0 0108 0 0084 0 0079 0 0109 0 0111 0 0095 0 0106 0 0118 0 0108 0 0107
+0 0037 0 0015 0 0118
+
+0 0523 0 0432 0 0510 0 0478 0 0495 0 0563 0 0522 0 0481 0 0492 0 0469
+··· 0 3959 0 1560 0 3002 0 4342 0 1878 0 2490 0 2314 0 4231 0 2564 0 2663
+0 2066 0 0422 0 4929
+
+1 46
+
+0 487
+
+1 62
+
+0 522
+
+1 41
+
+0 493
+
+1 60
+
+0 509
+
+1 53
+
+0 504
+
+1 28
+
+0 467
+
+1 46
+
+0 491
+
+1 42
+
+0 497
+
+1 56
+
+0 504
+
+1 49
+
+0 505
+
+···
+
+···
+
+0 31
+
+0 140
+
+0 48
+
+0 199
+
+0 37
+
+0 162
+
+0 30
+
+0 135
+
+0 40
+
+0 162
+
+0 40
+
+0 165
+
+0 38
+
+0 149
+
+0 28
+
+0 118
+
+0 33
+
+0 139
+
+0 31
+
+0 138
+
+0 75
+
+0 316
+
+0 28
+
+0 118
+
+1 74
+
+0 536
+
+0 997 0 995 0 991 0 997 0 986 0 967 0 978 0 992 0 989 0 998
+··· 0 045 0 014 0 036 0 030 0 014 0 017 0 003 0 004 0 001 0 000
+0 425 0 000 1 000
+
+22 59 20 33 14 83 14 72 12 92 11 02 10 92
+9 64 9 14 8 91 ··· 0 10 0 09 0 08 0 07 0 05 0 04 0 01 0 01 0 00 0 00
+0 63 0 00 22 59
+
+only an intercept (M1) and two covariates (M2). For the intercept-only model, correlation between the purchase and dropout rates is not significantly different from 0, satisfying the assumption of the Pareto/NBD model. This is also evident from the scatter plot of the posterior means of the individual-level parameters, i and i, shown in Figure 8.
+As covariates are added, the estimated coefficients remain stable and the marginal log-likelihood increases, where the full HB is chosen as the best model. Significant covariates for the purchase rate are average spending and FOOD, the fraction of store visits on which food items were purchased and a proxy for store accessibility. Age and gender do not affect the purchase rate. For the dropout rate, none of the covariates is significant. Customer lifetime does not differ by the amount of average spending, food/nonfood buyers, age, or gender.
+
+Table 5 Descriptive Statistics for Department Store FSP Data
+
+Mean Std. dev. Min
+
+Max
+
+Number of repeats Observation duration T (days) Recency, (T - t) (days) Average spending (×105 yen) FOOD AGE FEMALE
+
+16 02 171 24
+24 94 0 067 0 79 52 7 0 93
+
+16 79 8 81 42 82 0 120 0 273 14 6 0 25
+
+0 151
+0 0.0022
+0.0 22
+0
+
+101 181 181 1.830 1.0
+87 1
+
+This implies that food buyers and small spenders visit the store more often--the finding consistent with the story told by the store manager. Although food buyers spend a smaller amount on each shopping trip, they visit the store often enough such that the retailer considers food shoppers as their key clients. Because of lower margins on food items relative to other categories, such as jewelry, fashion items, and interior decoration, the food section in itself is not particularly profit making; however, the retailer recently renovated the entire food floor featuring fancy gourmet and imported foods in an effort to attract this target segment.
+
+Table 6 Model Fit for Department Store FSP Data
+
+Criterion
+
+Pareto/NBD
+
+HB M3
+
+(with 4 covariates)
+
+Disaggregate measure Correlation Validation Calibration
+MSE Validation Calibration
+Aggregate measure Time-series MAPE (%) Validation Calibration Pooled
+
+0 90 1 00
+58 2 1 22
+2 29 18 2 10 3
+
+0 90 1 00
+59 1 1 15
+1 63 16 0
+88
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+549
+
+Average number of transactions in weeks 27­52 
+
+Figure 6 15,000
+
+Weekly Time-Series Tracking Plot for Department Store Data
+Actual Pareto/NBD HB
+
+10,000
+
+Cum. rpt. transactions
+
+5,000
+
+0
+
+0
+
+10
+
+20
+
+30
+
+40
+
+50
+
+60
+
+Week
+
+4.3. Retail FSP Data for a Music CD Chain The third data set was obtained from an FSP of a large chain for music CD. The period covered 52 weeks starting from September 1, 2003. We extracted 500 random customers who had joined the FSP with the initial purchase (trial) during the first quarter and also at least one repeat purchase during the first half. The first 26 weeks and the last 26 weeks of the data were used as calibration and validation samples, respectively. The available customer characteristics were the amount of the initial purchase, age, and gender. The descriptive statistics of the calibration sample are shown in Table 8.
+Table 9 compares the aggregate and disaggregate fits of the two models in the calibration and validation samples. Figure 9 is a weekly tracking of the cumulative number of transactions, and Figure 10 shows the
+
+Figure 7 15
+
+Conditional Expectation of Future Transactions for Department Store Data
+Actual Pareto/ NBD HB
+
+10
+
+5
+
+0 0 1 2 3 4 5 6 7 8 9 10+ Number of transactions in weeks 1­26
+
+Table 7 Estimation Result for Department Store FSP Data
+
+HB M1
+
+HB M2
+
+HB M3
+
+(no covariates) (with 2 covariates) (with 4 covariates)
+
+Purchase rate log Intercept Average spending FOOD AGE
+
+-0.89 (-1.00, -0.78)
+--
+--
+--
+
+-1.90 (-2.26, -1.55)
+-0.18 (-0.31, -0.04)
+1.43
+(1.05, 1.81)
+--
+
+FEMALE
+
+--
+
+--
+
+Dropout rate log Intercept Average spending FOOD AGE
+
+-8.68
+
+-8.75
+
+(-11.34, -7.38) (-10.72, -6.68)
+
+--
+
+-0.17
+
+(-1.27, 0.78)
+
+--
+
+-1.09
+
+(-3.13, 0.75)
+
+--
+
+--
+
+FEMALE
+
+--
+
+--
+
+2  var log
+2  var log
+ cov log log
+Correlation computed from 0
+Marginal log-likelihood
+
+1.01 (0.85, 1.20)
+1.28 (0.53, 3.19)
+-0.18 (-0.82, 0.37)
+-0.15 (-0.56, 0.35)
+-1,687
+
+0.82 (0.69, 0.98)
+1.40 (0.50, 2.90)
+-0.15 (-0.69, 0.31)
+-0.13 (-0.53, 0.30)
+-1,676
+
+-2.08 (-2.60, -1.56)
+-0.19 (-0.33, -0.06)
+1.43 (1.02, 1.85)
+0.07 (-0.59, 0.74)
+0.15 (-0.23, 0.53)
+-8.55 (-10.57, -6.83)
+-0.34 (-1.39, 0.71)
+-0.67 (-3.29, 1.63)
+-0.17 (-2.03, 1.82)
+-0.33 (-1.95, 1.70)
+0.81 (0.67, 0.97)
+1.24 (0.51, 3.51)
+-0.13 (-0.77, 0.34)
+-0.11 (-0.57, 0.36)
+-1,666
+
+Note. Data in parentheses indicate the 2.5 and 97.5 percentiles. Indicates significance at the 5% level.
+
+conditional expectation of future transactions given the number of transactions made during the calibration period. The HB model seems to perform slightly better than the Pareto/NBD model.
+
+Figure 8
+
+Scatter Plot of Posterior Means of and for Department Store Data
+
+× 10­3 1.0
+
+Posterior mean
+
+0.9
+
+0.8
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0
+
+0
+
+0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0
+
+
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+550
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+Table 8 Descriptive Statistics for Music CD Chain FSP Data
+
+Mean Std. dev. Min
+
+Number of repeats Observation duration T (days) Recency (T - t) (days) Average spending (×104 yen) AGE FEMALE
+
+2 65 146 66
+52 65 0 359 31 5 0 49
+
+2 36 25 84 40 99
+0 198 98 0 50
+
+1 92
+1 0.095
+7 0
+
+Max
+22 182 172 2.048
+78 1
+
+Table 10 shows the estimated coefficients of the nested HB models, in which the full model (M3) has the best marginal log-likelihood. For the interceptonly model (M1), correlation between the purchase and dropout rates is not significantly different from 0, just like the previous two data sets. This can be seen from a scatter plot of the posterior means of and for the 500 customers in Figure 11. The only significant parameter is the amount of initial purchase on the purchase rate. It implies that customers with a larger spending on their first purchase tend to visit the chain more often. No difference in terms of age and gender is found on purchase frequency. The amount of initial purchase, age, and gender are not related to customer lifetime.
+
+5. Conclusions
+A great deal has changed since the work of SMC almost 20 years ago. Advances in information technology, combined with conceptual development in Database Marketing, CRM, and One-to-One Marketing, allow even unsophisticated firms to pursue customized marketing actions of some form at the individual customer level. Marketing has seen some shift from an aggregate to a disaggregate focus. In keeping with this change, the Pareto/NBD model of customer-base analysis was updated, resulting in a hierarchical Bayes model, which was then estimated by an MCMC method.
+
+Table 9 Model Fit for Music CD Chain FSP Data
+
+Criterion
+
+Pareto/NBD
+
+HB M3
+
+(with 3 covariates)
+
+Disaggregate measure Correlation Validation Calibration MSE Validation Calibration
+Aggregate measure Time-series MAPE (%) Validation Calibration Pooled
+
+0 59 0 95
+6 43 2 14
+11 81 9 38 10 60
+
+0 60 0 96
+5 81 1 25
+10 42 11 54 10 98
+
+Figure 9 3,000
+2,500
+
+Weekly Time-Series Tracking Plot for Music CD Chain Data
+Actual Pareto/ NBD HB
+
+2,000
+
+Cum. rpt. transactions
+
+1,500
+
+1,000
+
+500
+
+0 0 5 10 15 20 25 30 35 40 45 50 Week
+The HB model presumes three tried and tested assumptions of Pareto/NBD: (1) a Poisson purchase process, (2) a memoryless dropout process (i.e., constant hazard rate), and (3) heterogeneity across customers, while relaxing Pareto/NBD's independence assumption of the purchase and dropout processes. Because customer heterogeneity is captured as a prior in a hierarchical Bayesian framework rather than through a mixture distribution, the entire modeling effort can bypass all the complications associated with aggregation, which is left to MCMC simulation.
+The HB model was shown to perform well in the empirical analysis using three data sets of various types. Outputs, obtained from by-products of the MCMC estimation, included individual level i and i, an expected lifetime, a retention rate, the probability of being active, and an expected number of future transactions. These customer-specific statistics
+
+Average number of transactions in weeks 27­52
+
+Figure 10
+10 9 8 7 6 5 4 3 2 1 0
+0
+
+Conditional Expectation of Future Transactions for Music CD Chain Data
+Actual Pareto/ NBD HB
+1 2 3 4 5 6 7 8 9 10+ Number of transactions in weeks 1­26
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+551
+
+Table 10 Estimation Result for Music CD Chain FSP Data
+
+HB M1
+
+HB M2
+
+HB M3
+
+(no covariates) (with 1 covariate) (with 3 covariates)
+
+Purchase rate log Intercept Initial purchase AGE FEMALE
+
+-2.21 (-2.29, -2.14)
+--
+--
+
+-2.34 (-2.47, -2.22)
+0.37 (0.13, 0.6)
+--
+
+--
+
+--
+
+Dropout rate log Intercept Initial purchase AGE FEMALE
+
+-8.14 (-10.33, -6.74)
+--
+--
+
+-7.70 (-8.80, -6.56)
+-0.60 (-2.62, 1.11)
+--
+
+--
+
+--
+
+2  var log 2  var log
+ cov log log
+Correlation computed from 0
+Marginal log-likelihood
+
+0.29 (0.23, 0.36)
+1.77 (0.67, 3.90)
+-0.04 (-0.28, 0.17)
+-0.06 (-0.33, 0.25)
+-4,096
+
+0.27 (0.22, 0.34)
+1.52 (0.70, 2.77)
+-0.04 (-0.21, 0.16)
+-0.06 (-0.33, 0.24)
+-4,073
+
+-2.23 (-2.46, -2.00)
+0.37 (0.11, 0.61)
+-0.16 (-0.77, 0.44)
+-0.13 (-0.28, 0.02)
+-7.30 (-9.25, -5.52)
+-0.71 (-2.37, 0.97)
+-0.80 (-2.93, 1.18)
+-0.08 (-1.93, 1.59)
+0.27 (0.21, 0.34)
+1.33 (0.60, 2.82)
+-0.03 (-0.24, 0.16)
+-0.05 (-0.37, 0.26)
+-4,065
+
+Note. Data in parentheses indicate the 2.5 and 97.5 percentiles. Indicates significance at the 5% level.
+
+can be quite useful, for example, for ranking customers, in actual CRM.
+The simplicity of the HB model has lead to an estimable model, in which and are a function of customer characteristic variables. Such models
+
+Figure 11
+
+Scatter Plot of Posterior Means of and for Music CD Chain Data
+
+× 10­3 1.8
+
+Posterior mean
+
+1.6
+
+1.4
+
+1.2
+
+
+
+1.0
+
+0.8 0.6
+
+0.4
+
+0
+
+0.1
+
+0.2
+
+0.3
+
+0.4
+
+0.5
+
+0.6
+
+0.7
+
+
+
+demonstrate that recency-frequency data, in conjunction with customer behavior and characteristics, can provide important insights into direct marketing issues, such as the demographic profile of best customers and whether long-life customers spend more.
+The current study also confirmed, in all three data sets, the independence assumption of the purchase and dropout rates for the Pareto/NBD model, which, in turn, provided sound performance in fit and prediction. A Pareto/NBD model should continue to perform well, as long as the independence of the purchase and dropout processes holds. Here, the HB model can provide useful information to assess the validity of this assumption through (1) a scatter plot of the posterior means of individual level and and (2) a statistical inference on the correlation between log( ) and log( ), obtained from 0 of an interceptonly model.
+One weakness of the HB model is that the closedform expressions on the statistics for a "randomly" chosen customer, such as the probability of being active and the expected number of future purchases, do not exist. Closed form can provide intuitive understanding of the aggregate market behavior as a whole by calculating comparative statistics. In the HB model, aggregate statistics must be constructed by simulation. Given that both Pareto/NBD and HB models have resulted in similar predictive performance, the two models can complement each other. A Pareto/NBD model can describe the aggregate customer response in a parsimonious manner for firms' strategic purposes, whereas the individual focus of the HB model could be used in actual operationalization of customized marketing.
+Several directions are possible in extending this research. One is a substantive investigation of the relationship between customer lifetime and profitability in noncontractual businesses. Though we did not find an evidence for the relationship between lifetime and average spending from our department store data, the current study is more methodological in nature and falls short of drawing any substantive conclusions. Pioneering research by Reinartz and Kumar (2000, 2003) can be improved upon in various ways using the HB model. First, the independence assumption of
+and in a Pareto/NBD model, on which their entire analysis was based, can be relaxed. Second, Reinartz and Kumar (2000) defined lifetime as the duration for which the probability of a customer being alive dropped below a threshold of c, after carefully justifying the value to be c = 0 5. That still seems subjective, however. The estimate of individual available from the HB model can be used as an objective measure of customer lifetime. Third, the HB model can
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+552
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+reveal the link between customer lifetime and characteristics in a one-step estimation, with accurate statistical inference, instead of the two-step estimation they employed.
+The second natural direction is to extend the model from transactions to dollar amounts by incorporating monetary value from RFM data (Abe 2009). Such a model could provide valuable insights into customer lifetime value and customer equity, as was done by Fader et al. (2005b) and Reinarts and Kumar (2000, 2003).
+The third direction is to relax the assumption of the Poisson purchase process so that interpurchase time can take a more general form in distribution (Allenby et al. 1999). A Poisson process implies random purchase occurrence (constant hazard rate) with an exponentially distributed interpurchase time. While nonpatrons might make purchases at random, loyal customers generally purchase at more regular intervals. A model that can capture behavioral differences in dynamic purchase pattern could provide valuable insights into CRM. One approach is to incorporate time-varying covariates as a function of log( ), which results in a time-varying hazard function (Gönül and Hofstede 2006). This extension, however, puts more burden on the part of data collection, because the model estimation requires not just recency and frequency but the complete purchase history.
+
+Acknowledgments The author appreciates the comments and suggestions of the reviewers, area editor, and editor. He also benefited greatly from discussions with Don Morrison and Randy Bucklin during his sabbatical stay at UCLA. The author thanks Pete Fader and Bruce Hardie for useful comments and making the CDNOW data available. In addition, he acknowledges the 2004 Data Analysis Competition sponsored by the Operations Research Society of Japan for the use of the department store data and the financial support from the Japanese Ministry of Education Scientific Research Grant. The manuscript has benefited greatly from comments and suggestions by Siddharth S. Singh, Sharad Borle, and Dipak C. Jain.
+
+Appendix. Simulation Study A simulation study was conducted to examine the recovery of parameters. RF data were generated according to the Poisson purchase and exponential dropout assumptions from pre-specified parameters. ( i i) (i = 1 400) were generated from a lognormal distribution of (4):
+
+log
+
+-3
+
+0 5 -0 16
+
+log
+
+ MVN 0 = -6
+
+0 = -0 16 1 0
+
+The parameters for the lognormal reflect the estimated values from actual data. This corresponds to a correlation between log( ) and log( ) of -0.2263 = -0 16/ sqrt 0 5 × 1 0 .
+To account for the sample variation in data generation, the simulation was repeated 30 times. Each simulation was
+
+Figure A.1 0.7
+
+Simulation Recovery of
+
+0.6
+
+0.5
+
+Estimated
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0
+
+0
+
+0.1
+
+0.2
+
+0.3
+
+0.4
+
+0.5
+
+0.6
+
+0.7
+
+Actual
+
+put through 15,000 MCMC steps, of which the last 5,000 draws were used to construct the posterior estimation.
+Figure A.1 shows the scatter plot of the true and estimated values for the 400 customers from a simulation sample. Correlation between the true and posterior mean of the 400 customers averaged over 30 simulation samples are 0.80 and 0.18 for and , respectively. Though the recovery of is fine, the marginal result for arises from the following: (1) customer dropout is never observed directly and we are trying to estimate the latent parameter, (2) the sample size is one RF data point per customer, and (3) point estimate (posterior mean) is compared against the true value.
+Because correlation is sensitive to outliers, perhaps a better measure that fully takes advantage of the HB method with an exact small-sample standard error is to count how many true values lie outside the 95% confidence interval. Theoretically, it should be approximately 5% of the cases or 20 in our case. The average of 30 simulation samples results in 18.5 and 15.8 for and , respectively, which is reasonable.
+In summary, this simulation study shows that the true underlying parameters can be recovered with reasonable accuracy.
+
+References
+Abe, M. 2009. Customer lifetime value and RFM data: Accounting your customers one by one. Discussion paper CIRJE-F616, Graduate School of Economics, The University of Tokyo, Tokyo. http://www.e.u-tokyo.ac.jp/cirje/research/dp/2009/ 2009cf616ab.html.
+Allenby, G. M., R. P. Leone, L. Jen. 1999. A dynamic model of purchase timing with application to direct marketing (applications and case studies). J. Amer. Statist. Assoc. 94(446) 365­374.
+Congdon, P. 2001. Bayesian Statistical Modelling. John Wiley & Sons, London.
+Fader, P. S., B. G. S. Hardie, K. L. Lee. 2005a. Counting your customers the easy way: An alternative to the Pareto/NBD model. Marketing Sci. 24(2) 275­284.
+Fader, P. S., B. G. S. Hardie, K. L. Lee. 2005b. RFM and CLV: Using iso-value curves for customer base analysis. J. Marketing Res. 42(4) 415­430.
+
+Abe: "Counting Your Customers" One by One: A Hierarchical Bayes Extension to the Pareto/NBD Model
+
+Marketing Science 28(3), pp. 541­553, © 2009 INFORMS
+
+553
+
+Gelman, A., J. B. Carlin, H. S. Stern, D. B. Rubin. 1995. Bayesian Data Analysis. Chapman & Hall, Boca Raton, FL.
+Geweke, J. 1992. Evaluating the accuracy of sampling-based approaches to the calculation of posterior moments. J. M. Bernardo, J. M. Berger, A. P. Dawid, A. F. M. Smith, eds. Bayesian Statistics, Vol. 4. Oxford University Press, Oxford, 169­193.
+Gönül, F. F., F. T. Hofstede. 2006. How to compute optimal catalog mailing decisions. Marketing Sci. 25(1) 65­74.
+Ma, S.-H., J.-L. Liu. 2007. The MCMC approach for solving the Pareto/NBD model and possible extensions. Proc. Third Internat. Conf. Natural Computation (ICNC 2007), Vol. 2. IEEE, Washington, DC, 505­512.
+Park, Y.-H., P. S. Fader. 2004. Modeling browsing behavior at multiple websites. Marketing Sci. 23(3) 280­303.
+Reinartz, W. J., V. Kumar. 2000. On the profitability of long-life customers in a noncontractual setting: An empirical investigation and implications for marketing. J. Marketing 64(4) 17­35.
+
+Reinartz, W. J., V. Kumar. 2003. The impact of customer relationship characteristics on profitable lifetime duration. J. Marketing 67(1) 77­99.
+Rossi, P. E., G. Allenby, R. McCulloch. 2005. Bayesian Statistics and Marketing. John Wiley & Sons, London.
+Rust, R. T., T. S. Chung. 2006. Marketing models of service and relationships. Marketing Sci. 25(6) 560­580.
+Schmittlein, D. C., D. G. Morrison, R. Colombo. 1987. Counting your customers: Who are they and what will they do next? Management Sci. 33(1) 1­24.
+Schmittlein, D. C., R. A. Peterson. 1994. Customer base analysis: An industrial purchase process application. Marketing Sci. 13(1) 41­67.
+Sun, B. 2006. Technology innovation and implications for customer relationship management. Marketing Sci. 25(6) 594­597.
+Tanner, M. A., W. H. Wong. 1987. The calculation of posterior distributions by data augmentation (theory and methods). J. Amer. Statist. Assoc. 82(398) 528­540.
+
+

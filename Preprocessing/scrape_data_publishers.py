@@ -92,17 +92,5 @@ list_DOI = list(df_WoS['DOI'])
 # turn into urls, create df to be filled
 urls = create_list_urls(list_DOI, base_url_informs)
 
-# init list to document which DOIs have been scraped
-scraped_DOI = []
-
-# loop over list and download pdfs, convert to txt
-for count, link in enumerate(urls):
-    success = scrape_article_informs(link, cj, count+1)
-    if success:
-        scraped_DOI.append(re.search('pdf/(.*)', link).group(1))
-    # sleep to make sure we are not recognized as DoS attack
-    time.sleep(10)
-    
-# save scraped DOIs
-scraped_DOI = pd.Series(scraped_DOI)
-scraped_DOI.to_csv('../data/raw/marketingscience_scraped_DOI.csv')
+# save URLs for manual downloading
+pd.Series(urls).to_csv('../data/raw/marketingscience_urls.csv', index = False, header = False)

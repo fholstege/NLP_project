@@ -1,0 +1,1506 @@
+Vol. 35, No. 3, May­June 2016, pp. 343­362 ISSN 0732-2399 (print) ISSN 1526-548X (online)
+
+http://dx.doi.org/10.1287/mksc.2015.0968 © 2016 INFORMS
+
+Mining Brand Perceptions from Twitter Social Networks
+Aron Culotta
+Department of Computer Science, Illinois Institute of Technology, Chicago, Illinois 60616, aculotta@iit.edu
+Jennifer Cutler
+Kellogg School of Management, Northwestern University, Evanston, Illinois 60208, jennifer.cutler@kellogg.northwestern.edu
+Consumer perceptions are important components of brand equity and therefore marketing strategy. Segmenting these perceptions into attributes such as eco-friendliness, nutrition, and luxury enable a fine-grained understanding of the brand's strengths and weaknesses. Traditional approaches towards monitoring such perceptions (e.g., surveys) are costly and time consuming, and their results may quickly become outdated. Extant data mining methods are unsuitable for this goal, and generally require extensive hand-annotated data or context customization, which leads to many of the same limitations as direct elicitation. Here, we investigate a novel, general, and fully automated method for inferring attribute-specific brand perception ratings by mining the brand's social connections on Twitter. Using a set of over 200 brands and three perceptual attributes, we compare the method's automatic ratings estimates with directly-elicited survey data, finding a consistently strong correlation. The approach provides a reliable, flexible, and scalable method for monitoring brand perceptions, and offers a foundation for future advances in understanding brand-consumer social media relationships.
+Data, as supplemental material, are available at http://dx.doi.org/10.1287/mksc.2015.0968.
+Keywords: social media; brand image; market structure; Twitter; attribute ratings; perceptual maps; big data; data mining; social networks
+History: Received: December 18, 2013; accepted: August 23, 2015; Pradeep Chintagunta, Dominique Hanssens, and John Hauser served as the special issue editors and Oded Netzer served as associate editor for this article. Published online in Articles in Advance February 22, 2016.
+
+1. Introduction
+Understanding how consumers perceive brands is fundamental to much of marketing strategy. A central analytical tool for this is perceptual mapping, which organizes brands according to how consumers rate them with respect to attributes such as eco-friendliness or luxury (Green et al. 1989, Shocker and Srinivasan 1979, Steenkamp et al. 1994). Consumer ratings are typically collected through surveys or other elicitation means (Aaker 1996, Hauser and Koppelman 1979, Lehmann et al. 2008, Steenkamp and Van Trijp 1997); however, these data are costly and time consuming to collect and may quickly become outdated.
+The recent proliferation of social media use by marketers and consumers offers a promising data source to understand consumer perceptions. Yet the noise, volume, and ambiguity of such data pose substantial challenges to algorithmic solutions. In this paper, we introduce and validate a fully-automated and highly generalizable method for estimating brand perceptions along a perceptual attribute1 of choice from publicly
+1 For consistency, we use the word attribute throughout the paper, though we mean it to include any specific aspect of brand identity that can be identified through a keyword and rated along a continuum. These might also map to perceptual dimensions or associations, as they are referred to in other areas of the literature.
+
+available secondary social media data, specifically Twitter. To our knowledge, there are no extant data mining approaches developed for this task.
+At a high level, our algorithm takes as input a brand name and a query specifying the attribute of interest (e.g., "eco-friendliness"). It then returns a real value indicating the strength of association between the brand and the attribute. The main source of evidence for our approach is the similarity between a brand's Twitter account and a set of exemplar accounts representing a perceptual attribute, e.g., the similarity between Smart Automobile's account and those of the Environmental Protection Agency (EPA) and Greenpeace may signal its perceived eco-friendliness. The method we develop is innovative in several ways. First, while most extant methods analyze user-generated text, we instead rely only on the structure of the brand's social network, which offers advantages in simplicity and scale. Second, our analysis focuses on the platform Twitter, which has received limited attention in the marketing literature, but offers advantages in data relevance and accessibility. Third, we introduce a fully-automated and highly generalizable process that requires only a keyword as input to generate near real-time estimates of brand ratings for an attribute mapping to that keyword. By leveraging the crowd-organization of social media, we
+
+343
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+344
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+circumvent the often extensive manual tuning and customization requirements of extant data mining approaches, thus providing a versatile and scalable method that can be applied to a range of marketing inquiries.
+To validate the effectiveness of the method, we use it to estimate perceptual ratings along three example attributes (eco-friendliness, luxury, and nutrition) for over 200 brands across four sectors2 (Apparel, Cars, Food and Beverage, and Personal Care), and collect directly elicited survey ratings for the same set of brands and attributes. We find an average correlation over all sector-attribute combinations of 0.72, indicating that this fully-automated approach provides a reliable signal of current brand perceptions. This correlation meets or exceeds standards set in prior literature for related (though distinct) tasks, despite the manual customization required to implement these extant methods.
+Our core contribution, then, is a new methodological tool to quantify consumer perceptions of brands with respect to a specified attribute. Our approach is a real-time, low-cost alternative to extant methods that firms and researchers can use for a number of common marketing tasks, such as generating perceptual maps, monitoring market structures, and informing research models (Green 1975, Green et al. 1989, Hauser and Simmie 1981, Schmalensee and Thisse 1988). In addition to the algorithm itself, our scientific contribution consists of a multifaceted empirical validation against primary survey data, including exploration of how a number of algorithmic variants affect accuracy.
+In the next section, we discuss relevant work from the marketing literature, and describe how our contributions add to this work. In §3, we discuss the theoretical foundations motivating the approach, and in §4 we describe the methodology in detail. We describe our validation methodology in §5 and the main results in §6. Section 7 provides a series of sensitivity analyses. Finally in §8, we summarize the implications of this work, note its limitations, and provide recommendations for future research.
+2. Background and Related Work
+2.1. Brand Attribute Ratings Marketing managers have long relied on estimates of consumer perceptions of brands along attributes of interest to inform marketing strategy (John et al. 2006, Lancaster 1971, Lehmann et al. 2008). Perhaps most notably, such estimates provide the primary input for generating perceptual maps, which have been used by managers since at least the 1970s to understand
+2 As explained in §4, attributes were tested only for sectors that made sense, e.g., nutrition perceptions were not estimated for car brands.
+
+the relative positioning of competitive brands (Hauser and Koppelman 1979, Johnson and Hudson 1996), and are widely considered a foundational analytical tool in marketing research (Green et al. 1989, Shocker and Srinivasan 1979, Steenkamp et al. 1994). Developing improvements to perceptual mapping techniques consistently remains a priority for marketing researchers (Bijmolt and van de Velden 2012, Day et al. 1979, Dillon et al. 1985, Kaul and Rao 1995).
+Researchers have proposed compositional and decompositional techniques for eliciting brand ratings from consumers. Both require recruitment and interaction with a large and diverse set of participants. In the former, users are asked to directly rate brands on a numeric scale according to their strength in a given attribute, while in the latter, users are asked to perform sorting tasks on brands, from which attribute ratings are inferred (Huber and Holbrook 1979). Some research suggests that compositional methods (i.e., rating brands via surveys) can provide greater validity (Bottomley et al. 2000, Hauser and Koppelman 1979), and these are widely used in marketing practice (Steenkamp et al. 1994).
+Yet, compared with the wealth of research focused on the advancement of techniques for making inferences from such brand attribute ratings, surprisingly little research has focused on advancing methods for obtaining the ratings themselves (Steenkamp and Van Trijp 1997). At the same time, many researchers have identified substantial limitations resulting from the requirement to collect primary data to inform these analyses, including difficulty and expense in recruiting enough participants, and in maintaining participants attention and cooperation during tasks (Day 1975, McDaniel et al. 1985, Steenkamp and Van Trijp 1997). Ultimately, current methods of eliciting attribute ratings from consumers require substantial "trade-offs between completeness, cost, and feasibility" (Aaker 1996, p. 120).
+It is these difficulties that motivate the research goal of this paper: To develop a flexible and automated means of estimating brand attribute ratings from publicly available secondary social media data. In the following sections, we describe extant data mining approaches that have emerged in recent years in the marketing literature, discuss obstacles to applying them to the current research goal, and motivate the new approaches we introduce.
+2.2. Text Mining Text analysis of user-generated content (UGC) is a frequently used approach in the marketing literature for mining consumer perceptions from social media data (Fader and Winer 2012). One technique receiving notable attention is associative analysis. Here, researchers used clustering and semantic network techniques on UGC to discover how product features or
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+345
+
+brands are perceptually clustered by consumers (e.g., Archak et al. 2011, Lee and Bradlow 2011, Netzer et al. 2012). This approach is unsuitable for our research goal, however, as we seek to estimate the strength of perceived brand ratings along pre-determined attributes of interest.
+Another popular technique is sentiment analysis, i.e., quantifying the overall positive and negative sentiments expressed online about a brand (e.g., Sonnier et al. 2011, Tirunillai and Tellis 2012, Ludwig et al. 2013). The amount of manual input needed to tune these analyses is often substantial, and the accuracy and generalizability of the models across platforms and contexts is debated. For example, Das and Chen (2007) compared five sentiment classification algorithms and reported accuracy rates ranging from 25%­40% (up to 67% when ambiguous messages are pre-filtered) for out-of-sample validation.
+Unlike classifying sentiment, which is inherently context-neutral, classifying attribute-relevance through text requires that users author content about the brand that is relevant to the attribute of interest. This substantially limits (and likely biases) the data available, and potentially excludes many brand-attribute combinations from effective analysis. Furthermore, the problem of how to classify UGC by relevance to a perceptual attribute remains. The most common approach in the literature to automated text classification by topic involves matching the text against a pre-defined keyword list (Tang and Guo 2013). There are many limitations of such approaches. First, relevant keyword lists require substantial time and effort to curate for each topic. Second, they are static and may not adequately reflect the often rapidly evolving linguistic idiosyncrasies of "netspeak" inherent to many social media sites (Crystal 2001). Third, the accuracy of such models is limited and variable. The Linguistic Inquiry and Word Count (LIWC) is perhaps the most popular tool used in social science for keyword-based topic classification, containing keyword lists for almost 40 topics. However, external validation tests are only reported for about a third of its categories, and where they are reported, the correlation coefficients between the tool's output and human judges' ratings range from 0.07 (sadness) to 0.87 (family) with the average of 0.45 (Pennebaker et al. 2007).
+Thus, given the limitations of using UGC to infer brand attribute perceptions, we choose to explore an alternate source of information, i.e., the social connections of a brand's supporters. Using social structures offers distinct advantages over content analysis for inferring user perceptions, as we outline below.
+2.3. Social Network Mining When inferring consumer perceptions from UGC, one is limited, by definition, to incorporating information provided by active, content-producing consumers.
+
+However, research has shown that fewer than 50% of Twitter users actively post content (Toubia and Stephen 2013), and the majority of posts come from a small minority of elite users (Wu et al. 2011). Yet, the silent majority can have a substantial impact on brand image through their "mere virtual presence" (Naylor et al. 2012, p. 2) in the brand's network, as the composition of a brand's online follower base has been shown to reflect and influence brand image (Kuksov et al. 2013). Thus, by looking to the social structure of a brand's follower base rather than the text of UGC, we can capture potentially useful information from each fan, regardless of whether they create or consume content. This is particularly useful for estimating perceptual attributes that consumers may be less likely to directly mention in brand conversations than core product features. Although some marketing researchers have begun to use online social network data for such purposes as predicting consumer behavior (Goel and Goldstein 2013) and understanding information diffusion (Goel et al. 2012), to our knowledge we are the first to use a brand's social connections as a measure of brand perceptions.
+2.4. Twitter Although analyses of Twitter data are relatively rare in the marketing literature (with notable exceptions including Toubia and Stephen 2013 and Stephen et al. 2010), we find that Twitter is an ideal platform for our analysis for four reasons. First, it is popular. Approximately 20% of U.S. adults were active on Twitter in 2014, and that percentage is growing steadily (Duggan et al. 2015). As of mid-2013, 77% of Fortune 500 companies maintained active Twitter accounts, compared to 70% that had Facebook pages (Barnes et al. 2013). Second, it is relevant. Twitter is used extensively for brand image and personality development, as frequent and conversation-like messages can be delivered at a low cost to a large brand community (Etter and Plotkowiak 2011, Kim and Ko 2012, Kwon and Sung 2011). Accounts can be maintained at the firm level or the brand level, allowing communities to develop at scale appropriate to a firms' brand strategy. This is an important distinction when studying brand image perceptions, as brands can be dominated to varying degrees by their parent corporate brands (Berens et al. 2005). Third, its social connections are public. Except for a minority of protected accounts, estimated at 8% (Cha et al. 2010), followers of Twitter accounts are publicly visible and can be programmatically accessed through Twitter's Application Programming Interface (API). This strengthens the relationship between the social network and brand image, as the social signal of "who follows a brand" can be a strong component of brand image (Naylor et al. 2012), and also allows social network information to be easily extracted by
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+346
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+marketers interested in implementing the method for novel research. Finally, it is organized. Because Twitter accounts are commonly organized by users into topic-based Lists, accounts users deemed relevant to a perceptual attribute can be identified programmatically, eliminating the need for manual curation. While we focus on Twitter for these reasons, the core idea of using follower connections to infer brand perceptions could be extended to other platforms, and we encourage future research to explore this further.
+A question commonly faced by researchers interested in mining consumer insights from any online source is: To what extent can the perceptions or behaviors inferred extend to more general populations? Initial inquiries to this question have been encouraging for generalizability, showing a positive relationship between online and offline consumer loyalty (Danaher et al. 2003) and brand image (El Gazzar and Mourad 2012). Furthermore, consumers are increasingly looking to a brand's social media presence to form judgments about the brand (Baird and Parasnis 2011, Naylor et al. 2012). In §§5 and 6, we investigate this issue further with our own data by validating our Twitter-based estimates against survey results obtained through a separate population, and examining similarities in brand attribute ratings across numerous demographic categories.
+3. Theoretical Foundations
+Our proposed approach is motivated by a wide range of research in the social and computational sciences suggesting that proximity in a social network can be indicative of similarity.
+A wealth of research shows a tendency for people to express affinity towards those whom they perceive to be similar (Lydon et al. 1988, Morry 2007, Naylor et al. 2012). This property of value homophily has been observed widely in sociology, social network analysis, and computational science (McPherson et al. 2001). When a user follows an organization or brand on Twitter, it provides explicit evidence of a user's voluntary public association with that entity. This is generally interpreted as an expression of affinity (Naylor et al. 2012, Kuksov et al. 2013), and survey research (conducted on the related social networking platform, Facebook) supports that the primary reason users connect to a brand is that they like its products, and that most fans are customers (see Pereira et al. 2014). While this is not always the case (e.g., an environmentally-conscious user might deliberately choose to follow a brand because it is environmentally unfriendly to track its claims), we expect that this behavior is too uncommon to affect overall trends.
+Thus, through the lens of value homophily, we expect that the followers of Twitter accounts that are widely acknowledged as exemplifying a particular attribute
+
+(e.g., environmentally-focused non-profit accounts that exemplify the perceptual attribute of eco-friendliness) are, in aggregate, likely to particularly value that attribute.3 Similarly, we expect that a brand that has an unusually large following of users who value a particular attribute is likely to be perceived as strong in that attribute. This line of reasoning is further supported by a wealth of research showing a strong relationship between brand image and the characteristics and identities of the brand's supporters and followers (Bearden and Etzel 1982, Berger and Heath 2007, Childers and Rao 1992, Escalas and Bettman 2003, Kuksov et al. 2013, Naylor et al. 2012). Taking these principles together, we attempt to infer the perceived strength of a brand for a given attribute based on the extent to which its follower set overlaps with that of a large set of accounts that exemplify the attribute.
+Note that on the surface this is a simple approach, as motivations for following brands and exemplar accounts can be varied and complex; many factors are likely at play, beyond shared value for a perceptual attribute. However, the strength of our approach is its use of "big data"; by examining millions of social links we overcome the noise introduced by infrequent spurious follower connections. Thus, by aggregating over many links, we hypothesize that we can generate meaningful estimates of brand perceptions at a scale and frequency not possible using extant means. In the next section, we explain implementation of the proposed method in detail.
+4. Social Network Mining Methodology
+Given a brand (e.g., Smart Automobile) and a perceptual attribute (e.g., eco-friendliness), our goal is to develop an automated method to assign a score to the brand, where a high score indicates a strong perceived relationship between the brand and the attribute.
+Our proposed approach is based on the notion of an attribute exemplar. An exemplar is an individual or organization that is known to be strongly affiliated with an attribute. For example, the EPA and the Sierra Club may be said to exemplify the eco-friendliness attribute. As identifying appropriate exemplars may not always be practical, a priori, our approach allows users to instead specify the attribute using a search query (e.g., "environment" for eco-friendliness). Exemplars are then found based on this keyword, as described in §4.1.
+To assign a score to a brand, our method first identifies Twitter accounts for the brand and a set of attribute exemplars. It next collects social network information
+3 Although this may not be the case for any specific user following a particular exemplar account, we look to an aggregate increase in attribute valuation for the collection of all followers over a wide set of exemplars.
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+347
+
+Figure 1
+
+An Overview of Our Approach
+
+Brand Smart car
+
+@smartcarusa
+
+Followers
+
+Follower similarity function
+
+Social perception
+score
+
+Attribute
+Environmental friendliness
+
+Twitter list
+search
+
+@epa
+
+@greenpeace Exemplars
+
+@sierraclub
+
+"Environment"
+
+Note. Given a brand's Twitter handle and a search query representing a perceptual attribute, our algorithm first collects exemplar accounts representing the attribute and then computes a similarity function between the followers of the exemplars and those of the brand.
+
+for each account; specifically, it collects the followers of the brand and the followers of each exemplar. Finally, a node affinity score is computed between the brand's account and the exemplar accounts, using standard graph-theoretic measures from the social network analysis literature. We denote this final affinity score as the Social Perception Score (SPS). Our central hypothesis is that the higher a brand's SPS for a perceptual attribute, the more strongly consumers associate the brand with that attribute.
+In its most generic form, our approach requires two inputs from the user: (1) the Twitter handle for a brand of interest,4 (2) a search query representing a perceptual attribute. With these inputs, relevant Twitter data are collected and analyzed to produce the SPS. Figure 1 depicts an overview of our approach. We enumerate the four steps below.
+1. Input · B: the Twitter handle for a brand
+(e.g., @SmartCarUSA) · Q: a search query representing a perception
+attribute (e.g., "environment") 2. Collect Exemplars · Use Q to retrieve from Twitter a list of exemplar
+accounts E = E1 Ek that reflect the specified perception attribute, e.g., @epa @greenpeace @sierraclub .
+3. Collect Followers · Collect FB, the set of Twitter accounts that follow
+brand B. · Collect FE = FE1 FEk , the Twitter accounts that
+follow each exemplar in E. 4. Compute Follower Similarity · Compute the similarity between brand followers
+FB and exemplar followers FE.
+4 Alternatively, a brand name may be provided; we offer a process in Appendix A to automatically identify the corresponding Twitter account.
+
+· Return the resulting Social Perception Score, SPS B E .
+In the following subsections, we expand on these steps in detail.
+4.1. Selecting Exemplar Twitter Accounts The foundation of our approach requires a set of Twitter accounts that exemplify the attribute to be rated. In some use cases, this may be manually provided. For example, the attribute of eco-friendliness may be reasonably exemplified by selecting the Twitter accounts of known environmental non-profits. There are at least three reasons we may want to automate this step: (1) For some attributes, it may be difficult to identify exemplar accounts; (2) Automation allows us to scale the approach to produce social perception scores for many attributes; (3) Less well known accounts may often be more valuable in computing SPS (as results in §7 suggest).
+Our approach requires as input a query term or phrase representing the attribute. For example, in §§5 and 6, we use the term "environment" as a search term representing the eco-friendliness attribute. With this term, our program automatically queries Twitter to identify accounts representative of the query. To do so, we rely on Twitter Lists.
+A Twitter List is a manually-curated collection of Twitter accounts. Any user can create their own List or subscribe to others' Lists. Thus, Lists are used to follow the posts of a related set of users. Lists can be understood as a crowd-sourced method to categorize accounts, i.e, a "folksonomy" (Peters 2009).5
+5 While we were unable to find a publicly reported count of the total number of Twitter Lists that have been created, a Google search suggests there are at least five million (using the query site:twitter.com//lists/).
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+348
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+We use Twitter Lists to programmatically collect exemplar accounts for each attribute as follows: Given a query reflecting an attribute (e.g., "environment"), we submit the query to Twitter's search engine, which returns Lists as well as tweets. We iterate through the first 50 List results and retain accounts that appear on at least two different Lists (to reduce the number of false matches). The resulting accounts become exemplars for the subsequent stage of analysis.
+
+4.2. Computing Follower Similarity
+
+For each brand account B and exemplar account Ei, we use the Twitter API to programmatically download the
+
+list of users that follow each account. The final step,
+
+then, is to compute a score indicating the similarity
+
+between the followers of a brand and the followers of
+
+an exemplar set. Viewed abstractly, the graph-theoretic
+
+problem is to determine the similarity between two
+
+nodes based on their neighboring nodes. This prob-
+
+lem is central to a number of social network analysis
+
+problems, including community detection, link pre-
+
+diction, and recommendation engines (Pan et al. 2010,
+
+Grabowicz et al. 2012).
+
+Based on this literature, we select a common and
+
+empirically successful similarity function, the Jaccard
+
+index. The Jaccard index defines the similarity of two
+
+sets as the cardinality of their intersection divided by
+
+the cardinality of their union. For two sets X and Y ,
+
+the value is
+
+JX
+
+Y
+
+=
+
+XY XY
+
+Thus, letting FB be the set of followers of brand B, and FEi be the followers of an exemplar account Ei  E, we compute the Jaccard index J FB FEi . In addition to its wide use in link prediction and community detection (Pan et al. 2010, Grabowicz et al. 2012), this metric has the additional advantages of being scalable and transparent. Furthermore, Jaccard scores are appropriately normalized so that we can compare brands with different numbers of followers.
+After we have computed J FB FEi for each exemplar Ei  E, we next must determine how to combine the Jaccard values for each exemplar of an attribute. While simply taking the average score seems natural, we introduce a modification to encode our intuition that being similar to niche exemplars is more important than being similar to popular exemplars. For example, one exemplar account for eco-friendliness is @DarrenGoode, an environmental reporter for the website Politico. This account has under 8,000 followers. Contrast this with another exemplar, @AlGore, which has nearly three million followers. A user who follows @DarrenGoode and brand B provides a stronger source of evidence of the environmental affinity of B than a user who follows @AlGore and brand B.
+
+A simple way to incorporate this intuition is to weight each exemplar inversely proportional to its number of followers. This is analogous to the "inverse document frequency" adjustment used in information retrieval to identify documents containing rare query terms to be ranked higher than documents containing common query terms (Manning et al. 2008). The resulting social perception score for a brand B and exemplar set E then becomes the weighted average
+
+SPS B E =
+
+EiE 1/ FEi J FB FEi EiE 1/ FEi
+
+(1)
+
+Compared with survey results, we observed that SPS tends to have more positive skew and greater coefficient of variation (i.e., the ratio of standard deviation to mean). To mitigate this, our final score takes the square root of the quantity computed in Equation (1).
+While we have motivated this final SPS computation based on the literature and our intuition, there are a number of different choices one could make that would result in a somewhat different function (e.g., choice in similarity metric, averaging, and square root transformation). In §7.4, we empirically compare our proposed measure with a number of competing alternatives to investigate how robust the results are to these choices.
+
+5. Validation Methodology
+The next step in our process is to validate the extent to which the SPS values match actual perceptions. To do this, we compare SPS values with directly elicited survey ratings for each brand and attribute in our test set, as described below.
+5.1. Attributes and Exemplars To test the generalizability of our approach across different perceptual attributes, we considered three attributes: eco-friendliness, luxury, and nutrition.
+Using the Twitter List search methodology described above, we used the queries "environment," "luxury," and "nutrition" to collect exemplars for each of the three perceptual attributes. For each of the exemplar accounts, we collect the IDs of up to 50,000 of their Twitter followers. In total we have 74 eco-friendly exemplars (2 million followers, 1 million unique), 110 luxury exemplars (4.4 million followers, 2.3 million unique), and 405 nutrition exemplars (4.7 million followers, 2.7 million unique). Figure 2 shows the distribution of the number of followers for these accounts.
+5.2. Brand Selection To test the generalizability of our approach across brands, we use a wide range of brands from a variety of sectors. To collect brands, we used the website GoodGuide.com, which maintains a large selection
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Figure 2 105
+
+(Color online) Distributions Over the Number of Followers Collected for Exemplars of Each Attribute
+
+(a) Eco-friendliness
+
+(b) Luxury
+
+105
+
+105
+
+Num. followers Num. followers
+
+Num. followers
+
+104
+
+104
+
+104
+
+103
+
+103
+
+103
+
+102
+
+102100
+
+101
+
+102
+
+102100
+
+Rank
+
+Note. We limit our analysis to at most 50,000 followers per account.
+
+101
+
+102
+
+Rank
+
+101
+
+103
+
+100
+
+(c) Nutrition
+
+101
+
+102
+
+Rank
+
+349
+103
+
+Table 1 Brand Examples by Sector
+
+Sector
+
+N Attr.
+
+Example brands
+
+Apparel
+
+70 Eco, Lux Ann Taylor, Calvin Klein, Champion, Chanel,
+
+Gap, Hanes, J.Crew, Levi's, Nike,
+
+The North Face, Ralph Lauren
+
+Cars
+
+37 Eco, Lux Audi, Bentley, BMW, Buick, Cadillac,
+
+Honda, Jeep, Kia, Lexus, Mini, Porsche,
+
+Rolls Royce, Subaru, Tesla, Volvo
+
+Food and Bev. 70 Eco, Nut Cheerios, Dannon, Doritos, Godiva, Mott's,
+
+Oscar Mayer, Red Bull, Snapple,
+
+Stouffers, Sunchips, Triscuit
+
+Pers. Care
+
+62 Eco Aveda, AXE, Burt's Bees, Clearasil, Clinique,
+
+Dove, Herbal Essences, L'Oreal, Old
+
+Spice, Pantene, Suave
+
+Figure 3 106
+
+(Color online) Distribution Over the Number of Followers Collected for the 239 Brands in Our Test Set
+Brand followers
+
+105
+
+Num. followers
+
+104
+
+103
+
+of brands categorized by sector. We first downloaded all brands listed under the four largest sectors: Car, Apparel, Food and Beverage, and Personal Care. Because Personal Care contained many brands primarily known for products in different sectors, we eliminated Personal Care brands that were not primarily known for hair or skin care products. Next, we used a semi-automated script to match brand names with their corresponding Twitter accounts. This process is described in Appendix A. We manually validated all matches, then discarded any brands for which we could not find an active, English-language account (where active is defined as having at least 1,000 followers and 100 tweets). If a brand had accounts for multiple locations including the United States, the U.S. version was used. Next, we eliminated subbrands that matched only to their parent brand's Twitter account. Finally, if more than 70 brands remained in a sector, we randomly selected 70 for our analysis. These eliminations resulted in a test set of 239 brands. Table 1 lists the number of brands per sector, the perceptual attributes the sector was tested for,6 and examples of brands included.
+We used Twitter's API to collect up to 500,000 followers for each brand in our test set. In total, we
+6 Note that certain attributes are only relevant to certain sectors (e.g., while we can consider the eco-friendliness of cars, clothes, and food, it does not make sense to consider the nutrition of cars).
+
+102100
+
+101
+
+102
+
+103
+
+Rank
+
+Note. We limit our analysis to at most 500,000 followers per account.
+
+collect Twitter user IDs for 30.6 million brand followers (14.6 million of which are unique). Figure 3 shows the distribution of follower counts for the brands.
+5.3. Survey Design Given our list of 239 brands and three attributes, we next directly elicited survey ratings to determine how strongly consumers associate each brand with each attribute. We administered the surveys through Amazon Mechanical Turk (AMT), which has been shown to be a reliable source for social science data collection (e.g., see Buhrmester et al. 2011). Brands were grouped into sets by sector and attribute, and 500 AMT participants were recruited to rate each set. Participants were required to be in the United States and to have a successful track record on AMT (i.e., they must have completed at least 100 prior assignments with an acceptance rate of at least 95%). Participants were asked to rate each brand in the set on a scale of one to five according to how much they believed the brand aligned with the perceptual attribute at hand, and were provided a separate column to select if they did not recognize a brand. Each participant rated between
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+350
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+39 and 70 brands, all within the same sector and for the same attribute. Brand order was randomized for each participant. After rating all of the brands in the set, participants were asked to indicate categories for their age, gender, education, and household income. Note that we did not ask participants whether they followed brands on Twitter; we expect that the percentage of positive responses for any given brand in this context would be too small for meaningful analysis. However, we encourage future researchers to explore more direct connections between survey respondents and Twitter activity.
+Numerous attention filters were included to ensure valid responses7; the responses of any participants who did not pass these checks were discarded. On average, 340 participants per set passed the attention filters (68%).
+Brand recognition rates varied from 100% for brands such as BMW, Honda, and Pepsi to less than 10% for brands such as Rodial, Elemis, and Bumble Bar, with an overall average recognition rate of 75%. As some of the brands in the list were somewhat obscure, and we wanted to ensure that ratings were generated by a large sample of users, we further filtered out brands that were not recognized by at least 200 participants. The final brand counts are included in Table 2.
+Finally, we computed the average rating for each brand for each perceptual attribute. Figure 4 summarizes the survey responses by sector and attribute. These plots suggest that a number of attribute-sector combinations exhibit positive skew, e.g., there are a small number of brands with very high eco-friendliness ratings. In Appendix C, we perform an additional demographics analysis of the survey responses to validate the representativeness of these data.
+6. Validation Results
+To evaluate the overall accuracy of SPS, we examine each sector-attribute combination individually and compute the Pearson correlation coefficient between the average survey ratings and the SPS estimates for each brand. Table 2 lists these results.
+Across all sectors and attributes, the average correlation coefficient between SPS and the survey averages is 0.72, with the strongest correlation for the ecofriendliness of personal care brands (0.82), and the weakest for the eco-friendliness and luxury of apparel brands (0.62). We find these consistently high correlations to be encouraging for the use of this automated methodology in marketing practice. As automated attribute-specific brand perception estimation is a novel
+7 The attention filters used included asking participants to select a particular response for a given line, to identify a brand they rated one turn earlier, and to appropriately indicate that they did not recognize a nonsense word inserted in place of a real brand.
+
+Table 2
+
+Pearson Correlation Coefficients (r ) for SPS and Survey Scores by Perceptual Attribute and Sector
+
+Attribute
+
+Sector
+
+r
+
+N
+
+Eco
+
+Apparel
+
+0.62
+
+39
+
+Car
+
+0.75
+
+37
+
+Food and Beverage
+
+0.73
+
+62
+
+Personal Care
+
+0.82
+
+20
+
+Luxury
+
+Apparel Car
+
+0.62
+
+47
+
+0.68
+
+37
+
+Nutrition
+
+Food and Beverage
+
+0.80
+
+55
+
+Average
+
+0.72
+
+Note. N is the number of brands remaining in the set after unfamiliar brands were filtered out.
+
+contribution to the marketing literature, there is no clear external benchmark to directly compare our performance against. For an indirect comparison, we look to Netzer et al. (2012), who recently presented a methodology for a related goal of estimating car brand co-association sets (i.e., car brands that consumers cluster together in purchase consideration sets) using text analysis of online user forum posts. In their validation, they obtained correlations between their estimates and survey results that ranged from 0.43 to 0.55. The nature of their goal allowed them to further validate some of their results against brand-switching data. Here, their correlation was 0.75 (slightly higher than our 0.72). However, we note that the comparison is indirect; their goal was different than ours (brand co-associations versus perceptual attribute ratings).
+To verify that the correlations obtained are indicative of attribute-specific perceptual information captured by SPS, we performed three ancillary tests. First, to explore the possibility that the results might be due to a halo effect around brand popularity, i.e., that popular brands are perceived as stronger in all attributes, we computed the Pearson correlation between a brand's number of Twitter followers (as a measure of popularity) and its average survey rating for each attribute. We found a reassuringly small correlation coefficient of 0.107 (p = 0 06), indicating that attribute ratings are not reflections of popularity. Second, to explore whether SPS might be capturing a more general dimension of brand perceptions, we tested whether the SPS estimates for one attribute substantially predicted the survey ratings for a different attribute. For each sector in which multiple attributes were rated, we computed the Pearson correlations between each cross-attribute combination of survey and SPS scores (e.g., luxury survey ratings and eco-friendly SPS estimates). The average correlation coefficient for such pairs was 0.059, indicating that the SPS estimates provide information specific to the designated attribute. Finally, to explore whether the results were driven primarily by demographic differences (e.g., if SPS might be reflecting that eco-friendly exemplars and eco-friendly brands both
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Survey ratings
+
+Figure 4 (Color online) Boxplots for the Survey Results Eco-friendliness
+5.0 4.5 4.0 3.5 3.0 2.5 2.0 1.5 1.0
+
+Luxury
+
+351
+Nutrition
+
+Food and Bev.
+
+Car
+
+Apparel
+
+Apparel Car
+Food and Bev. Pers. Care
+
+Figure 5 (Color online) Twitter-Based SPS Estimates of Perception Against Survey Ratings of Perceptions for Each Attribute and Sector Combination
+
+Eco-friendly/Apparel r (37) = 0.62
+
+Eco-friendly/Car r (35) = 0.75
+
+0.025
+
+0.030
+
+0.020
+
+0.025
+
+0.015
+
+0.020
+
+0.010
+
+0.015
+
+0.005
+
+0.010
+
+2.0
+
+2.5
+
+3.0
+
+3.5
+
+2.0 2.5 3.0 3.5 4.0
+
+Eco-friendly/Food and Bev. r(60) = 0.73
+0.05
+0.04
+0.03
+0.02
+
+Eco-friendly/Pers. Care r(18) = 0.82
+0.025
+0.020
+0.015
+
+0.01
+
+0.010
+
+2.0 2.5 3.0 3.5 4.0
+
+2.0 2.5 3.0 3.5 4.0
+
+SPS
+
+Luxury/Apparel r(45) = 0.62
+0.06 0.05 0.04 0.03 0.02
+
+Luxury/Car r (35) = 0.68 0.04
+0.03
+0.02
+
+Nutrition/Food and Bev. r(53) = 0.80
+0.05 0.04 0.03 0.02 0.01
+
+2
+
+3
+
+4
+
+2
+
+3
+
+4
+
+5
+
+2
+
+3
+
+4
+
+Survey
+
+Notes. Each data point represents a brand in that sector. A dashed regression line is included for reference.
+
+appeal to younger users, independent from environmental values), we ran a series of regression analyses, including age, gender, and income profiles for a subset of brands for which we could obtain this information. We found that for each attribute, the coefficient for SPS as a predictor of average survey scores is positive and highly significant while controlling for demographics. Details of this analysis are provided in Appendix B.
+To explore our results in more detail, Figure 5 shows scatter plots of SPS versus survey rating for each sector-attribute combination. The first row of plots
+
+indicates that SPS for eco-friendliness also follows the positive skew as observed in the survey results. That is, while most brands have low-to-moderate ecofriendliness, there are a handful of brands that have very high eco-friendliness ratings. These include The North Face and Timberland (Apparel), Tesla and Smart (Car), Organic Valley and Nature's Path (Food and Beverage), and Burt's Bees and Aveda (Personal Care). To investigate the possibility that these highly rated brands are driving the observed correlations, we also compute the Spearman rank coefficient, which is less
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+352
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Figure 6 (Color online) SPS vs. Average Survey Ratings for Eco-Friendliness and Luxury Perceptions of Car Brands Eco-friendly/Car r(35) = 0.75
+Tesla
+
+0.030 0.025
+
+Smart
+
+SPS
+
+0.020 0.015 0.010
+
+Chrysler
+
+GMC Cadillac
+
+Ford Infiniti
+
+Jaguar
+Rolls Royce Porsche
+Lamborghini
+
+Chevrolet BMW
+
+Mercedes
+
+Audi
+
+Volvo
+
+Subaru
+
+Kia
+
+Mini
+
+Toyota Honda
+
+Pontiac
+
+2.0
+
+2.5
+
+3.0
+
+3.5
+
+Luxury/Car r (35) = 0.68
+
+4.0 Rolls Royce
+
+0.04
+
+0.03
+
+Mini Chrysler
+
+Volvo
+
+GMC
+
+Kia
+
+Ford
+
+Toyota Subaru
+
+Smart
+
+Chevrolet
+
+Infiniti
+
+Cadillac Audi
+
+BMW
+
+Bentley
+Aston Martin Jaguar
+Porsche
+
+Mercedes Tesla
+
+Lamborghini
+
+Lincoln
+
+SPS
+
+0.02
+
+Pontiac
+
+2
+
+3
+
+4
+
+5
+
+Survey
+
+Note. For readability, only some brand name labels are displayed.
+
+sensitive to outliers. The average Spearman coefficient across all attribute-sector pairs is 0.64, indicating that a strong relationship still remains. Note, however, that these brands are not "outliers" in the sense of poor quality data; rather, these reflect the fact that only a small number of brands have cultivated a very strong perception of eco-friendliness. Considering this fact, and that the magnitude of such perceptual differences, not just the rankings, are important for informing marketing strategy, we continue our analysis using Pearson correlation.
+
+Finally, we look in more detail at the scatter plots to better understand when the method aligns with survey results and when it does not. Figure 6 shows a close-up of the plots for car brands for attributes eco-friendliness and luxury. From these figures, we can identify some brands for which the SPS values need improvement. For example, in the bottom plot of Figure 6, it appears that Lamborghini has a lower SPS value than we might expect, given that it is well known for its luxury sports cars and is highly rated by survey respondents. Examining the Twitter presence of Lamborghini, we
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+353
+
+observe that many of the communications involve pictures and discussions of auto shows, which focus on cutting-edge technology, rather than cars that one would actually purchase today. Thus, we conjecture that the followers of Lamborghini may comprise more sports car technology enthusiasts, rather than people interested in purchasing a Lamborghini. This is a potential limitation of the simplicity of the approach: If people follow one brand for systematically different reasons than they follow other brands, it may make it difficult to compare SPS values. Although this appears to occur rarely in our data, we encourage future work in this area to identify and adjust for such instances.
+Overall, our validation results suggest that the automated method we propose can deliver a viable and industry-acceptable signal of attribute-specific brand perceptions, providing marketing managers interested in monitoring specific attributes of brand image with a fast, flexible, and low-cost alternative to survey administration.
+7. Robustness Checks
+In this section, we perform additional analyses to understand how the different factors that make up SPS affect results. We consider several aspects of the exemplar set (including quantity, quality, and number of followers), as well as variants of the SPS function (using different similarity metrics, averaging, and transformations), and report how these aspects affect the quality of the resulting estimates of brand image perception.
+7.1. Sensitivity to Number of Exemplars In the first analysis, we consider how the quantity of exemplars influences accuracy. One would expect that more exemplars provide a more representative set of accounts, making SPS less sensitive to poorly chosen exemplars. To investigate this, we select random subsets of exemplars to consider when computing SPS values, then compare how the resulting scores correlate with survey results. In Figure 7(a), we plot the correlation averaged over all sector-attribute combinations as the percentage of exemplars used increases, averaged over four trials. That is, to generate the first value, we select a random 10% of exemplars for each attribute when computing SPS values; standard errors are computed from these four trials.
+We can make several observations from this figure. First, as expected, the quality of the SPS values tends to increase as the number of exemplars used increases. However, the quality appears to plateau around 70%, suggesting that at a certain point additional exemplars become redundant. Second, the standard error decreases as the number of exemplars increases, which is expected given the greater sample size. Finally, and perhaps more interestingly, we observe that correlation can be very high using only 10% of the exemplars. Of course,
+
+there is a large variance, which indicates that which 10% we choose matters. We consider this further in the next section.
+7.2. Sensitivity to Choice of Exemplars In this section we examine more closely how SPS quality varies by choice of exemplars. First, we consider how quality varies by the number of followers an exemplar has. Recall that our proposed SPS score computes the weighted average over exemplar similarity, where the weight is the inverse of the number of accounts that follow the exemplar. Our intuition was that following "niche" exemplars was a stronger indicator than following more popular exemplars. To investigate this intuition, we consider filtering exemplars by their number of followers. Specifically, we partition exemplars into bins of sizes {0­10 K, 10 K­ 25 K, 25 K­40 K, 40 K­50 K}, based on the number of followers. For each attribute, we sample five exemplars from each bin and then compute the SPS values for each relevant sector and the correlation with the survey values.8 We repeat this four times and report the average correlation per bin, again averaged over each sector-attribute pair. Figure 7(b) plots these averages with standard error bars.
+The overall correlations are lower because we select only five exemplars per bin (consistent with the conclusions of Figure 7(a)). In addition, exemplars with the most followers (>40,000) tend to be the least useful for estimating perception. This relationship appears to be nonlinear, with the 10 K­25 K bin resulting in the highest correlation. We speculate that there is a "sweet spot" in which an exemplar has enough followers to calculate reliable statistics, but not so many as to dilute the cohesion of its followers. Thus, these "niche" exemplars do indeed appear to be instrumental to quality SPS values.
+Figure 7 also provides guidance on some of the practical considerations made in §4. Because of Twitter rate limits,9 we restricted exemplars to those appearing in the first 50 results of the Twitter List search. Furthermore, we limited our collection to at most 50,000 followers per exemplar. The plateauing correlation in Figure 7(a) suggests that collecting additional exemplars will have limited value. Furthermore, Figure 7(b) suggests that very popular exemplars are the least valuable, so collecting more than 50,000 followers per exemplar is unlikely to improve accuracy. Thus, while we originally chose these cutoffs for convenience,
+8 We sample only five exemplars per bin to control for the number of exemplars. For example, only eight luxury exemplars have fewer than 10,000 followers, compared with 286 nutrition exemplars.
+9 For example, the Twitter API allows us to collect about 300,000 follower IDs per hour. See https://dev.twitter.com/rest/reference/ get/followers/ids.
+
+Survey correlation 0 50 100 150 200 250 300 350 400 450
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+354
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Figure 7
+
+(Color online) (a) Survey Correlation (With Standard Errors) by Percentage of Exemplars Sampled, Averaged Across All Attributes and Sectors; (b) Survey Correlation (With Standard Errors) by Number of Followers per Exemplar; We Sample Five Exemplars for Each Bin (10 K, 25 K, 40 K, 50 K) and Plot the Average Correlation Across All Attributes and Sectors, Averaged Over Four Random Trials
+
+(a) 0.73
+
+(b) 0.75
+
+0.72 0.70
+0.71 0.65
+0.70
+
+0.69
+
+0.60
+
+Survey correlation
+
+0.68
+
+0.55
+
+0.67 0.66 0.65 0.64
+10 20 30 40 50 60 70 80 90 100 % of exemplars
+
+0.50 0.45 0.40
+0­10 K
+
+10 K­25 K
+
+25 K­40 K
+
+Number of followers per exemplar
+
+40 K­50 K
+
+Figure 8 (Color online) Correlation Between Survey Responses and SPS Values Using a Single Exemplar at a Time Sorted by Rank
+
+Eco-friendly/Apparel
+
+1.0
+
+0.8
+
+0.6
+
+0.4 forestservice
+
+0.2 icvoters
+
+0 ­ 0.2 ­ 0.4
+
+wilderness guardianeco 350 energy
+
+­ 0.6 0 10 20 30 40 50 60 70 80
+
+Eco-friendly/Car
+justingerdes envam bethparke
+nwf usfwshq nrdc 0 10 20 30 40 50 60 70 80
+
+Eco-friendly/Food and Bev.
+justingerdes greenwombat climatecentral
+greenpeace algore energy 0 10 20 30 40 50 60 70 80
+
+Eco-friendly/Pers. Care
+envam wilderness tomphilpott
+toddbbatesapp algore energy 0 10 20 30 40 50 60 70 80
+
+Correlation
+
+Luxury/Apparel
+
+Luxury/Car
+
+1.0
+
+0.8
+
+0.6
+
+0.4 chloefashion
+
+forbeslife
+
+0.2 0
+­ 0.2 ­ 0.4
+
+francasozzani cfda
+journeypod kimbhasin hotelathens
+
+luxurysociety pursuitist
+journeypod hotelathens kimbhasin
+
+­ 0.6 0 20 40 60 80 100 0 20 40 60 80 100
+
+Nutrition/Food and Bev.
+nutritionnerd fcpdpg ellepennerrd
+jamieoliver jeanettejenkins tferriss
+
+Note. The top three and bottom three exemplar accounts are displayed in each plot.
+
+these results suggest that more data are not likely to significantly increase the quality of our estimates.
+Next, to better understand the variation of SPS quality by exemplar, we consider the correlations obtained using each exemplar in isolation. For example, we consider the correlation between eco-friendliness surveys and the SPS values generated using only a single exemplar (such as @greenpeace). In Figure 8, we plot these results for each of the seven sector-attribute pairs. Each figure plots the exemplars in descending order of the resulting correlation with survey responses. Additionally, we have indicated the names of the three
+
+highest and three lowest ranked exemplars. This figure allows us to visualize the variation in SPS quality by choice of individual exemplar. "Elbows" in these curves tend to occur after half of the exemplars are considered, indicating that most of the exemplars found by our proposed search method can lead to high quality SPS values. It is also clear that some exemplars have been poorly selected. Averaging over exemplars therefore appears critical to maintaining useful estimates in the presence of this noise.
+Looking at the top-ranked exemplars, we see that there are some exemplars that are highly ranked across
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+355
+
+Figure 9 (Color online) Boxplots of the Survey Correlation Obtained Using a Single Exemplar at a Time Averaged Across Sectors
+
+1.0 84
+0.8
+
+Eco-friendly
+
+64
+
+8
+
+16
+
+124
+
+Luxury
+
+16
+
+16
+
+22
+
+10
+
+128
+
+Nutrition
+
+286
+
+43
+
+11
+
+15
+
+50
+
+0.6
+
+Survey correlation
+
+0.4
+
+0.2
+
+0
+
+­ 0.2
+
+­ 0.4
+
+­ 0.6 10,000 20,000 30,000 40,000 50,000
+
+10,000 20,000 30,000 40,000 50,000 Number of followers per exemplar
+
+10,000 20,000 30,000 40,000 50,000
+
+Notes. Exemplars are binned by number of followers. For example, the first boxplot in the first panel shows the distribution over survey correlations using eco-friendly exemplars having 0­10,000 followers. There appears to be a nonlinear relationship between number of followers and correlation that varies by attribute; exemplars with between 10,000­20,000 followers appear to perform well across all attributes.
+
+sectors, e.g., Justin Gerdes, an environmental journalist, is the top exemplar for eco-friendly Cars and Food and Beverages. However, in general different sectors are best reflected by different exemplars. For example, in eco-friendliness, the top exemplars for apparel have an outdoors focus (Forest Service, The League of Conservation Voters, the Wilderness Society), while for cars, the top exemplars tend to have more to do with global warming and energy (Beth Parke is also an environmental journalist). Similarly, for luxury, the top exemplars for Apparel typically pertain to fashion (the Council of Fashion Designers of America (CFDA) is a fashion trade association, Franca Sozzani is the editor of the fashion magazine Vogue); the top exemplars for Cars focus more on high-end technology products. These findings suggest that practitioners may be able to apply domain knowledge to refine the exemplar query to tailor it to a sector of interest. Although our presented approach used only one keyword per attribute, combinations of terms such as "environment, conservation" or "environment, clean energy" could be input to generate for more specific and sector-relevant exemplar lists. Domain experts interested in such customization could refine their queries through manual examination of returned exemplars, and/or by validating results against a smaller set of brands for which perceptual ratings may already be known.
+Finally, we revisit the relationship between the number of followers an exemplar has and the quality of the resulting SPS values. Figure 9 again considers the survey correlation for each exemplar in isolation, but here we group exemplars by the number of followers (in bins of size 10,000). For example, the first boxplot in Figure 9 shows the distribution over correlations
+
+obtained by considering individual eco-friendly exemplars with between 0 and 10,000 followers. These plots suggest a difference between luxury and the other two attributes. While eco-friendliness and nutrition display a mild negative correlation between the number of exemplars and survey correlation, luxury displays a mild positive correlation. Thus, popular exemplars appear to serve as high quality exemplars for the luxury attribute, but less popular exemplars appear to be beneficial for eco-friendliness and nutrition.
+7.3. Manual vs. Automatic Exemplar Selection We also compare our automatic exemplar selection algorithm against a manually collected set. In cases where it is practical to manually identify such a set, we expect that the resulting exemplars may serve as better representations of an attribute than exemplars collected automatically.
+For eco-friendliness, a natural starting point is to identify nonprofit organizations that support environmental causes. To obtain a list of environmental nonprofits, we use the CharityNavigator10 API to collect the names of all national and international nonprofits assigned to the Environmental Protection and Conservation sector. We then manually identify the Twitter accounts for each, where possible, resulting in a total of 79 exemplars (comparable to the 73 accounts identified using the automated method). We compute SPS scores as before using the followers of these exemplars. Table 3 shows the correlations with survey results for the eco-friendliness attribute.
+10 http://charitynavigator.org.
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+356
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Table 3
+
+Pearson Correlation Coefficients (r ) for SPS and Survey Scores Using as Exemplars the List of Environmental Non-Profits from CharityNavigator.com
+
+Attribute
+
+Sector
+
+r
+
+N
+
+Eco
+
+Apparel
+
+0.74
+
+39
+
+Car
+
+0.80
+
+37
+
+Food and Beverage
+
+0.76
+
+62
+
+Personal Care
+
+0.80
+
+20
+
+Average
+
+0.78
+
+Note. N is the number of brands remaining in the set after unfamiliar brands were filtered out.
+
+Clearly, hand-selecting exemplars can result in more accurate SPS values. Compared with the results using auto-generated exemplars in Table 2, the CharityNavigator exemplars result in an average correlation that is 0.05 higher (0.73 versus 0.78), averaged across the four sectors for the eco-friendliness attribute. These results should give the practitioner some guidance in balancing the cost-benefit trade-off of computing such estimates. If it is not too burdensome to identify a large sample of exemplars, then this may improve the accuracy of the perception estimates; however, if it is difficult to identify exemplars, the automated approach produces competitive results.
+
+7.4. Sensitivity to Similarity Metric In §4.2 we proposed an SPS value that used Jaccard similarity, averaging over exemplars weighted by the number of followers. In this section, we revisit some of these algorithmic choices to determine how they affect survey correlation.
+We consider two alternative similarity metrics commonly used in social network analysis:
+· Cosine similarity (cosine): If we consider each list of followers as a binary vector, then the cosine similarity between a brand's followers FB and an exemplar's followers FEi is the cosine of the angle between the two vectors, which can be written as
+
+C FB
+
+FEi
+
+FB  FEi =
+FB FEi
+
+This metric is often used as a measure of similarity in information retrieval and clustering problems (Manning et al. 2008).
+· Conditional probability (cnd-prob): Another intuitive measure is the empirical conditional probability11 that the follower of a brand B also follows exemplar Ei
+
+P
+
+x  FEi x  FB
+
+=
+
+FB  FEi FB
+
+11 We thank an anonymous reviewer who recommended this metric.
+
+We can see that these two alternative metrics differ from Jaccard only in the denominator. (Recall that the denominator for Jaccard is FB  FEi .) Thus, these different normalizations will affect the interplay between the number of followers of each exemplar and the number of followers of a brand.
+In addition, we compare both weighted averages (as proposed in §4.2) with a simple average of exemplar similarities. Finally, we also consider variants that optionally transform SPS values with square root versus without.
+Table 4 displays survey correlations for the 12 systems resulting from all combinations of similarity metric, averaging strategy, and transformation. Averaged across all attribute-sector pairs, the correlations range from 0.63­0.72, with our proposed system (Jaccard/wtavg/sqrt) tied for the highest with another configuration (cosine/wt-avg/sqrt). In aggregate, the survey correlations appear robust to these algorithmic decisions, suggesting that the value of this approach is not limited to one particular implementation.
+Examining individual columns reveals some qualitative differences between attributes and sectors. For example, while cnd-prob is competitive with the other metrics for eco-friendliness and nutrition, it performs substantially worse for luxury. We suspect this is due to the fact that, by only normalizing by the number of followers of a brand, cnd-prob imposes too large a penalty on popular brands. That is, cnd-prob is biased to give lower scores for popular brands. Indeed, on further analysis, we find a mild negative correlation between the number of followers of a brand and its survey rating for eco-friendliness and nutrition; however, for luxury, there is a mild positive correlation.
+This may also explain the difference between the top two configurations (Jaccard/wt-avg/sqrt) and (cosine/wt-avg/sqrt). Although the average correlation is the same, Jaccard outperforms cosine for eco-friendliness and nutrition attributes, while cosine outperforms Jaccard for luxury. The denominator for Jaccard is linear in the number of followers of a brand, while for cosine it is sublinear (square root). Thus, brands with more followers are penalized less by cosine than Jaccard, partly explaining these differences.
+In summary, these robustness checks suggest that our main conclusions hold across a wide range of similarity functions, as well as across a number of alternative methods of collecting attribute exemplars.
+8. Discussion
+In this paper, we investigated a novel approach to estimating attribute-specific brand perceptions from social media to provide a low-cost, real-time alternative to traditional elicitation methods. We validated our estimates against survey data for three attributes and
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+357
+
+Table 4 Pearson Correlation Coefficients r for SPS and Survey Scores Across a Range of Similarity Functions
+
+Eco-friendliness
+
+Luxury
+
+Nutr.
+
+Method
+
+Variant
+
+Appar.
+
+Car
+
+Food
+
+PC
+
+Appar.
+
+Car
+
+Food
+
+Avg.
+
+Jaccard
+
+simp-avg
+
+0.53
+
+0.54
+
+0.62
+
+0.87
+
+0.67
+
+0.63
+
+0.70
+
+0.65
+
+wt-avg
+
+0.62
+
+0.73
+
+0.67
+
+0.86
+
+0.59
+
+0.70
+
+0.73
+
+0.70
+
+simp-avg, sqrt
+
+0.44
+
+0.53
+
+0.64
+
+0.82
+
+0.69
+
+0.62
+
+0.77
+
+0.64
+
+wt-avg, sqrt
+
+0.62
+
+0.75
+
+0.73
+
+0.82
+
+0.62
+
+0.68
+
+0.80
+
+0.72
+
+cosine
+
+simp-avg
+
+0.40
+
+0.49
+
+0.59
+
+0.85
+
+0.70
+
+0.75
+
+0.69
+
+0.64
+
+wt-avg
+
+0.64
+
+0.63
+
+0.65
+
+0.86
+
+0.61
+
+0.87
+
+0.73
+
+0.71
+
+simp-avg, sqrt
+
+0.31
+
+0.47
+
+0.60
+
+0.79
+
+0.73
+
+0.72
+
+0.75
+
+0.63
+
+wt-avg, sqrt
+
+0.61
+
+0.68
+
+0.70
+
+0.81
+
+0.65
+
+0.84
+
+0.78
+
+0.72
+
+cnd-prob
+
+simp-avg
+
+0.62
+
+0.68
+
+0.67
+
+0.83
+
+0.54
+
+0.44
+
+0.71
+
+0.64
+
+wt-avg
+
+0.61
+
+0.73
+
+0.67
+
+0.80
+
+0.42
+
+0.47
+
+0.73
+
+0.63
+
+simp-avg, sqrt
+
+0.58
+
+0.67
+
+0.72
+
+0.79
+
+0.55
+
+0.44
+
+0.78
+
+0.65
+
+wt-avg, sqrt
+
+0.61
+
+0.74
+
+0.72
+
+0.75
+
+0.44
+
+0.47
+
+0.79
+
+0.65
+
+Notes. Our proposed method is highlighted in bold. The largest values in each column are in italics.
+
+over 200 brands. With an average correlation coefficient of 0.72, the results indicate that the method provides a reliable means for automatically estimating attributespecific brand ratings. These results appear robust to a number of alternative choices of exemplar selection and affinity metric.
+In addition to being, to our knowledge, the first data mining attempt in the literature that addresses this important goal, the approach is innovative in several ways. First, we use social connections to infer brand image. While most extant data mining methods developed for other brand perception goals focus on analyzing the text of UGC about the brand, we instead consider an alternate source of information, i.e., the social connections of a brand's supporters. Prior research has shown that a brand's image is deeply connected to its social media network. By analyzing these network connections, we can exploit the social network positions of millions of consumers, the majority of whom do not actively author content, to inform brand image insights. This allows insights to be gained for topics that consumers do not write about concurrently with brand mentions, reduces bias in the data, and allows for more efficient analysis.
+Second, we focus our analysis on the social media platform Twitter. Though few studies in the marketing literature have focused on Twitter, the platform is highly used by marketers for brand image marketing, and thus is well suited for mining consumer perceptions. Additionally, the open API maintained by Twitter ensures that the data required by this method can be easily accessed by researchers and practitioners desiring to implement it.
+Third, we provide a fully automated and highly generalizable method. Extant data mining approaches in the marketing literature require context-specific manual tuning and/or data-annotating to implement, which can be as or more costly and time consuming as the
+
+manual direct-elicitation methods they aim to replace. By leveraging the user-generated account organization of Twitter, the method we present can automatically identify exemplar accounts for an attribute of interest to researchers based on a single keyword input. This automation allows researchers and practitioners to frequently and easily generate estimates for a range of attributes and brands of interest, allowing for rich marketing insights that can be kept up to date over time.
+The use-cases for the developed method are many. Most directly, marketing practitioners can use the method to automatically generate and update perceptual maps for large sets of brands for numerous attributes of interest. Such perceptual maps have long been a "major analytical tool in marketing research" (Steenkamp et al. 1994, p. 1). Also, by reducing the need to directly elicit perceptions from consumers, the proposed method can enable richer and more varied market studies that incorporate data from a much larger set of users, and can be continuously kept up to date to monitor evolving perceptions. Marketing researchers can also use the method to easily extract perception data to be used to inform more substantive marketing research analyses and models (for example, to study how brand perceptions change in response to marketing initiatives).
+We also speculate that the approach can be adopted to other common marketing tasks beyond those explored here. For example, instead of computing brandexemplar affinities, one could compute brand-brand affinities using the same data. Clustering the resulting weighted graph may be used to generate competitive market structures and brand associative networks (Henderson et al. 1998, Netzer et al. 2012, Urban et al. 1984). Similarly, clustering consumers instead of brands may aid in marketing segmentation and personalization.
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+358
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+We note several limitations with this work. First, as presented, it is inherently limited to analyzing brands that maintain a Twitter presence. While we have found this to be the majority of brands, there are undoubtedly some that cannot be analyzed this way. Note that the general approach of using a brand's social connections to infer brand perceptions is versatile across platforms and social connection types. Though we use Twitter "follow" relationships, Facebook "fan" relationships could also be used to the extent that they can be publicly mined. Extending further conceptually, networks based on authorship of product reviews on Amazon or Yelp could be used; product-level perceptual attribute ratings could be inferred through the degree to which a product's reviewers also review products that are known exemplars of those attributes. Analyzing comment authorship on blog or news platforms could be similarly used. We encourage future researchers to pursue these directions and hope that the general method we introduce provides a foundation for enabling richer consumer insights across many domains.
+Another limitation is that attributes may vary in the reliability of the estimates they provide via this method. Indeed, some may not be amenable to the automated version of the method at all, if an appropriate keyword cannot be identified or if the "Lists" returned for the keyword are not of high quality. We found the automated method to work well for the three attributes tested, and also discuss how an exemplar set can be manually constructed to increase accuracy, noting that the manual curation of a list of accounts is likely to be substantially less work compared to the manual curation tasks typically required in data mining applications. We encourage future research to explore methodological advances to further increase generalizability.
+Finally, while the simplicity of our approach has benefits in terms of transparency and implementability by practitioners, we encourage future researchers to develop this work further and investigate more nuanced approaches. For example, second-degree connections can be explored, or the social network analyses can be supplemented with text analyses to improve accuracy and versatility, and to gain a deeper theoretical understanding of the nature of consumer-brand social network relationships. Additionally, given our analysis on the varying quality of exemplars, future work may consider hybrid approaches that use a small amount of survey data to guide selection or weighting of exemplars.
+Overall, it is our hope that the methods introduced in this paper provide a useful tool for marketing researchers and practitioners interested in automatically monitoring brand image perceptions. In addition, we hope to provide a foundation for future research advances in understanding the nature of brand-follow
+
+relationships, exploiting social media structure to more fully automate data mining algorithms, and using social network data to gain insights about consumers and brands.
+Supplemental Material Supplemental material to this paper is available at http://dx .doi.org/10.1287/mksc.2015.0968.
+Acknowledgments Both authors contributed equally to this article. This research was funded in part by support from the IIT Educational and Research Initiative Fund. The first author was supported in part by the National Science Foundation [grant IIS-1526674]. Any opinions, findings, and conclusions or recommendations expressed in this material are the authors' and do not necessarily reflect those of the sponsor.
+Appendix A: Collecting Twitter Accounts of a Brand Our analysis requires a Twitter user name for each brand under consideration, which is straightforward to obtain by manually searching Twitter.com. However, to aid scalability, we describe the semi-automated procedure we use here. We write a script that searches Yahoo.com using as a query the brand name and the word Twitter. The script then checks if the first result is from Twitter.com. If so, it returns the suffix of the URL as the user name (e.g., http://twitter.com/patagonia). To validate the retrieved account, we write a second script to find the homepage of the brand. We use heuristic brand name combinations to find active candidate websites, and the title tag of the page is checked for relevance to the sector. We also search for links to their Twitter accounts from their homepage, and compare with the user names determined through the Yahoo! search. For sites that do not link to a Twitter account, we search the Twitter profile for links to the homepage. This process produced valid Twitter accounts for approximately 80% of the accounts we considered. For this study, we also perform a manual validation; however, we offer the approach above to enable larger studies.
+Appendix B: Regression with SPS and Brand Demographics One interpretation of the high correlations between SPS and average survey scores could be that they are capturing demographic differences in followership, rather than attributespecific perceptions. To investigate this, we collected gender, age, and income profiles for a subset of brands in our test set that had publicly available website user demographic information from Compete.com (N = 101). For each attribute, we performed an ordinary least squares (OLS) regression according to the following equation:
+Survey = 0 + 1SPS + 2Gen + 3Age1 + 4Age2 + 5Age3
++ 6Age4 + 7Inc1 + 8Inc2 + 9Inc3 +
+Survey is the brand's average survey rating for the specified attribute. The demographic predictors indicate the percentage of a brand's website traffic that comes from distinct gender, age, and income brackets, as reported by Compete.com. Specifically, Gen is the percentage of the brand's website
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Figure C.1
+
+(Color online) Demographics of Survey Respondents
+
+1,400 Age
+
+Education
+
+1,200
+
+1,000
+
+Frequency
+
+800
+
+600
+
+400
+
+200
+
+0
+
+Gender
+
+Income
+
+359
+
+18­24 25­34 35­44 45­54 55­64
+65 + < H.S. deg. H.S. deg. (or equiv.) Some college Assoc. deg. Bach. deg. Grad. deg.
+Female Male
+0­29,999 30,000­59,999 60,000­99,999
+100,000 +
+
+users who are male; Age1­4 are the percentages who are 18­24, 25­34, 35­44, and 55­64 years old; and Inc1-3 are the percentages with annual household incomes of $0­$29,999, $30,000­$59,999, and $60,000­$99,999. All variables were standardized mean = 0 SD = 1 , and the model was fit separately for each attribute.
+The resulting estimates for 1 are positive and highly significant for all attributes (for Eco, Nut, and Lux, respectively,
+1 = 0 81 0 62 0 77 , SE = 0 12 0 16 0 15 , p < 0 0001 p < 0 01 p < 0 0001 ). Demographic predictors are only significant at the 0.05 level in two cases: A more male audience positively predicts luxury ratings 2 = 0 52 SE = 0 14 p < 0 001 , and a more youthful audience positively predicts eco-friendliness ratings 3 = 0 20 SE = 0 08 p < 0 05 . The R2 measures for the models ( 0 44 0 72 0 54 for {Eco, Nut, Lux}), are larger by an average of 0.29 compared to those for models run with just the demographic predictors. These results support that SPS is capturing attribute perceptions beyond demographic similarities.
+Appendix C: Twitter and Survey Demographics According to a recent report by Pew Research, approximately 20% of U.S. adults used Twitter in 2014, and use is growing every year. It is particularly popular with those who are college-educated, under 50, and who earn more than $50,000 a year, though popularity among other groups, such at those aged 65+, is steadily increasing (Duggan et al. 2015). Beyond its general popularity, Twitter is an ideal platform for our goal of developing a methodology for mining brand image perceptions. Among social media platforms, it is used heavily for brand marketing; its follow connections are publicly accessible; and accounts are user-organized through the
+
+Lists features into topic-relevant sets. While many brand managers might consider monitoring the perceptions of Twitter brand communities (many of which have millions of members) to be a worthwhile goal in itself, a natural question is whether brand perceptions estimated in this way can generalize beyond Twitter users. We investigate this here.
+Note first that the current "gold standard" for measuring brand perceptions is asking consumers through surveys. This, itself, is subject to selection bias, as only the opinions of those who agree to complete the survey can be counted. Note also that the "general" population to generalize to is somewhat ill-defined: We are not interested in customers only, per se, but in the aggregate perceptions of the greater community from which customers might be drawn. With these limitations in mind, we explore the extent to which bias in our presented methodology might be a concern.
+Our first step is to validate the Twitter-based perception estimates with surveys administered to a different population, specifically, participants recruited through AMT. AMT has been shown to be a reliable source for collecting social science research data, comparable to traditional laboratory methods (e.g., see Buhrmester et al. 2011, Mason and Suri 2012, Sprouse 2011). As shown in §6, we find encouragingly high correlations between the Twitter-based SPS and average AMT ratings.
+Although AMT is generally considered a reliable source for social science data, we asked our survey participants to identify categories for their gender, age, education, and household income so that we could examine demographic bias in our sample. Figure C.1 shows the distributions of the survey respondents along these variables.
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+360
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Table C.1 Pearson Correlation Matrices (Compressed for Readability) for the Mean Brand Ratings by Attribute per Demographic Category
+
+Luxury
+
+Eco-friendliness
+
+Nutrition
+
+Age
+
+18­24 25­34 35­44 45­54 55­64 18­24 25­34 35­44 45­54 55­64 18­24 25­34 35­44 45­54 55­64
+
+25­34 35­44 45­54 55­64 65+
+
+0.98 0.97 0.99 0.95 0.95 0.92 0.92 0.87 0.89
+
+0.91
+
+0.86 0.93
+
+0.95
+
+0.82 0.85
+
+0.92 0 95
+
+0.83 0.82
+
+0.88 0 90 0.89 0.65 0.65
+
+0.97
+
+0.98 0.98
+
+0 88
+
+0.94 0.94
+
+0 81 0.74
+
+0.92 0.93
+
+0 66 0.73 0.69 0.82 0.82
+
+0.95 0.94 0.96 0.83 0.82 0.83
+
+Edu.
+
+No col. Sm. col. Assoc. Bach.
+
+No col. Sm. col. Assoc. Bach.
+
+No col. Sm. col. Assoc. Bach.
+
+Some col. Associate Bachelor Grad
+
+0.96 0.94 0.93 0.96 0.99 0.96 0.97
+
+0.95 0.97 0 98
+
+0.74 0.74 0.81 0.74 0.93 0.76 0.91
+
+0 80 0 82 0.91
+
+0.97 0.95 0.97 0.96 0.98 0.95 0.97
+
+0.97 0.97 0.98
+
+Income
+
+0­30 K 30­60 K 60­100 K
+
+0­30 K 30­60 K 60­100 K
+
+0­30 K 30­60 K 60­100 K
+
+30 K­59,999 0.98
+
+60 K­99,999 0.98 0.99
+
+100 K+
+
+0.98 0.99
+
+0.98
+
+0.94
+
+0.92 0.93
+
+0.91 0.92
+
+0 89
+
+0.99
+
+0.98 0.98
+
+0.98 0.98
+
+0.97
+
+Gender
+
+Male
+
+Male
+
+Male
+
+Female
+
+0.99
+
+0.94
+
+0.99
+
+The gender distribution of the survey sample is fairly balanced (with slightly more males) and the median income category is $30,000­$59,999, which maps to the U.S. median income of $51,915.12 Similar to the Twitter population, the sample is notably young (with large representation in the 25­34 range, and few seniors) and educated (more than half have a college degree).
+We next investigate whether differences in such demographic categories affect the measure of interest, i.e., ratings of brand perceptual attributes. To explore this, we computed the mean rating of each brand (for each perceptual attribute) by each demographic category, and examine the correlations between the average ratings of the different demographic groups (e.g., we computed the correlation coefficient between the average luxury rating for each brand by participants aged 18­24, with the average luxury ratings by participants aged 65+, and so on). The Pearson correlation matrices showing the coefficients for all 96 pairs (32 demographic category pairs times three attributes) are provided in Table C.1.13
+We computed the correlations between ratings by different demographic categories rather than constructing a regression problem to identify the main effects of demographic categories on rating level because we are interested in detecting major shifts in the relative ratings of different brands within the set, rather than linear shifts in baseline rating levels. We find strong correlations across all demographic categories, with an average r = 0 91, and p < 0 0001 in every case. For 90% of the demographic category pairs, r > 0 8. The smallest correlations are for the Eco-Friendliness attribute between Age = 65+
+12 http://www.census.gov/content/dam/Census/library/publications/ 2014/acs/acsbr13-02.pdf.
+13 Because of the small sample size for Education = Less than High School Degree, we combined that category with High School Degree or Equivalent to simplify to a single No College category.
+
+and the other Age categories, with a still strong but lower r = 0 65­0 73. Note that this category has a particularly small sample size, which may affect these results.
+This analysis provides evidence that attribute-specific brand perceptions are similar across standard marketing demographic categories. Thus, we conclude that moderate demographic bias in our proposed methodology is unlikely to notably bias perception estimates, though we encourage further investigation for those particularly interested in the perceptions of the senior community. Note also that there may be other (nondemographic) sources of bias in our sample; both Twitter users and AMT workers may, for example, spend more time online than the average U.S. consumer. We suspect that any such biases are no stronger than the biases inherent to any survey used for marketing research, but we encourage future researchers to explore this further.
+References
+Aaker DA (1996) Measuring brand equity across products and markets. California Management Rev. 38(3):102­120.
+Archak N, Ghose A, Ipeirotis PG (2011) Deriving the pricing power of product features by mining consumer reviews. Management Sci. 57(8):1485­1509.
+Baird CH, Parasnis G (2011) From social media to social CRM: Reinventing the customer relationship. Strategy Leadership 39(6):27­34.
+Barnes NG, Lescault AM, Wright S (2013) Fortune 500 are bullish on social media. Charlton College of Business Center for Marketing Research, University of Massachusetts Dartmouth, http://www.umassd.edu/cmr/socialmediaresearch/ 2013fortune500/.
+Bearden WO, Etzel MJ (1982) Reference group influence on product and brand purchase decision. J. Consumer Res. 9(2):183­194.
+Berens G, Van Riel CBM, Van Bruggen GH (2005) Corporate associations and consumer product responses: The moderating role of corporate brand dominance. J. Marketing 69(3):35­48.
+Berger J, Heath C (2007) Where consumers diverge from others: Identity signaling and product domain. J. Consumer Res. 34(2): 121­134.
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+361
+
+Bijmolt THA, van de Velden M (2012) Multiattribute perceptual mapping with idiosyncratic brand and attribute sets. Marketing Lett. 23(3):585­601.
+Bottomley PA, Doyle JR, Green RH (2000) Testing the reliability of weight elicitation methods: Direct rating versus point allocation. J. Marketing Res. 37(4):508­513.
+Buhrmester M, Kwang T, Gosling SD (2011) Amazon's Mechanical Turk a new source of inexpensive, yet high-quality, data? Perspect. Psych. Sci. 6(1):3­5.
+Cha M, Haddadi H, Benevenuto F, Gummadi KP (2010) Measuring user influence in Twitter: The million follower fallacy. Proc. Fourth Internat. AAAI Conf. Weblogs Soc. Media (AAAI Press, Menlo Park, CA), 10­17.
+Childers TL, Rao AR (1992) The influence of familial and peerbased reference groups on consumer decisions. J. Consumer Res. 19(2):198­211.
+Crystal D (2001) Language and the Internet (Cambridge University Press, New York).
+Danaher PJ, Wilson IW, Davis RA (2003) A comparison of online and offline consumer brand loyalty. Marketing Sci. 22(4):461­476.
+Das SR, Chen MY (2007) Yahoo! for Amazon: Sentiment extraction from small talk on the Web. Management Sci. 53(9):1375­1388.
+Day GS (1975) The threats to marketing research. J. Marketing Res. 12(4):462­467.
+Day GS, Shocker AD, Srivastava RK (1979) Customer-oriented approaches to identifying product-markets. J. Marketing 43(4): 8­19.
+Dillon WR, Frederick DG, Tangpanichdee V (1985) Decision issues in building perceptual product spaces with multi-attribute rating data. J. Consumer Res. 12(1):47­63.
+Duggan M, Ellison NB, Lampe C, Lenhart A, Madden M (2015) Social media update 2014. Pew Research Center, Washington DC, http://www.pewinternet.org/2015/01/09/social-media -update-2014.
+El Gazzar N, Mourad M (2012) The effect of online communication on corporate brand image. Internat. J. Online Marketing 2(1):1­15.
+Escalas JE, Bettman JR (2003) You are what they eat: The influence of reference groups on consumers connections to brands. J. Consumer Psych. 13(3):339­348.
+Etter M, Plotkowiak T (2011) CSR communication strategies for Twitter. 61th Annual Conf. Internat. Comm. Assoc. (International Communication Association, Washington, DC), 731.
+Fader PS, Winer RS (2012) Introduction to the special issue on the emergence and impact of user-generated content. Marketing Sci. 31(3):369­371.
+Goel S, Goldstein DG (2013) Predicting individual behavior with social networks. Marketing Sci. 33(1):82­93.
+Goel S, Watts DJ, Goldstein DG (2012) The structure of online diffusion networks. Proc. 13th ACM Conf. Electronic Commerce (ACM, New York), 623­638.
+Grabowicz PA, Ramasco JJ, Moro E, Pujol JM, Eguiluz VM (2012) Social features of online networks: The strength of intermediary ties in online social media. PLoS ONE 7(1):e29358.
+Green PE (1975) Marketing applications of MDS: Assessment and outlook. J. Marketing 39(1):24­31.
+Green PE, Carmone FJ, Smith SM (1989) Multidimensional Scaling: Concepts and Applications, Vol. 18 (Allyn and Bacon, Boston).
+Hauser JR, Koppelman FS (1979) Alternative perceptual mapping techniques: Relative accuracy and usefulness. J. Marketing Res. 14(4):495­506.
+Hauser JR, Simmie P (1981) Profit maximizing perceptual positions: An integrated theory for the selection of product features and price. Management Sci. 27(1):33­56.
+Henderson GR, Iacobucci D, Calder BJ (1998) Brand diagnostics: Mapping branding effects using consumer associative networks. Eur. J. Oper. Res. 111(2):306­327.
+Huber J, Holbrook MB (1979) Using attribute ratings for product positioning: Some distinctions among compositional approaches. J. Marketing Res. 16(4):507­516.
+John DR, Loken B, Kim K, Monga AB (2006) Brand concept maps: A methodology for identifying brand association networks. J. Marketing Res. 43(4):549­563.
+
+Johnson MD, Hudson EJ (1996) On the perceived usefulness of scaling techniques in market analysis. Psych. Marketing 13(7):653­675.
+Kaul A, Rao VR (1995) Research for product positioning and design decisions: An integrative review. Internat. J. Res. Marketing 12(4):293­320.
+Kim AJ, Ko E (2012) Do social media marketing activities enhance customer equity? An empirical study of luxury fashion brand. J. Bus. Res. 65(10):1480­1486.
+Kuksov D, Shachar R, Wang K (2013) Advertising and consumers' communications. Marketing Sci. 32(2):294­309.
+Kwon ES, Sung Y (2011) Follow me! Global marketers' Twitter use. J. Interactive Advertising 12(1):4­16.
+Lancaster K (1971) Consumer Demand: A New Approach (Columbia University Press, New York).
+Lee TY, Bradlow ET (2011) Automated marketing research using online customer reviews. J. Marketing Res. 48(5):881­894.
+Lehmann DR, Keller KL, Farley JU (2008) The structure of surveybased brand metrics. J. Internat. Marketing 16(4):29­56.
+Ludwig S, de Ruyter K, Friedman M, Brüggen EC, Wetzels M, Pfann G (2013) More than words: The influence of affective content and linguistic style matches in online reviews on conversion rates. J. Marketing 77(1):87­103.
+Lydon JE, Jamieson DW, Zanna MP (1988) Interpersonal similarity and the social and intellectual dimensions of first impressions. Soc. Cognition 6(4):269­286.
+Manning CD, Raghavan P, Schütze H (2008) Introduction to Information Retrieval, Vol. 1 (Cambridge University Press, New York).
+Mason W, Suri S (2012) Conducting behavioral research on Amazons Mechanical Turk. Behav. Res. Methods 44(1):1­23.
+McDaniel SW, Verille P, Madden CS (1985) The threats to marketing research: An empirical reappraisal. J. Marketing Res. 22(1):74­80.
+McPherson M, Smith-Lovin L, Cook JM (2001) Birds of a feather: Homophily in social networks. Annual Rev. Sociol. 27(1):415­444.
+Morry MM (2007) Relationship satisfaction as a predictor of perceived similarity among cross-sex friends: A test of the attractionsimilarity model. J. Soc. Personal Relationships 24(1):117­138.
+Naylor RW, Lamberton CP, West PM (2012) Beyond the "like" button: The impact of mere virtual presence on brand evaluations and purchase intentions in social media settings. J. Marketing 76(6):105­120.
+Netzer O, Feldman R, Goldenberg J, Fresko M (2012) Mine your own business: Market-structure surveillance through text mining. Marketing Sci. 31(3):521­543.
+Pan Y, Li D-H, Liu J-G, Liang J-Z (2010) Detecting community structure in complex networks via node similarity. Physica A: Statist. Mech. Appl. 389(14):2849­2857.
+Pennebaker JW, Chung CK, Ireland M, Gonzales A, Booth RJ (2007) The Development and Psychometric Properties of LIWC2007 (LIWC.Net, Austin, TX).
+Pereira HG, de Fátima Salgueiro M, Mateus I (2014) Say yes to Facebook and get your customers involved! Relationships in a world of social networks. Bus. Horizons 57(6):695­702.
+Peters I (2009) Folksonomies: Indexing and Retrieval in Web 2 0, Vol. 1 (Walter de Gruyter, Berlin).
+Schmalensee R, Thisse J-F (1988) Perceptual maps and the optimal location of new products: An integrative essay. Internat. J. Res. Marketing 5(4):225­249.
+Shocker AD, Srinivasan V (1979) Multiattribute approaches for product concept evaluation and generation: A critical review. J. Marketing Res. 16(2):159­180.
+Sonnier GP, McAlister L, Rutz OJ (2011) A dynamic model of the effect of online communications on firm sales. Marketing Sci. 30(4):702­716.
+Sprouse J (2011) A validation of Amazon Mechanical Turk for the collection of acceptability judgments in linguistic theory. Behav. Res. Methods 43(1):155­167.
+Steenkamp J-B, Van Trijp H (1997) Attribute elicitation in marketing research: A comparison of three procedures. Marketing Lett. 8(2):153­165.
+
+Culotta and Cutler: Mining Brand Perceptions from Twitter Social Networks
+
+362
+
+Marketing Science 35(3), pp. 343­362, © 2016 INFORMS
+
+Steenkamp J-BEM, Van Trijp HCM, Berge JMFT (1994) Perceptual mapping based on idiosyncratic sets of attributes. J. Marketing Res. 31(1):15­27.
+Stephen A, Dover Y, Goldenberg J (2010) A comparison of the effects of transmitter activity and connectivity on the diffusion of information over online social networks. INSEAD Working paper, http://ssrn.com/abstract=1609611.
+Tang C, Guo L (2013) Digging for gold with a simple tool: Validating text mining in studying electronic word-of-mouth (eWOM) communication. Marketing Lett. 26(1):67­80.
+
+Tirunillai S, Tellis GJ (2012) Does chatter really matter? Dynamics of user-generated content and stock performance. Marketing Sci. 31(2):198­215.
+Toubia O, Stephen AT (2013) Intrinsic vs. image-related utility in social media: Why do people contribute content to Twitter? Marketing Sci. 32(3):368­392.
+Urban GL, Johnson PL, Hauser JR (1984) Testing competitive market structures. Marketing Sci. 3(2):83­112.
+Wu S, Hofman JM, Mason WA, Watts DJ (2011) Who says what to whom on Twitter. Proc. 20th Internat. Conf. World Wide Web (ACM, New York), 705­714.
+
+
