@@ -1,0 +1,2044 @@
+Vol. 32, No. 5, September­October 2013, pp. 699­715 ISSN 0732-2399 (print) ISSN 1526-548X (online)
+
+http://dx.doi.org/10.1287/mksc.2013.0800 © 2013 INFORMS
+
+Optimizing Retail Assortments
+
+Robert P. Rooderkerk
+TiasNimbas Business School and Tilburg School of Economics and Management, Tilburg University, 5000 LE Tilburg, The Netherlands; and Tuck School of Business at Dartmouth, Hanover, New Hampshire 03755, r.p.rooderkerk@uvt.nl
+Harald J. van Heerde
+School of Communication, Journalism, and Marketing, Massey University, Auckland 0745, New Zealand; and CentER, Tilburg University, 5000 LE Tilburg, The Netherlands, heerde@massey.ac.nz
+Tammo H. A. Bijmolt
+Faculty of Economics and Business, University of Groningen, 9700 AB Groningen, The Netherlands, t.h.a.bijmolt@rug.nl
+Retailers face the problem of finding the assortment that maximizes category profit. This is a challenging task because the number of potential assortments is very large when there are many stock-keeping units (SKUs) to choose from. Moreover, SKU sales can be cannibalized by other SKUs in the assortment, and the more similar SKUs are, the more this happens. This paper develops an implementable and scalable assortment optimization method that allows for theory-based substitution patterns and optimizes real-life, large-scale assortments at the store level. We achieve this by adopting an attribute-based approach to capture preferences, substitution patterns, and cross-marketing mix effects. To solve the optimization problem, we propose new very large neighborhood search heuristics. We apply our methodology to store-level scanner data on liquid laundry detergent. The optimal assortments are expected to enhance retailer profit considerably (37.3%), and this profit increases even more (to 43.7%) when SKU prices are optimized simultaneously.
+Key words: retail assortments; optimization; product attributes; substitution; similarity; endogeneity; heuristics; micromarketing; pricing; hierarchical Bayes; Gibbs sampling
+History: Received: May 29, 2009; accepted: May 3, 2013; Eric Bradlow and then Preyas Desai served as the editor-in-chief and Bruce Hardie served as associate editor for this article.
+
+1. Introduction
+Assortment is a key element of a retailer's marketing mix (Levy and Weitz 2004). It differentiates a retailer from its competitors and has a very strong influence on retail sales (Fox et al. 2004). Retailers face the problem of selecting the assortment that maximizes category profitability. The proliferation of stock-keeping units (SKUs) in the last few decades has made the problem of assortment selection even more challenging.
+The academic literature has looked at assortment issues. One stream focuses on the impact of assortment reductions on purchase behavior and category sales (Boatwright and Nunes 2001, Borle et al. 2005, Broniarczyk et al. 1998, Drèze et al. 1994, Sloot et al. 2006). However, these studies offer little or no guidance on finding the optimal assortment.
+Our study fits in a second stream of papers that offer methods to find the assortment that optimizes category profits. Both the marketing literature (e.g., Borin and Farris 1995, Chong et al. 2001, McIntyre and Miller 1999, Urban 1998) and the operations management literature (e.g., Kök et al. 2009, Mahajan
+
+and van Ryzin 2001) have made significant contributions to solve the issue of assortment optimization. Although some headway has been made, practitioners and academics agree that more research is needed to provide feasible solutions to realistic assortment problems (Bucklin and Gupta 1999, Kök et al. 2009, Mantrala et al. 2009).
+Specifically, the challenge of assortment optimization is compounded by the fact that the demand for SKUs cannot be assumed to be fixed; it is instead affected by the presence of other SKUs as a result of product substitution. Another challenge is to account for similarity effects: an item is a stronger substitute for similar items than it is for dissimilar items (Rooderkerk et al. 2011, Tversky 1972). Demand is also driven by own- and cross-marketing mix instruments such as price, promotion, and shelf space and by heterogeneous preference across stores (e.g., Montgomery 1997). Capturing these aspects in a response model is further complicated by the fact that assortments and prices observed in empirical data are unlikely to be exogenous. Finally, retailers have to decide not only about assortments but also about
+
+699
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+700
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+pricing, and these decisions need to be customized to the store level (Rigby and Vishwanath 2006).
+This paper develops an implementable and scalable assortment optimization method that meets these challenges. Our method allows for realistic, theorybased substitution patterns and is feasible to estimate and to optimize. The starting point is a SKU-level demand model with price, promotion, and shelfspace effects and with heterogeneous parameters across stores. Instead of SKU-specific intercepts and response parameters, we develop an attribute-based approach inspired by Fader and Hardie (1996) to obtain a parsimonious model. The model accounts for cross-SKU substitution and marketing mix effects, where the cross effects are moderated by the similarities between SKUs. Model estimation accounts for assortment and price endogeneity by using a Bayesian instrumental variable approach.
+The paper also proposes a comprehensive optimization approach to find the assortment that maximizes retailer profit for a product category. We solve the assortment selection problem at the store level to address the need for store-level customization of the assortment (Rigby and Vishwanath 2006). We extend the optimization to jointly set SKU prices.
+The assortment optimization problem is a highly nonlinear extension of a knapsack problem that is very hard to solve, especially for many SKUs. To overcome this challenge, we propose new local improvement heuristics that start from the current assortment and iteratively improve profitability by searching for better neighboring solutions.
+We apply our methodology to three years of weekly store-level scanner data provided by Information Resources, Inc. (IRI). The data concern a liquid laundry detergent category with 61 SKUs from a French hypermarket retail chain. The optimal assortments are expected to enhance retailer profit considerably (37.3%); this profit increases even more (to 43.7%) when SKU prices are optimized simultaneously.
+The remainder of this paper is organized as follows. Section 2 reviews the relevant literature on assortment optimization. Section 3 describes our methodology, consisting of an attribute-based SKU sales model and an optimization procedure. Section 4 describes the data, and §5 describes the model results. Next, §6 reports the optimization results. We conclude in §7 with a discussion of our results.
+2. Literature Review
+This section briefly discusses normative studies on assortment selection. For extensive reviews of this literature, we refer to Kök et al. (2009) and Mantrala et al. (2009). Table 1 offers a number of key characteristics of the studies.
+
+A first point of differentiation between studies is the type of data that has been used. Borin et al. (1994) and Borin and Farris (1995) consider a supermarket assortment selection based on synthetic model parameters. Their objective is to maximize the return on inventory subject to space constraints. They solve a "small" problem (6 SKUs) and a "large" problem (18 SKUs) using a simulated annealing heuristic. Using the same data as Borin et al. (1994), Urban (1998) extends this methodology by proposing a greedy and genetic heuristic to solve the problem of jointly optimizing item selection, space allocation, and inventory policy. McIntyre and Miller (1999) consider an assortment selection problem based on data from an individual choice experiment regarding backpacks. They find a solution to their problem by applying an exhaustive search to a set of eight backpacks. The studies based on synthetic (Borin and Farris 1995, Borin et al. 1994, Smith and Agrawal 2000) or experimental (McIntyre and Miller 1999, Miller et al. 2010) data raise the issue of external validity. To overcome this issue, several of the studies reviewed in Table 1 (including ours) use empirically observed data.
+We structure the rest of the discussion alongside the six key challenges that retailers face when optimizing assortments. These challenges were briefly mentioned in §1 but are discussed in more detail below. The columns in Table 1 correspond closely with these challenges, which highlight the points of differentiation between studies.
+1. Choosing among large numbers of SKUs: A typical product category contains many dozens or hundreds of SKUs (Bucklin and Gupta 1999). Modeling a large set of SKUs imposes challenges for the demand model. We have to construct a parsimonious sales model to predict the sales for all SKUs in an assortment, including low-selling ones. Using SKU-specific parameters (which is what most studies in Table 1 do) means that every additional SKU needs extra parameters (e.g., an intercept). To mitigate this problem, we adopt the attribute-based approach that replaces intercepts by attribute dummies (Fader and Hardie 1996).
+A large set of items complicates not only model estimation but also the optimization problem. It becomes very hard to solve, and exhaustive search is infeasible. Therefore, this study develops new heuristics that solve the problem within a reasonable amount of time.
+2. Allowing for similarity effects: Key to any assortment optimization exercise is that the demand model accounts for similarity effects. Similarity effects imply that items whose attributes are more similar are more likely to compete for demand (Rooderkerk et al. 2011, Tversky 1972). Although some of the reviewed studies in Table 1 account for similarity effects, none of
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+701
+
+Table 1 Overview of Selected Assortment Optimization Studies
+
+Study
+
+Modeling of Accounting for
+
+Assortment Price Store-level Joint assortment and
+
+Data type SKU parametersa similarity effect Marketing mix endogeneity endogeneity optimization price optimization
+
+Borin and Farris (1995) Synthetic SKU-specific
+
+No
+
+Shelf space
+
+No
+
+No
+
+No
+
+No
+
+McIntyre and
+
+Empiricalb SKU-specific
+
+No
+
+Price
+
+No
+
+No
+
+No
+
+Yes
+
+Miller (1999)
+
+Smith and
+
+Synthetic SKU-specific
+
+Yes
+
+None
+
+No
+
+No
+
+No
+
+No
+
+Agrawal (2000)
+
+Chong et al. (2001) Empirical Brand-specific
+
+Yes
+
+Price, Promotion
+
+No
+
+No
+
+Yes
+
+No
+
+Mahajan and
+
+Synthetic SKU-specific
+
+Yes
+
+None
+
+No
+
+No
+
+No
+
+No
+
+van Ryzin (2001)
+
+Kök and Fisher (2007) Empirical SKU-specific
+
+Yes
+
+Price, Promotion
+
+No
+
+No
+
+Yes
+
+No
+
+Misra (2008)
+
+Empirical Attribute-based
+
+Yes
+
+Price
+
+Yes
+
+No
+
+No
+
+No
+
+Miller et al. (2010)
+
+Empiricalb SKU-specific
+
+Yes
+
+Price
+
+No
+
+No
+
+No
+
+No
+
+Sinha et al. (2012)
+
+Empirical Attribute-based
+
+Yes
+
+Price
+
+No
+
+No
+
+Yes
+
+Yes
+
+This study
+
+Empirical Attribute-based
+
+Yes
+
+Price, Shelf
+
+Yes
+
+Yes
+
+Yes
+
+Yes
+
+space, Promotion
+
+aModeling of SKU-specific parameters is SKU-based (separate parameter per SKU) or attribute-based. bThese studies use experimental data.
+
+them allows for substitution patterns that are governed by attributes. We use choice theory to allow for attribute-based similarity effects in the demand model. Thus, we extend the Fader and Hardie (1996) approach by not only modeling preferences (intercepts) as a function of attributes but also modeling substitution patterns and cross-marketing mix effects.
+3. Controlling for the marketing mix: Many studies ignore the role of (part of) the marketing mix (e.g., price, shelf space, promotional support) during demand estimation and/or assortment optimization. However, the marketing mix instruments have a profound effect on the demand for individual SKUs and need to be accounted for.
+4. Accounting for assortment and price endogeneity: Retailers are likely to include SKUs in the assortment that (are expected to) sell well. Similarly, prices are set based on demand shocks that can be observed by the retailer but not by the researcher. Hence, assortments and prices are likely to be endogenous. Accommodating endogeneity is needed for consistent parameter estimates in the sales response function that are used in the optimization. To our knowledge this study presents the first method accounting for assortment and price endogeneity simultaneously.
+5. Store-level optimization: Differences in store characteristics and demographics of the trade area challenge retailers to customize their marketing mix to the store level (Bambridge 2007, 2008; Campo et al. 2000; Mantrala et al. 2009; Montgomery 1997), including assortments. Leading retailers such as Macy's have realized that a "one size, one style fits all" strategy does not work and have begun tailoring a substantial part of their assortment to the local level (O'Connell 2008). Hence, Mantrala et al. (2009) label store-level customization as one of the key challenges that demands more research attention. To address this
+
+issue, we develop a model that allows for heterogeneity in parameters across stores, and we then conduct store-specific assortment (and price) optimization.
+6. Joint assortment and price optimization: Besides the assortment, another important element of the retailer's marketing mix are SKU prices. Personal communication with retailers has made it clear to us that most retailers use a two-stage optimization approach. First, they optimize the assortment. Next, they optimize the prices of the available SKUs. There seems to be potential to jointly optimize the assortment and SKU prices, and our approach offers this.
+To conclude, Table 1 clearly shows that whereas some papers address some of the challenges, our paper addresses all of them. The key contribution is that we develop an implementable and scalable assortment optimization method that allows for theory-based substitution patterns yet is feasible to estimate and to optimize for real-life, largescale assortments. Our new method includes (i) an attribute-based demand model to capture preferences, substitution patterns, and cross-marketing mix effects; and (ii) heuristics that optimize retailer category profit subject to constraints such as the amount of available shelf space. The next section details the methodology of our approach.
+3. Methodology
+Our approach consists of a sales model, described in §3.1, and an optimization methodology, outlined in §3.2.
+3.1. Sales Model Before formulating our model, we look at a significant challenge encountered when developing a sales model: modeling SKU sales while retaining parsimony. We explain how modeling SKU sales at the
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+702
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+store level using attribute-based modeling helps overcome this challenge.
+3.1.1. Modeling Framework. To model SKU sales, we develop a model for SKU sales at the store level. We choose store-level scanner data (as opposed to household-level scanner data) because they are often readily available, cost relatively little, and provide a census of sales of all SKUs in a store. This is especially important for low-selling items. Reliable sales measurement for these items (which could be problematic with household data) is crucial to assortment optimization, because these are the items that are possibly eliminated.
+A critical issue when modeling sales at the SKU level is parsimony. A typical product category consists of many SKUs, which means that a large set of SKU-specific intercepts would have to be estimated (Hardie et al. 1998). A parsimonious approach to overcome this problem is using an attribute-based way of modeling, proposed by Fader and Hardie (1996). This approach is motivated by the assertion that consumers do not form preferences for each individual SKU in a particular product category but that these preferences are derived from preferences for the underlying attributes (e.g., size, flavor, color). Theoretical justification for this approach is offered in economics (Lancaster 1971) and psychology (Fishbein 1967).
+Our model thus replaces SKU-specific intercepts by SKU attributes as in Fader and Hardie (1996). We take the approach one step further to accommodate the substitution between SKUs, both because of the mere presence of other SKUs and because of their marketing mix activities. Using SKU-specific parameters would increase the number of cross-effect parameters quadratically in the number of SKUs. Consequently, the number of parameters would quickly grow too large to estimate. To overcome this problem, we model cross-SKU substitution and cross-SKU marketing mix effects based on attribute-based similarity between SKUs.1
+3.1.2. Model Formulation. We now develop our attribute-based demand model and highlight the role similarity variables play. We then compare our model with the commonly used aggregate logit model.
+SKU Sales. Modeling SKU sales at the store level, we allow for flexible substitution patterns and nonlinear effects by starting with a log­log model
+1 Other papers have also explored models with similarity variables that are a function of attributes. Examples include Nakanishi et al. (1974), Cooper and Nakanishi (1983), and Hardie et al. (1998). Similar to the last paper, our similarity variables explicity account for the fraction of SKUs during each store-week that share the same attribute. A point of distinction is that our similarity measure makes an explicit distinction between nominal and metric attributes. For more details, refer to §3.1.2.
+
+similar to the SCANPRO model (Wittink et al. 1988):
+
+log Skti
+
+=
+
+ki
+
++
+
+[A] SKU-store intercept
+
+2
+kqi log Dkqti
+q=1
+
+[B] Own-price and shelf-space responsiveness
+
+5
+
+K
+
++
+
+kq i Dkq ti
+
++
+
+kk ti
+
+q=3
+
+kx=k t1i/=k1
+
+[C] Own-promotional support responsiveness
+
+[D] Cannibalization due to mere presence
+
+2K
++
+q=1 k =1/ k xk ti =1
+
+kk qi log Dk qti
+
+[E] Cross-price and shelf-space responsiveness
+
+5K
+
++
+
+kk qiDk qti +
+
+Sales kti
+
+(1)
+
+q=3 k =1/ k xk ti =1
+
+[F] Cross-promotional responsiveness
+
+where Skti = volume sales of SKU k  1 K in week t  1 T in store i  1 I
+xkti = 1 if SKU k is present in week t in store i and is 0 otherwise; and
+
+Dkqti = the value for marketing mix instrument q for SKU k in week t at store i, where
+
+q = 1 represents the actual unit price, q = 2 represents the amount of shelf space, q = 3 represents the feature only activity (1 if yes,
+0 if no),
+
+q = 4 represents the display only activity (1 if yes, 0 if no), and
+
+q = 5 represents the feature and display activity (1 if yes, 0 if no).
+
+Our model offers three key extensions to the clas-
+
+sic SCANPRO model. First, it controls for SKU shelf
+
+space. The more facings a SKU receives, the more
+
+shelf space it occupies and the more salient the prod-
+
+uct is. Second, our model allows for store-level het-
+
+erogeneity (all parameters are indexed i). Third, the
+
+model explicitly accounts for cannibalization effects
+
+via term [D] in Equation (1) with parameters kk ti (explained below).
+
+Parsimony. There are four ways in which parsi-
+
+mony is achieved in our model.
+
+1. Parsimony in SKU intercepts: Following Fader
+
+and Hardie (1996), we replace SKU-store intercepts
+
+in (1) by a set of fixed store intercepts ( i) and attribute dummies:
+
+L Ml-1
+
+ki = i +
+
+ilm Aklm
+
+(2)
+
+l=1 m=1
+
+where Aklm = 1 if SKU k possesses level m of attribute l and 0 otherwise.
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+703
+
+2. Parsimony in own-marketing mix effectiveness: To
+achieve parsimony, we decompose the own effect kqi for SKU k belonging to brand b in store i and for mar-
+keting mix variable q into two components:
+
+kqi = qi + qb k
+
+(3)
+
+where qb k is brand-specific responsiveness to marketing variable q and qi is the store-specific effect. The rationale for (3) is that SKUs from the same brand react in a similar way to changes in their own marketing mix, whereas there may be systematic differences across stores in the marketing mix responses (e.g., Hoch et al. 1995).
+3. Parsimony in the cross-marketing mix effectiveness: Most of the model complexity is due to the high number of cross effects (i.e., the number of marketing mix instruments × the number of SKUs × (the number of SKUs -1 × the number of stores). To alleviate this problem, we model the cross-marketing mix effects as follows:2
+
+L
+
+ k = k: k kqti = qi +
+
+qli SIMkk lti
+
+(4)
+
+l=1
+
+where SIMkk lti is the similarity between SKU k and k on attribute l in store i's assortment in week t. We operationalize the similarity variables below. The rationale for (4) is that the more similar two SKUs are, the stronger their cross effects are expected to be (e.g., van Heerde et al. 2004). Parameter qi captures between-store heterogeneity.
+4. Parsimony in the cannibalization terms. Consistent with the idea that more similar SKUs have stronger substitution patterns (e.g., Tversky 1972), we model the substitution effects by attribute-level similarity measures:
+
+L
+
+ k = k:
+
+kk ti =
+
+li SIMkk lti
+
+(5)
+
+l=1
+
+After substituting Equations (2)­(5) in the sales Equation (1), we obtain the final sales equation:
+
+log Skti =
+
+L Ml-1
+
+2
+
+i+
+
+ilmAklm +
+
+l=1 m=1
+
+q=1
+
+qi+ qb k log Dkqti
+
+[A] SKU-store intercept
+
+[B] Own-price and shelf-space responsiveness
+
+5
++
+q=3
+
+L
+
+K
+
+qi+ qb k Dkqti +
+
+li
+
+SIMkk lti
+
+l=1 k =1/ k
+
+[C] Own-promotional support responsiveness
+
+xk ti =1
+[D] Cannibalization due to mere presence
+
+2 Note that the cross-marketing mix effect has a time index t: k kqti. The motivation for this is that the cross-marketing mix effect of another given SKU on the focal SKU depends on the nature of the rest of the assortment, which can vary over time.
+
+2
++
+q=1
+
+K
+
+qi
+
+log Dk qti
+
+k =1/ k
+
+xk ti =1
+
+[E1] Cross-price and shelf-space responsiveness
+
+2L
++
+q=1 l=1
+
+K
+
+qli
+
+SIMkk lti log Dk qti
+
+k =1/ k xk ti =1
+
+[E2] Similarity-based moderation of cross price and shelf space responsiveness
+
+5
++
+q=3
+
+K
+
+qi
+
+Dk qti
+
+k =1/ k xk ti =1
+
+[F1] Cross-promotional responsiveness
+
+5L
+
+K
+
++
+
+qli
+
+SIMkk lti Dk qti +
+
+Sales kti
+
+(6)
+
+q=3 l=1
+
+k =1/ k xk ti =1
+
+[F2] Similarity-based moderation of crosspromotional responsiveness
+
+Similarity Variables. The similarity between SKU k and k on either the nominal or metric attribute l in store i's assortment in week t, SIMkk lti, is specified such that it varies between 0 (minimum similarity) and 1 (maximum similarity). A key requirement is that the similarity between two SKUs on a given attribute should not only reflect the similarity of their own attribute levels in an absolute sense but also vis-à-vis the full distribution of attribute levels in the assortment. In particular, if two items share the same level of a nominal attribute (e.g., fragrance), their perceived similarity should be stronger when their shared attribute level occurs less frequently (Goodall 1966). We obtain this by defining
+
+SIMkk lti = I Akl = Ak l ·
+
+1K 1 - Nti · k =1 I Ak l = Akl
+xk ti =1
+
+Fraction of SKUs sharing an attribute level
+if attribute l is nominal, (7a)
+
+where I · = an indicator function that is 1 if its argument
+holds and is 0 otherwise; Akl = the level attained by a SKU on attribute l such
+that Akl = m  Aklm = 1; and Nti = the number of SKUs present in week t in
+store i.
+Figure 1 illustrates how this works for a fragrance attribute. If 90% of the SKUs share the same Aloe vera attribute level (panel a), the fragrance similarity between two Aloe vera SKUs is 0.10. However, if the
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+704
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+attribute is less common and only 50% of the present SKUs have it, the similarity increases to 0.50 (panel b), whereas it would be as high as 0.90 if 10% of the SKUs share the focal level (panel c).
+For metric attributes, the similarity definition also needs to take into account the uniqueness of the exact same attribute level. On top of that, and consistent with frequency theory (Parducci 1965, Parducci and Wedell 1986), two SKUs are perceived to be more similar when there are fewer SKUs with attribute values in between the attribute values of the two focal SKUs.
+
+Figure 1 Similarity Variables for Nominal Attributes
+
+Proportion of available SKUs
+
+(a) Uneven distribution (skewed to left)
+
+0.9
+
+0.8
+
+90% of all SKUs have an Aloe vera fragrance
+
+0.7
+
+ similarity between two Aloe vera SKUs =
+
+0.6
+
+1 ­ 0.90 = 0.10
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+Aloe vera
+
+Fragrance
+
+Basic
+
+Proportion of available SKUs
+
+(b) Even distribution 0.9
+
+0.8
+
+50% of all SKUs have an Aloe vera fragrance
+
+0.7
+
+ similarity between two Aloe vera SKUs = 1 ­ 0.50 = 0.50
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+Aloe vera
+
+Fragrance
+
+Basic
+
+Proportion of available SKUs
+
+(c) Uneven distribution (skewed to right)
+
+0.9 0.8
+
+0.7
+
+0.6
+
+10% of all SKUs have an Aloe vera fragrance
+
+0.5
+
+
+
+similarity between two Aloe vera SKUs =
+
+0.4
+
+1 ­ 0.10 = 0.90
+
+0.3
+
+0.2
+
+0.1
+
+Aloe vera
+
+Fragrance
+
+Basic
+
+We achieve both requirements by defining
+
+SIMkk lti
+
+=1-
+
+1K Nti · k =1 I min Akl Ak l  Ak l  max Akl Ak l
+xk ti =1
+
+Fraction of SKUs with an attribute level between Akl and Ak l
+if attribute l is metric. (7b)
+
+Equation (7b) defines the similarity between two SKUs as one less the fraction of SKUs in between the two SKUs. The definition is illustrated in Figure 2 for a volume attribute. The more SKUs that are in between two items, the less similar they become, as desired. Also, the fewer items that share the same attribute, the more similar the items that share this attribute (as shown in Figure 3).
+Comparison to Aggregate Logit Model. A commonly adopted demand model is the aggregate logit model (e.g., Kök and Fisher 2007, Mahajan and van Ryzin 2001, Misra 2008), often motivated based on its roots in utility maximization. A commonality between our model and the aggregate logit model is that both allow for non-IIA substitution patterns (i.e., substitution patterns where more similar items compete more strongly). The aggregate logit model achieves this by aggregating across heterogeneous consumer tastes, whereas our approach directly models cross effects as a function of attribute similarity. The latter property is desirable because it offers insights into which attributes enhance cross-item competition the most. It also facilitates predicting demand for SKUs that are not yet part of the assortment during the assortment optimization.
+Another reason we do not adopt the aggregate logit model is that it is essentially a market share model, whereas we need to predict sales levels. The aggregate logit model needs to make assumptions about the outside good to estimate the parameters. Our approach directly models sales without the need of outside good assumptions. Please refer to the online appendix of Sinha et al. (2012) and the paper by Chintagunta and Nair (2011) for a thorough discussion on the role of these assumptions.
+3.1.3. Assortment and Price Endogeneity. Our sales model assists the retailer in the optimization of the assortment and SKU prices. Because the observed assortments and prices are unlikely to be exogenous, we account for endogeneity during the estimation of the sales model. We achieve this through a Bayesian instrumental variable approach (Rossi et al. 2005, Chapter 7). That is, we introduce two instrumental variable equations for the SKU presence and price and correlate their error terms with the sales equation error.
+
+Proportion of available SKUs
+
+Proportion of available SKUs
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+705
+
+Figure 2
+
+Similarity Variables for Metric Attributes When SKUs Have Different Attribute Levels
+(a) Uniform distribution
+
+Figure 3
+
+Similarity Variables for Metric Attributes When SKUs Have the Same Attribute Levels
+(a) Uniform distribution
+
+0.4
+
+60% of all SKUs
+
+0.3
+
+
+
+similarity between 2 and 4 liter SKUs = 1 ­ 0.60 = 0.40
+
+0.2
+
+0.4
+
+20% of all SKUs contain 3 liter
+
+0.3
+
+
+
+similarity between two 3 liter SKUs = 1 ­ 0.20 = 0.80
+
+0.2
+
+0.1
+
+0.1
+
+Proportion of available SKUs
+
+Proportion of available SKUs
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Volume (in liters)
+
+(b) Bell-shaped distribution
+80% of all SKUs 
+0.4 similarity between 2 and 4 liter SKUs = 1 ­ 0.80 = 0.20
+
+0.3
+
+0.2
+
+0.1
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Volume (in liters)
+
+(b) Bell-shaped distribution
+
+30% of all SKUs contain 3 liter
+
+0.4
+
+
+
+similarity between two 3 liter SKUs = 1 ­ 0.30 = 0.70
+
+0.3
+
+0.2
+
+0.1
+
+Proportion of available SKUs
+
+Proportion of available SKUs
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Volume (in liters)
+
+(c) Bimodal distribution
+
+0.4
+
+40% of all SKUs 
+
+similarity between 2 and 4 liter SKUs = 1 ­ 0.40 = 0.60
+
+0.3
+
+0.2
+
+0.1
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Volume (in liters)
+
+(c) Bimodal distribution
+
+0.4
+
+10% of all SKUs contain 3 liter 
+
+similarity between two 3 liter SKUs = 1 ­ 0.10 = 0.90
+
+0.3
+
+0.2
+
+0.1
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Volume (in liters)
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Volume (in liters)
+
+We assume that there is a latent attractiveness Ukti of including SKU k in the assortment of store i in week t. We use a binary probit model that says that the SKU is included in the assortment (xkti = 1)
+
+when the latent attractiveness exceeds 0 and is left out of the assortment otherwise (xkti = 0). We model the latent attractiveness as a linear function of the exogenous variables in the system and a set of instrumental
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+706
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+variables (IVs). We use the same covariates in the equation for the endogenous variable log unit price of SKU k in store i (Dk1ti).
+The IVs have to be sufficiently strong yet valid, i.e., uncorrelated with the demand error term. Following the prior literature (e.g., Albuquerque and Bronnenberg 2009; Chintagunta 2001; Ioannou et al. 2011; Nevo 2000, 2001), we use two types of IVs: costrelated IVs and IVs based on geographically distant observations. We apply our approach to liquid laundry detergents. For the cost-related IVs, we looked at the costs that go into producing, packing, and transporting liquid laundry detergents. Key ingredients of laundry detergents are alkalines and chlorines, and we use weekly data on their global joint price index from U.S. Labor Statistics as an IV. A next IV is the monthly price of plastics, a key component of the packaging of liquid laundry detergents, from the Institute National de la Statistique et des Etudes Economiques, the French Bureau of Statistics (note that the data are French). To capture transportation costs, we use as an IV the monthly raw diesel price, also from the French Bureau of Statistics.
+The second set of IVs are based on marketing variables observed in geographically distant observations. We took as IVs, for each store in turn, the average price, feature only, display only, feature and display, and a dummy for SKU presence across 10 far-away stores. This approach capitalizes on the strong regional difference in grocery brand preferences in France (e.g., Ataman et al. 2007). The online appendix (available as supplemental material at http://dx.doi.org/10.1287/ mksc.2013.0800) offers more details.
+To further reduce the likelihood of a same-week common demand shock affecting the endogenous variables and the IVs, we lagged all IVs by one week. We tested the strength of the IVs by running Angrist­ Pischke multivariate F -tests for excluded instruments (Angrist and Pischke 2009, pp. 217­218). We conclude that the IVs are sufficiently strong because their p-values are all < 0 01.3
+Error Correlation. We correlate the errors of the focal sales equation with those of the presence and price equations. The error covariance matrix is store specific. It is a full matrix with one element (variance of the latent SKU attractiveness) set to 1 for the identification of the probit component. Formal definitions of the IV equations are provided in the online appendix.
+3 The first-stage regressions show that the one-week lagged cost price of ingredients (alkalines and chlorines) have significant effects on retail prices. This may seem rather quick. We checked for longer lags (up to lag 8), but the strength of the instruments (as measured by the Angrist­Pischke test) did not change substantially. Frequent ordering by retailers of high-volume products such as laundry detergent could result in a high passthrough speed of cost changes, further enhanced by the increasing adoption of electronic price tags.
+
+Model Estimation. We allow for fixed store intercepts in the sales and IV equations. Consistent with previous literature (Blattberg and George 1991, Boatwright et al. 1999, Montgomery 1997), we define the remaining store-specific parameters to be independently and identically distributed (i.i.d.) according to a Normal distribution. In addition, we model the brand-specific parameters to be i.i.d. Normal. For more details about the prior distributions, refer to the online appendix.
+We estimate the model with Gibbs sampling (Boatwright et al. 1999, Rossi and Allenby 1993), as outlined in the online appendix. We have conducted simulation tests confirming that we can retrieve the model parameters, including the ones for the endogenous regressors. All prior distributions are chosen to be uninformative. We run the Gibbs sampler for 100,000 draws and retain each 10th draw of the last 50,000 draws. Visual inspection confirms convergence of the Gibbs chain. We subsequently used Raftery and Lewis's (1996) test for Markov chain Monte Carlo (MCMC) convergence (implemented in the "coda" package in Matlab; see page 170 of LeSage 1998). This test confirms that the burn-in and inference samples are sufficiently large. The procedure resulted in 5,000 draws used for inference of the posterior distribution.
+3.2. Optimization Methodology We now look at the assortment optimization problem. We propose an efficient solution method and extend it to the joint assortment and price optimization problem.
+3.2.1. Retail Assortment Selection Problem. We formulate the retail assortment selection problem (RASP) as a constrained profit-maximization problem at the store level. The central component of the retailer's objective function is the expected sales for an included SKU in the focal store's assortment. More specifically, we compute the expected sales over a quarter. This is the typical planning horizon for major assortment revisions (Misra 2008). We account for the attractiveness of SKUs in promotional weeks by simulating NPC promotional calendars and averaging the quarterly sales across those simulated calendars. We simulate the promotional calendars by drawing, for each SKU, the feature and display activity from a binomial distribution. The probability in every week is equal to the historical proportion of weeks for that promotional activity for that SKU.
+The set of SKUs available for inclusion in the assortment is U = 1 K . Binary decision variables xki k=1 K are equal to 1 if SKU k is included in the assortment of store i and are 0 otherwise. S^kzi xi is the estimated sales of SKU k in store i for promotional
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+707
+
+calendar pc for posterior draw z, conditional on the
+
+selected assortment xi = x1i
+
+xKi :
+
+S^kzi
+
+xi
+
+1
+
+NPC 13
+
+=
+
+NPC
+
+·
+pc=1 t=1
+
+exp
+
+L Ml-1 z
+i+
+l=1 m=1
+
+z lmi
+
+·
+
+Aklm
+
+2
+
+zz
+
+5
+
+·
+
+D qi + qb k kqi
+
+q=1
+
+q=3
+
++ z
+
+z
+
+Dkpqcti
+
+qi
+
+qb k
+
+K
+
+L
+
+·
+
+exp
+
+z li
+
+SIMkk li
+
+k =1/ k
+
+l=1
+
+xk i =1
+
+·
+
+D 2
+
+z
+qi +
+
+L l=1
+
+z lqi
+
+·SIMkk
+
+li
+
+k qi
+
+q=1
+
+5
+·
+
+L z
+qi +
+
+z lqi
+
+·
+
+SIMkk
+
+li
+
+Dkpcqti
+
+(8)
+
+q=3
+
+l=1
+
+where z = 1 Z indicates the posterior draw of the corresponding parameter, pc = 1 NPC indicates the promotional calendar draw,
+Dkqi = the regular value of price (q = 1) or shelf space (q = 2) of SKU k in store i, and
+Dkpqcti = the promotional support of SKU k in store i for promotional calendar draw pc.
+The retailer wants to maximize expected category profit across the planning horizon of a quarter. Revenues are the sum across all included SKUs of the expected unit sales of the SKU times its unit retail price. The retailer incurs three types of costs: (a) purchasing, (b) order, and (c) inventory costs. Purchasing costs are the wholesale price that has to be paid to the manufacturer. We model the order and inventory costs according to the efficient order quantity (EOQ) model (Axsäter 1996, Wilson 1934, Zheng 1992). The EOQ model provides the optimal order quantity that minimizes the sum of order and inventory costs across the planning horizon. The derivation of the EOQ and corresponding costs can be found in the online appendix.
+The RASP involves finding the store-level assortment that maximizes retail profit while satisfying a set of constraints. Combining expected revenues, the three types of costs, and the EOQ model leads to the following objective function for expected retail profit:
+
+Maximize xi
+
+Retailer i
+
+=
+
+1Z Z z=1
+
+K
+S^kzi
+k=1 xki =1
+
+xi · Dk1i - wki
+Gross unit retail margin
+
+- 2·S^kzi ·OC·Hki
+
+(9)
+
+Total quarterly ordering and inventory costs
+
+where
+Dk1i = the unit price of SKU k when selected in the assortment of store i,
+wki = the wholesale price of SKU k in store i, OC = the fixed order costs, and Hki = the quarterly holding costs for SKU k in store i.
+Equation (9) shows that the ordering and inventory costs are concave in the expected quarterly sales of a SKU in the focal store. This reflects the retailer's desire for a concentration of sales in a few number of SKUs, because this is easier from an administrative point of view and hence less costly to supply.
+The constraints, subject to which retailer profit is optimized, are as follows:
+
+K
+Dk2ixki  i
+k=1
+
+K
+xki  i
+k=1
+
+xki 
+kUcurrent i
+
+· Ncurrent i
+
+K
+Dk1iS^ki xi  1 +
+k=1
+
+K
+· D¯ ·1i · S^ki xi
+k=1
+
+K
+Dk1iS^ki xi  1 -
+k=1
+
+K
+· D¯ ·1i · S^ki xi
+k=1
+
+xki  0 1
+
+(10) (11) (12) (13) (14) (15)
+
+where
+
+Dk2i = the amount of shelf space occupied by SKU k when included in store i's
+
+assortment;
+
+i = the available amount of shelf space for the category in store i;
+
+i = the maximum number of SKUs that can be included in the assortment of store i;
+
+Ucurrent i = the set of SKUs in the current assortment
+
+(Ucurrent i  1
+
+K );
+
+= the fraction of SKUs in the current assort-
+
+ment that should remain on the shelf;
+
+Ncurrent i = the number of SKUs currently in the assortment of store i;
+
+Dk1i = the unit price of SKU k when selected in the assortment of store i;
+
+D¯ ·1i = the average unit price per item sold in the current assortment of store i;
+
+S^ki = the expected quarterly sales of SKU k in
+
+store i, i.e., S^ki = 1/Z
+
+Z z=1
+
+S^kzi
+
+;
+
+and
+
+= the maximum allowed price change with
+
+respect to the average current price.
+
+The value of every Greek symbol in the opti-
+
+mization problem ( i i
+
+) is set by the retailer.
+
+We refer to these as control parameters. In addition,
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+708
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+the retailer provides the cost parameters (wki OC, and Hki) in the objective function. The remaining input parameters are statistics about the current assortment or follow from the estimated sales model. We outline each of the constraints in turn below.
+Category-Space Restriction. Constraint (10), which the retailer faces, requires that the total space occupied by the selected items does not exceed the available space for the category. In our empirical application, we use the amount of space occupied by the current assortment.
+Assortment-Size Restriction. A second restriction (11) is that the size of the assortment (i.e., number of SKUs) cannot exceed a certain upper bound. Larger assortments increase the costs for the retailer because of increased handling and administrative costs. In addition, consumers incur higher search costs. Larger assortments could even lead to consumer confusion (Broniarczyk 2008). To avoid these adverse effects, retailers may want to impose a restriction on the assortment size. In the application, we set the upper bound ( i) equal to the number of SKUs in the current assortment (Ncurrent i) in constraint (11).
+Assortment-Change Restriction. Retailers may also prefer assortments not to change too drastically from one period to the next. Large changes could lead to dissatisfaction and consumer confusion. Constraint (12) requires that a prespecified fraction of the SKUs in the current assortment remain on the shelf.
+Price-Level Restriction. A change in assortment could result in a substantial increase or decrease of the assortment's average price level through the inclusion of very (in)expensive SKUs compared with the current assortment. A large increase in the assortment's price level is undesirable because this increases the likelihood that consumers consider the store to be too expensive and decide to do their shopping elsewhere. On the other hand, a considerable decrease in the price level may spark retaliatory actions by competitors and result in a price war (van Heerde et al. 2008). Therefore, similar to the store-level price optimization by Montgomery (1997), we include a price-level constraint to preserve the retailer's current price level. The pricelevel constraint limits the change in the average price per unit sold to a maximum of × 100%. Equations (13) and (14) limit price increases and decreases, respectively.
+3.2.2. Efficient Solution Method: Very Large Neighborhood Search Heuristic. The RASP is a difficult problem; a special problem case, the (linear) knapsack problem, is already an NP-complete problem (Kellerer et al. 2004). Consequently, it is unlikely that the problem can be solved in a time that is polynomial in the size of the input (Papadimitriou and Steiglitz 1982). Finding a feasible solution
+
+that satisfies all constraints is compounded by the time-consuming evaluation of the expected sales of every SKU potentially included in the assortment.
+A further challenge is that constraints (13) and (14) are nonseperable in the decision variables because these constraints are functions of the SKU demand estimates, which in turn are nonseperable functions of the decision variables. This precludes the use of Kök and Fisher's (2007) iterative heuristic to solve the optimization problem, because it capitalizes on the separability of the constraints.4 Therefore, we develop improvement heuristics that start with a feasible solution and iteratively try to obtain a better solution (Ahuja et al. 2002). We employ neighborhood search heuristics that at each iteration attempt to achieve improvement by searching the "neighborhood" of the current solution (Ahuja et al. 2002). Because the neighborhood is very large in every step, our heuristics can be classified as very large neighborhood search (VLNS) heuristics (Ahuja et al. 2002).
+We use the current assortment as our starting solution and look at kmax-distance neighborhoods, which contain all solutions of which the assortment vector (xi) differs in maximum kmax instances compared with the current assortment. For example, for kmax = 1 a neighbor can be obtained by deleting or adding one SKU. And for kmax = 2 a neighbor can be obtained by deleting or adding two SKUs from the current assortment or by replacing a SKU from the current assortment by one that is not yet in it. We have implemented the heuristics in Matlab R2012b, and we describe them in more detail in the online appendix.
+3.2.3. Joint Assortment and Price Optimization. An important extension of our assortment optimization methodology is the joint optimization of assortment and prices. To this end, we integrate a pricing heuristic in our assortment optimization heuristic. The idea behind this neighborhood search heuristic is that every SKU can be included in the assortment with one of a finite number of price levels. To avoid too-strong price swings, we consider three (regular) price levels: keep the current price, price -5%, and price +5%. We define a price configuration as the combination of price levels obtained by the SKUs in the focal assortment. The pricing heuristic moves between neighboring price configurations. We look at pmax-distance neighborhoods, which contain all price configurations in which the price levels of maximum pmax SKUs differ with respect to their levels in the focal price configuration. For example, for pmax = 1 a neighbor can be obtained by changing the price level of one of the available SKUs. And for
+4 In a personal communication with the first author (email dated January 25, 2013), Gürhan Kök confirmed that their approach does not suit this optimization problem.
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+709
+
+Table 2
+
+Descriptive Statistics for the Liquid Laundry Detergent Category
+
+Measure
+
+Estimate
+
+Unit of sales
+
+1 liter
+
+Number of stores
+
+54
+
+Number of SKUs in chain
+
+61
+
+Number of weeks
+
+156
+
+Number of attributes (number of metric attributes)
+
+3 (1)
+
+Number of attribute levels across attributes
+
+34
+
+Average number of available SKUs per store per week (SD) 30 92 5 28
+
+Average amount of shelf space per store per week
+
+18 33 5 49
+
+in meters (SD)
+
+Average amount of shelf space per SKU in meters (SD)
+
+0 59 0 31
+
+Average number of units sold per week per store (SD)
+
+3,559 (2,053)
+
+Average price per unit sold (EUR per unit)
+
+1 88
+
+Minimum price per unit (EUR per unit)
+
+0 47
+
+Maximum price per unit (EUR per unit)
+
+3 65
+
+pmax = 2 a neighbor can be obtained by changing the price levels of a pair of SKUs. The online appendix offers more details and explains how we jointly optimize assortment and prices.
+
+4. Empirical Application
+
+The data we use are obtained from IRI and concern
+
+54 stores from a large national French retailer. A total
+
+of 156 weeks of weekly store-level scanner data are
+
+available for the period of September 2002­September
+
+2005. We use data from the liquid laundry detergent
+
+category. Table 2 provides descriptive statistics for this
+
+category. For an average store, there is space for close
+
+to 31 SKUs, whereas there are 61 SKUs available to
+
+choose from. Hence, for an average store, the number
+
+of possible assortments is gigantic:
+
+61 31
+
+= 2 33 × 1017.
+
+Full enumeration and evaluation would take a very
+
+long time even on very fast computers.
+
+The attributes and corresponding levels are listed
+
+in Table 3. All SKUs are uniquely identified using
+
+three attributes: brand (nominal), fragrance (nomi-
+
+nal), and volume (metric). For identification, we have
+
+to set one of the level parameters to zero for each
+
+attribute in Equation (1). We set the levels "Private
+
+label 2," "Basic," and "3 liter" to zero.5 We opera-
+
+tionalize the sales variable as volume sales expressed
+
+in number of liters. We control for the marketing mix
+
+instruments unit price; shelf space; and dummies for
+
+feature only, display only, and feature and display.
+
+Shelf space is measured as the total width of the
+
+facings occupied by the SKU (in meters). We mean-
+
+center all metric variables in Equation (6) within every
+
+store.
+
+5 These are the levels that occur most frequently in the data. A description of all 61 SKUs in terms of the underlying attribute levels is provided in the online appendix.
+
+Table 3 Overview of Attribute Levels
+
+Attribute Number of levels
+
+Levels
+
+Brand
+
+18
+
+Fragrance
+
+9
+
+Volume
+
+7
+
+Private label 1­2, National brand 1­16 Aloe vera, Basic, Blue, Flower, Fresh,
+Marseille soap, Spring, Sweet almond, White flower 1.5, 3, 4, 5, 6, 7, and 9 liter
+
+5. Estimation Results
+
+5.1. Predictive Validity
+
+We have estimated two versions of the sales model:
+
+the focal model with store-specific parameters and a
+
+model with homogeneous parameters across stores.
+
+In-sample fit (for the full three years of data) of the
+
+models was determined by computing the deviance
+
+information criterion (DIC; see Spiegelhalter et al.
+
+2002), which balances model fit and complexity
+
+(a lower DIC is better). In addition, both in-sample
+
+and
+
+out-of-sample
+
+fit
+
+(predicting
+
+the
+
+last
+
+1 2
+
+year
+
+of
+
+data
+
+based
+
+on
+
+the
+
+first
+
+2
+
+1 2
+
+years
+
+of
+
+data)
+
+were
+
+estab-
+
+lished by computing the log marginal density (LMD),
+
+the correlation between actual and predicted sales,
+
+1 minus Theil's inequality index (1 - Theil's U), the
+
+mean absolute error (MAE), the mean absolute per-
+
+centage error (MAPE), and the root mean squared
+
+error (RMSE). For the DIC, MAE, MAPE, and RMSE
+
+measures, lower values are more preferred. For all
+
+Table 4 Summary of Descriptive and Predictive Fit
+
+Model
+
+Model fit
+
+Homogeneous across stores
+
+Heterogeneous across stores
+
+Full sample
+DIC LMD
+(actual, predicted) 1 - Theil's U MAE MAPE RMSE
+Estimation sample (first 2.5 years) DIC LMD (actual, predicted) 1 - Theil's U MAE MAPE RMSE
+Holdout sample (last 0.5 year) LMD (actual, predicted) 1 - Theil's U MAE MAPE RMSE
+
+494,946 -247,534
+0 78 0 93 0 45 17 55 0 63
+401,722 -200,955
+0 77 0 93 0 44 17 20 0 63
+-49,719 0 79 0 93 0 48 20 44 0 67
+
+411,164 -200,862
+0 85 0 94 0 36 14 55 0 52
+331,614 -162,047
+0 85 0 94 0 36 14 12 0 52
+-44,038 0 84 0 93 0 41 17 20 0 58
+
+Note. The values for the best-fitting model are shown in bold.
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+710
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+Table 5 Posterior Parameter Estimates of the Heterogeneous Sales Model
+
+Symbol
+
+Variable
+
+Mean (SD)
+
+Symbol
+
+Variable
+
+Mean (SD)
+
+1
+
+Own price
+
+-2 26 (0.06)
+
+111
+
+National brand 10
+
+-0 33 (0.04)
+
+2
+
+Own shelf space
+
+0 24 (0.02)
+
+112
+
+National brand 11
+
+-0 88 (0.07)
+
+3
+
+Own feature only
+
+0 64 (0.04)
+
+113
+
+National brand 12
+
+-0 07 (0.05)
+
+4
+
+Own display only
+
+0 75 (0.04)
+
+114
+
+National brand 13
+
+0 34 (0.04)
+
+5
+
+Own feature and display
+
+1 58 (0.03)
+
+115
+
+National brand 14
+
+-0 28 (0.04)
+
+1
+
+Cross price
+
+0 05 (0.02)
+
+116
+
+National brand 15
+
+-0 15 (0.05)
+
+2
+
+Cross shelf space
+
+0 00 (0.02)
+
+117
+
+National brand 16
+
+-0 27 (0.04)
+
+3
+
+Cross feature only
+
+0 01 (0.02)
+
+21
+
+Aloe vera
+
+-0 25 (0.03)
+
+4
+
+Cross display only
+
+-0 01 (0.02)
+
+-
+
+Basic a
+
+--
+
+5
+
+Cross feature and display
+
+0 00 (0.02)
+
+23
+
+Blue
+
+-0 14 (0.03)
+
+1
+
+Cross-brand similarity
+
+-0 10 (0.02)
+
+24
+
+2
+
+Cross-fragrance similarity
+
+-0 06 (0.02)
+
+25
+
+3
+
+Cross-volume similarity
+
+0 00 (0.02)
+
+26
+
+11
+
+Private label 1
+
+0 22 (0.06)
+
+27
+
+--
+
+Private label 2a
+
+--
+
+28
+
+12
+
+National brand 1
+
+0 74 (0.05)
+
+29
+
+13
+
+National brand 2
+
+0 28 (0.06)
+
+31
+
+14
+
+National brand 3
+
+-0 85 (0.06)
+
+-
+
+15
+
+National brand 4
+
+-0 98 (0.07)
+
+32
+
+16
+
+National brand 5
+
+-0 29 (0.05)
+
+33
+
+17
+
+National brand 6
+
+-0 29 (0.04)
+
+34
+
+18
+
+National brand 7
+
+-0 04 (0.04)
+
+35
+
+19
+
+National brand 8
+
+-0 05 (0.08)
+
+36
+
+110
+
+National brand 9
+
+-0 24 (0.06)
+
+Flower Fresh Marseille soap Spring Sweet almond White flower 1.5 liter 3 liter a 4 liter 5 liter 6 liter 7 liter 9 liter
+
+-0 29 (0.02) -0 44 (0.03) -0 45 (0.03) -0 39 (0.03) -0 44 (0.04) -0 13 (0.03) -1 19 (0.06)
+-- -0 09 (0.04)
+0 16 (0.03) -0 25 (0.04) -0 54 (0.04) -0 74 (0.05)
+
+Notes. In bold are shown the parameters for which the 95% highest posterior density intervals exclude zero. The own-price and shelf-space parameter estimates represent elasticities, and the own-promotion support parameter can be interpreted as log multipliers.
+aBase.
+
+other statistics, higher values are more preferred. Table 4 displays the resulting model comparison. The best-fitting model based on descriptive and predictive fit is clearly the heterogeneous model. Therefore, this remains our focal model.
+5.2. Face Validity Table 5 summarizes the posterior parameter estimates of the heterogeneous sales model. The own-marketing mix parameters ( 's) have the expected signs, and their posterior intervals exclude zero. As expected, the own-price elasticity is negative (-2 26) (Bijmolt et al. 2005). In addition, the log multiplier effects for feature only (0.64), display only (0.75), and feature and display (1.58) are positive (van Heerde et al. 2004). The shelf-space elasticity (0.24) is also in the range reported in the literature (Bultez and Naert 1988, Drèze et al. 1994, Van Dijk et al. 2004).
+The cross-price parameter (0.05) is significant; the other cross effects are not. The cross-brand similarity parameter ( 1 = -0 10) is negative, indicating that SKU sales are cannibalized by SKUs from the same brand. Similarly, we find cannibalization along the fragrance dimension ( 2 = -0 06). Interestingly, we do not find any effect for the volume attribute ( 3 = 0 00), implying that substitution mainly occurs across the brand and fragrance dimensions.6
+6 Because of space limitations, we omit the estimates for (brandspecific own-marketing mix parameters), for (interaction between
+
+6. Retail Assortment Optimization
+6.1. Assortment-Only Optimization We now discuss the results from optimizing the assortment only. We apply our optimization method to each of the 54 stores, using the currently available SKUs in the whole chain as the set of items to choose from. Per store, we set the price and shelf space of each SKU equal to its regular value in the most recent (i.e., most representative for the present) week of the data set (i.e., week 156). From this week we also derive the number of present SKUs and the amount of available category space. To account for promotions, we simulate 50 promotional calendars and average profit across these calendars. We use a constant unit gross profit margin of 25% for the retailer on national brands. This number is in line with the 25% reported by Drèze et al. (1994) in the case of U.S. grocery retailers, the 25% reported by Campo and Gijsbrechts (2004) in the case of a large European grocery retailer, and the 28.4% reported by the U.S. Census Bureau (2010) for the U.S. grocery industry. In addition, we adapt a 25% profit premium for private labels (Ailawadi and Harlam 2004). That is, we assume that private labels are associated with a 31.25% (= 1 25 · 25%) unit profit margin. We assume a
+similarity and the cross-marketing mix instrument), and for the presence and price equations. However, these are available from the authors upon request.
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+711
+
+fixed cost of EUR 4 per order. This corresponds with
+
+a half hour's worth of wages against the minimum
+
+wage in the focal country. Furthermore, we assume
+
+that a SKU loses half its value after one year as a
+
+result of holding costs. Consequently, we assume that
+
+the quarterly holding costs equal 12.5% of a SKU's
+
+wholesale price. All these numbers were verified with
+
+industry experts.
+
+Consistent with Montgomery (1997), we enforce a
+
+rather strict price-change restriction, only allowing
+
+for small average price changes ( = 0 001, or 0.1%).
+
+This value for will unlikely lead to assortments that
+
+change the store price perceptions, yet it is not too
+
+rigid to prohibit any change from the current assort-
+
+ment. Furthermore, we set the fraction of SKUs that
+
+has to remain in the assortment ( ) equal to 90%.
+
+Finally, we do not allow for changes in the amount of
+
+shelf space assigned to the category or increases of the
+
+number of SKUs ( i = Ncurrent i). Of course, in practice, it will be up to the retailer to set these values.
+
+We have run the VLNS heuristic for assortment-
+
+only optimization (Heuristic I in the online appendix)
+
+for neighborhoods with maximum distance (kmax) of 1 and 2. Extending the maximum neighborhood dis-
+
+tance from 1 to 2 raises the gain in the expected prof-
+
+its across stores compared to the current assortment
+
+from 17.3% to 37.3% while increasing the average time
+
+till
+
+the
+
+heuristic
+
+terminates
+
+from
+
+4
+
+1 2
+
+minutes
+
+per
+
+store
+
+to 51 minutes. The increase in computation time is
+
+substantial, but so too is the profit gain.7 That is why
+
+we use kmax = 2 in all instances. Further increases in kmax would lead to excessive computation times. Figure 4 visually shows the profit increase of different
+
+optimizations and offers confidence bounds.
+
+Table 6(a) summarizes the average overlap across
+
+stores for the different assortment sizes (in number of
+
+SKUs). We find that the average overlap between any
+
+two assortments (Hwang et al. 2010) drops from 0.97
+
+to 0.85 when they are being optimized. Hence, our
+
+methodology leads to stronger between-store differ-
+
+ences in assortments, capitalizing on differences in
+
+attribute attractiveness and substitution patterns.
+
+Table 6(b) lists the top three added and removed
+
+SKUs across the chain. National brand 10 is the great-
+
+est benefactor, with three additions in the top three
+
+and only one deletion in the top three. All of the
+
+top three added SKUs are 6-liter variants, whereas
+
+the top three removed SKUs include two 3-liter and
+
+7 Our heuristic does not guarantee optimality, nor does it provide an upper bound on how far the heuristic solution is from the optimal solution. Therefore, we tested the heuristic versus full enumeration for the three smallest stores in our sample (full enumeration for larger stores would take excessively long). Our heuristic results in very small optimality gaps (0.5%), and its running time (1.2 hours) is about 30 times faster than that of full enumeration (35.6 hours). For details, please refer to the online appendix.
+
+Expected relative profit increase vs. current assortments (%) Price only Assortment only Assortment and price
+
+Figure 4 Profit Increases of Optimized Assortments
+50
+45
+40
+35
+30
+25
+20
+15
+10
+5
+0 Notes. The dashed lines represent the 95% posterior intervals of the expected relative profit increase. The 95% posterior interval of the difference in relative profit increase between "Assortment and price" and "Assortment only" runs from the 4.93% point to the 8.43% point and hence excludes zero.
+one 1.5-liter variants. This swap indicates a market need for larger packages sizes. The removed threeliter variants have the Fresh fragrance. Given our evidence for within-fragrance cannibalization, these removals facilitate the addition of National brand 10's six-liter SKU with the same fragrance. In sum, our attribute-based approach helps to identify preferences for attribute levels while limiting within-attribute cannibalization.
+6.2. Joint Assortment and Price Optimization We now discuss the simultaneous optimization of assortment and SKU prices. We first ran the pricing heuristic without assortment optimization on the current store assortments (Heuristic II in the online appendix). Based on a similar trade-off between computation time and profit increase as in the case of assortment-only optimization, we use pmax = 2. The profit increase of the price-only optimization is +7 9%.
+Next, we jointly optimize assortment and prices using Heuristic III in the online appendix. Jointly optimizing the assortment and prices resulted in an even larger profit increase of 43.7%. The average computation time, starting from the assortments optimized without considering prices, was just over two
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+712
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+Table 6 Comparison of Current and Optimized Assortments
+
+Overlap per assortment size
+
+Current assortments (%)
+
+Optimized assortments (%)
+
+No. of stores
+
+Size (in no. of SKUs)
+
+Assortment only Assortment and price
+
+10
+
+35
+
+8
+
+37
+
+7
+
+36
+
+6
+
+39
+
+6
+
+33
+
+5
+
+34
+
+3
+
+40
+
+2
+
+30
+
+2
+
+38
+
+1
+
+27 28 29 31 32
+
+Average pairwise similarity in assortment
+
+(a) Assortment heterogeneity
+88.3 93.2 91.4 95.1 87.7 87.4 98.3 80.0 89.5 N.A.
+0.97
+
+80.1 82.3 81.8 84.4 78.0 77.4 88.3 63.3 79.0 N.A.
+0.85
+
+80.7 82.5 80.7 83.8 79.0 78.5 86.7 66.7 81.6 N.A. 0.85
+
+(b) Winning and losing SKUs
+
+SKUs
+
+Most frequently added (percentage of all additions)
+
+1. National brand 10, Spring, 6 liter
+
+N.A.
+
+2. National brand 10, Flower, 6 liter
+
+N.A.
+
+3. National brand 10, Fresh, 6 liter
+
+N.A.
+
+Most frequently removed (percentage of all removals)
+
+1. Private label 2, Basic, 1.5 liter
+
+N.A.
+
+2. National brand 10, Fresh, 3 liter
+
+N.A.
+
+3. National brand 12, Fresh, 3 liter
+
+N.A.
+
+21.8
+
+21.5
+
+14.1
+
+13.9
+
+12.2
+
+12.7
+
+13.0
+
+19.5
+
+8.0
+
+9.8
+
+7.4
+
+7.3
+
+(c) Price levels
+
+SKU price level Average percent of SKUs with lower price Average percent of SKUs with regular price Average percent of SKUs with higher price
+
+N.A.
+
+N.A.
+
+5.5
+
+N.A.
+
+N.A.
+
+56.6
+
+N.A.
+
+N.A.
+
+37.9
+
+hours per store. Table 6(b) shows that the top three added and removed SKUs are the same as under the pure assortment optimization case. Only the shares of total additions and removals are slightly different. For 5.5% of the SKUs, the current price goes down by 5%, whereas for 37.9%, the price goes up by 5% (see Table 6(c)).
+Thus, price-only optimization leads to an expected profit increase of 7.9%, assortment-only optimization to an increase of 37.3%, and joint price and assortment optimization lead to a 43.7% increase. These differences are meaningful as the confidence intervals for these averages either do not overlap or, in case they do, the confidence interval of the difference excludes zero8 (see Figure 4).
+7. Conclusion
+In this study, we have constructed a method for optimizing the retailer's assortment composition.
+8 Even though the posterior intervals of the relative profit increase of the "Assortment only" and "Assortment and price" solutions overlap, the posterior interval of the difference in relative profit increase excludes zero. This is consistent with the observed positive correlation, across posterior draws, between the relative profit increases for the two respective solutions.
+
+The methodology consists of an attribute-based model of store-level SKU sales and utilizes very large neighborhood search heuristics to provide solutions to the resulting optimization problem. We applied our method to a realistic problem: a liquid laundry detergent category with 61 SKUs, sold at a supermarket chain with 54 stores. The suggested assortments are found within a reasonable amount of time and are expected to increase retail profitability substantially-- even more so when prices are jointly optimized. We extend the current literature by simultaneously (1) using an attribute-based approach to handle large sets of items, (2) accounting for similarity effects, (3) controlling for the marketing mix during estimation and optimization, (4) accounting for assortment and price endogeneity, (5) optimizing for each store separately, and (6) optimizing assortments and prices jointly.
+As with any study, this research also has limitations. Our similarity measures are based on observed attributes. Alternatively, future research could attempt to derive similarities from a latent positioning plot that captures the market structure. Such a positioning plot could be estimated simultaneously with the demand
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+713
+
+model. A disadvantage of this approach is that the resulting estimation would become more complex.
+The benefits of store-level assortment optimization are great, and therefore they are the aim of many retailers. However, chain-level assortments or assortments for clusters of stores may bring administrative and logistic efficiencies. Our methodology could aid the retailer in constructing the trade-offs between benefits and costs for assortment solutions at different levels of customization. In our empirical application, the assortments differed substantially between stores because of the variations in amount of available shelf space between stores, among other factors.
+Another limitation is that we consider only existing products (present in the chain, not necessarily the store) in the assortment optimization. However, assortment revisions are especially relevant in the event of new product introductions. A benefit of our attribute-based approach versus more traditional product-based models is that we can predict the sales of new combinations of existing attribute levels. Such imitative (e.g., copying attribute level(s) from another brand; see Hardie 1994) or fill-in (e.g., new combination of attribute levels that already occur for the focal brand; see Hardie 1994) line extensions make up all of the new product introductions in our empirical application. However, our methodology cannot readily deal with innovative (e.g., introducing new attribute level to the category; see Hardie 1994) line extensions or truly new products (e.g., new brands in the category). In this light, a fruitful avenue to explore is that of enriching scanner data with choice experiments (Feit et al. 2010, Swait and Andrews 2003). The idea behind this approach is to estimate the relative attractiveness of new, unobserved attribute levels based on experimental choice data and use the estimates in combination with those based on the scanner data. Both Feit et al. (2010) and Swait and Andrews (2003) use this approach to combine panel scanner data with individual experimental data. Future research could investigate whether this approach can also be applied to assortment optimization.
+Although our heuristics offer substantial profit increases, it is not guaranteed that they provide the truly profit-maximizing assortment. Future research could focus on establishing formal upper bounds for the optimality gaps for the heuristics developed in this paper or work on further improving the heuristics. In the meantime, from a practical point of view, we recommend that retailers capitalize on the improvements that the heuristics offer rather than waiting for methods that could further enhance profitability.
+Finally, we do not consider shelf-space decisions (how much space, what location on the shelf) in the assortment optimization. We do not have shelf-space
+
+layout data, which precludes controlling for location or optimizing it. Although Drèze et al. (1994) and van Nierop et al. (2008) optimize shelf location in addition to shelf space, they do not consider the important decision as to whether or not to include an SKU in the assortment. In addition, they do not optimize prices. Our model, however, does control for the amount of shelf space per SKU. Future research could attempt to integrate assortment, pricing, and shelf-space decisions. However, optimizing the assortment simultaneously on three dimensions (presence, price, and shelf space) will complicate the optimization even further.
+In sum, our study contributes to solving one of the core problems in retailing: how to select the optimal assortment. By developing a scalable methodology that is relatively straightforward to implement based on readily available data, we hope this approach will find its way to the practitioner community.
+Supplemental Material Supplemental material to this paper is available at http://dx .doi.org/10.1287/mksc.2013.0800.
+Acknowledgments The authors thank Berk Ataman, Marnik Dekimpe, Els Gijsbrechts, Gurhan Kök, Robert Shumsky, and participants in seminars at Tilburg University, Maastricht University, the Tuck School of Business, the 2008 Inaugural Erin Anderson Conference on Business-to-Business Relationships held at the Wharton School, the Vienna University of Business Economics and Business Administration, Özyeg in University, and the UCLA Anderson School of Management for helpful comments and suggestions. They thank Mary Biathrow for research assistance. The authors are grateful to IRI France for sharing the data. They gratefully acknowledge the Netherlands Organization for Scientific Research (NWO) and the New Zealand Royal Society Marsden Fund [MAU1012] for research support.
+References
+Ahuja RA, Ergun Ö, Orlin JB, Punnen AP (2002) A survey of largescale neighborhood search techniques. Discrete Appl. Math. 123(1­3):75­102.
+Ailawadi KL, Harlam B (2004) An empirical analysis of the determinants of retail margins: The role of store-brand share. J. Marketing 68(1):147­165.
+Albuquerque P, Bronnenberg BJ (2009) Estimating demand heterogeneity using aggregated data: An application to the frozen pizza category. Marketing Sci. 28(2):356­372.
+Angrist JD, Pischke J-S (2009) Mostly Harmless Econometrics: An Empiricist's Companion (Princeton University Press, Princeton, NJ).
+Ataman B, Mela CF, van Heerde HJ (2007) Consumer packaged goods in France: National brands, regional chains and local branding. J. Marketing Res. 44(1):14­20.
+Axsäter S (1996) Using the deterministic EOQ formula in stochastic inventory control. Management Sci. 42(6):830­834.
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+714
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+Bambridge P (2007) Consumer goods manufacturers are losing control of space management. Gartner Industry Research Report G00154105, Gartner, Stamford, CT.
+Bambridge P (2008) Categories where detailed space and assortment planning delivers results. Gartner Industry Research Report G00161939, Gartner, Stamford, CT.
+Bijmolt THA, van Heerde HJ, Pieters RGM (2005) New empirical generalizations on the determinants of price elasticity. J. Marketing Res. 42(2):141­156.
+Blattberg RC, George EI (1991) Shrinkage estimation of price and promotional elasticities: Seemingly unrelated equations. J. Amer. Statist. Assoc. 86(414):304­315.
+Boatwright P, Nunes JC (2001) Reducing assortment: An attributebased approach. J. Marketing 65(2):50­63.
+Boatwright P, Rossi PE, McCulloch R (1999) Account-level modeling for trade promotion: An application of a constrained parameter hierarchical model. J. Amer. Statist. Soc. 94(December):1063­1073.
+Borin N, Farris PW (1995) A sensitivity analysis of retailer shelf management models. J. Retailing 71(2):153­171.
+Borin N, Farris PW, Freeland JR (1994) A model for determining retail product category assortment and shelf space allocation. Decision Sci. 25(3):359­384.
+Borle S, Boatwright P, Kadane JB, Nunes JC, Shmueli G (2005) Effect of product assortment changes on customer retention. Marketing Sci. 24(4):612­622.
+Broniarczyk SM (2008) Product assortment and consumer psychology. Haugtvedt CP, Herr PM, Kardes FR, eds. Handbook of Consumer Psychology (Psychology Press, New York), 755­779.
+Broniarczyk SM, Hoyer WD, McAlister LM (1998) Consumer's perceptions of the assortment offered in a grocery category: The impact of item reduction. J. Marketing Res. 35(2):166­177.
+Bucklin RE, Gupta S (1999) Commercial use of UPC scanner data: Industry and academic perspectives. Marketing Sci. 18(3): 247­273.
+Bultez A, Naert P (1988) SH.A.R.P.: Shelf allocation for retailers' profit. Marketing Sci. 7(3):211­231.
+Campo K, Gijsbrechts E (2004) Should retailers adjust their micromarketing strategies to type of outlet? An application to location-based store space allocation in limited and full-service grocery stores. J. Retailing Consumer Services 11(6):369­383.
+Campo K, Gijsbrechts E, Goossens T, Verhetsel A (2000) The impact of location factors on the attractiveness and optimal space shares of product categories. Internat. J. Res. Marketing 17(4):255­279.
+Chintagunta PK (2001) Endogeneity and heterogeneity in a probit demand model: Estimation using aggregate data. Marketing Sci. 20(4):442­456.
+Chintagunta PK, Nair HS (2011) Discrete-choice models of consumer demand in marketing. Marketing Sci. 30(6):977­996.
+Chong J-K, Ho T-H, Tang CS (2001) A modeling framework for category assortment planning. Manufacturing Service Oper. Management 3(3):191­210.
+Cooper LG, Nakanishi M (1983) Standardizing variables in multiplicative choice models. J. Consumer Res. 10(June):96­108.
+Drèze X, Hoch SJ, Purk ME (1994) Shelf management and space elasticity. J. Retailing 70(4):301­326.
+Fader PS, Hardie BGS (1996) Modeling consumer choice among SKUs. J. Marketing Res. 18(3):442­452.
+Feit EM, Beltramo MA, Feinberg FM (2010) Reality check: Combining choice experiments with market data to estimate the importance of product attributes. Management Sci. 56(5):785­800.
+Fishbein M, ed. (1967) Attitude and Prediction of Behavior (John Wiley & Sons, New York).
+Fox EJ, Montgomery AL, Lodish LM (2004) Consumer shopping and spending across retail formats. J. Bus. 77(2):25­60.
+
+Goodall DW (1966) A new similarity index based on probability. Biometrics 22(4):882­907.
+Hardie BGS (1994) The market response to product line extensions. Unpublished doctoral dissertation, University of Pennsylvania, Philadelphia.
+Hardie BGS, Lodish LM, Fader PS, Sutcliffe AP, Kirk WT (1998) Attribute-based market share models: Methodological development and managerial applications. Working paper, London Business School, London.
+Hoch ST, Kim B, Montgomery AL, Rossi PE (1995) Determinants of store-level price elasticity. J. Marketing Res. 32(1): 17­29.
+Hwang M, Bronnenberg BJ, Thomadsen R (2010) An empirical analysis of assortment similarities across U.S. supermarkets. Marketing Sci. 29(5):858­879.
+Ioannou I, Mortimer JH, Mortimer R (2011) The effects of capacity on sales under alternative vertical contracts. J. Indust. Econom. 59(1):117­154.
+Kellerer H, Pferschy U, Pisinger D (2004) Knapsack Problems (Springer-Verlag, Berlin).
+Kök AG, Fisher ML (2007) Demand estimation and assortment optimization under substitution: Methodology and application. Oper. Res. 55(6):1001­1021.
+Kök AG, Fisher ML, Vaidyanathan R (2009) Assortment planning: Review of literature and industry practice. Agrawal N, Smith SA, eds. Retail Supply Chain Management (Springer, New York), 99­154.
+Lancaster K (1971) Consumer Demand: A New Approach (Columbia University Press, New York).
+LeSage JP (1998) Applied econometrics using MATLAB. Working paper, University of Toledo, Toledo, OH.
+Levy M, Weitz BW (2004) Retailing Management, 5th ed. (McGrawHill Irwin, New York).
+Mahajan S, van Ryzin G (2001) Stocking retail assortments under dynamic consumer substitution. Oper. Res. 49(3):334­351.
+Mantrala MK, Levy M, Kahn BE, Fox EJ, Gaidarev P, Dankworth B, Shah D (2009) Why is assortment planning so difficult for retailers? A framework and research agenda. J. Retailing 85(1):71­83.
+McIntyre SH, Miller CM (1999) The selection and pricing of retail assortments: An empirical approach. J. Retailing 75(3):295­318.
+Miller CA, Smith SA, McIntyre SH, Achabal DA (2010) Optimizing and evaluating retail assortments for infrequently purchased products. J. Retailing 86(2):159­171.
+Misra K (2008) Understanding retail assortments in competitive markets. Working paper, London School of Business, London.
+Montgomery AL (1997) Creating micro-marketing pricing strategies using supermarket data. Marketing Sci. 16(4):315­337.
+Nakanishi M, Cooper LG, Kassarjian HH (1974) Voting for a political candidate under conditions of minimal information. J. Consumer Res. 1(September):36­43.
+Nevo A (2000) A practitioner's guide to estimation of randomcoefficients logit models of demand. J. Econom. Management Strategy 9(4):531­548.
+Nevo A (2001) Measuring market power in the ready-to-eat cereal industry. Econometrica 69(2):307­342.
+O'Connell V (2008) Reversing field, Macy's goes local. Wall Street Journal (April 21), http://online.wsj.com/article/SB120873643 128029889.html.
+Papadimitriou CH, Steiglitz K (1982) Combinatorial Optimization: Algorithms and Complexity (Prentice-Hall, Upper Saddle River, NJ).
+Parducci A (1965) Category judgment: A range-frequency model. Psych. Rev. 72:407­418.
+
+Rooderkerk, van Heerde, and Bijmolt: Optimizing Retail Assortments
+
+Marketing Science 32(5), pp. 699­715, © 2013 INFORMS
+
+715
+
+Parducci A, Wedell DH (1986) The category effect with rating scales: Number of categories, number of stimuli, and method of presentation. J. Experiment. Psych.: Human Perception Performance 12(4):496­516.
+Raftery AE, Lewis SM (1996) Implementing MCMC. Gilks WR, Richardson S, Spiegelhalter DJ, eds. Markov Chain Monte Carlo in Practice (Chapman & Hall, London), 115­130.
+Rigby DK, Vishwanath V (2006) Localization: The revolution in consumer markets. Harvard Bus. Rev. 84(4):82­92.
+Rooderkerk RP, van Heerde HJ, Bijmolt TH (2011) Incorporating context effects into a choice model. J. Marketing Res. 48(August):767­780.
+Rossi PE, Allenby GM (1993) A Bayesian approach to estimating household parameters. J. Marketing Res. 30(2):171­182.
+Rossi PE, Allenby GM, McCulloch R (2005) Bayesian Statistics and Marketing (John Wiley & Sons, Chichester, UK).
+Sinha A, Sahgal A, Mathur SK (2013) Category optimizer: A dynamic-assortment, new-product-introduction, mix-optimization, and demand-planning system. Marketing Sci. 32(2): 221­228.
+Sloot LM, Fok D, Verhoef PC (2006) The short- and long-term impact of an assortment reduction on category sales. J. Marketing Res. 43(4):536­548.
+Smith SA, Agrawal N (2000) Management of multi-item inventory systems with demand substitution. Oper. Res. 48(1):50­64.
+Spiegelhalter DJ, Best NG, Carlin BP, Van der Linde A (2002) Bayesian measures of model complexity and fit (with discussion). J. Roy. Statist. Soc. Ser. B 64(4):583­616.
+Swait J, Andrews RL (2003) Enriching scanner panel models with choice experiments. Marketing Sci. 22(4):442­460.
+
+Tversky A (1972) Elimination by aspects: A theory of choice. Psych. Rev. 79(4):281­299.
+Urban TL (1998) Approach to product assortment and shelf-space allocation. J. Retailing 74(1):15­36.
+U.S. Census Bureau (2010) Gross margin as percentage of sales. Report, U.S. Census Bureau, Suitland, MD. http://www.census .gov/retail.
+Van Dijk A, van Heerde HJ, Leeflang PSH, Wittink DR (2004) Similarity-based spatial methods for estimating shelf space elasticities from correlational data. Quant. Marketing Econom. 2(September):257­277.
+van Heerde HJ, Gijsbrechts E, Pauwels K (2008) Winners and losers in a major price war. J. Marketing Res. 45(5):499­518.
+van Heerde HJ, Leeflang PSH, Wittink DR (2004) Decomposing the sales promotion bump with store data. Marketing Sci. 23(3):317­334.
+van Heerde HJ, Mela CF, Manchanda P (2004) The dynamic effect of innovation on market structure. J. Marketing Res. 41(2):166­183.
+van Nierop E, Fok D, Franses PH (2008) Interaction between shelf layout and marketing effectiveness and its impact on optimizing shelf arrangements. Marketing Sci. 27(6):1065­1082.
+Wilson RH (1934) A scientific routine for stock control. Harvard Bus. Rev. 13:116­128.
+Wittink DR, Addona MJ, Hawkes W, Porter JC (1988) SCANPRO: The estimation, validation, and use of promotional effects based on scanner data. Working paper, Cornell University, Ithaca, NY.
+Zheng Y-S (1992) On properties of stochastic inventory systems. Management Sci. 38(1):87­103.
+
+

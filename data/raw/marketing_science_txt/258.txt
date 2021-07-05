@@ -1,0 +1,2830 @@
+Vol. 35, No. 3, May­June 2016, pp. 427­444 ISSN 0732-2399 (print) ISSN 1526-548X (online)
+
+http://dx.doi.org/10.1287/mksc.2014.0901 © 2016 INFORMS
+
+Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Michael Braun
+Edwin L. Cox School of Business, Southern Methodist University, Dallas, Texas 75275, braunm@smu.edu
+Paul Damien
+McCombs School of Business, University of Texas at Austin, Austin, Texas 78712, paul.damien@mccombs.utexas.edu
+Bayesian hierarchical modeling is a popular approach to capturing unobserved heterogeneity across individual units. However, standard estimation methods such as Markov chain Monte Carlo (MCMC) can be impracticable for modeling outcomes from a large number of units. We develop a new method to sample from posterior distributions of Bayesian models, without using MCMC. Samples are independent, so they can be collected in parallel, and we do not need to be concerned with issues like chain convergence and autocorrelation. The algorithm is scalable under the weak assumption that individual units are conditionally independent, making it applicable for large data sets. It can also be used to compute marginal likelihoods.
+Data, as supplemental material, are available at http://dx.doi.org/10.1287/mksc.2014.0901.
+Keywords: parallel Bayesian computation; rejection sampling; big data; multilevel models; marginal likelihood; customer heterogeneity; MCMC; sparse optimization; exploiting sparsity
+History: Received: November 22, 2013; accepted: October 28, 2014; Pradeep Chintagunta, Dominique Hanssens, and John Hauser served as special issue editors and Robert McCulloch served as associate editor for this article. Published online in Articles in Advance March 24, 2015.
+
+1. Introduction
+In 1970, John D. C. Little famously wrote, "The big problem with management science models is that managers practically never use them. There have been a few applications, of course, but the practice is a pallid picture of the promise" (Little 1970, p. B-466). The same may be true today about Bayesian estimation of hierarchical probability models. The impact Bayesian methods have had on academic research across multiple disciplines in the managerial, social, and natural sciences is undeniable. Marketing, in particular, has benefited from Bayesian methods because of their natural suitability for capturing heterogeneity in customer types and tastes (Rossi and Allenby 2003). But further diffusion of Bayesian methods is constrained by a scalability problem. As the size and complexity of data sources for both research and commercial purposes grow, the impracticality of simulation-based Bayesian methods for estimating parameters of a general class of hierarchical models becomes increasingly salient (Allenby et al. 2014).
+The problem is not with the Bayesian approach itself, but with the most familiar methods of simulating from the posterior distributions of the parameters. Without question, the resurgence of Bayesian ideas is due to the popularity of Markov chain Monte Carlo (MCMC), which was introduced to statistical researchers by Gelfand and Smith (1990) via the Gibbs
+
+sampler. MCMC estimation involves iteratively sampling from the marginal posterior distributions of blocks of parameters. Only after some unknown (and theoretically infinite) number of iterations will the algorithm generate samples from the correct distributions; earlier samples are discarded. The Bayesian computational literature has exploded with numerous methods for generating valid and efficient MCMC algorithms. It would be difficult to list all of them here, so we refer the reader to Gelman et al. (2003), Chen et al. (2000), Rossi et al. (2005), and Brooks et al. (2010), and the hundreds of references therein.
+Despite the justifiable success MCMC has enjoyed, there remains the question of whether a particular chain has run long enough that we can start collecting samples for estimation (or, colloquially, whether the chain has "converged" to the target distribution). This is a particular problem for hierarchical models in which each heterogeneous unit is characterized by its own set of parameters. For example, each household in a customer data set might have its own preferences for product attributes. Both the number of parameters and the cycle time for each MCMC iteration grow with the size of the data set. Also, if the data represent outcomes of multiple interdependent processes (such as the timing and magnitude of purchases), both the posterior parameters and successive MCMC samples tend to be correlated, requiring a
+
+427
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+428
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+larger, yet unknown, number of iterations. We believe that the most important reason Bayesian methods have not been embraced "in the field" nearly as much as classical approaches is that they are difficult and expensive to implement routinely using MCMC, even with semiautomated software procedures. Practitioners simply do not have an academician's luxury of letting an MCMC chain run for days or weeks with no guarantee that the chain has converged to produce "correct" answers at the end of the process.
+With recent developments in multiple core processing and distributed computing systems, it is reasonable to look to parallel computing technology as a solution to the convergence problem. However, each MCMC cycle depends on the outcome of the previous one, so we cannot collect posterior samples in parallel by allocating the work across distributed processing cores. Using parallel processors to generate one draw from a target distribution, or running several MCMC chains in parallel, is not the same as generating all of the required independent samples in parallel. Hence, extant parallel MCMC methods are also subject to the same pesky question of convergence; indeed, now one has to ensure that all of the parallel chains have converged. On the other hand, non-MCMC methods like rejection sampling have the advantage of being able to generate samples from the correct target posterior in parallel, but these methods are beset with their own set of implementation issues. For instance, the inability to find efficient "envelope" distributions renders standard rejection sampling almost impractical for all but the smallest problems.
+In this paper, we propose a solution to sample from Bayesian parametric, hierarchical models that is inspired by two pre-MCMC approaches: rejection sampling and sampling from a multivariate normal (MVN) approximation around the posterior mode. Our contribution is an algorithm that recasts traditional rejection sampling in a way that circumvents the difficulties associated with these two approaches. The algorithm requires that one be able to compute the unnormalized log posterior of the parameters (or a good approximation of it), that the posterior distribution is bounded from above over the parameter space, and that available computing resources can locate any local maxima of the log posterior. There is no need to derive conditional posterior distributions (as with blockwise Gibbs sampling), and there are no conjugacy requirements.
+We present the details of our method in §2, and in §3 we share some examples that demonstrate the method's effectiveness. In broad strokes, the method involves scaling an MVN distribution around the mode and using that distribution as the source of proposal draws for the modified rejection algorithm. At first glance, one might think that finding the posterior mode and sampling from an MVN
+
+distribution are themselves intractable tasks in large dimensions. After all, the Hessian of the log posterior density, which grows quadratically with the number of parameters, is an important determinant of the efficiency of both MVN sampling and nonlinear optimization. Fortunately, several independent software development projects have spawned novel, freely available numerical computation tools that, when used together, allow our method to scale. In §4, we explain how to manage this scalability issue and show that the complexity of our method scales approximately linearly with the number of heterogeneous units.
+Another complication of Bayesian methods is the estimation of the marginal likelihood of the data. The marginal likelihood is the probability of observing the data under the proposed model, which can be used as a metric for model comparison. Except in rare special cases, computing the marginal likelihood involves numerically integrating over all of the prior parameters; note that we consider hyperpriors to be part of the data in this case. In §5, we explain how to estimate the marginal likelihood as a by-product of our method.
+In §6, we discuss key implementation issues and identify some relevant software tools. We also discuss limitations of our approach. We are not claiming that our method should replace MCMC in all cases. It may not be practical for models with discrete parameters, with a very large number of modes, or for which computing the log posterior density itself is difficult. The method does not require that the model be hierarchical or that the conditional independence assumption hold, but without those assumptions, it will not be as scalable. Nevertheless, many models of the kind researchers encounter could be properly estimated using our method, at least relative to the effort involved in using MCMC. Like MCMC and other non-MCMC methods, our method is another useful algorithm in the researcher's and practitioner's toolkits.
+
+2. Method Details
+
+2.1. Theoretical Basis
+
+The goal is to sample a parameter vector from a
+
+posterior density
+
+y , where
+
+is the prior on
+
+, f y is the data likelihood conditional on , and
+
+y is the marginal likelihood of the data. Therefore,
+
+y
+
+f =
+
+y
+
+y
+
+=
+
+y y
+
+(1)
+
+where
+
+y is the joint density of the data and the
+
+parameters (of the unnormalized posterior density).
+
+In a marketing research context, under the conditional
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+429
+
+independence assumption, the likelihood can be factored as
+
+N
+
+f y = fi yi i
+
+(2)
+
+i=1
+
+where i indexes households.1 Each yi is a vector of observed data, each i is a vector of heterogeneous parameters, and is a vector of homogeneous
+
+population-level parameters. The i are distributed across the population of households according to a
+
+mixing distribution i , which also serves as the prior on each i. The elements of may influence either the household-level data likelihoods or the mix-
+
+ing distribution (or both). In this example, includes
+
+all 1
+
+N and all elements of . The prior itself
+
+can be factored as
+
+N
+
+= ii ×
+
+(3)
+
+i=1
+
+Let  be the mode of
+
+y , which is also the mode
+
+of
+
+y , since y is a constant that does not
+
+depend on . One will probably use some kind of iter-
+
+ative numerical optimizer to find , such as a quasi-
+
+Newton line search or trust region algorithm. Define
+
+c1 =  y , and choose a proposal distribution g that also has its mode at . Define c2 = g  , and define the function
+
+y
+
+f =
+
+y g
+
+· c2 · c1
+
+(4)
+
+Through substitution and rearranging terms, we can write the target posterior density as
+
+y=
+
+y ·g
+
+c1 · c2 · y
+
+(5)
+
+An important restriction on the choice of g is
+
+that the inequality 0 
+
+y  1 must hold, at least
+
+for any with a nonnegligible posterior density. We
+
+discuss this restriction, along with the choice of g ,
+
+in more detail in §2.3.
+
+Next, let u y be an auxiliary variable that is dis-
+
+tributed uniformly on 0
+
+y / y , so that
+
+pu y =
+
+y/
+
+y = c1/ c2 y g
+
+Then construct a joint density of where
+
+p uy=
+
+y u<
+y
+
+y and u y,
+
+y
+
+(6)
+
+1 For brevity, we use the term "household" to describe any heterogeneous unit.
+
+By integrating Equation (6) over u, the marginal density of y is
+
+y
+
+y
+
+p y=
+
+y0
+
+du =
+
+y
+
+(7)
+
+Simulating from p y is now equivalent to simulat-
+
+ing from the target posterior
+
+y.
+
+Using Equations (5) and (6), the marginal density
+
+of u y is
+
+pu y =
+
+y u<
+y
+
+c1 = c2 y
+
+u<
+
+=
+
+c1 c2 y
+
+q
+
+u
+
+yd
+
+(8)
+
+y g d (9)
+
+(10)
+
+where q u = u <
+
+y g d . This q u func-
+
+tion is the probability that any candidate draw from
+
+g will satisfy
+
+y > u. The sampler comes from
+
+recognizing that p u y can be written differently
+
+from, but equivalently to, Equation (6)
+
+p u y =p u y p u y
+
+(11)
+
+The method involves sampling a u from an approximation to p u y and then sampling from p u y . Using the definitions in Equations (4)­(6), we get
+
+p
+
+u
+
+y
+
+p uy = pu y
+
+= c2
+
+c1 ypu y
+
+u<
+
+(12) y g (13)
+
+To sample directly from p u y , one needs only
+
+to sample from p u y and then sample repeatedly
+
+from g until
+
+y > u. The samples of form
+
+the marginal distribution p y , and since sampling
+
+from p y is equivalent to sampling from
+
+y,
+
+they form an empirical estimate of the target posterior
+
+density.
+
+2.2. Implementation
+
+But how does one simulate from p u y ? In Equa-
+
+tion (8), we see that p u y is proportional to the func-
+
+tion q u . Walker et al. (2011) sample from a similar
+
+kind of density by first taking M proposal draws from
+
+the prior to construct an empirical approximation to
+
+q u and then approximating that continuous den-
+
+sity using Bernstein polynomials. However, in high-
+
+dimensional models, this approximation tends to be
+
+a poor one at the end points, even with an extremely
+
+large number of Bernstein polynomial components.
+
+Our approach is similar in that we effectively trace
+
+out an empirical approximation to q u by repeatedly
+
+sampling from g and computing
+
+y for each
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+430
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+of those proposal draws. To avoid the end point prob-
+lem in the Walker et al. method, we instead sample a
+transformed variable v = - log u. Applying a change
+of variables, qv v = q u exp -v . With qv v denoting the "true" cumulative distribution function (CDF) of
+v, let q^v v be the empirical CDF of v after taking M proposal draws from g and ordering the proposals
+0 < v1 < v2 < · · · < vM < . To be clear, q^v v is the proportion of samples that are strictly less than v. As M
+becomes large, the empirical approximation becomes
+more accurate.
+Because q^v v is discrete, we can sample from a density proportional to q u exp -v by partitioning the
+domain into M + 1 segments with the break point of
+each partition at each vi. The probability of sampling a new v that falls between vi and vi+1 is now
+
+i = q^v v exp -vi - exp -vi+1
+
+(14)
+
+so we can sample an interval bounded by vi and vi+1 from a multinomial density with weights proportional
+to i. Once we have the i that corresponds to that interval, we can sample the continuous v by sampling
+from a standard exponential density, truncated on
+the right at vi+1 - vi, and setting v = vi + . Thus, we can sample v by first sampling i with weight i, then sampling a standard uniform random variable , and
+finally setting
+
+v = vi - log 1 - 1 - exp vi - vi+1
+
+(15)
+
+To sample R independent draws from the target
+
+posterior, we need R "threshold" draws of v. Then,
+
+for each v, we repeatedly sample from g until
+
+- log
+
+y < v. Once we have a that meets
+
+this criterion, we save it as a valid sample from
+
+y . The complete algorithm is summarized as
+
+Algorithm 1.
+
+2.3. The Proposal Distribution
+
+The only restriction on g is that the inequality 0 
+
+y  1 must hold, at least for any with a non-
+
+negligible posterior density. Because v > 0, we must
+
+have u < 1. Thus, any for which
+
+y > 1 would
+
+always be accepted, no matter how small
+
+Y
+
+might be. By construction,  y = 1, meaning that
+
+no candidate will have a higher acceptance prob-
+
+ability than the with the highest posterior density.
+
+This is an intuitively appealing property.
+
+In principle, it is up to the researcher to choose
+
+g , and some choices may be more efficient than
+
+others. We have found that a MVN proposal distribu-
+
+tion, with mean , works well for the kinds of con-
+
+tinuous posterior densities that marketing researchers
+
+typically encounter. The MVN density, with a covari-
+
+ance matrix equal to the negative inverse Hessian of
+
+the log posterior at , is an asymptotic approxima-
+
+tion (specifically, a second-order Taylor series) to the
+
+posterior density itself (Carlin and Louis 2000, §5.2).
+
+Algorithm 1 (Algorithm to collect R samples from y)
+
+1: R  number of required samples from
+
+y
+
+2: M  number of proposal draws for estimating
+
+q^v v .
+
+3:   mode of
+
+y
+
+4: c1   y 5: FLAG  TRUE
+
+6: while FLAG do
+
+7: Choose new proposal distribution g
+
+8: FLAG  FALSE
+
+9: c2  g  . 10: for m = 1 to M do
+
+11: Sample m  g .
+
+12: log m y  log m y
+
+- log g m - log c1 + log c2.
+
+13: vm = - log m y
+
+14: if log m y > 0 then
+
+15:
+
+FLAG  TRUE
+
+16:
+
+break
+
+17: end if
+
+18: end for
+
+19: end while
+
+20: Reorder elements of v, so
+
+0 < v1 < v2 < · · · < vM < . Define vM+1 =
+
+21: for i = 1 to M do
+
+22:
+
+q^v vi 
+
+M j =1
+
+vj < vi .
+
+23: i  q^v vi exp -vi - exp -vi+1 .
+
+24: end for
+
+25: for r = 1 to R do
+
+26: Sample j  Multinomial 1
+
+M.
+
+27: Sample  Uniform 0 1 .
+
+28: v  vj - log 1 - 1 - exp vj - vj+1 . 29: p  0
+
+30: nr  0.
+
+{Counter for number of proposals}
+
+31: while p > v do
+
+32: Sample r  g . 33: p  - log r y . 34: nr  nr + 1. 35: end while
+
+36: end for
+
+37: return 1
+
+R (plus n1
+
+nR and v1
+
+vM
+
+if computing a marginal likelihood).
+
+By multiplying that covariance matrix by a scaling
+
+constant s, we can derive a proposal distribution that
+
+has the general shape of the target posterior near its
+
+mode. That proposal distribution will be valid as long
+
+as s is large enough so that
+
+y is between 0 and
+
+1 for any plausible value of and the mode of g is
+
+at .
+
+We illustrate the idea of scaling the proposal den-
+
+sity in Figure 1. The solid line (the same in all three
+
+panels) is a "target" posterior density. The dotted lines
+
+plot potential normal proposal densities, multiplied
+
+by the corresponding c2/c1 ratio. The covariance of
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+431
+
+the proposal density in the left panel is the nega-
+
+tive inverse Hessian of the log posterior density. Sam-
+
+ples from the left tail of the posterior distribution will
+
+have
+
+y > 1. In the middle and right panels, the
+
+covariance is the same as in the left panel, but mul-
+
+tiplied by 1.4 and 1.8, respectively. As the covariance
+
+increases, more of the posterior support will have
+
+y  1.
+
+It is possible that g could undersample values
+
+of in the tails of the posterior. However, if M is
+
+sufficiently large, and
+
+y  1 for all M proposals,
+
+then it is unlikely that we would see
+
+y > 1 in the
+
+rejection sampling phase of the algorithm. If that were
+
+to happen, we can stop, rescale, and try again. Any
+
+values of that we might miss would have such low
+
+posterior density that there would be little meaningful
+
+effect on inferences we might make from the output.
+
+We believe that the potential cost from under-
+
+sampling the tails is dwarfed by our method's rel-
+
+ative computational advantage. We recognize that
+
+there may be some applications for which sampling
+
+extreme values of may be important, and this may
+
+not be the best estimation method for those applica-
+
+tions. Otherwise, there is nothing special about using
+
+the MVN distribution for g . It is straightforward
+
+to implement with a manual adaptive selection of s.
+
+This is similar, in spirit, to the concept of tuning
+
+a Metropolis­Hastings algorithm. Heavier-tailed pro-
+
+posals, such as the multivariate-t (MVT) distribution,
+
+can fail because of high kurtosis at the mode.
+
+2.4. Comparison to Other Methods
+
+2.4.1. Rejection Sampling. At first glance, our
+
+method looks quite similar to standard rejection
+
+sampling. With rejection sampling, one repeatedly
+
+samples both a threshold value from a standard uni-
+
+form distribution (p u = 1) and a proposal from g
+
+until
+
+y /g  Ku, where K is a positive con-
+
+stant. This is different from our method, for which the
+
+threshold values are sampled from a posterior p u y ,
+
+and K is specifically defined as the ratio of modal
+
+densities of the posterior to the proposal. The advan-
+
+tages that rejection sampling has over our approach
+
+are that the distribution of u is exact, and the proposal
+
+density does not have to dominate the target density for all values of . However, for any model with more than a few dimensions, the critical ratio can be extremely small for even small deviations of away from the mode. Thus, the acceptance probabilities are virtually nil. In contrast, we accept a discrete approximation of p u y in exchange for higher acceptance probabilities.
+2.4.2. Direct Sampling. Walker et al. (2011) introduced and demonstrated the merits of a non-MCMC approach called direct sampling for conducting Bayesian inference. Like our method, direct sampling removes the need to concern oneself with issues like chain convergence and autocorrelation, and generates independent samples from a target posterior distribution in parallel. Walker et al. (2011) also proved that the sample acceptance probabilities using direct sampling are better than those from standard rejection algorithms. Put simply, for many common Bayesian models, they demonstrate an improvement over MCMC in terms of efficiency, resource demands, and ease of implementation.
+However, direct sampling suffers from some important shortcomings that limit its broad applicability. One is the failure to separate the specification of the prior from the specifics of the estimation algorithm. Another is an inability to generate accepted draws for even moderately sized problems; the largest number of parameters that Walker et al. (2011) consider is 10. Our method allows us to conduct full Bayesian inference on hierarchical models in high dimensions, with or without conjugacy, without MCMC.
+Although our method shares some important features with direct sampling, it differs in several respects. While direct sampling focuses on the shape of the data likelihood alone, we are concerned with the characteristics of the entire posterior density. Our method bypasses the need for Bernstein polynomial approximations, which are integral to the direct sampling algorithm. Finally, whereas direct sampling takes proposal draws from the prior (which may conflict with the data), our method samples proposals from a separate density that is ideally a good approximation to the target posterior density itself.
+
+Figure 1
+
+(Color online) A "Target" Posterior Density (Solid Line, Same in All Panels) and Three Scaled Normal Densities (Dotted Lines, Increasing in Covariance from Left to Right)
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+432
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+2.4.3. Markov Chain Monte Carlo. We have already mentioned the key advantage of our method over traditional MCMC: generating independent samples that can be collected in parallel. We do not need to be concerned with issues like autocorrelation, convergence of estimation chains, and so forth. Without delving into a discussion of all possible variations and improvements to MCMC that have been proposed since Gelfand and Smith (1990), there have been some attempts to parallelize MCMC that deserve some mention. For a deeper analysis, see Suchard et al. (2010).
+It is possible to run multiple independent MCMC chains that start from different starting points. Once all of those chains have converged to the posterior distribution, we can estimate the posterior by combining samples from all of the chains. The numerical efficiency of that approximation should be higher than if we used only one chain, because there should be no correlation between samples collected in different chains. However, each chain still needs to converge to the posterior independently, and only after that convergence can we start collecting samples. If it takes a long time for one chain to converge, it will take at least that long for all chains to converge. Thus, the potential for parallelization is much greater for our method than for MCMC.
+Another approach to parallelization is to exploit parallel processing power for individual steps in an algorithm. One example is a parallel implementation of a multivariate slice sampler (MSS), as in Tibbits et al. (2010). The benefits of parallelizing the MSS come from parallel evaluation of the target density at each of the vertices of the slice, and from more efficient use of resources to execute linear algebra operations (e.g., Cholesky decompositions). But the MSS itself remains a Markovian algorithm, and thus will still generate dependent draws. Using parallel technology to generate a single draw from a distribution is not the same as generating all of the required draws themselves in parallel. The sampling steps of our method can be run in their entirety in parallel.
+Another attractive feature of our method is that the model is fully specified by the log posterior, and possibly its gradient and Hessian. The tools that we discuss in §4 are components of a reusable infrastructure. Only the function that returns the log posterior changes from model to model. This feature is unlike a blockwise Gibbs sampler, for which we need to derive and implement a set of conditional densities for each model. A small change in the model specification can require a substantial change in the sampling strategy. For example, a change to a prior might mean that the sampler is no longer conditionally conjugate. So although it might be possible to construct a highly efficient Gibbs sampler for a particular model (e.g.,
+
+through blocking, data augmentation, or parameter transformation), there can be considerable upfront investment in doing so.
+3. Examples
+We now provide three examples of our method in action. In the first example, we simulate data from a basic, conditionally conjugate model and compare the marginal posterior distributions that were generated by our method with those from a Gibbs sampler. The second example is a nonconjugate hierarchical model of store-level retail sales. In that example, we compare estimates from our method with those from the Hamiltonian Monte Carlo (HMC) method, using the Stan software package (Stan Development Team 2014). For these first two examples, the MCMC methods are efficient, so it is likely that they generate good estimates of the true posterior densities. Thus, we can use those estimates as benchmarks against which we can assess the accuracy of our method. The third example is a more complicated model for which MCMC performs poorly. We use this example not only to assess the accuracy of our method (for those parameters for which we think the MCMC estimates are reasonable), but also to illustrate some of the computational problems that are inherent in MCMC methods. In all of our examples, we implemented our method using the bayesGDS package (Braun 2015a) for R.
+3.1. Conditionally Conjugate Model with Simulated Data
+In our first example, we simulated T = 10 observations for each of N = 1 500 heterogeneous units. Each observation for unit i = 1 N is a sample from a normal distribution, with mean i and standard deviation = 2. The i are normally distributed across the population, with mean = -1 and standard deviation = 3. We place uniform priors on , log , and . There are 1,503 parameters in this model.
+This model allows for a conditionally conjugate Gibbs sampler; the steps are described in Gelman et al. (2003, §11.7). In this case, the Gibbs sampler is sufficiently fast and efficient, so we have confidence that it does indeed sample from the correct posterior distributions. The Gibbs sampler was run for 2,000 iterations, including a 1,000-iteration burn-in. The process took about five minutes to complete. We then collected 360 independent samples using our method, after estimating qv v with M = 70 000 proposals and applying a scaling factor on the inverse Hessian of 1.02. To get those 360 proposals, we needed 381,507 proposals. Using a single core of a 2014-vintage Apple Mac Pro, this process took about 23 minutes. However, each draw can be collected in parallel. It took about five minutes to collect all 360 samples when
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+433
+
+Figure 2
+
+Comparative Estimates of Posterior Distributions for the Example in §3.1
+
+­ 0.90
+
+·
+
+­ 0.95
+
+­1.00
+
+­1.05
+
+· · Gibbs
+
+··· Ours
+
+2
+
+1.05
+
+··
+
+··
+
+1.00
+
+0.95
+
+0.90
+
+0.85
+
+··
+
+Gibbs Ours
+
+2
+
+4.06
+
+···
+
+4.04
+
+4.02
+
+4.00
+
+3.98
+
+·· 3.96
+
+·
+
+Gibbs Ours
+
+­319,100
+
+Log posterior ···
+
+­319,150
+
+­319,200 ­319,250
+
+··· Gibbs
+
+Ours
+
+using 12 processing cores. The mean number of proposals for each posterior sample was 1,060 (an acceptance rate of 0.0009), but the median was only 29. Ten of the 360 samples required more than 10,000 proposals.
+Figure 2 shows the quantiles of samples in the estimated marginal posterior densities of the populationlevel parameters , 2, and 2, as well as the log of the unnormalized posterior density. We can see that both methods generate effectively the same estimated posterior distributions.
+3.2. Hierarchical Model Without Conditional Conjugacy
+In the second example, we model weekly sales of sliced cheese in 88 retail stores. The data are available in the bayesm package for R (Rossi 2012), and were used by Boatwright et al. (1999). Under this model, mean sales for store i in week t has a gamma distribution with mean it and shape ri. The mean is a log-linear function of price and the percentage of "all category volume" on display in that week
+log it = i1 + i2 log PRICEit + i3DISPit (16)
+The prior on each ri is a half-Cauchy distribution with a scale parameter of 5, and the prior on each i is
+
+MVN with mean and covariance . The hyperparameters and have weakly informative MVN and inverse Wishart priors, respectively. There are 361 parameters in this model.
+This model does not allow for a conditionally conjugate Gibbs sampler. Instead, we use HMC (Duane et al. 1987, Neal 2011), which uses the gradient of the log posterior to simulate a dynamic physical system. We selected HMC mainly because it is known to generate successive samples that are less serially correlated than draws that one might sample using other MCMC methods.
+We implemented HMC using the Stan software package (Stan Development Team 2014). We ran five parallel chains for 800 iterations each, discarding the first half of the draws. The chains appeared to display little autocorrelation, so we have confidence that the HMC samples form a good estimate of the true posterior distributions. We then estimated the model using our method with different numbers of proposal draws to estimate qv v , and different scale factors on the covariance of the proposal density. In Figure 3, we compare the estimated densities for elements of
+, the baseline and marginal effects on sales. We see that even with a relatively coarse estimate of qv v and an overly diffuse proposal density, our method generates estimates of the posterior densities that are not
+
+1
+
+2
+
+Figure 3
+
+Estimated Posterior Distributions of for the Example in §3.2
+
+Value
+
+4.00 3.75 3.50 3.25 3.00 ­1.75
+­2.00
+­2.25
+­2.50
+1.2 1.0 0.8
+
+M = 1,000
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+1.14 1.20 1.28
+
+M = 10,000
+
+
+
+
+
+
+
+ 
+
+M = 50,000
+
+ 
+
+
+
+ 
+
+
+
+
+
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+ 
+
+
+
+
+
+
+1.14 1.20 1.28 1.14 1.20 1.28 Scale factor on Hessian
+
+Stan
+ 
+    
+   
+
+Stan
+
+3
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+434
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+only comparable with each other but also comparable with those generated by Stan. The mean acceptance rate across the different runs using our method was 0.0003. It took about 1.4 seconds to sample and evaluate a block of 1,000 proposals on a single processing core.
+3.3. Model with Weakly Identified Parameters Our third example concerns a nonconjugate heterogeneous hierarchical model in which some parameters are only weakly identified. The data structure is described by Manchanda et al. (2004); we use the simulated data that are available in the bayesm package for R (Rossi 2012). In this data set, for each of the 1,000 physicians, we observe weekly prescription counts for a single drug (yit), weekly counts of sales visits from representatives of the drug manufacturer (xit), and some time-invariant demographic information (zi). Although one could model the purchase data as conditional on the sales visits, Manchanda et al. (2004) argue that the rate of these contacts is determined endogenously, so that physicians who are expected to write more prescriptions, or who are more responsive to the sales visits, will receive visits more often.
+In this model, yit is a random variable that follows a negative binomial distribution with shape r and mean it, and xit is a Poisson-distributed random variable with mean i. The expected number of prescriptions per week depends on the number of sales visits, so we let log it = i0 + i1xit, where i is a vector of heterogeneous coefficients. We then model the contact rate so it depends on the physician-specific propensities to purchase, so log i = 0 + 1 i0 + 2 i1. Define zi as a vector of four physician-specific demographics (including an intercept), and define as a 2 × 4 matrix of population-level coefficients. The mixing distribution for (i.e., the prior on each i), is MVN with mean zi and covariance V . We place weakly informative MVN priors on and the rows of , an inverse Wishart prior on V and a gamma prior on r. There are 2,015 distinct parameters to be estimated. This model differs slightly from the one in the paper by Manchanda et al. (2004) only in that i depends only on expected sales in the current period, and not the long-term trend. We made this change to make it easier to run the baseline MCMC algorithm.
+As before, our baseline estimation algorithm is HMC, but instead of using Stan, we use the "double averaging" method to adaptively scale the step size (Hoffman and Gelman 2014), and we set the expected path length to 16.2 By implementing HMC ourselves,
+2 Shorter path lengths were less efficient, and longer ones frequently jumped so far from the regions of high posterior mass that the computation of the log posterior would underflow. We had the same
+
+Figure 4
+
+Trace Plots of Four HMC Chains for the Log Posterior Distribution of the Example in §3.3
+
+log posterior density
+
+­ 85,800
+
+­ 86,000
+
+­ 86,200
+
+0
+
+200
+
+400
+
+600
+
+Iteration (× 1,000)
+
+Notes. One chain was started at the mode, and the others were started at random values. Every 500th iteration is plotted.
+
+we can use the same computer code to compute the log posterior, and its gradient, that we use with our method. This allows the two methods to compete on a level playing field.
+We ran four independent HMC chains for 700,000 iterations each, during a period of more than three weeks. Searching for the posterior mode is considered, in general, to be "good practice" for Bayesian inference, and especially with MCMC; see Step 1 of the "Recommended Strategy for Posterior Simulation" in §11.10 of Gelman et al. (2003). Finding the mode of the log posterior is the first step of our method anyway, so we initialized one chain there, and the other three at randomly selected starting values. Figure 4 is a trace plot of the log posterior density. The chains begin to approach each other only after about 500,000 iterations. The panels in Figure 5 are trace plots of the population-level parameters. Some parameter chains appear to have converged to each other, with little autocorrelation, but others seem to have made no progress at all. Table 1 summarizes the effective sample sizes for estimates of the marginal posterior distributions of population-level parameters, using the final 100,000 samples of the HMC chains. Many of these parameters may require more than a million additional iterations to achieve an effective sample size large enough to make reasonable inferences.
+The convergence problems are even worse when we consider that each of the 16 steps in the path length for iteration requires one evaluation for both the log posterior and its gradient. Using "reverse
+
+problem with the No U-Turn Sampler (Hoffman and Gelman 2014), whether using Stan, or coding the algorithm ourselves. The HMC extensions in Girolami and Calderhead (2011) are inappropriate for this problem because the Hessian is not guaranteed to be positive definite for all parameter values.
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+435
+
+Figure 5 Trace Plots of Four HMC Chains for Population-Level Parameters in the Example in §3.3, Starting at Iteration 500,000
+
+1.10 1.05 1.00 0.95
+0.03 0.02
+0 0.00 ­ 0.01
+0.3 0.2 0.1
+0
+
+1, 1 1, 3
+1
+
+0.5 0.4 0.3 0.2 0.1
+0.075 0.050 0.025
+0 ­ 0.025 ­ 0.050
+0 ­ 0.1 ­ 0.2
+
+2, 1 2, 3 2
+
+1.5 1.4 1.3 1.2
+0.05 0
+­ 0.05
+33.90 33.85 33.80
+
+1, 2 1, 4 3
+
+0.7 0.6 0.5
+0.04 0.02
+0
+
+2, 2 2, 4
+
+chol(V1, 1) 0.88 0.84 0.80
+
+Value
+
+0.03 0.02 0.01
+0 ­ 0.01
+
+chol(V2, 1)
+
+500 550 600 650 700
+
+Note. Every 500th iteration is plotted.
+
+chol(V2, 2) 0.22
+
+mean( 1)
+
+mean( 2)
+
+0.21
+
+1.03
+
+0.015
+
+0.20 0.19
+500 550 600 650 700
+
+1.02
+
+0.010
+
+1.01
+
+0.005
+
+500 550 600 650 700
+
+500 550 600 650 700
+
+Iteration (× 1,000)
+
+mode" automatic differentiation (AD), which we dis-
+
+cuss more in §4.1, the time to evaluate the gradi-
+
+ent is about five times the time it takes to evaluate
+
+the log posterior, regardless of the number of vari-
+
+ables (Griewank and Walther 2008, p. xii). Therefore,
+
+each HMC iteration requires resources that equate
+
+to 96 evaluations of the posterior. In other words,
+
+the computational cost of 700,000 HMC iterations is
+
+equivalent to more than 67 million evaluations of the
+
+log posterior. And this assumes that 700,000 iterations
+
+were sufficient to collect enough samples from the
+
+true posterior.
+
+So how much more efficient is our sampling
+
+method? We estimated the marginal density qv v by taking M = 100 000 proposal draws from an MVN
+
+distribution with the mean at the posterior mode 
+
+and the covariance matrix equal to the inverse of the
+
+Hessian at the mode, multiplied by a scaling factor of
+
+s = 1 3. This value of s is the smallest value for which
+
+0
+
+y  1 for all 100,000 samples from g . We
+
+then collected 300 independent samples in parallel from
+
+the target posterior
+
+y . The median number of
+
+proposals required for each posterior sample was just
+
+under 38,000, the total number of likelihood evalua-
+
+tions was about 16.5 million, and the average accep-
+
+tance rate was 1 8 × 10-5.
+
+In absolute terms, the low acceptance rate appears
+
+to be unfavorable. However, the total run time is
+
+much lower than for MCMC. In our implementation (using a single core on a 2014-vintage Apple Mac Pro), the total time to compute the log posterior density of 1,000 proposal samples is about 8.7 seconds. The time to sample 1,000 proposals from an MVN distribution and compute the MVN densities for each is about 0.89 seconds. Therefore, to collect
+
+Table 1
+
+Effective Sample Sizes for Estimates of Posterior Distributions for the Example in §3.3, Using the Final 100,000 Samples in the HMC Chains
+
+Chain
+
+1
+
+2
+
+3
+
+4
+
+11
+12
+13
+14
+21
+22
+23
+24
+1
+2
+3
+Chol V 1 1 Chol V 2 1 Chol V 2 2 Mean( 1i ) Mean( 2i )
+
+295 16 6 51 4 703 507 407 3 708
+3 10 3 553 7 844 530 6 21
+
+250 24 12 43 5 933 573 445 4 797
+4 33 15 513 18 761 523
+5 22
+
+266 27 26 43 5 981 526 400 3 680
+6 22 3 500 13 796 517 12 28
+
+267 29 14 60 1 444 538 407 4 926
+2 22 3 511 9 852 477 12 10
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+436
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+and evaluate 16.5 million proposal samples (to get 300 posterior draws) would take about 44 hours. But this is for a single processing core. Using all 12 cores on our Apple Mac Pro, the sampling time is reduced to 220 minutes. We discuss the scalability of the component steps of the algorithm in §4.
+Access to more processing nodes could reduce this time even further. It is the ability to collect posterior samples in parallel that gives our method its greatest advantage over MCMC methods. One can run multiple MCMC chains in parallel, but this involves waiting until all of the chains, individually, converge to the target posterior before one can begin collecting samples for inference. Even then, there is no way to confirm that the chain has, in fact, converged.
+We can draw inferences about the accuracy of our method by comparing the estimated marginal densities to those that we get from HMC. Note that the HMC estimates are accurate only if all of the chains converge to the target density, and we have a largeenough effective sample size. This condition clearly does not hold, but it is sufficiently close for the majority of the population-level parameters for us to use HMC samples as a baseline standard. Figure 6 is a comparison of the quantiles. For the elements of and the Cholesky decomposition of V , our method's estimated distributions are close to the HMC estimates. For other parameters, the convergence of the
+
+estimates is less clear. However, the parameters for which the densities are not aligned are the same parameters for which there is high autocorrelation, and little movement, in the HMC chains. Thus, we infer that our method compares with HMC well in terms of the marginal densities that it generates, with substantial computational effort.
+4. Scalability and Sparsity
+The ability for our method to generate independent samples in parallel already makes it an attractive alternative to MCMC. In this section, we present an argument in favor of our method's scalability. Our criterion for scalability is that the cost of running the algorithm grows close to linearly in the number of households. Our analysis considers the fundamental computational tasks involved: computing the log posterior, its gradient, and its Hessian; computing the Cholesky decomposition of the Hessian; and sampling from an MVN proposal distribution. We will show that scalability can be achieved because, under the conditional independence assumption, the Hessian of the log posterior is sparse, with a predictable sparsity pattern.
+4.1. Computing Log Posteriors, Gradients, and Hessians
+Under the conditional independence assumption, the log posterior density is the sum of the logs
+
+Figure 6 Comparative Estimates of Posterior Distributions for the Example in §3.3
+
+Value
+
+1.15 1.10 1.05 1.00 0.95 0.90
+
+1, 1 HMC Ours
+
+0.10
+
+1, 4
+
+0.05
+
+0
+
+­ 0.05 ­ 0.10
+
+HMC Ours
+
+chol(V2, 1) 0.04
+
+0.02
+
+0
+
+­ 0.02 HMC Ours
+
+2, 1 0.5 0.4 0.3 0.2 0.1
+
+HMC Ours
+
+0.050
+
+2, 4
+
+0.025
+
+0
+
+­ 0.025 HMC Ours
+
+chol(V2, 2)
+
+0.22 0.21 0.20 0.19
+
+HMC Ours
+
+1, 2 1.6
+1.4
+1.2
+1.0 HMC Ours
+1 0.5 0.4 0.3 0.2 0.1
+0
+
+2, 2 0.7 0.6 0.5
+HMC Ours 2
+0 ­ 0.1 ­ 0.2
+
+HMC Ours
+mean( 1)
+1.03 1.02 1.01 1.00
+
+HMC Ours mean( 2) 0.016 0.012 0.008
+
+HMC Ours
+
+HMC Ours
+
+Method
+
+0.04
+
+1, 3
+
+0.02
+
+0
+
+­ 0.02 HMC Ours
+
+3
+
+30 25
+
+HMC Ours
+
+0.08 0.04
+0 ­ 0.04
+
+2, 3
+
+HMC Ours chol(V1, 1) 0.90 0.85 0.80
+
+HMC Ours
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+437
+
+of Equations (2) and (3), with a heterogeneous component
+
+N
+
+log fi yi i + log i i
+
+(17)
+
+i
+
+and a homogeneous component log . This homogeneous component is the hyperprior on the population-level parameters, so its computation does not depend on N , while each additional household adds another element to the summation in Equation (17). Therefore, computation of the log posterior grows linearly in N . In the subsequent text, let k be the number of elements in each i, and let p be the number of elements in . Using the notation from §2,
+is a vector that concatenates all of the i together, along with .
+There are two reasons why we might need to compute the gradient and Hessian of the log posterior, namely, for use in a derivative-based optimization algorithm to find the posterior mode and for estimating the precision matrix of an MVN proposal distribution.3 Ideally, we would derive the gradient and Hessian analytically, and write code to estimate them efficiently. For complicated models, the required effort for coding analytic gradients may not be worthwhile. An alternative would be a numerical approximation through finite differencing. The fastest, yet least accurate, method for finite differencing for gradients, using either forward or backward differences, requires Nk + p + 1 evaluations of the log posterior. Since the computational cost of the log posterior also grows linearly with N , computing the gradient this way will grow quadratically in N . The cost of estimating a Hessian using finite differencing grows even faster in N . Also, if the Hessian is estimated by taking finite differences of gradients, and those gradients themselves are finite differences, the accumulated numerical error can be so large that the Hessian estimates are useless.
+Instead, we can turn to AD (also sometimes known as algorithmic differentiation). A detailed explanation of AD is beyond the scope of this paper, so we refer the reader to Griewank and Walther (2008), or §8.2 in Nocedal and Wright (2006). Put simply, AD treats a function as a composite of subfunctions, and computes derivatives by repeatedly applying the chain rule. In practical terms, AD involves coding the log posterior using a specialized numerical library that keeps track of the derivatives of these subfunctions. When we compile the function that computes the log
+
+3 We do not require either derivative-based optimization or using MVN proposals, but these are most likely reasonable choices for differentiable, unimodal posteriors.
+
+posterior, the AD library will "automatically" generate additional functions that return the gradient, the Hessian, and even higher-order derivatives.4
+The remarkable feature of AD is that computing the gradient of a scalar-valued function takes no more than five times as long as computing the log posterior, regardless of the number of parameters (Griewank and Walther 2008, p. xii). If the cost of the log posterior grows linearly in N , so will the cost of the gradient.
+In most statistical software packages, like R, the default storage mode for any matrix is in a "dense" format; each element in the matrix is stored explicitly, regardless of the value. For a model with n variables, this matrix consists of n2 numbers, each consuming eight bytes of memory at double precision. If we have a data set in which N = 10 000, k = 5, and p is relatively small, the Hessian for this model with 50 000 + p variables will consume more than 20 GB of RAM. Furthermore, the computational effort for matrix­vector multiplication is quadratic in the number of columns, and matrix­matrix multiplication is cubic. To the extent that either of these operations is used in the mode-finding or sampling steps, the computational effort will grow much faster than the size of the data set. Since multiplying a triangular matrix is roughly one-sixth as expensive as multiplying a full matrix, we could gain some efficiency by working with the Cholesky decomposition of the Hessian instead. However, the complexity of the Cholesky decomposition algorithm itself will still be cubic in N (Golub and Van Loan 1996, Chapter 1).
+For our purposes, the source of scalability is in the sparsity of the Hessian. If the vast majority of elements in a matrix are zero, we do not need to store them explicitly. Instead, we need to store only the nonzero values, the row numbers of those values, and the index of the values that begin each column.5 Under the conditional independence assumption, the cross-partial derivatives between heterogeneous parameters across households are all zero. Thus, the Hessian becomes sparser as the size of the data set increases.
+To illustrate, suppose we have a hierarchical model with six households, two heterogeneous parameters
+4 There are a number of established AD tools available for researchers to use for many different programming environments. For C++, we use CppAD (Bell 2013), although ADOL-C (Walther and Griewank 2012) is also popular. We call our C++ functions from R (R Development Core Team 2014) using the Rcpp package (Eddelbuettel and François 2011, Bates and Eddelbuettel 2013). CppAD is also available for Python. Matlab users have access to ADMAT (Coleman and Verma 2000), among other options.
+5 This storage scheme is known as the compressed sparse column format. This common format is used by the Matrix package in R and the Eigen numerical library, but it is not the only way to store a sparse matrix.
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+438
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+Figure 7
+
+Example of Sparsity Pattern Under Conditional Independence
+
+[1, ] | | . . . . . . . . . . | | [2, ] | | . . . . . . . . . . | | [3, ] . . | | . . . . . . . . | | [4, ] . . | | . . . . . . . . | | [5, ] . . . . | | . . . . . . | | [6, ] . . . . | | . . . . . . | | [7, ] . . . . . . | | . . . . | | [8, ] . . . . . . | | . . . . | | [9, ] . . . . . . . . | | . . | | [10, ] . . . . . . . . | | . . | | [11, ] . . . . . . . . . . | | | | [12, ] . . . . . . . . . . | | | | [13, ] | | | | | | | | | | | | | | [14, ] | | | | | | | | | | | | | |
+
+per household, and two population-level parameters, for a total of 14 parameters. Figure 7 is a schematic of the sparsity structure of the Hessian; the vertical lines are the nonzero elements, and the dots are the zeros. There are 196 elements in this matrix, but only 76 are nonzero, and only 45 values are unique. Although the savings in RAM is modest in this illustration, the efficiencies are much greater when we add more households. If we had 1,000 households, with k = 3 and p = 9, there would be 3,009 parameters, and more than nine million elements in the Hessian, yet no more than 63,000 would be nonzero, of which about 27,600 would be unique. As we add households, the number of nonzero elements of the Hessian grows only linearly in N .
+The cost of estimating a dense Hessian using AD grows linearly with the number of variables (Griewank and Walther 2008). When the Hessian is sparse, with a pattern similar to that in Figure 7, we can estimate the Hessian so that the cost is only a multiple of the cost of computing the log posterior. We achieve this by using a graph coloring algorithm to partition the variables into a small number of groups (or "colors" in the graph theory literature), such that a small change in the variable in one group does not affect the partial derivative of any other variable in the same group. This means we could perturb all of the variables in the same group at the same time, recompute the gradient, and, after doing that for all groups, still be able to recover an estimate of the Hessian. Thus, the computational cost for computing the Hessian grows with the number of groups, not the number of parameters. Because the householdlevel parameters are conditionally independent, we do not need to add groups as we add households. For the Hessian sparsity pattern in Figure 7, we need only four groups: one for each of the heterogeneous
+
+parameters across all of the households, and one for
+
+each of the two population-level parameters. In the
+
+upcoming binary choice example in §4.4, for which
+
+k = 3, there are
+
+1 2
+
+k2 + 5k
+
+= 12 groups, no matter how
+
+many households we have in the data set.
+
+Curtis et al. (1974) introduce the idea of reduc-
+
+ing the number of evaluations to estimate sparse
+
+Jacobians. Powell and Toint (1979) describe how
+
+to partition variables into appropriate groups and
+
+how to recover Hessian information through back-
+
+substitution. Coleman and Moré (1983) show that the
+
+task of grouping the variables amounts to a classic
+
+graph-coloring problem. Most AD software applies
+
+this general principle to computing sparse Hessians.
+
+Alternatively, R users can use the sparseHessianFD
+
+package (Braun 2015b) to efficiently estimate sparse
+
+Hessians through finite differences of the gradient,
+
+as long as the sparsity pattern is known in advance,
+
+and as long as the gradient was not itself estimated
+
+through finite differencing. This package is an inter-
+
+face to the algorithms in Coleman et al. (1985a, b).
+
+4.2. Finding the Posterior Mode For simple models and small data sets, standard default algorithms (like the optim function in R) are sufficient for finding posterior modes and estimating Hessians. For larger problems, one should choose optimization tools more thoughtfully. For example, many of the R optimization algorithms default to finite differencing of gradients when a gradient function is not provided explicitly. Even if the user can provide the gradient, many algorithms will store a Hessian, or an approximation to it, densely. Neither feature is attractive when the number of households is large.
+For this section, let us assume that the log posterior is twice differentiable and unimodal.6 There are two approaches that one can take. The first is to use a "limited memory" optimization algorithm that approximates the curvature of the log posterior over successive iterations. Several algorithms of this kind are described in Nocedal and Wright (2006), and are available for many technical computing platforms. Once the algorithm finds the posterior mode, there remains the need to compute the Hessian exactly.
+The second approach is to run a quasi-Newton algorithm and compute the Hessian at each iteration explicitly, but store the Hessian in a sparse format. The trustOptim package for R (Braun 2014) implements a trust region algorithm that exploits the sparsity of the Hessian. The user can supply a Hessian that is derived analytically, computed using AD, or estimated numerically using sparseHessianFD. Since memory requirements and matrix computation costs
+
+6 Neither assumption is required, but most marketing models satisfy them, and maintaining them simplifies our exposition.
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+439
+
+will grow only linearly in N , finding the posterior mode becomes feasible for large problems, compared to similar algorithms that ignore sparsity.
+We should note that we cannot predict the time to convergence for general problems. Log posteriors with ridges or plateaus, or that require extensive computation themselves, may still take a long time to find the local optimum. Whether any mode-finding algorithm is "fast enough" depends on the specific application. However, if one optimization algorithm has difficulty finding a mode, another algorithm may do better.
+
+4.3. Sampling from an MVN Distribution
+
+Once we find the posterior mode, and the Hessian
+
+at the mode, generating proposal samples from an
+
+MVN(  sH -1) distribution is straightforward. Let
+
+1/s H = represent the Cholesky decomposition
+
+of the precision of the proposal, and let z be a vector
+
+of Nk + p samples from a standard normal distribu-
+
+tion. To sample from an MVN distribution, solve
+
+the triangular linear system = x, and then add .
+
+Since E z = 0, E = , and since E zz = I , cov =
+
+-1 -1 =
+
+-1 = sH -1.
+
+Because is sparse, the costs of both solving the
+
+triangular system and the premultiplication grow lin-
+
+early with the number of nonzero elements, which
+
+itself grows linearly in N (Davis 2006). If were
+
+dense, then the cost of solving the triangular sys-
+
+tem would grow quadratically in N . Furthermore,
+
+computing the MVN density would involve premul-
+
+tiplying z by a triangular matrix, whose cost is cubic
+
+in N (Golub and Van Loan 1996).
+
+Computation of the Cholesky decomposition can
+
+also benefit from the sparsity of the Hessian. If H
+
+were dense Nk + p square, symmetric matrix, then,
+
+holding k and p constant, the complexity order of
+
+the Cholesky decomposition would be N 3 (Golub
+
+and Van Loan 1996). There are a number of different
+
+algorithms that one can use for decomposing sparse
+
+Hessians (Davis 2006). The typical strategy is to first
+
+permute the rows and columns of H to minimize the
+
+number of nonzero elements in , and then com-
+
+pute the sparsity pattern. This part can be done just
+
+once. With the sparsity pattern in hand, the next
+
+step is to compute those nonzero elements in . The
+
+time for this step grows with the sum of the squares
+
+of the number of nonzero elements in each column
+
+of (Davis 2006). Because each additional household
+
+adds k columns to
+
+,
+
+with
+
+an
+
+average
+
+of
+
+p
+
++
+
+1 2
+
+k+1
+
+nonzero elements per column, we can compute the
+
+sparse Cholesky decomposition in time that is linear
+
+in N . Software for sparse Cholesky decompositions is
+
+widely available.
+
+4.4. Scalability Test Next, we provide some empirical evidence of scalability through a simulation study. For a hypothetical
+
+data set with N households, let yi be the number of times household i visits a store during a T week period. The probability of a visit in a single week is pi, where logit pi = ixi, and xi is a vector of k covariates. The distribution of i across the population is MVN with mean ¯ and covariance . In all conditions of the test, we set k = 3 and T = 52, and vary the number of households by setting N to one of 10 discrete values from 500 to 50,000. The "true" values of ¯ are -10, 0, and 10, and the "true" is 0 1I. We place weakly informative priors on both ¯ and .
+In Figure 8, we plot the average time, across 100 replications, to compute the log posterior, the gradient, and the Hessian. As expected, each of these computations grows linearly in N . In Figure 9, we plot average times for the steps involved in sampling from an MVN distribution: adding a vector to columns of a dense matrix, computing a sparse Cholesky decomposition, multiplying a sparse triangular matrix by a dense matrix, sampling standard normal random variates, and solving a sparse triangular linear system. Again, we see that the time for all of these steps is linear in N .
+Table 2 summarizes the acceptance rates and scale factors when generating 50 samples from the posterior for different values of N . Although there is a weak trend of increasing acceptance rates with N , we cannot say with any certainty that acceptance rates will always be either larger or smaller for larger data sets. The acceptance rate could be influenced by using different scale factors on the Hessian for the MVN proposal density. However, we expect higher acceptance rates as the target posterior density approaches an MVN distribution asymptotically. Since none of the steps in the algorithm grows faster than linearly in N , we are confident in the scalability of the overall algorithm.
+5. Estimating Marginal Likelihoods
+Now we turn to another advantage of our method: the ability to generate accurate estimates of the marginal likelihood of the data with little additional computation. A number of researchers have proposed methods for approximating the marginal likelihood, y , from MCMC-generated samples (Gelfand and Dey 1994, Newton and Raftery 1994, Chib 1995, Raftery et al. 2007), but no method has achieved universal acceptance as being consistent, stable, and easy to compute. In fact, Lenk (2009) demonstrated that methods that depend solely on samples from the posterior density could suffer from a "pseudo-bias," and he proposed an importance-sampling method to correct for it. This pseudo-bias arises because the convex hull of MCMC samples defines only a subset of the posterior support, whereas y is defined as an integral of the
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+440
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+Figure 8 Average Computation Time for 100 Evaluations of the Log Posterior, Gradient, and Hessian
+
+
+
+
+
+Seconds Seconds
+
+0.10
+
+
+
+2
+
+
+
+ 
+
+0.05 0
+
+
+   
+
+0 10,000 20,000 30,000 40,000 50,000
+
+N
+
+Time  Gradient
+
+Logpost
+
+1
+
+
+
+
+
+
+
+
+
+0
+
+
+
+0 10,000 20,000 30,000 40,000 50,000 N
+
+Time  Hessian
+
+data likelihood over the prior distribution. Lenk (2009)
+
+demonstrated that his method dominates other popu-
+
+lar methods, although with substantial computational
+
+effort. Thus, the estimation of the marginal likelihood
+
+remains a difficult problem in MCMC-based Bayesian
+
+statistics.
+
+We estimate the marginal likelihood using quanti-
+
+ties that we already collected during the course of the
+
+estimation procedure. Recall that q u is the probabil-
+
+ity that, given a threshold value u, a proposal from
+
+g is accepted as a sample from
+
+y . Therefore,
+
+after substituting in Equation (8), we can express the
+
+expected marginal acceptance probability for any one
+
+posterior sample as
+
+=
+
+1
+qupu
+0
+
+y
+
+du = c2 c1 y
+
+1
+q2 u du
+0
+
+(18)
+
+Applying a change of variables so v = - log u and then rearranging terms,
+
+y
+
+c1 = - c2
+
+0
+
+q2 v exp -v dv
+
+(19)
+
+The values for c1 and c2 are immediately available from the algorithm. A reasonable estimator of is ^,
+
+Figure 9
+
+Computation Time, Averaged Over 100 Replications, for Adding a Vector to Matrix Columns (Add), a Sparse Cholesky Decomposition (Chol), Multiplying a Sparse Triangular Matrix by a Dense Matrix (Mult), Sampling Standard Normal Random Variates (Rnorm), and Solving a Sparse Triangular Linear System (Solve)
+
+Seconds
+
+2
+
+1
+
+l
+
+l
+
+l
+
+l
+
+l
+
+0
+
+ll l
+
+0
+
+10,000 20,000 30,000
+
+N
+
+l
+40,000
+
+Time
+
+l Add
+
+Chol
+
+Mult
+
+Rnorm
+
+l
+
+Solve
+
+50,000
+
+the inverse of the mean of the observed average num-
+
+ber of proposals per accepted sample. What remains
+
+is estimating the integral in Equation (19), for which
+
+we use the same proposal draws that we already col-
+
+lected for estimating q^v v . The empirical CDF of these draws is discrete, so we can partition the support of
+
+qv v at v1
+
+vM . Also, since q^v v is the proportion
+
+of proposal draws less than v, we have qv vi = i/M.
+
+Therefore,
+
+q2 v exp -v dv
+0
+
+i M
+
+vi+1
+
+2
+
+
+i=1 vi
+
+M exp -vi dv
+
+(20)
+
+=
+
+1 M2
+
+M
+i2
+i=1
+
+exp
+
+-vi
+
+- exp -vi+1
+
+(21)
+
+1M
+
+= M 2 i=1 2i - 1 exp -vi
+
+(22)
+
+Putting all of this together, we can estimate the marginal likelihood as
+
+y
+
+
+
+c1 M 2c2
+
+^
+
+M i=1
+
+2i - 1
+
+exp -vi
+
+(23)
+
+As a demonstration of the accuracy of this estimator, we use the same linear regression example that Lenk (2009) used.
+
+yit  N xi 2 i = 1
+
+n t=1
+
+T (24)
+
+ N 0 2V0
+
+2  IG r
+
+(25)
+
+For this model, y is an MVT density, which we can compute analytically. This allows us to compare the estimates of y with the "truth." To do this, we conducted a simulation study for simulated data sets of different numbers of observations n  200 2000 and numbers of covariates k  5 25 100 . For each n k pair, we simulated 25 data sets. For each data set,
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+441
+
+Table 2 Acceptance Rates for Scalability Test in §4.4
+
+N
+
+500
+
+1,000
+
+2,000
+
+5,000
+
+10,000
+
+15,000
+
+20,000
+
+Scale factor
+
+1 22
+
+1 16
+
+1 10
+
+1 08
+
+1 04
+
+1 03
+
+1 03
+
+Acc. rate (×10-5)
+
+21
+
+15
+
+26
+
+07
+
+29
+
+26
+
+36
+
+Note. For each condition, k = 3, so there are six population-level parameters and 3N heterogeneous parameters.
+
+30,000
+1 03 39
+
+40,000
+1 03 27
+
+50,000
+1 02 33
+
+each vector xi included an intercept and k i.i.d. samples from a standard normal density. Thus, there were
+
+k + 2 parameters, corresponding to the elements of ,
+
+plus . The true intercept term was 5, and the remain-
+
+ing true parameters were linearly spaced from -5
+
+to 5. In all cases, there were T = 25 observations per
+
+unit. Hyperpriors were set as r = 2, = 1, 0 as a zero vector, and V0 = 0 2 · Ik.
+For each data set, we collected 250 samples from
+
+the posterior density, with different numbers of pro-
+
+posal draws (M = 1 000 or 10,000) and different scale
+
+factors (s = 0 5, 0.6, 0.7, or 0.8) on the Hessian (-sH
+
+is the precision matrix of the MVN proposal density,
+
+and lower scale factors generate more diffuse propos-
+
+als). We excluded the s = 0 8, n = 200 case because the
+
+proposal density was not sufficiently diffuse to ensure
+
+that
+
+y was between 0 and 1 across the M pro-
+
+posal draws.
+
+Table 3 presents the true log marginal likelihood
+
+(MVT), along with estimates using our method, the
+
+importance sampling method in Lenk (2009), and
+
+the harmonic mean estimator (HME) (Newton and
+
+Raftery 1994). We also included the mean acceptance
+
+(acc) probabilities and the standard deviations of the
+
+various estimates across the simulated data sets. Our
+
+estimates for the log marginal likelihood are remark-
+
+ably close to the MVT densities and are robust when
+
+we use different scale factors. Accuracy appears to be
+
+better for larger data sets than smaller ones. Improv-
+
+ing the approximation of p u y by increasing the
+
+number of proposal draws offers negligible improve-
+
+ment. The performance of our method is compara-
+
+ble to that of Lenk's (2009) method, but is much
+
+better than that of the harmonic mean estimator. Our
+
+method is similar to Lenk's (2009) in that it computes
+
+the probability that a proposal draw falls within the
+
+support of the posterior density. However, the inputs
+
+to the estimator of the marginal likelihood are intrin-
+
+sically generated as the algorithm progresses. In con-
+
+trast, the Lenk (2009) estimator requires an additional
+
+importance sampling run after the MCMC draws are
+
+collected.
+
+6. Discussion of Practical Considerations and Limitations
+To those who have spent long work hours dealing with MCMC convergence and efficiency issues, the utility of an alternative algorithm is appealing.
+
+Ours allows for sampling from a posterior density
+
+in parallel, without having to worry about whether
+
+an MCMC estimation chain has converged. If het-
+
+erogeneous units (like households) are conditionally
+
+independent, then the sparsity of the Hessian of the
+
+log posterior lets us construct a sampling algorithm
+
+whose complexity grows only linearly in the number
+
+of units. This method makes Bayesian inference more
+
+attractive to practitioners who might otherwise be put
+
+off by the inefficiencies of MCMC.
+
+This is not to say that our method is guaranteed
+
+to generate perfect samples from the target posterior
+
+distribution. One area of potential concern is that the
+
+empirical distribution q^v v is only a discrete approximation to qv v . That discretization could introduce some error into the estimate of the posterior density.
+
+This error can be reduced by increasing M (the num-
+
+ber of proposal draws that we use to compute q^v v ), at the expense of costlier computation of q^v v and, possibly, lower acceptance rates. In our experience,
+
+and consistent with Figure 3, we have not found this
+
+to be a problem, but some applications for which this
+
+may be an issue might exist.
+
+Like many other methods that collect random
+
+samples from posterior distributions, its efficiency
+
+depends in part on a prudent selection of the pro-
+
+posal density g . For the examples in this paper, we
+
+use an MVN density that is centered at the posterior
+
+mode with a covariance matrix that is proportional to
+
+the inverse of the Hessian at the mode. One might
+
+then wonder if there is an optimal way to determine
+
+just how "scaled out" the proposal covariance needs
+
+to be. At this time, we think that manual search is
+
+the best alternative. If we start with a small M (say,
+
+100 draws) and find that
+
+y > 1 for any of the M
+
+proposals, we have learned that the proposal density
+
+is not valid, with little computational or real-time cost.
+
+We can then rescale the proposal until
+
+y < 1,
+
+and then gradually increase M until we get a good
+
+approximation to p u . This is no different, in prin-
+
+ciple, than the tuning step in a Metropolis­Hastings
+
+algorithm. However, our method has the advantage
+
+that we can make these adjustments before the pos-
+
+terior sampling phase begins. In contrast, with adap-
+
+tive MCMC methods, an improperly tuned sampler
+
+might not be apparent until the chain has run for a
+
+substantial period of time. Also, even if an acceptance
+
+rate appears to be low, we can still collect draws in
+
+parallel, so the "clock time" remains much less than
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+442
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+Table 3 Results of Simulation Study for Effectiveness of Estimator for Log Marginal Likelihood
+
+MVT
+
+Ours
+
+Lenk (2009)
+
+k
+
+n
+
+M
+
+Scale
+
+Mean
+
+SD
+
+Mean
+
+SD
+
+Mean
+
+SD
+
+5
+
+200
+
+5
+
+200
+
+5
+
+200
+
+5
+
+200
+
+5
+
+200
+
+5
+
+200
+
+5 2 000
+
+5 2 000
+
+5 2 000
+
+5 2 000
+
+5 2 000
+
+5 2 000
+
+5 2 000
+
+5 2 000
+
+25
+
+200
+
+25
+
+200
+
+25
+
+200
+
+25
+
+200
+
+25
+
+200
+
+25
+
+200
+
+25 2 000
+
+25 2 000
+
+25 2 000
+
+25 2 000
+
+25 2 000
+
+25 2 000
+
+25 2 000
+
+25 2 000
+
+100
+
+200
+
+100
+
+200
+
+100
+
+200
+
+100
+
+200
+
+100
+
+200
+
+100
+
+200
+
+100 2 000
+
+100 2 000
+
+100 2 000
+
+100 2 000
+
+100 2 000
+
+100 2 000
+
+100 2 000
+
+100 2 000
+
+1 000 1 000 1 000 10 000 10 000 10 000 1 000 1 000 1 000 1 000 10 000 10 000 10 000 10 000 1 000 1 000 1 000 10 000 10 000 10 000 1 000 1 000 1 000 1 000 10 000 10 000 10 000 10 000 1 000 1 000 1 000 10 000 10 000 10 000 1 000 1 000 1 000 1 000 10 000 10 000 10 000 10 000
+
+05
+
+-309
+
+66
+
+-309
+
+66
+
+-311
+
+68
+
+06
+
+-309
+
+66
+
+-309
+
+67
+
+-310
+
+69
+
+07
+
+-309
+
+66
+
+-309
+
+67
+
+-310
+
+65
+
+05
+
+-309
+
+66
+
+-309
+
+66
+
+-311
+
+67
+
+06
+
+-309
+
+66
+
+-309
+
+66
+
+-310
+
+75
+
+07
+
+-309
+
+66
+
+-309
+
+67
+
+-310
+
+70
+
+05
+
+-2 866
+
+46 2 -2 865
+
+46 3 -2 868
+
+46 2
+
+06
+
+-2 866
+
+46 2 -2 866
+
+46 2 -2 868
+
+45 7
+
+07
+
+-2 866
+
+46 2 -2 866
+
+46 3 -2 867
+
+45 9
+
+08
+
+-2 866
+
+46 2 -2 866
+
+46 2 -2 867
+
+46 3
+
+05
+
+-2 866
+
+46 2 -2 866
+
+46 4 -2 867
+
+46 7
+
+06
+
+-2 866
+
+46 2 -2 866
+
+46 2 -2 867
+
+45 8
+
+07
+
+-2 866
+
+46 2 -2 866
+
+46 4 -2 867
+
+46 0
+
+08
+
+-2 866
+
+46 2 -2 866
+
+46 2 -2 867
+
+46 5
+
+05
+
+-387
+
+81
+
+-385
+
+82
+
+-391
+
+76
+
+06
+
+-387
+
+81
+
+-386
+
+81
+
+-390
+
+95
+
+07
+
+-387
+
+81
+
+-386
+
+83
+
+-390
+
+80
+
+05
+
+-387
+
+81
+
+-385
+
+85
+
+-390
+
+82
+
+06
+
+-387
+
+81
+
+-385
+
+82
+
+-390
+
+89
+
+07
+
+-387
+
+81
+
+-386
+
+82
+
+-390
+
+87
+
+05
+
+-2 990
+
+28 7 -2 989
+
+28 8 -2 994
+
+28 3
+
+06
+
+-2 990
+
+28 7 -2 989
+
+28 7 -2 993
+
+28 4
+
+07
+
+-2 990
+
+28 7 -2 989
+
+28 9 -2 991
+
+30 0
+
+08
+
+-2 990
+
+28 7 -2 990
+
+28 7 -2 992
+
+29 6
+
+05
+
+-2 990
+
+28 7 -2 988
+
+29 2 -2 992
+
+28 5
+
+06
+
+-2 990
+
+28 7 -2 989
+
+29 1 -2 993
+
+29 4
+
+07
+
+-2 990
+
+28 7 -2 990
+
+29 0 -2 993
+
+28 9
+
+08
+
+-2 990
+
+28 7 -2 990
+
+28 6 -2 993
+
+28 2
+
+05
+
+-660
+
+67
+
+-661
+
+65
+
+-683
+
+88
+
+06
+
+-660
+
+67
+
+-660
+
+66
+
+-678
+
+85
+
+07
+
+-660
+
+67
+
+-659
+
+71
+
+-673
+
+78
+
+05
+
+-660
+
+67
+
+-659
+
+69
+
+-682
+
+91
+
+06
+
+-660
+
+67
+
+-660
+
+57
+
+-678
+
+88
+
+07
+
+-660
+
+67
+
+-658
+
+67
+
+-674
+
+73
+
+05
+
+-3 364
+
+24 4 -3 364
+
+24 8 -3 370
+
+27 5
+
+06
+
+-3 364
+
+24 4 -3 362
+
+24 6 -3 369
+
+24 3
+
+07
+
+-3 364
+
+24 4 -3 361
+
+23 9 -3 371
+
+25 6
+
+08
+
+-3 364
+
+24 4 -3 362
+
+23 9 -3 370
+
+26 0
+
+05
+
+-3 364
+
+24 4 -3 362
+
+24 0 -3 372
+
+25 3
+
+06
+
+-3 364
+
+24 4 -3 360
+
+24 9 -3 368
+
+25 3
+
+07
+
+-3 364
+
+24 4 -3 360
+
+24 6 -3 370
+
+25 5
+
+08
+
+-3 364
+
+24 4 -3 362
+
+24 5 -3 367
+
+24 3
+
+HME
+
+Mean
+
+SD
+
+-287
+
+71
+
+-287
+
+69
+
+-287
+
+63
+
+-287
+
+67
+
+-287
+
+68
+
+-287
+
+71
+
+-2 836
+
+46 2
+
+-2 836
+
+45 5
+
+-2 836
+
+45 9
+
+-2 835
+
+46 3
+
+-2 836
+
+46 9
+
+-2 836
+
+46 3
+
+-2 836
+
+46 3
+
+-2 835
+
+46 3
+
+-292
+
+85
+
+-292
+
+88
+
+-292
+
+88
+
+-292
+
+84
+
+-292
+
+88
+
+-292
+
+91
+
+-2 865
+
+28 8
+
+-2 864
+
+29 0
+
+-2 864
+
+29 5
+
+-2 864
+
+29 4
+
+-2 864
+
+28 9
+
+-2 864
+
+28 9
+
+-2 864
+
+28 9
+
+-2 865
+
+28 2
+
+-292
+
+92
+
+-286
+
+90
+
+-282
+
+80
+
+-288
+
+10 4
+
+-286
+
+89
+
+-282
+
+84
+
+-2 871
+
+27 1
+
+-2 868
+
+25 3
+
+-2 870
+
+25 4
+
+-2 868
+
+26 1
+
+-2 870
+
+25 2
+
+-2 867
+
+25 4
+
+-2 869
+
+25 5
+
+-2 867
+
+24 4
+
+Mean acc %
+22 1 40 5 57 1 24 0 40 9 55 2 22 1 37 8 49 6 64 6 25 3 36 3 51 4 72 0 28 81 16 2 17 62 20 0 27 46 15 4 43 1 08 37 17 1 43 3 03 03 04 01 01 01 03 06 11 32 01 01 04 30
+
+the time we spend trying to optimize selection of the proposal.
+There are many popular models, such as multinomial probit, for which the likelihood of the observed data is not available in closed form. When direct numerical approximations to these likelihoods (e.g., Monte Carlo integration) are not tractable, MCMC with data augmentation is a possible alternative. Recent advances in parallelization using graphical processing units might make numerical estimation of integrals more practical than it was even 10 years ago (Suchard et al. 2010). If so, then our method could be a viable, efficient alternative to data augmentation in these kinds of models. Multiple imputation of missing data could suffer from the same kinds of problems,
+
+since a latent parameter, introduced for the data augmentation step, is only weakly identified on its own. If the number of missing data points is small, then one could represent them as if they were parameters, but the implications of this require additional research.
+Another opportunity for further research involves the case of multimodal posteriors. Our method does require finding the global posterior mode, and all of the models discussed in this paper have unimodal posterior distributions. When the posterior is multimodal, one might instead use a mixture of normals as the proposal distribution. The idea is to not only find the global mode, but any local ones as well, and center each mixture component at each of those local modes. The algorithm itself will remain unchanged as
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+443
+
+long as the global posterior mode matches the global proposal mode.
+We recognize that finding all of the local modes could be a hard problem, and there is no guarantee that any optimization algorithm will find all local extrema in a reasonable amount of time. In practical terms, MCMC offers no such guarantees either. Even if the log posterior density is unimodal, one should take care that the mode-finding optimizer does not stop until it reaches the optimum. For R, trustOptim (Braun 2014) is one such package, in that its stopping rule depends on the norm of the gradient being sufficiently close to zero.
+There are a number of packages for the R statistical programming language that can help with implementation of our method. The bayesGDS package (Braun 2015a) includes functions to run the rejection sampling phase (lines 20­36 in Algorithm 1). This package also includes a function that estimates the log marginal likelihood from the output of the algorithm. If the proposal distribution is MVN, and either the covariance or precision matrix is sparse, then one can use the sparseMVN (Braun 2015c) package to sample from the MVN distribution by taking advantage of that sparsity. The sparseHessianFD (Braun 2015b) package estimates a sparse Hessian by taking finite differences of gradients of the function, as long as the user can supply the sparsity pattern (which should be the case under conditional independence). Finally, the trustOptim package (Braun 2014) is a nonlinear optimization package that uses a sparse Hessian to include curvature information in the algorithm.
+Supplemental Material Supplemental material to this paper is available at http://dx .doi.org/10.1287/mksc.2014.0901.
+Acknowledgments The authors acknowledge research assistance from Jonathan Smith and are grateful for helpful suggestions and comments from Eric Bradlow, Peter Fader, Fred Feinberg, John Liechty, Blake McShane, Steven Novick, John Peterson, Marc Suchard, Stephen Walker, and Daniel Zantedeschi.
+References
+Allenby GM, Bradlow ET, George EI, Liechty J, McCulloch RE (2014) Perspectives on Bayesian methods and big data. Customer Needs Solutions 1(3):169­175.
+Bates D, Eddelbuettel D (2013) Fast and elegant numerical linear algebra using the RcppEigen package. J. Statist. Software 52(5):1­24.
+Bell BM (2013) CppAD: A package for C++ algorithmic differentiation. Computational infrastructure for operations research. http://www.coin-or.org/CppAD.
+Boatwright P, McCulloch R, Rossi P (1999) Account-level modeling for trade promotion: An application of a constrained parameter hierarchical model. J. Amer. Statist. Assoc. 94(448):1063­1073.
+
+Braun M (2014) trustOptim: An R package for trust region optimization with sparse Hessians. J. Statist. Software 60(4):1­16.
+Braun M (2015a) bayesGDS: An R package for generalized direct sampling. R package version 0.6.0. http://cran.r-project.org/ web/packages/bayesGDS.
+Braun M (2015b) sparseHessianFD: An R package for estimating sparse Hessians. R package version 0.2.0. http://cran.r-project .org/web/packages/sparseHessianFD.
+Braun M (2015c) sparseMVN: An R package for MVN sampling with sparse covariance and precision matrices. R package version 0.2.0. http://cran.r-project.org/web/packages/ sparseMVN.
+Brooks S, Gelman A, Jones G, Meng XL, eds. (2010) Handbook of Markov Chain Monte Carlo (Chapman and Hall/CRC, Boca Raton, FL).
+Carlin BP, Louis TA (2000) Bayes and Empirical Bayes Methods for Data Analysis, 2nd ed. (Chapman and Hall/CRC, Boca Raton, FL).
+Chen MH, Shao QM, Ibrahim JG (2000) Monte Carlo Methods in Bayesian Computation (Springer-Verlag, New York).
+Chib S (1995) Marginal likelihood from the Gibbs output. J. Amer. Statist. Assoc. 90(432):1313­1321.
+Coleman TF, Moré JJ (1983) Estimation of sparse Jacobian matrices and graph coloring problems. SIAM J. Numerical Anal. 20(1):187­209.
+Coleman TF, Verma A (2000) ADMIT-1: Automatic differentiation and MATLAB interface toolbox. ACM Trans. Math. Software 26(1):150­175.
+Coleman TF, Garbow BS, Moré JJ (1985a) Algorithm 636: Fortran subroutines for estimating sparse Hessian matrices. ACM Trans. Math. Software 11(4):378.
+Coleman TF, Garbow BS, Moré JJ (1985b) Software for estimating sparse Hessian matrices. ACM Trans. Math. Software 11(4): 363­377.
+Curtis AR, Powell MJ, Reid JK (1974) On the estimation of sparse Jacobian matrices. J. Institute Math. Appl. 13:117­119.
+Davis TA (2006) Direct Methods for Sparse Linear Systems (SIAM, Philadelphia).
+Duane S, Kennedy AD, Pendleton BJ, Roweth D (1987) Hybrid Monte Carlo. Phys. Lett. B 195(2):216­222.
+Eddelbuettel D, François R (2011) Rcpp: Seamless R and C++ integration. J. Statist. Software 40(8):1­18.
+Gelfand AE, Dey DK (1994) Bayesian model choice: Asymptotics and exact calculations. J. Roy. Statist. Soc., Ser. B 56(3):501­514.
+Gelfand AE, Smith AF (1990) Sampling-based approaches to calculating marginal densities. J. Amer. Statist. Assoc. 85(410): 398­409.
+Gelman A, Carlin JB, Stern HS, Rubin DB (2003) Bayesian Data Analysis (Chapman and Hall/CRC, Boca Raton, FL).
+Girolami M, Calderhead B (2011) Riemann manifold Langevin and Hamiltonian Monte Carlo. J. Roy. Statist. Soc., Ser. B 73(2):1­37.
+Golub GH, Van Loan CF (1996) Matrix Computations, 3rd ed. (Johns Hopkins University Press, Baltimore).
+Griewank A, Walther A (2008) Evaluating Derivatives: Principles and Techniques of Algorithmic Differentiation, 2nd ed. (SIAM, Philadelphia).
+Hoffman MD, Gelman A (2014) The no-U -turn sampler: Adaptively setting path lengths in Hamiltonian Monte Carlo. J. Machine Learn. Res. 15:1593­1623.
+Lenk P (2009) Simulation pseudo-bias correction to the harmonic mean estimator of integrated likelihoods. J. Computational Graphical Statist. 18(4):941­960.
+Little JDC (1970) Models and managers: The concept of a decision calculus. Management Sci. 16(8):B466­B485.
+Manchanda P, Rossi PE, Chintagunta PK (2004) Response modeling with nonrandom marketing-mix variables. J. Marketing Res. 41(4):467­478.
+Neal RM (2011) MCMC using Hamiltonian dynamics. Brooks S, Gelman A, Jones G, Meng XL, eds. Handbook of Markov Chain Monte Carlo (Chapman and Hall/CRC Press, New York), 113­162.
+
+Braun and Damien: Scalable Rejection Sampling for Bayesian Hierarchical Models
+
+444
+
+Marketing Science 35(3), pp. 427­444, © 2016 INFORMS
+
+Newton MA, Raftery AE (1994) Approximate Bayesian inference with the weighted likelihood bootstrap. J. Roy. Statist. Soc., Ser. B 56(1):3­48.
+Nocedal J, Wright SJ (2006) Numerical Optimization, 2nd ed. (Springer-Verlag, New York).
+Powell MJD, Toint PL (1979) On the estimation of sparse Hessian matrices. SIAM J. Numerical Anal. 16(6):1060­1074.
+R Development Core Team (2014) R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna.
+Raftery AE, Newton MA, Satagopan JM, Krivitsky PN (2007) Estimating the integrated likelihood via posterior simulation using the harmonic mean identity. Bernardo JM, Bayarri MJ, Berger JO, Dawid AP, Heckerman D, Smith AF, eds. Bayesian Statistics Proceedings, Vol. 8 (Oxford University Press, Oxford, UK), 1­45.
+Rossi P (2012) bayesm: Bayesian inference for marketing/microeconometrics. R package version 2.2.5. http://cran.r-project .org/web/packages/bayesm.
+
+Rossi PE, Allenby GM (2003) Bayesian statistics and marketing. Marketing Sci. 22(3):304­328.
+Rossi PE, Allenby GM, McCulloch R (2005) Bayesian Statistics and Marketing (John Wiley & Sons, Chichester, UK).
+Stan Development Team (2014) Stan: A C++ library for probability and sampling, Version 2.2. http://www.mc-stan.org.
+Suchard MA, Wang Q, Chan C, Frelinger J, Cron A, West M (2010) Understanding GPU programming for statistical computation: Studies in massively parallel massive mixtures. J. Comput. Graphical Statist. 19(2):419­438.
+Tibbits MM, Haran M, Liechty JC (2010) Parallel multivariate slice sampling. Statist. Comput. 21(3):415­430.
+Walker SG, Laud PW, Zantedeschi D, Damien P (2011) Direct sampling. J. Comput. Graphical Statist. 20(3):692­713.
+Walther A, Griewank A (2012) Getting started with ADOL-C. Naumann U, Schenk O, eds. Combinatorial Scientific Computing (Chapman and Hall/CRC, Boca Raton, FL), 181­202.
+
+

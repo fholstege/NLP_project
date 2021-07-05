@@ -1,0 +1,1482 @@
+A Hierarchical Bayesian Methodology for Treating Heterogeneity in Structural Equation Models
+
+Asim Ansari · Kamel Jedidi · Sharan Jagpal
+Graduate School of Business, Columbia University, Uris Hall, 3022 Broadway, New York, New York 10027-6902
+maa48@columbia.edu · kj7@columbia.edu Faculty of Management, Rutgers University, Newark, NJ, jagpal007@gateway.net
+
+Abstract
+Structural equation models are widely used in marketing and psychometric literature to model relationships between unobserved constructs and manifest variables and to control for measurement error. Most applications of structural equation models assume that data come from a homogeneous population. This assumption may be unrealistic, as individuals are likely to be heterogeneous in their perceptions and evaluations of unobserved constructs. In addition, individuals may exhibit different measurement reliabilities. It is well-known in statistical literature that failure to account for unobserved sources of individual differences can result in misleading inferences and incorrect conclusions.
+We develop a hierarchical Bayesian framework for modeling general forms of heterogeneity in partially recursive structural equation models. Our framework elucidates the motivations for accommodating heterogeneity and illustrates theoretically the types of misleading inferences that can result when unobserved heterogeneity is ignored. We describe in detail the choices that researchers can make in incorporating different forms of measurement and structural heterogeneity. Current random-coefficient models in psychometric literature can accommodate heterogeneity solely in mean structures. We extend these models by allowing for heterogeneity both in mean and covariance structures. Specifically, in addition to heterogeneity in measurement intercepts and factor means, we account for heterogeneity in factor covariance structure, measurement error, and structural parameters. Models such as random-coefficient factor analysis, random-coefficient second-order factor analysis, and random-coefficient, partially recursive simultaneous equation models are special cases of our proposed framework. We also develop Markov Chain Monte Carlo (MCMC) procedures to perform Bayesian inference in partially recursive, random-coefficient structural equation models. These procedures provide individual-specific estimates of the factor scores, structural coefficients, and other model parameters.
+We illustrate our approach using two applications. The
+Marketing Science  2000 INFORMS Vol. 19, No. 4, Fall 2000, pp. 328­347
+
+first application illustrates our methods on synthetic data, whereas the second application uses consumer satisfaction data involving measurements on satisfaction, expectation disconfirmation, and performance variables obtained from a panel of subjects. Our results from the synthetic data application show that our Bayesian procedures perform well in recovering the true parameters. More importantly, we find that models that ignore heterogeneity can yield a severely distorted picture of the nature of associations among variables and can therefore generate misleading inferences. Specifically, we find that ignoring heterogeneity can result in inflated estimates of measurement reliability, wrong signs of factor covariances, and can yield attenuated model fit and standard errors. The results from the consumer satisfaction study show that individuals vary both in means and covariances and indicate that conventional psychometric methods are not appropriate for our data. In addition, we find that heterogeneous models outperform the standard structural equation model in predictive ability. Managerially, we show how one can use the individual-level factor scores and structural parameter estimates from the Bayesian approach to perform quadrant analysis and refine marketing policy (e.g., develop a one-on-one marketing policy).
+The framework introduced in this paper and the inference procedures we describe should be of interest to researchers in a wide range of disciplines in which measurement error and unobserved heterogeneity are problematic. In particular, our approach is suitable for studies in which panel data or multiple observations are available for a given set of respondents or objects (e.g., firms, organizations, markets). At a practical level, our procedures can be used by managers and other policymakers to customize marketing activities or policies.
+Future research should extend our procedures to deal with the general nonrecursive structural equation model and to handle binary and ordinal data situations. (Structural Equation Models; Heterogeneity; Hierarchical Bayes; MCMC Procedures; Metropolis-Hastings Algorithm; Gibbs Sampling; Customer Satisfaction)
+0732-2399/00/1904/0328/$05.00 1526-548X electronic ISSN
+
+A HIERARCHICAL BAYESIAN METHODOLOGY FOR TREATING HETEROGENEITY IN STRUCTURAL EQUATION MODELS
+
+1. Introduction
+Structural equation models are widely used in marketing and psychometric literature to model relationships among unobserved constructs and manifest variables, and to control for measurement error. Most applications of structural equation models assume that the data come from a homogeneous population, and hence implicitly ignore the influence of unobserved sources of heterogeneity. This approach is problematic: As the vast literature on heterogeneity in regression and discrete choice models clearly shows, a failure to adequately account for unobserved sources of heterogeneity is likely to result in misleading inferences.
+Many different sources of unobserved heterogeneity are possible in structural equation models. To illustrate these sources, consider a product positioning study that uses a structural equation approach to model the structure of consumer preferences for automobiles. Suppose theory suggests that the salient unobserved perceived benefits that affect preference are safety, reliability, and economy, and assume that a set of scales are available to operationalize these unobservable constructs. The measurement model that captures consumer perceptions of the unobserved benefits can be affected by many types of unobserved heterogeneity. For example, the mean perceptual scores (i.e., factor means for safety, reliability, and economy) may vary in the population. The correlational structure of benefits can also vary across consumers. Thus, some consumers may exhibit a halo effect; for example, safety and reliability may be positively correlated for one type of consumers (e.g., novices) but may be orthogonal for another type (e.g., experts). Finally, consumers may provide information with different degrees of accuracy (e.g., variability in measurement error for any given scale item could differ across individuals). The structural model may also be affected by unobserved heterogeneity. For example, consumers may differ in their importance weights (i.e., the structural parameters) for perceived benefits. As we show in this paper, when such general types of measurement and structural heterogeneity are present, analyzing the pooled data using a conventional structural equation model that ignores the sources of individual differences can result in misleading inferences and incorrect conclusions. See also Muthe´n (1989), Jedidi et al. (1997), and
+
+Jagpal (1999, Chapter 4) for more theoretical discussion and examples.
+In marketing literature, researchers have used either a finite-mixture (Kamakura and Russell 1989) or a random-coefficient approach (Allenby and Rossi 1999, Chintagunta et al. 1991) for modeling heterogeneity. Jedidi et al. (1997) recently developed a finite-mixture approach for response-based segmentation in structural equation models. In psychometric literature on structural equations models, heterogeneity is typically handled using random-coefficient procedures (also called multilevel models; see Muthe´n 1989, 1994; Longford and Muthe´n 1992) that allow variation only in mean structures (i.e., in factor means or measurement intercepts). In many marketing applications (as in the product positioning example above), the data may exhibit heterogeneity not only in mean structures but also in structural parameters and covariance structures. Existing random-coefficient models cannot be used in such contexts. In fact, the classical procedures that are used for estimating these models cannot be adapted to accommodate general forms of heterogeneity. A random-coefficient approach that allows the specification and estimation of heterogeneity in both mean and covariance structures (i.e., in structural parameters, measurement error variances, and factor covariances) is clearly needed. In this paper we describe such an approach.
+We develop a hierarchical Bayesian framework for modeling general forms of heterogeneity in partially recursive structural equation models. Our framework elucidates the motivations for accommodating heterogeneity and illustrates theoretically the types of misleading inferences that can result when unobserved heterogeneity is ignored. We describe in detail the choices that researchers can make in incorporating different forms of measurement and structural heterogeneity. We also develop Markov Chain Monte Carlo (MCMC) procedures to perform Bayesian inference in partially recursive, random-coefficient structural equation models.
+The hierarchical Bayesian approach is eminently suitable for studies in which panel data or multiple observations are available for a given set of respondents or objects (e.g., firms). This approach allows for appropriate pooling of information while taking into
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+329
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+account heterogeneity. We illustrate our approach using two applications. The first application illustrates our methods on synthetic data, whereas the second application uses consumer satisfaction data involving measurements on satisfaction, expectation disconfirmation, and performance variables obtained from a panel of subjects. We find that models that ignore heterogeneity can yield a severely distorted picture of the nature of associations among variables and can therefore generate misleading inferences. Specifically, we show that ignoring heterogeneity leads to inflated estimates of measurement reliability, can generate wrong signs of factor covariances, and can result in attenuated model fit and standard errors. In addition, we find that heterogeneous models outperform the standard structural equation model in predictive ability.
+The hierarchical Bayesian approach provides several theoretical and practical advantages over classical methods in treating heterogeneity in structural equation models. (See Allenby and Rossi 1999 for a lucid discussion of the advantages of the Bayesian methodology in the context of choice models.) From a practical viewpoint, Bayesian methods allow the flexible incorporation of prior information, whenever available, about model parameters. In addition, Bayesian methods allow the estimation of individual-specific estimates while accounting for the uncertainty in such estimates. Specifically, in our modeling context, the hierarchical Bayesian structural equation methodology provides individual-specific estimates of the factor scores, structural coefficients, and other model parameters. Thus, managers can use our approach to target selected individuals or groups in a highly focused manner using customized marketing strategies.
+From a statistical viewpoint, sampling-based Bayesian methods are appealing because they do not rely on asymptotic theory, a practice that is known to be misleading when the sample size is small (see Scheines et al. 1999). The Bayesian approach is well-suited for dealing with unbalanced designs, a common problem in marketing studies. As discussed later, by using MCMC procedures one can obtain simulation-based estimates of the parameters of a structural equation model. This circumvents the evaluation of complex multidimensional integrals that are required to implement maximum likelihood methods on panel data.
+
+The rest of the paper is organized as follows. Section 2 presents the hierarchical Bayesian approach for estimating structural equation models. Section 3 discusses the specification of the priors and briefly describes the MCMC method for inference. Section 4 describes the results from a synthetic data set. Section 5 illustrates our approach on customer satisfaction study, and § 6 provides a summary and discusses directions for future research.
+
+2. The Hierarchical Structural Equation Model
+A hierarchical structural equation model can be specified in two stages. In the first stage, structural and measurement models are specified for each individual. In the second stage, a population distribution is specified to model variation in individual-level parameters across all individuals.
+Let i  1 to I represent individuals and let j  1 to Ni index the observations belonging to the ith individual. Suppose each individual provides multivariate observations on q endogenous and p exogenous indicator (manifest) variables, yij and xij, respectively. The associations among these manifest variables can be described in terms of latent constructs using a structural equation model. Let the (m  1) vector nij and the (n  1) vector gij, respectively, contain the exogenous and endogenous latent variables. As is well-known, the complete model for individual i consists of a measurement model that describes the relationship between observed and latent variables and a structural model that relates the exogenous and endogenous latent variables. Specifically, the measurement model for individ
+ual i can be written as follows:
+
+xij  i,x  Ki,xnij  dij,
+
+yij  i,y  Ki,ygij  ij,
+
+(1)
+
+for j  1 to Ni, where i,x and i,y are p  1 and q  1 measurement intercept vectors, respectively, for the
+exogenous and endogenous indicator variables. The (p  m) matrix Ki,x and the (q  n) matrix Ki,y contain the factor loadings. The terms dij  N(0, Hi,x) and ij  N(0, Hi,y), respectively, represent the vectors of measurement errors. The p  p matrix Hi,x and the q  q matrix Hi,y are diagonal and contain the measurement
+
+330
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+error variances. The m latent factors in nij are assumed to be normally distributed N(i, Ui), where i is a (m  l) vector of factor means and Ui is a m  m covariance matrix of factor scores.
+The structural model that relates the latent con-
+structs nij and gij for each individual i is
+
+Bigij  c0i  Cinij  fij
+
+(2)
+
+where Bi is a (n  n) matrix of structural parameters specifying the links among the endogenous latent variables, c0i is a (n  1) vector of structural intercept terms, Ci is a (n  m) coefficient matrix denoting the effects of nij on gij, and fij is a n  1 vector of disturbances. The disturbances fij are assumed to be uncorrelated with nij and are distributed N(0, Wi), where Wi is a (n  n) covariance matrix that captures the residual variation in the structural model. In our model, Bi is restricted to being triangular.
+When each individual provides enough observations (i.e., when Ni is large for all i), separate models can be estimated for each individual. In most situations, however, only a limited number of observations are available for at least some individuals, thus precluding individual-level analyses. Moreover, in most substantive enquiries, researchers are primarily interested in summarizing the relationships among constructs at the population level while controlling for individual differences. A hierarchical approach is, therefore, eminently suitable in such situations, because this method appropriately pools information across all individuals to estimate the desired relationships. A hierarchical model accounts for observed and unobserved sources of heterogeneity by specifying a second-stage population distribution that describes how individual-specific parameters in Equations (1) and (2) vary in the population. Specifically, in the second stage of the hierarchical model, the individuallevel parameters ui  {i,x, i,y, Ki,x, Ki,y, i, Ui, Hi,x, Hi,y, Bi, c0i, Ci, Wi} are specified as random variables drawn from a general population distribution h(ui).
+It is important to note that a very general hierarchical model that allows all parameters to vary freely across individuals is not identifiable. We need to restrict certain parameters at both the individual and population levels for identification purposes. As in conventional structural equation models, we can also
+
+include additional restrictions based on prior theory to obtain parsimonious models. Figure 1 provides a graphical summary of the potential sources of heterogeneity in structural equation models. We discuss below how different types of heterogeneity can be specified in the measurement and structural models. We also discuss the types of restrictions that are needed for the identification of parameters.
+2.1. Measurement Heterogeneity Previous attempts to capture heterogeneity using random parameter formulations have focused solely on capturing individual differences in mean structures. In the psychometric literature on multilevel models (see Muthe´n 1989, 1994; Goldstein and McDonald 1988), researchers have either allowed measurement intercepts to vary across individuals or have assumed that factor means differ across individuals (see Figure 1). In many studies, researchers are primarily interested in modeling individual differences in underlying constructs. We follow this approach and allow factor means to differ across individuals. Specifically, we set i,x  x, and i,y  y for all i and assume that individual-level factor means i are distributed multivariate normal N(0, D) in the population. We assume a zero mean for this population distribution to fix the location of the grand mean and ensure identification. This is analogous to setting the factor means of the first group to
+Figure 1 Sources of Heterogeneity
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+331
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+zero in multigroup structural equation models (Jo¨ reskog 1971, So¨ rbom 1981).
+Allowing solely for differences in mean structures results in a model that assumes that individuals have identical covariance structures. As is clear from the product positioning example in §1, the assumption implicit in multilevel models that factor covariances and measurement error variances are invariant may not hold in empirical applications. For example, experts may provide more precise measures, i.e., they may have lower measurement error variances. Moreover, experts often possess more refined knowledge structures than novices; hence experts are able to discriminate finely among latent constructs. Thus, factor covariance matrices, Ui, may be nearly diagonal for experts; in contrast, factor covariance matrices for novices may exhibit high correlations because of halo effects.
+The literature on multigroup structural equation models (Jo¨ reskog 1971, So¨ rbom 1981) allows for differences in covariance structures across a small number of a priori (exogenously) specified groups. The multigroup model assumes a fixed-effects approach to heterogeneity and typically requires a large number of observations per group. Recent research on finite mixtures of structural equation models (Jedidi et. al. 1997) and confirmatory factor models (Yung 1997) has also considered differences in covariance structures across endogenously determined groups of individuals in which the number of groups is small. In this paper, we are interested in a random-effects formulation of heterogeneity. Consequently, we allow the factor covariances Ui and the measurement error variances Hi to vary across individuals by specifying continuous population distributions. Specifically, we assume that the precision matrices U i 1 come from a common Wishart population distribution W( q, R), where q is the degrees of freedom and R is a m  m positive definite scale matrix. To make the factor scores comparable across individuals (see Yung 1997) and to preserve the definition and interpretability of the constructs, we assume that the factor loading matrices are invariant across individuals, i.e., Ki,x  Kx and Ki,y  Ky for i  1 to I. Because the scales of the latent factors are arbitrary, we can proceed by setting the appropriate elements in the loading matrices to unity. As in
+
+other structural equation models, additional constraints must be imposed on a case-by-case basis to ensure identification. Finally, we allow the measurement error variances Hi,x, and Hiy, to vary across individuals. Specifically, we assume that each measurement error variance comes from an independent inverse gamma population distribution IG(h; a, b).
+To understand the implications of ignoring measurement heterogeneity, we need to examine the unconditional implied covariance matrix R of the structural equation model. Using the identity Var[w]  E[Var[w|.]]  Var[E[w|.]], we can show that the implied aggregate covariance matrix
+
+
+
+KyB1(C(E[Ui]  D)C  W)B1 Ky  E[Hiy]
+Kx(E[Ui]  D)CB1 Ky
+
+ KyB1C(E[Ui]  D)Kx
+Kx(E[Ui]  D)Kx  E[Hix]
+
+.
+
+(3)
+
+Typically, researchers are interested in understand-
+ing the within-individual factor covariance structure represented in E[Ui]. It is clear from the above equation that E[Ui] and D are not separately identifiable based on the aggregate covariance matrix. Hence, an aggregate model would generate UAgg  E[Ui]  D. Thus, a conventional structural equation analysis on data
+containing measurement heterogeneity can generate
+two types of misleading inferences about the factor structure. First, as the elements of UAgg are necessarily
+larger than the corresponding elements in the population matrix E[Ui], factor reliability estimates based on UAgg will be inflated (Lord and Novick 1968, Muthe´n
+1989). Secondly, the magnitude and the signs of the covariances in UAgg will be distorted. For example, if the elements E[Ui,kj] and Dkj are of the same sign, then the magnitude of UAkjgg will be amplified. If, on the other hand, E[Ui,kj] and Dkj are of the opposite sign, then UAkjgg may get attenuated or may have the wrong sign. Such a situation can clearly have unfortunate con-
+sequences for theory development. Other types of dis-
+tortions are also possible. We report these in the ap-
+plications to follow.
+
+2.2. Structural Heterogeneity The structural model is crucially important to decision makers, because it includes structural parameters that
+
+332
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+measure the impact of key antecedent variables on outcomes. In many research studies, this relationship is of primary interest, and researchers often focus on studying individual differences in structural parameters. Previous research on multilevel models has not allowed for such forms of heterogeneity. In contrast, we allow structural coefficients to vary across individuals. Specifically, let vector pi contain the terms in Bi, ci0, and Ci. Then pi is assumed to be distributed multivariate normal N(Zi, ), where Zi is a matrix that contains individual specific covariates (e.g., gender or age). Such a specification allows for both observed and unobserved sources of heterogeneity. Specifically, the inclusion of covariates through Zi allows a researcher to test for specific moderating effects. If individuallevel covariates are not available, then Zi reduces to an identity matrix. The parameters in  explain the individual differences in the structural parameters in terms of the individual-level covariates. The  matrix captures the covariation in the structural parameters resulting from unobserved individual-level variables and, for parsimony, is assumed to be invariant across individuals. Because of the scale indeterminacy of the endogenous factors, we impose E(ci0)  0 for identification. Although the population mean of the structural intercepts is fixed to zero, note that the individual-level intercepts are estimable subject to this constraint. This is analogous to fixing the intercept of one group to zero in a multigroup analysis (see Jo¨ reskog 1971, So¨ rbom 1981).
+Taking into account the individual-level models and the heterogeneity specifications, the complete twostage model can be written as: Stage 1:
+
+xij  x  Kxnij  dij
+
+yij  y  Kygij  ij
+
+Bigij  c0i  Cinij  fij
+
+dij  N(0, Hi,x)
+
+ij  N(0, Hi,y)
+
+nij  N(i, Ui)
+
+fij  N(0, W)
+
+(4)
+
+Stage 2:
+
+i  N(0, D)
+
+U i 1  W(q, R)
+
+p
+
+ Hix 
+
+IG(ak, bk)
+
+k1
+
+q
+
+ Hiy 
+
+IG(ay, by)
+
+k1
+
+pi  N(Zi, )
+
+(5)
+
+Recall that, following the tradition in multigroup structural equation models, we assume that E(i)  0 and E(ci0)  0 to fix the origin of the factors. As is standard in structural equation models, we also restrict the loading of one indicator variable per factor to one to fix the scale of the factors. Note, however, that the identification of the structural equation model in Equation (4) requires that both the measurement and structural models are identified. Bollen (1989, pp. 88­104 and pp. 238­254) discusses the identification issues in structural equation models and provides general rules for identification that can be followed on a case-by-case basis.
+The hierarchical structural equation model defined by Equations (4) and (5) subsumes a variety of models as special cases. These include hierarchical confirmatory (first-order and second-order) factor analysis, hierarchical multivariate regression, and hierarchical simultaneous equation models.
+
+3. Inference
+While the foregoing discussion on the different types of heterogeneity and its impact on inference is relevant for the general structural equation model, we now consider inference procedures for the case in which Bi is triangular but Wi is unrestricted. Let wij  {yij, xij} be the joint vector of manifest variables for an arbitrary observation j for individual i. According to the model represented in Equations (4) and (5), this observation comes from a multivariate normal distribution fi(wij; li, Ri) with conditional mean vector
+
+  li 
+
+y  KyBi1(ci0  Cii) x  Kxi
+
+(6)
+
+and conditional covariance matrix
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+333
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+i 
+KyB i 1 (CiUiCi  W)B i 1 Ky  Hiy
+KxUiCi B i 1 Ky
+
+ KyB i 1CiUiKx
+KxUiKx  Hix
+
+.
+
+(7)
+
+The likelihood for individual i is
+
+   Ni
+
+Li 
+
+(2p)(pq)/2
+
+1/2 i
+
+j1
+
+   exp
+
+
+
+1 2
+
+(wij
+
+
+
+li)
+
+1 i
+
+(wij
+
+
+
+li)
+
+(8)
+
+and the unconditional likelihood for a random sample of I individuals is given by the continuous mixture
+
+I
+
+    L 
+
+· · · Li(li(u), Ri(u))h(u)du (9)
+
+i1
+
+where h(u) is the continuous population distribution
+
+that captures the heterogeneity in the parameters for
+
+the individuals. The unconditional likelihood L given
+
+in Equation (9) is a function of the parameters u  {x, y, Kx, Ky, q, R, D, ax, bx, ay, by, , , W} and cannot be written in closed form, making maximum likelihood
+
+estimation extremely difficult. We therefore use a
+
+simulation-based Bayesian approach that uses MCMC
+
+methods to estimate the parameters.
+
+Bayesian inference requires the specification of pri-
+
+ors for the model parameters. Let K  (KOx
+
+O Ky
+
+),
+
+
+
+
+
+(xy ), Hi  (HOix
+
+O Hiy
+
+),
+
+a
+
+
+
+(xy ),
+
+and
+
+b
+
+
+
+(bbxy ).
+
+The
+
+un-
+
+known parameters for the model are then given by u
+
+ {, K, q, R, D, a, b, , , W}. Lee (1981) and Arminger
+
+and Muthe´n (1998) discuss different forms of prior dis-
+
+tributions for factor analysis and covariance structure
+
+models. Appendix 1 describes the prior distributions
+
+over the parameters in our model.
+
+Inference in the Bayesian framework is based on the
+
+joint posterior of all unknowns. Because this posterior
+
+density is very complex, we use simulation-based
+
+methods to obtain random draws from the posterior
+
+density (see Appendices 1 and 2 for details). Inference
+
+can then be based on the empirical distribution of the
+
+draws. The complexity of the posterior density pre-
+
+cludes the use of direct methods for obtaining these
+
+draws. We therefore use Markov Chain Monte Carlo
+
+(MCMC) methods to obtain these draws. Specifically,
+
+our MCMC procedure involves Gibbs sampling
+
+(Geman and Geman 1984, Gelfand and Smith 1990) and Metropolis-Hastings (Metropolis et al. 1953, Hastings 1970, Chib and Greenberg 1995) steps in tandem with data augmentation (Tanner and Wong 1987) to obtain the requisite draws. The MCMC methods require sampling parameter estimates from the full conditional distribution of each block of parameters. In the context of our model, we need to generate random draws for the blocks {, K, {nij}, {gij}, {i}, Ui, q, R, D, Hi, {ak}, {bk}, pi, , , W}. Each iteration of the MCMC procedure involves sequentially sampling from the full conditional distributions associated with each block of parameters. The MCMC procedure also provides samples of the factor scores fij  {nij, gij} and i, thus enabling posterior inference about these quantities. Appendix 2 describes the full conditional distributions and the simulation steps involved in each iteration of the MCMC procedure.
+
+4. Synthetic Data Application
+In this section we demonstrate our estimation procedures on artificial data. The aim is to illustrate the types of misleading inferences that are possible when models that ignore heterogeneity are applied to heterogeneous data. We generated a data set with 200 individuals and 30 observations per individual according to the model described in Equations (4) and (5). The data set includes four exogenous variables (x1, . . . , x4) and four endogenous variables (y1, . . . , y4). The association among the manifest variables is modeled in terms of two exogenous factors (n1 and n2) and two endogenous factors (g1 and g2). Figure 2 shows the model structure. We set
+
+  Kx  Ky 
+
+1 0
+
+0.8 0
+
+0 0.8
+
+0 1.0
+
+,
+
+(10)
+
+    E[Ui] 
+
+1 0.3
+
+0.3 1
+
+,
+
+D
+
+
+
+0.6 0.4
+
+0.4 0.6
+
+,
+
+(11)
+
+and E[Hi,x]  E[Hi,y]  diag(1.0) for the measurement model. For the structural model, we used a population distribution, pi  N(, ) for the individual level structural coefficients in
+
+g1  big2  ci1  ci3n1  f1,
+
+g2  ci2  ci4n2  f2,
+
+(12)
+
+334
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+Figure 2 Model Structure for Synthetic Data
+
+where   {E[bi]  0.5, E[ci1]  0, E[ci2]  0, E[ci3]  2, E[ci4]  2} and   diag(0.1). The structural errors f come from a normal distribution N(0, W)
+where
+
+  W 
+
+0.4 0.2
+
+0.2 0.4
+
+.
+
+(13)
+
+We used SAS and our MCMC procedures to estimate two models on the data. The first model (NH) is a nonhierarchical model that ignores the nature of the clustering of the observations and assumes that each individual has the same set of parameters. We estimated this model using Proc Calis in the SAS software. The second model is the true model represented by Equations (4) and (5). In estimating the second model we used priors that are similar to those outlined in Appendix 1. The estimates for the second model are based on 3,000 draws from the joint posterior distribution obtained after discarding 1,000 draws from the initial transient portion of the chain. Convergence was assessed using a variety of diagnostics detailed in the CODA package (Best et al. 1995) and by using time series plots to graphically assess the quality of the mixing of the chain.
+Table 1 reports the within-factor covariance matrix U for the first model and the population expectation of the Ui matrices, E(Ui) for the fully heterogenous
+
+model (FH). It also reports the across-individual covariance matrix D of the mean factor scores i for Model FH. In §2.1, we showed that ignoring heterogeneity in factor means and measurement error leads to an aggregate factor covariance matrix UAgg that confounds the within-individual U and betweenindividual D factor covariance matrices. We also showed that this confound can lead to sign reversal of the factor covariances under some conditions. A comparison of the factor covariance estimates from the nonhierarchical model (NH) with the sum of the estimated within- and between-factor covariance matrices from the fully heterogeneous model (FH) clearly confirms this theoretical relationship. For example, U11 from NH is 1.61. This value is approximately equal to the sum of U11  1.0 and D11  0.58 obtained from FH. Most importantly, we see that the covariance estimate U12 from NH has the wrong sign because of this confounding. Finally, note that the estimates from the correct model (FH) are close to the true values as expected. Similarly, the estimates of D obtained from Model (FH) are close to the true values.
+Table 2 reports the structural model parameters. The top portion of the table reports the structural coefficients for the nonhierarchical model and the population expectation of the individual-level coefficients for
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+335
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+Table 1 Factor Covariance Matrices
+
+Parameter
+
+True
+
+NH
+
+U11
+
+1.0
+
+1.61
+
+(1.51, 1.70)
+
+U12
+
+0.3
+
+0.13
+
+(0.07, 0.18)
+
+U22
+
+1.0
+
+1.60
+
+(1.51, 1.70)
+
+D11
+
+0.6
+
+--
+
+D12
+
+0.4
+
+--
+
+D22
+
+0.6
+
+--
+
+FH
+1.0 (0.92, 1.08)
+0.28 (0.33, 0.23)
+0.95 (0.87, 1.04)
+0.58 (0.46, 0.72)
+0.42 (0.32, 0.54)
+0.63 (0.51, 0.78)
+
+Table 2 Structural Model Parameters
+
+Population Regression Coefficients
+
+Parameter
+
+Actual
+
+NH
+
+FH
+
+b
+
+0.5
+
+0.55
+
+0.53
+
+(0.57, 0.52)
+
+(0.59, 0.47)
+
+c1
+
+0
+
+0
+
+0
+
+c2
+
+0
+
+0
+
+0
+
+c3
+
+2
+
+1.96
+
+2.02
+
+(2.02, 1.89)
+
+(2.11, 1.92)
+
+c4
+
+2
+
+1.99
+
+2.0
+
+(1.92, 2.05)
+
+(1.91, 2.09)
+
+Error Variances
+
+W11
+
+0.4
+
+1.62
+
+0.38
+
+(1.43, 1.81)
+
+(0.28, 0.5)
+
+W12
+
+0.2
+
+0.21
+
+0.21
+
+(0.10, 0.32)
+
+(0.13, 0.26)
+
+W22
+
+0.4
+
+0.62
+
+0.42
+
+(0.44, 0.78)
+
+(0.32, 0.53)
+
+the hierarchical model. Whereas the magnitudes of the coefficients are approximately the same for the two models, the confidence interval for b for Model NH does not cover the true value. A comparison of the error variances across the two models reveals that the
+
+aggregate model provides inflated estimates of the error variances. This result is not surprising because the aggregate model (NH) forces the error terms to absorb the unobserved heterogeneity in the parameters. Jedidi et al. (1997) found the same results, based on an extensive simulation. Specifically, they found that the aggregate model captures the population means of the structural parameters very well but confounds the variance due to heterogeneity with the error variance.
+Table 3 reports the estimated factor loadings and the measurement error variances for the two models. The table also shows the 95% posterior intervals associated with the parameters. It is clear from the table that both models yield almost identical estimates of the factor loadings. This is not surprising, as the data-generating mechanism assumed identical K for all individuals. Comparing the estimated measurement error variances H for the NH model and the population expectation of Hi for the FH model, we see that the magnitude of the estimates are similar. A closer look at the variance estimates associated with x1 and x2 reveals that the confidence intervals for the first model do not
+
+Table 3 Measurement Model Parameters
+
+Factor Loadings
+
+Measurement Error Variances
+
+Parameter True NH
+
+FH True NH
+
+FH E(Hi)
+
+y1
+
+1
+
+1
+
+1
+
+1
+
+1.0
+
+1.02
+
+(0.89, 1.10) (0.91, 1.12)
+
+y2
+
+0.8 0.79
+
+0.79
+
+1
+
+1.0
+
+1.0
+
+(0.78, 0.81) (0.78, 0.81)
+
+(0.93, 1.07) (0.92, 1.08)
+
+y3
+
+0.8 0.81
+
+0.80
+
+1
+
+1.02
+
+1.02
+
+(0.79, 0.82) (0.79, 0.82)
+
+(0.96, 1.08) (0.93, 1.1)
+
+y4
+
+1
+
+1
+
+1
+
+1
+
+0.97
+
+0.97
+
+(0.88, 1.05) (0.88, 1.07)
+
+x1
+
+1
+
+1
+
+1
+
+1
+
+0.94
+
+0.96
+
+(0.89, 0.99) (0.88, 1.03)
+
+x2
+
+0.8 0.80
+
+0.80
+
+1
+
+0.93
+
+0.95
+
+(0.76, 0.82) (0.77, 0.83)
+
+(0.89, 0.97) (0.89, 1.01)
+
+x3
+
+0.8 0.79
+
+0.80
+
+1
+
+1.05
+
+1.04
+
+(0.76, 0.82) (0.77, 0.83)
+
+(1.00, 1.09) (0.98, 1.12)
+
+x4
+
+1
+
+1
+
+1
+
+1
+
+1.03
+
+1.04
+
+(0.97, 1.08) (0.97, 1.12)
+
+Note: All loadings equal to 1 are fixed for identification.
+
+336
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+cover the true value of 1.0. The posterior intervals for the full model (FH) are wider, as they properly reflect the uncertainty arising from heterogeneity and cover the true value for all parameters.
+In summary, it is clear from the above example that ignoring heterogeneity can yield misleading inferences. In fact, we see that aggregate models may have wrong signs for covariance parameters, thus providing a distorted picture of the association structure of variables. In addition, aggregate models may report inflated estimates of factor variances, thus overstating the reliability of factors. Finally, models that pool data across individuals and thus ignore heterogeneity may underappreciate uncertainty in parameter estimates and provide a false sense of precision.
+5. A Customer Satisfaction Application
+Many researchers have analyzed the antecedents of customer satisfaction (see Oliver 1997 for a review). Typically, researchers have postulated that overall customer satisfaction with a product or service is affected by its perceived performance and by the extent to which a customer's expectations are met or disconfirmed (e.g., Oliver 1993 and Johnson et al. 1995).
+We used the hierarchical Bayesian approach to estimate a structural equation model of satisfaction, using panel data from a study on campus dining services conducted at a large northeastern university. The data were collected using the following procedure. The population of interest consisted of students who had purchased all-inclusive meal plans for the fall semester. At the beginning of the semester during registration week, subjects from the population were recruited, using sign-up sheets circulated by experimenters in booths set up in dining outlets and dormitories at the university. Sixty individuals signed up to attend an information session; of these, 55 agreed to participate in the panel. Each subject who participated in the study was paid $50 and was required to complete a daily diary for 39 consecutive days, using the following procedure. As soon as possible after dinner every day, subjects were required to record their degree of satisfaction with the dining service and their perception of the service provider's performance along
+
+key dimensions, including food, service, and the dining environment. Subjects also recorded their expectancy disconfirmation, i.e., the degree to which their expectations of performance were met or disconfirmed. All the observable variables (items) were measured using seven-point scales. We excluded two subjects from the analysis because of limited data for those individuals. Because of missing data for some subjects, our final data set contains 1,542 observations from the remaining 53 subjects. We have therefore, an average of 29 observations per subject.
+We specified a model in which customers' satisfaction (g) with the dining service depends on perception of the dining service's performance on food (n1), service (n2), and the dining environment (n3). In addition, satisfaction depends on disconfirmation (n4). Satisfaction for each service episode was measured using the following three items: very dissatisfied to very satisfied (y1); felt terrible to delighted (y2); liked very little to liked very much (y3). Food performance was measured using the following three observable indicators: unpalatable to palatable (x1), bad taste to good taste (x2), and not nutritious to nutritious (x3). Service performance was measured on four items: indifferent to responsive (x4), unfriendly to friendly (x5), inefficient to efficient (x6), and uncaring to caring (x7). Dining environment was measured using three items: unpleasant to pleasant (x8), dirty to clean (x9), and stressful to relaxing (x10). Finally, disconfirmation was measured using two items: much better than expected to much worse than expected (x11 and x12). Figure 3 presents a graphical summary of the structure of the satisfaction model. Note that to avoid clutter, Figure 3 does not show the covariances among the factors.
+As discussed in §2, the data can contain several forms of heterogeneity. For example, in the measurement model, the factor means i, the factor covariances, Ui, and the measurement error variances Hi can differ across individuals. In the structural model, the structural coefficients (i.e., importance weights of the antecedents of satisfaction) ci can differ across respondents.
+To understand the nature of heterogeneity in the customer satisfaction process, we specified and estimated six models. These model specifications are described in the table below.
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+337
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+Figure 3 The Structural Model for Satisfaction
+
+Parameter
+Model NH Model ML Model HS Model HSHC Model HSHV Model FH
+
+Model Specifications
+Description
+No Heterogeneity Hetetogeneous Factor Means  Multilevel Model ML  Heterogeneous Structural Coefficients HS  Heterogeneous Factor Covariances HS  Hetetogeneous Measurement Variances HSHV  Heterogeneous Factor Covariances
+
+The base model, Model NH, is the conventional structural equation model that assumes that the data do not contain any measurement or structural heterogeneity. The other models add increasing levels of heterogeneity. Model FH, for instance, allows heterogeneity in factor means, factor covariances, measurement error variances, and structural coefficients and, therefore, is the most general model.
+In estimating the models, we imposed appropriate restrictions on parameters to accommodate the indeterminacy in the scales and origins of the factors. For example, in all the models, for each factor we set the loading of one indicator variable to unity. In addition, following the usual practice in structural equation modeling, we set the mean of each factor to zero for
+
+Model NH. In contrast, for the other models, we assume that the factor means i vary across individuals with a grand mean E(i)  0. As discussed earlier, we also set the population mean of the structural intercept to zero, i.e., E(ci0)  0. Note that the measurement parameters in the models are identified because each factor has at least two indicators and the factors are allowed to covary (see Bollen 1989, pp. 238­251). The structural parameters are also identified, because the structural model is a multiple regression equation.
+We used the MCMC procedure described in § 3 and in Appendix 2 to estimate the models. The MCMC algorithm was coded using the C language. Furthermore, we estimated Model NH, using Proc Calis in SAS to compare our Bayesian estimates with those obtained from the maximum likelihood estimator (MLE). Appendix 1 reports the prior distributions we used. The parameter estimates for all models are based on 20,000 draws obtained after discarding the first 10,000 iterations. Convergence was assessed using a variety of diagnostics detailed in the CODA package (Best et al. 1995) and by using time series plots to graphically assess the quality of the mixing of the chain.
+5.1. Model Assessment In this section we compare model performance using marginal likelihood values computed from the simulation output. We also compute the out-of-sample performance on a holdout data set to assess whether accounting for unobserved heterogeneity leads to improvements in predictive ability.
+5.1.1. Model Comparison. We computed the logmarginal likelihood using the importance sampling method illustrated in Newton and Raftery (1994) to compare the six models. A model with a higher marginal likelihood is the preferred model. The differences in the marginal likelihood values from those of a base model (Model NH) can be used to assess model improvements. The differences in log-marginal likelihood for the models are (a) Model ML: 103.51, (b) Model HS: 146.6, (c) Model HSHC: 248.69, (d) Model HSHV: 1603.15, and (e) Model FH: 1741.2. These values clearly suggest that accounting for unobserved heterogeneity is important in this application. Among all the models that account for some form of heterogeneity,
+
+338
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+the full model (Model FH) shows the greatest improvement in log-marginal likelihood and, hence, is the most preferred model. As the models incorporate increasing levels of heterogeneity, the magnitudes of the improvements can be used to assess the importance of particular types of heterogeneity. A comparison across the different heterogeneity specifications reveals that adding covariance heterogeneity (Model HSHC and Model HSHV) results in considerable improvement in marginal likelihoods. Of the two forms of covariance heterogeneity that are possible within the measurement model, adding heterogeneity in measurement variances (Model HSHV) results in much greater model improvement for our data. Improvements arising from heterogeneous factor covariances (Model HSHC) are modest in comparison. These results clearly show that multilevel models do not fully capture the heterogeneity in our data. Specifically, multilevel models allow heterogeneity only in mean structures. Our model selection results, however, suggest that individuals vary both in means and covariances.
+5.1.2. Predictive Ability. To further assess the benefits of accounting for unobserved heterogeneity, we compared the predictive ability of the conventional structural equation model (Model NH) with that of the full model (Model FH). To compute the out-of-sample performance, we created a holdout data set consisting of 427 observations from our original calibration sample. This data set was created by randomly selecting approximately 8 observations from each of the 53 subjects in the sample. We estimated the NH and FH models, using the remaining 1,115 observations and used these estimates to compute measures of predictive performance from the holdout data set. We assessed how well the models perform in recovering the mean and covariance structure of the data set. Table 4 reports the Mean Absolute Deviations (MAD) in predicting the means of the exogenous and endogenous manifest variables. It is clear from the table that the model that incorporates heterogeneity outperforms the aggregate model in predicting the means across all of the manifest variables.
+As structural equation models capture the covariance structure of the variables, we also investigated
+
+Table 4 Factor Food Service
+Envir. Disc. Satis.
+
+Predictive Ability: MAD for Variable Means
+
+Indicator
+
+Model NH
+
+x1
+
+1.134
+
+x2
+
+1.207
+
+x3
+
+1.087
+
+x4
+
+0.959
+
+x5
+
+0.968
+
+x6
+
+1.033
+
+x7
+
+1.063
+
+x8
+
+1.096
+
+x9
+
+1.127
+
+x10
+
+1.121
+
+x11
+
+1.193
+
+x12
+
+1.317
+
+y1
+
+1.176
+
+y2
+
+1.147
+
+y3
+
+1.146
+
+Model FH
+0.955 1.095 0.986 0.912 0.910 0.953 0.952 1.018 0.964 0.968 1.114 1.248 1.097 1.044 1.036
+
+how well the two models did in recovering the withinindividual covariance matrix RW, the betweenindividual RB covariance matrix, and the total RT covariance matrix of the data. Table 5 reports two measures of fit (MAD and RMR) for these covariance matrices. The MAD represents the mean absolute deviation between the elements of the actual and the predicted matrices. The RMR (Bollen 1989) represents the square root of the mean squared deviation between the elements of actual and predicted matrices. In computing these measures, only the nonredundant elements of the covariance matrices are used. Table 5 shows that the hierarchical model clearly outperforms the simple model in recovering both the within- and betweencovariance matrices. It is also interesting to note that the two models do not differ in their ability to recover the total covariance matrix. This result is consistent with the insight that aggregate models do well in recovering the aggregate aspects of a data set but do
+
+Table 5 Predictive Ability: Covariance Matrices
+
+Model NH
+
+Model FH
+
+Measure
+RMR MAD
+
+RW
+0.379 0.361
+
+RB
+0.367 0.356
+
+RT
+0.138 0.107
+
+RW
+0.153 0.135
+
+RB
+0.135 0.118
+
+RT
+0.138 0.107
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+339
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+poorly in representing the association structure at the microlevel. This result is also consistent with the simulation results of Jedidi et al. (1997), who found that fit measures that are based on the aggregate covariance matrix (e.g., GFI and RMR) are not useful for detecting heterogeneity.
+In summary, the marginal likelihood values and the predictive comparisons unambiguously suggest the importance of accounting for both mean and covariance heterogeneity in the satisfaction data.
+5.2. Parameter Estimates We now examine the parameter estimates from our models. These estimates are based on the entire calibration sample consisting of 1,542 observations from 53 individuals. To avoid clutter, we report the estimates for only three models. These models include the simple nonhierarchical model (Model NH), the multilevel model (Model ML), and the full model (Model FH). For the NH model, we report both the Bayesian and the maximum likelihood (MLE) estimates that we obtained using SAS Proc Calis. We first discuss the results from the measurement model and then analyze the structural model estimates. Table 6 shows the factor loadings from the measurement model. The MLE factor loadings for Model NH, reported in Column 3, are virtually identical to those obtained from the Bayesian analysis of the model (see Column 4). The similarity of the estimates is expected, because we used diffuse priors and our sample size is large (1,542 observations). It is also clear from Table 6 that the loading estimates differ only slightly across all three models. This finding is not surprising, because we assumed common factor loadings for all individuals. Overall, all factor loadings are significant, suggesting that the indicators are reliable measures for the underlying factors.
+Table 7 reports the measurement error variances. First, as in Table 6, the maximum likelihood estimates (MLE) of Model NH are almost identical to those obtained from the Bayesian analysis. Second, the estimates from Model NH and Model ML are essentially similar, as both of these models assume identical measurement error variances across individuals. The population mean estimates from Model FH, however,
+
+Table 6 Measurement Model Results: Factor Loadings
+
+Factor Indicator Model NH (MLE) Model NH (Bayes) Model ML Model FH
+
+Food
+
+x1
+
+x2
+
+x3
+
+Service x4 x5
+x6
+x7
+
+Envir.
+
+x8
+
+x9
+
+x10
+
+Disc.
+
+x11
+
+x12
+
+Satis.
+
+y1
+
+y2
+
+y3
+
+1 1.106 (0.023) 0.717 (0.026)
+1 1.028 (0.025) 0.994 (0.028) 1.015 (0.027)
+1 1.220 (0.029) 1.016 (0.029)
+1 0.984 (0.024)
+1 1.038 (0.019) 1.080 (0.019)
+
+1 1.109 (0.023) 0.719 (0.026)
+1 1.028 (0.024) 0.996 (0.029) 1.016 (0.028)
+1 1.216 (0.030) 1.018 (0.029)
+1 0.984 (0.024)
+1 1.040 (0.019) 1.082 (0.019)
+
+1 1.067 (0.023) 0.723 (0.026)
+
+1 1.053 (0.018) 0.711 (0.024)
+
+1 1.031 (0.025) 1.009 (0.030) 1.027 (0.028)
+
+1 1.021 (0.019) 0.953 (0.025) 0.995 (0.023)
+
+1 1.234 (0.029) 1.027 (0.029)
+
+1 1.120 (0.027) 1.040 (0.027)
+
+1 0.987 (0.024)
+
+1 0.982 (0.023)
+
+1 1.042 (0.019) 1.083 (0.019)
+
+1 1.020 (0.016) 1.046 (0.016)
+
+Note: Posterior standard deviations are shown in parentheses.
+
+show considerable differences from the estimates obtained for Models NH and ML. In addition, it is important to note that the standard deviation of the population means are much higher for Model FH, as should be expected in a model that incorporates heterogeneity. Thus, conventional models can provide distortions in inference when applied to heterogeneous data. Finally, the last column of Table 7 reports the across-individual variation, Std(hi), in the measurement error variances.1 Clearly, there is considerable heterogeneity in the measurement error variances in our sample. That is, subjects respond to questions with different degrees of accuracy.
+1As hik  IG(a, bk), E(hik)  1/(bk(a  1)) and Std(hik)  1/(b2k(a  1)2 (a  2)).
+
+340
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+Table 7 Measurement Model Results: Measurement Error Variances
+
+Model FH
+
+Model NH Model NH Model E (hi) Std (hi) Factor Indicator (MLE) (Bayes) ML
+
+Food
+
+x1
+
+x2
+
+x3
+
+Service
+
+x4
+
+x5
+
+x6
+
+x7
+
+Envir.
+
+x8
+
+x9
+
+x10
+
+Disc.
+
+x11
+
+x12
+
+Satis.
+
+y1
+
+y2
+
+y3
+
+0.458 (0.021) 0.345 (0.027) 1.217 (0.046)
+0.469 (0.023) 0.428 (0.023) 0.697 (0.030) 0.609 (0.028)
+0.703 (0.032) 0.217 (0.028) 0.838 (0.036)
+0.568 (0.034) 0.561 (0.033)
+0.487 (0.021) 0.294 (0.016) 0.258 (0.015)
+
+0.460 (0.025) 0.348 (0.026) 1.213 (0.045)
+0.471 (0.025) 0.429 (0.024) 0.697 (0.032) 0.609 (0.030)
+0.696 (0.032) 0.235 (0.029) 0.836 (0.034)
+0.570 (0.036) 0.562 (0.034)
+0.486 (0.021) 0.294 (0.016) 0.256 (0.015)
+
+0.403 (0.026) 0.420 (0.029) 1.173 (0.047)
+
+0.332 (0.037) 0.385 (0.042) 1.186 (0.110)
+
+0.293 (0.047) 0.339 (0.054) 1.048 (0.166)
+
+0.478 (0.025) 0.437 (0.023) 0.681 (0.032) 0.597 (0.027)
+
+0.424 (0.044) 0.351 (0.039) 0.751 (0.074) 0.629 (0.063)
+
+0.374 (0.059) 0.310 (0.049) 0.663 (0.108) 0.556 (0.089)
+
+0.720 (0.032) 0.203 (0.027) 0.828 (0.037)
+
+0.727 (0.071) 0.232 (0.032) 0.882 (0.084)
+
+0.643 (0.106) 0.204 (0.037) 0.779 (0.123)
+
+0.594 (0.034) 0.584 (0.032)
+
+0.748 (0.08) 0.761 (0.078)
+
+0.662 (0.113) 0.672 (0.110)
+
+0.487 (0.021) 0.293 (0.015) 0.258 (0.015)
+
+0.629 (0.081) 0.267 (0.035) 0.275 (0.036)
+
+2.19 (3.7) 0.92 (1.315) 0.951 (1.568)
+
+Notes: Posterior standard deviations are shown in parentheses. E(hi) and Std(hi) denote the population and standard deviation of the measurement variances.
+
+Table 8 reports the estimated covariance matrix U of the exogenous factors, nij, for Models NH and ML and the population expectation of the Ui matrices, E(Ui), for Model FH. For Models ML and FH, the table also reports the covariance matrix D of mean factor scores i across individuals. As in the previous tables, the MLE estimates are very similar to those obtained from
+
+the Bayesian analysis of Model NH. Recall that the multilevel model (Model ML) only captures heterogeneity in the factor means, i. As we saw in the previous synthetic data application, ignoring heterogeneity in means results in a confounding of the withinand between-covariance matrices of the factors, i.e., UModelNH  UModelML  DModelML. The results for Model NH and Model ML confirm this theoretical relationship. For example, the first row of Table 8 reveals that UFood-Food for Model NH is 1.569. This value is approximately equal to the sum of the estimates UFood-Food  1.165 and DFood-Food  0.426 obtained from Model ML. Thus, if the factor means are heterogeneous (Model ML), the results from a conventional model that ignores heterogeneity will always underestimate the factor variances and therefore inflate the measurement reliability.
+Recall that Model FH allows for heterogeneous Ui matrices across individuals by assuming that U i 1  W(q, R). Column 5 of Table 8 reports the population means of the Ui s. The last column of the table reports the estimated D, which captures the heterogeneity in mean factor scores (i) across individuals. When Model NH is used to analyze data originating from a process that involves general forms of measurement and structural heterogeneity (e.g., as in Model FH), the estimation bias manifests itself in a complex manner across different sets of parameters. The results show that the parameter estimates are indeed different across the three models.
+Focusing on the estimates for U for Model FH, we see that all the exogenous factors are positively correlated. The estimates of D show that the mean factor scores are also positively correlated across individuals. In addition, the large magnitudes of the diagonal elements of D show that there is considerable heterogeneity in factor means across individuals.
+Table 9 reports the regression coefficients from the structural model. In interpreting the table, recall that Model FH captures heterogeneity in the impact of the antecedent constructs on satisfaction by assuming that the individual-specific coefficients come from a multivariate normal population distribution N(, ). The population mean, , for the structural coefficients and the standard deviation of the individual specific coefficients kk are reported in Columns 5 and 6, respec-
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+341
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+Table 8 Estimated Covariance Structure of Antecedent Factors
+
+U
+
+D
+
+Parameter
+
+Model NH Model NH Model Model Model Model (MLE) (Bayes) ML FH ML FH
+
+Food-Food Food-Service Food-Envir. Food-Disc. Service-Service Service-Envir. Service-Disc. Envir.-Envir. Envir.-Disc. Disc.-Disc.
+
+1.569 (0.074)
+0.617 (0.043)
+0.764 (0.048)
+1.232 (0.061)
+1.170 (0.059)
+0.691 (0.042)
+0.602 (0.046)
+1.297 (0.070)
+0.704 (0.050)
+1.801 (0.087)
+
+1.562 (0.074)
+0.618 (0.043)
+0.765 (0.047)
+1.230 (0.061)
+1.170 (0.060)
+0.694 (0.044)
+0.603 (0.046)
+1.297 (0.070)
+0.707 (0.050)
+1.799 (0.087)
+
+1.165 1.388 0.426 0.433 (0.055) (0.155) (0.093) (0.095)
+0.399 0.416 0.216 0.224 (0.032) (0.083) (0.063) (0.067)
+0.414 0.457 0.331 0.343 (0.032) (0.079) (0.080) (0.085)
+0.997 1.296 0.229 0.230 (0.050) (0.159) (0.062) (0.063)
+0.881 1.131 0.285 0.305 (0.046) (0.131) (0.064) (0.070)
+0.409 0.417 0.266 0.289 (0.029) (0.073) (0.066) (0.072)
+0.428 0.457 0.161 0.173 (0.037) (0.099) (0.049) (0.051)
+0.852 0.963 0.426 0.453 (0.046) (0.113) (0.093) (0.100)
+0.462 0.596 0.218 0.234 (0.038) (0.101) (0.059) (0.063)
+1.534 2.143 0.231 0.222 (0.079) (0.252) (0.056) (0.054)
+
+Notes: Posterior standard deviations are in parentheses. U  Unduplicated elements in covariance matrix of exogenous factors. D  Unduplicated elements in covariance matrix of mean factor scores for exogenous factors.
+
+tively, of the table. The mean estimates for Model FH show that satisfaction is significantly affected by perceived performance on food, service, and the environment. In addition, the positive coefficient for disconfirmation confirms the previous findings in the literature that better-than-expected performance increases satisfaction. The magnitudes of the acrossindividual standard deviations (see the last column), are large and confirm that the importance weights of the antecedent dimensions on satisfaction vary significantly across subjects.
+The differences in the magnitudes of the coefficients across the models show that ignoring heterogeneity can yield misleading inferences about the structural parameters. Furthermore, it appears that Model NH
+
+Table 9 Structural Model: Regression Coefficients
+
+Exogenous Model NH Model NH
+
+Factor
+
+(MLE)
+
+(Bayes)
+
+Model ML
+
+Model FH
+
+
+
+kk
+
+Food Service Envir. Disc.
+W
+
+0.311 (0.027) 0.108 (0.022) 0.058 (0.022) 0.536 (0.027)
+0.285 (0.019)
+
+0.311 (0.028) 0.108 (0.023) 0.057 (0.023) 0.536 (0.027)
+0.285 (0.019)
+
+0.258 (0.028) 0.110 (0.022) 0.053 (0.021) 0.588 (0.028)
+0.266 (0.019)
+
+0.366 (0.052) 0.079 (0.039) 0.094 (0.041) 0.503 (0.048)
+0.168 (0.015)
+
+0.236 (0.031) 0.260 (0.040) 0.206 (0.028) 0.246 (0.036)
+
+Notes: Posterior standard deviations are shown in parentheses.  denotes the population mean of the structural coefficients. kk denotes the population standard deviation of the structural coefficients.
+
+and Model ML seriously overstate statistical significance, because they understate the posterior standard deviations of all structural parameter estimates. In addition, the last row of Table 9 shows that by failing to allow for structural heterogeneity, Models NH and ML understate the goodness-of-fit of the structural model. This result is not surprising, because the unaccounted heterogeneity is absorbed by the structural error term.
+To illustrate how the model can be used for managerial purposes, we performed a "quadrant analysis" (see Figure 4). For each antecedent of satisfaction, we plotted for each individual the mean factor scores (which are automatically produced by the Bayesian approach) and structural parameter estimates; in addition, we partitioned the appropriate space into four quadrants, based on the corresponding mean factor scores and mean importance weights in the sample. (Recall that the grand mean for each antecedent factor was set to zero.) Thus, in Figure 4, individuals corresponding to points in the upper-right quadrant have above-average scores on the food factor; in addition, for these individuals, food has an above-average effect on overall satisfaction.
+Using this partitioning into quadrants, managers selectively target consumers and develop marketing pol-
+
+342
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+Figure 4 Quadrant Analysis: Perceived Performance (Factor Scores) vs. Importance
+
+icies, including one-on-one marketing. Managers can target consumers based on both the importance weights of key dimensions and the levels of those dimensions (factor scores). For example, in Figure 4 consider the set of points in the upper-left quadrant for the panel associated with food. These points correspond to those consumers for whom food is important and, in addition, the food performance of the dining facility is below the average for the population. Consider Subject 9. This subject has below-average importance weights for food and service but has aboveaverage importance weights for environment and
+
+disconfirmation. Moreover, this customer has a belowaverage factor score on all factors. These results clearly show that Subject 9 is relatively unsatisfied with all components of the service. Depending on costs, the optimal policy for the dining facility for Subject 9 may be to improve his or her perception of environment. An alternative strategy that may be effective for the dining facility is to manage this customer's expectations to reduce the likelihood of these expectations being disconfirmed.
+It is important to note that managers need to exercise caution in using individual-level point estimates for
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+343
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+targeting. The extent of uncertainty associated with an individual's estimates depends intricately on the number of observations available from that individual and also on the extent of shrinkage induced by the choice of priors. In fact, Bayesian methods allow a proper assessment of uncertainty. For example, the figure shows the 95% confidence ellipsoids associated with Individual 9. The figure shows that there is considerable uncertainty about the individual-level parameters. This is not surprising, as a highly parametrized model is being fitted to relatively few observations from a person. The confidence ellipsoids also show that the uncertainty is higher for the importance weights when compared to the uncertainty in the perceptual scores. This is possible because the importance weights link two sets of latent variables (i.e., factor scores) and are therefore farther removed from the observed data. Such assessments need to be used for sensitivity analysis in decision making.
+6. Summary and Conclusions
+This paper develops and tests a hierarchical Bayesian framework for handling general forms of unobserved heterogeneity in structural equation models. Our methodology is appropriate when the heterogeneity in the population can be measured on a continuum and multiple observations are available for each individual. An important feature of our method is that it automatically provides individual-specific estimates of model parameters and factor scores.
+We tested the Bayesian methodology, using both synthetic data and data from a satisfaction study. The results from the synthetic data application show that the nonheterogeneous (aggregate) model confounds random variability (i.e., measurement and structural errors) with variability because of heterogeneity. In the measurement model, this confounding led to inflated indicator reliabilities and resulted in sign reversal of the factor covariances. In the structural model, the confounding led to lower model fit. In addition, the nonheterogeneous model understated the standard errors of the measurement and structural parameter estimates.
+The results from the satisfaction study show that the structural parameters vary significantly in the population (i.e., it is incorrect to analyze the pooled data set
+
+using a conventional structural equation model). As in the case of the synthetic data example, the estimates obtained from a conventional structural equation model (i.e., a model that does not allow for unobservable heterogeneity) were misleading, even though the model was comparable to the other models on prediction of aggregate quantities such as the total covariance matrix RT. In particular, the nonhierarchical model understated the goodness-of-fit for the structural equation and provided biased estimates of the structural parameters. Perhaps most importantly, the nonhierarchical model seriously understated the standard errors of the structural parameters; that is, models that ignore heterogeneity overstate statistical significance. Finally, we showed that the traditional psychometric methods (e.g., multilevel models) do not fully capture the heterogeneity in our data. Thus, accounting for heterogeneity in both mean and covariance structures is important for obtaining proper inferences.
+From a managerial viewpoint, we showed how one can use the individual-level factor scores and structural parameter estimates from the Bayesian approach to perform quadrant analysis and refine marketing policy (e.g., develop a one-on-one marketing policy). From a substantive viewpoint, our Bayesian procedure should be applied to a broad range of marketing problems in which the data contain unobservable heterogeneity and structural equation modeling is appropriate (e.g., instances involving measurement error and latent constructs). From a methodological viewpoint, we designed our MCMC procedures to deal with the partially recursive structural model and assumed interval-scaled data. Future research should extend our procedures to deal with the general nonrecursive structural equation model and to accommodate ordinal data (Rossi et al. 1999) and binary data situations (Ansari and Jedidi 2000).2
+Appendix 1: Prior Distributions
+In this paper, we specify the prior distribution over u as a product of independent priors. We use proper but diffuse priors over all model parameters. The priors for the measurement intercepts  are
+2Please address all correspondence to Asim Ansari, 517 Uris Hall, Columbia University, 3022 Broadway, NY, NY 10027. The authors thank Laurette Dube for kindly providing the data for the empirical study and Don Lehmann for his constructive comments.
+
+344
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+assumed to be multivariate normal N(j, A). The covariance matrix A can be specified to be diagonal with the elements (variances) set to large values to represent vague knowledge. The exact location of this distribution is no longer critical once, a large variance has been assumed; therefore, without a loss of generality j can be set to zero. For the application we used N(0, 100I), where I is an identity matrix with appropriate dimensionality.
+The combined factor loading matrix K has a patterned structure owing to the identifiability restrictions that require setting some of the elements of K to zero or to one. We therefore specified independent multivariate normal priors over the free elements within each row of the matrix. We have for row k a prior N(gk, Hk). The covariance matrix Hk is specified to be diagonal with large variances to ensure a diffuse prior. Thus, the prior over the loading matrix is the product of the independent priors associated with the rows of K. In the application, we specified the prior distribution for each row to be N(0, 100I ).
+The m  m matrix R1 associated with the Wishart population distribution, W(q, R), is assumed to come from conjugate Wishart prior W(qR, (qRS)1). Smaller values of qR correspond to more vague prior distributions. For the application, we used a prior of W(5, 5I). We assumed a univariate truncated normal N(0, sq) prior over log(q). For the population Wishart distribution W(q, R) to be proper, the truncation must be such that q is greater than p. The prior variance, sq, can be set to a large value to ensure a diffuse prior. For the application we set sq  100. Alternatively, a truncated gamma prior can be used, and its parameters can be chosen appropriately to ensure minimal influence.
+The precision matrix D1 associated with the population distribution i  N(0, D) is a p  p positive definite matrix. In keeping with standard Bayesian analysis of linear models, we assumed a Wishart prior W(d, (dX)1), where X1 can be considered the expected prior precision of the is. Smaller d values correspond to vaguer prior distributions. For the application we set d  5 and X  I to ensure a proper prior.
+There are r  (p  q) different population distributions IG(ak, bk), k  1 to r, for the measurement error variances contained in Hi. We therefore need to specify priors over the set of unknowns {{ak}, {bk}}. We chose independent conjugate inverse gamma priors, bk  IG(gk, hk), for k  1 to r, to quantify prior uncertainty about the scale parameters. In the application we assumed ak  a and gk  2 and bk  2 for all k. Finally, we assumed independent univariate normal N(0, sk) priors over log(ak) for k  1 to r. The prior variance, sk, must be set to a large value to ensure a diffuse prior. In the application we set sk  100.
+The prior for the vector  is specified to be multivariate normal N(c, C). The covariance matrix C can be assumed to be diagonal and its entries chosen to represent vague knowledge. The exact location vector c is no longer critical once a large variance has been assumed; hence, without loss of generality we set c to zero. In the application we therefore set c  0 and C  100I.
+We assumed a Wishart prior W(qt, (qtRt)1) over the precision matrix 1 associated with the structural parameters pi. Smaller qt values correspond to vaguer prior distributions. We therefore set qt
+
+ 5 and Rt  0.1I. Finally, we assumed a Wishart prior W(qw, (qwRw)1) over the precision matrix W1 of the structural model. If the structural model consists of a single equation, then an inverse gamma prior over the single structural error variance parameter can be assumed instead. In the application we chose IG(3, 1000) for the prior over the univariate w.
+
+Appendix 2: Full Conditional Distributions The (m  1)th iteration of the MCMC algorithm requires us to generate random draws from the following full conditional distributions:
+(a) The measurement intercepts  are generated from the multivariate normal full conditional distribution given by
+
+p(|K, { fij}, {Hi}, {wij})  N(^ , V)
+
+(A.1)
+
+where V  1  A1  iI1 NiHi1 and ^  V [A1 j  Ii1 H i 1 Nji 1 (wij  Kfij)].
+(b) The loading matrix K is a patterned matrix containing both
+fixed and free elements. Of the fixed elements, some are fixed to zero,
+whereas others are fixed at one to impose identifiability constraints.
+The full conditional distribution for the free elements in a row of the matrix K is multivariate normal. Given the choice of the prior dis-
+tributions, the full conditionals pertaining to the different rows are
+independent. Therefore, the rows can be handled sequentially. Let kk be the vector of free elements in row k. The prior for kk is given by p(kk)  N(gk, Hk). Let ¯fijk be the vector of factor scores corresponding to the elements in row k of K that are set to one and let fijk contain the remaining factor scores from fij. Form the adjusted variable w~ ijk  wijk  i ~fijk  k, where i is a vector of ones. Given the prior, the vector kk can be sampled from the full conditional distribution given by
+
+p(kk|{w~ ijk}, { fijk}, hi,k)
+
+     I Ni
+
+ N Dk
+
+h i,k1 fijk w~ ijk  Hk1 gk , Dk
+
+i1 j1
+
+(A.2)
+
+where D k 1  iI1 jni 1 hi,k1 fijk f   ijk  Hk1.
+(c) The full conditional distribution for the factor scores nij is a
+multivariate normal distribution. The mean and variance of this dis-
+tribution can be obtained by considering the prior nij  N(i, Ui) and
+the two data sources for nij. The first "data" we consider are gij. Consider the structural equation Model, Bigij  ci0  Cinij  fij. Define g~ij  Bigij  ci0. An intermediate posterior distribution for nij can be written as N(n~ 1,ij, V1,g,i), where V1,g1,i  Ui1  Ci W1Ci and n~1,ij  V1,g,i[Ui1i  CiW1g~ij]. This intermediate posterior
+acts as a prior for the other data source xij. Taking into account the measurement equation, xij  x  Kxnij  dij, the full conditional for nij can be written as N(n~ij, Vg,i), where V g,i1  V 1,g1,i  Kx H ix 1Kx and n~ ij  Vg,i[V1,g1,i n~ ij  Kx H i,x1(xij  x)].
+(d) The full conditional distribution for the individual-level factor
+means i is a multivariate normal distribution that can be written as
+
+p(i|{nij}, Ui, D)  N(^i, Vi), where V i 1  D1  NiUi1 and ^ i  ViUi1 jNi 1nij.
+
+(A.3)
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+345
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+(e) The full conditional distribution for the precision matrix U i 1 of the individual-level factor scores is Wishart and is given by
+
+p(U i 1|{nij}, {i})  W(qpos, Rpos)
+
+(A.4)
+
+where qpos  q  Ni and Rpos  [Nji 1 (nij  i)(nij  i)  R1]1. (f) The full conditional for the precision matrix D1 of the factor
+means is a Wishart distribution. Given the prior W(d, (dX)1), the
+full conditional can be written as
+
+    I
+
+1
+
+p(D1|{i})  W d  I,
+
+ii  dX .
+
+i1
+
+(A.5)
+
+(g) The full conditional distributions for the diagonal elements of the measurement error variances Hi for each individual, i.e., hi,k, k  1 to r, are independent inverse gamma distributions. These distributions follow from standard Bayesian theory and can be written as
+
+p(hi,k|kk, k, { fij}) 
+
+Ni
+
+1
+
+    IG
+
+Ni 2
+
+
+
+ak,
+
+ (wijk  k  kk fij)2
+
+j1
+2
+
+ bk1
+
+(A.6)
+
+where kk is a vector containing the elements of row k of K. (h) The full conditional for the hyperparameter bk of the inverse
+gamma population distribution over the kth measurement error variance, hi,k, is also an inverse gamma distribution. Given the conjugate inverse gamma prior, IG(gk, hk), the full conditional can be written as
+
+     I
+
+1
+
+p(bk|{hi,k}, ak)  IG Iak  gk, h k 1 
+
+h i,k1
+
+(A.7)
+
+i1
+
+Parameter draws can be sequentially made from the full conditional distributions of each bk, k  1 to r.
+(i) The full conditional for the hyperparameter lak  log(ak) of the inverse gamma population distribution for the kth measurement error variance, hi,k, cannot be written in closed form. The likelihood of the "data" can be written as
+
+ L({hi,k}|lak,
+
+bk)
+
+
+
+I i1
+
+(hi,k1)exp(lak)1 exp(bk1 C(exp(lak))bekxp(lak)
+
+hi,k1)
+
+(A.8)
+
+The prior density of lak is univariate normal p(lak)  N(0, sk). The full conditional is proportional to the product of the likelihood and
+the prior. We use a random-walk Metropolis-Hastings step to generate random draws of lak. To generate a candidate lack, we use a univariate normal proposal density, N(la(km), ta), that is centered on the old value of la(km) from iteration m. The tuning constant ta in the proposal density is chosen to allow rapid mixing and to avoid ex-
+cessively frequent rejections of the candidates. The generated candidate lack is accepted with the following acceptance probability
+
+  min
+
+L(lakc|{hi,k}, L(la(km)|{hi,k},
+
+bk)p(lakc) bk)p(lak(m))
+
+,
+
+1
+
+(A.9)
+
+If the candidate is accepted, then la(km1)  lakc, otherwise, lak(m1) 
+
+la(km). Parameter draws can be sequentially made for each lak, k  1 to r.
+( j ) The full conditional for the factor scores gij is a multivariate normal distribution. Consider the reduced form for the structural model gij  B i 1 ( ci0  Cinij  fij). Let X  B i 1 WB i 1. Then the full conditional is given by N(g~ij, Vg), where V g 1  X1  KyH iy 1Ky and g~ ij  Vg[X1(Bi1ci0  Bi1Cinij)  KyHiy 1(yi  y)].
+(k) The full conditional for the structural parameters pi  {Bi, ci0, Ci} associated with individual i is a multivariate normal distribution. For a recursive system of simultaneous equations, the structural
+model Bigij  ci,0  Ci nij  fij is a general triangular system (see Zellner 1971, p. 252). This system can be recast as gij  Nijpi  fij, where Nij is an appropriately dimensioned matrix containing both the exogenous and endogenous factor scores. The key feature of a
+triangular system is that the determinant of the matrix of the coef-
+ficients of the endogenous variables g vanishes. Thus we can treat
+the system gij  Nijpi  fij as a seemingly unrelated regression (SUR) system. Given the prior p(pi)  N(Fi, ), the full conditional is given by N(p~ i, Vp), where V p 1  1  Nji 1 Nij W1Nij and p~ i  Vp [1 Fi  jNi 1 Nij W1 gij]
+( l ) The full conditional distribution for the precision matrix W1
+of the structural model is Wishart and is given by
+
+p(W1|{nij}, {gij}, {ci,0, Ci, Bj})  W(qpos, Rpos)
+
+(A.10)
+
+where qpos  qw  N and Rpos  [Ii1 Nji 1 g~ ijg~ ij  qwRw]1 and g~ ij  Bigij  ci,0  Cinij.
+(m) The full conditional for the population structural parameters  is a multivariate normal distribution and can be written as
+
+p(|{pi}, )  N(^ , V)
+
+(A.11)
+
+where V  1  C1  iI1 Fi 1Fi and ^  V(C1 c  Ii1 Fi 1pi).
+(n) The full conditional for the precision matrix 1 of the
+individual-level structural parameters pi is a Wishart distribution. Given the prior W( qt, ( qtRt)1), the full conditional can be written
+as
+
+p(1|{pi}) 
+
+    I
+
+1
+
+W qv  I, (pi  Zi)(pi  Zi)  qvRv .
+
+i1
+
+(A.12)
+
+(o) The full conditional distribution for the hyperparameter R1
+is a Wishart distribution. The likelihood associated with this full con-
+ditional distribution is a product of Wishart distributions. As the population distribution for the factor precisions Ui is given by U i 1  W(exp(q), R), the likelihood can be written as
+
+L({U i 1}|q, R)
+
+     exp
+
+1 2
+
+tr
+
+R1
+
+I i1
+
+Ui1
+
+I
+|Ui1|(exp(q)p1)/2
+i1
+
+   
+
+|R|(exp(q)I)/2 2pexp(q)/2
+
+p
+
+exp( q)  1  j C
+
+.
+
+j1
+
+2
+
+(A.13)
+
+346
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+ANSARI, JEDIDI, AND JAGPAL A Hierarchical Bayesian Methodology
+
+The above likelihood when combined with the conjugate Wishart prior, R1  W(c, (cS)1) yields a full conditional distribution that
+can be written as
+
+ p(R1|{Ui1}, q, c, S)  W(c  Iq, (cS  Ui1)1). (A.14)
+
+(p) The full conditional for the hyperparameter q  log( q) of the Wishart distribution over U i 1 cannot be written in closed form. This full conditional is proportional to the product of the likelihood expression specified above, and the prior density of q, which is a univariate normal p( q)  N(0, srho). We therefore use a random-walk Metropolis-Hastings step to generate random draws of q. To generate a candidate qc, we use a univariate normal proposal density N( q(m), t) that is centered on the old value of q(m). The tuning con-
+stant t in the proposal density is chosen to allow rapid mixing and
+to avoid excessively frequent rejections of the candidates. The generated candidate qc is accepted with the following acceptance
+probability:
+
+  min
+
+L( qc|{Ui1}, L( q(m)|{Ui1},
+
+R)p(pc) R)p( q(m)),
+
+1
+
+(A.15)
+
+If the candidate is accepted, then q(m1)  qc; otherwise, p(m1)  q(m).
+
+References
+Allenby, G. M., J. L. Ginter. 1995. Using extremes to design products and segment markets. J. Marketing Res. 32 392­403.
+----, P. E. Rossi. 1999. Marketing models of consumer heterogeneity. Special Issue: Marketing and Econometrics. T. Wansbeek and M. Wedel, eds. J. Econometrics 89 (1­2) 57­78.
+Ansari, A., K. Jedidi. 2000. Bayesian factor analysis for multilevel binary observations. Psychometrika, forthcoming.
+Arminger, G., B. Muthe´n. 1998. A Bayesian approach to nonlinear latent variable models using the Gibbs sampler and the Metropolis-Hastings algorithm. Psychometrika 63 271­300.
+Best, N. G., M. K. Cowles, S. K. Vines. 1995. CODA: Convergence Diagnostics and Output Analysis Software for Gibbs Sampler Output: Version 0.3. Technical report, Biostatistics Unit-MRC, Cambridge, U.K.
+Bollen, K. A. 1989. Structural Equations with Latent Variables. Wiley Interscience, New York.
+Chib, S., E. Greenberg. 1995. Understanding the Metropolis-Hastings algorithm. Amer. Statist. 49 327­335.
+Chintagunta, P., D. C. Jain, N. J. Vilcassim. 1991. Investigating heterogeneity in brand preferences in logit models for panel data. J. Marketing Res. 28 417­428.
+Gelfand, A. E. 1996. Model determination using sampling-based methods. W. R. Gilks, S. Richardson, D. J. Spiegelhalter, eds. Markov Chain Monte Carlo in Practice. Chapman and Hall, London, 145­161.
+----, A. F. M. Smith. 1990. Sampling-based approaches to calculating marginal densities. J. Amer. Statist. Assoc. 85 972­985.
+Geman, S., D. Geman. 1984. Stochastic relaxation, Gibbs distributions and the Bayesian restoration of images. IEEE Trans. Pattern Anal. Machine Intelligence 6 721­741.
+
+Goldstein, H., R. P. McDonald. 1988. A general model for the analysis of multilevel data. Psychometrika 553 455­467.
+Hastings, W. K. 1970. Monte Carlo sampling methods using Markov chains and their applications. Biometrika 57 97­109.
+Jagpal, Sharan. 1999. Marketing Strategy and Uncertainty. Oxford University Press, New York.
+Jedidi, K., H. S. Jagpal, W. S. DeSarbo. 1997. Finite-mixture structural equation models for response-based segmentation and unobserved heterogeneity. Marketing Sci. 16 (1) 39­59.
+Johnson, M. D., E. W. Anderson, C. Fornell. 1995. Rational and adaptive performance expectations in a customer satisfaction framework. J. Consumer Res. 21 695­707.
+Jo¨ reskog, K. G. 1971. Simultaneous factor analysis in several populations. Psychometrika 36 409­426.
+Kamakura, W. A., G. J. Russell. 1989. A probabilistic choice model for market segmentation and elasticity structure. J. Marketing Res. 26 (November) 379­390.
+Lee, S.-Y. 1981. A Bayesian approach to confirmatory factor analysis. Psychometrika 46 153­160.
+Longford, N. T., B. Muthe´n. 1992. Factor analysis for clustered observations. Psychometrika 57 581­597.
+Lord, F. M., M. R. Novick. 1968. Statistical Theories of Mental Test Scores. Addison-Wesley, Reading, MA. 129­131.
+Metropolis, N., A. W. Rosenbluth, M. N. Rosenbluth, A. H. Teller, E. Teller. 1953. Equations of state calculations by fast computing machines. J. Chem. Phys. 21 1087­1091.
+Muthe´n, B. 1989. Latent variable modeling in heterogeneous populations. Psychometrika 54 557­585.
+----. 1994. Multilevel covariance structure analysis. Sociol. Methods Res. 22 376­398.
+Newton, M. A., A. E. Raftery. 1994. Approximate Bayesian inference by the weighted likelihood bootsrap (with discussion). J. Roy. Statis. Soc. Ser. B. 56 3­18.
+Oliver, R. L. 1993. Cognitive, affective, and attribute bases of the satisfaction response. J. Consumer Res. 20 418­430.
+----. 1997. Satisfaction: A Behavioral Perspective on the Consumer. McGraw-Hill, New York.
+Rossi, P, Z. Gilula, G. Allenby. 1999. Overcoming scale heterogeneity. Working paper, University of Chicago, Chicago, IL.
+Scheines, R., H. Hoijtink, A. Boomsma. 1999. Bayesian estimation and testing of structural equation models. Psychometrika 64 37­ 52.
+So¨ rbom, D. 1981. Structural equation models with structured means. K. G. Joreskog, H. Wold, eds. Systems Under Indirect Observation: Causality, Structure, And Prediction. North Holland, Amsterdam, Netherlands. 183­195.
+Tanner, M. A., W. H. Wong. 1987. The calculation of posterior distributions by data augmentation (with Discussion). J. Amer. Statist. Assoc. 82 528­550.
+Yung, Yiu-Fai. 1997. Finite mixtures in confirmatory factor-analysis models. Psychometrika 62 (3) 297­330.
+Zellner, Arnold. 1971. An Introduction to Bayesian Inference in Econometrics. Wiley, New York.
+
+This paper was received August 5, 1999, and has been with the authors 6 months for 3 revisions; processed by Greg Allenby.
+
+Marketing Science/Vol. 19, No. 4, Fall 2000
+
+347
+
+

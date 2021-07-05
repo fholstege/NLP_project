@@ -1,0 +1,938 @@
+Vol. 32, No. 2, March­April 2013, pp. 213­220 ISSN 0732-2399 (print) ISSN 1526-548X (online)
+
+http://dx.doi.org/10.1287/mksc.1120.0735 © 2013 INFORMS
+
+Practice Prize Paper
+PROSAD: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+Bernd Skiera, Nadia Abou Nabout
+Faculty of Business and Economics, Department of Marketing, Goethe University Frankfurt, 60629 Frankfurt am Main, Germany {skiera@skiera.de, abounabout@wiwi.uni-frankfurt.de}
+This paper reports on a large-scale implementation of marketing science models to solve the bidding problem in search engine advertising. In cooperation with the online marketing agency SoQuero, we developed a fully automated bidding decision support system, PROSAD (PRofit Optimizing Search engine ADvertising; see http://www.prosad.de), and implemented it through the agency's bid management software. The PROSAD system maximizes an advertiser's profit per keyword without the need for human intervention. A closed-form solution for the optimized bid and a newly developed "costs-per-profit" heuristic enable advertisers to submit good bids even when there is significant noise in the data. A field experiment demonstrates that PROSAD can increase the return on investment by 21 percentage points and improve the yearly profit potential for SoQuero and its clients by E2.7 million.
+Key words: decision support system; optimized bidding; search engine advertising; online advertising History: Received: February 29, 2012; accepted: June 19, 2012; Russell Winer served as the Practice Papers
+Section editor-in-chief for this article. Published online in Articles in Advance September 20, 2012.
+
+1. Introduction
+Search engine advertising (SEA) has grown into a multibillion-dollar business that attracts $1 of every $2 spent on online advertising (Chen et al. 2009, Yang and Ghose 2010). The mechanism supporting SEA works as follows (Abou Nabout et al. 2012, Yao and Mela 2008): A consumer types a keyword, such as "cruise vacation," into a search engine (e.g., Google, Bing) and receives two types of results. The lower lefthand portion of the page shows unsponsored search results, whose ranking reflects the relevance assigned to these different results by a search algorithm. On the top right-hand side, sponsored search results appear. Whereas the display of unsponsored search results is free of charge, advertisers pay for each click on their ads that appear among the sponsored search results.
+The rankings and prices paid per click depend on keyword auctions, which are generalized, secondprice, sealed-bid auctions (Edelman et al. 2007, Varian 2007). In the auctions, advertisers submit bids for a specific keyword by stating their maximum willingness to pay for each click. The search engine provider then weights the submitted bids according to the ad's quality, which it measures using a proprietary quality score (QS), and displays the sponsored search results in decreasing order of weighted bids (Abou Nabout and Skiera 2012, Jerath et al. 2011, Katona and Sarvary 2010). If a consumer clicks on an ad, its advertiser
+
+pays the search engine provider an amount equal to the next-highest weighted bid, divided by its own QS. The consumer who clicked on the ad gets redirected to the advertiser's website to place an order or request a sales quote--both cases of potential conversions.
+Most SEA campaign managers use rules-based approaches to determine their bid for different keywords. Popular rules include the following:
+1. IF keyword profit after acquisition costs is greater than E10, THEN increase bid by 30%.
+2. IF rank is worse than rank 5, THEN increase bid by 20%.
+3. IF keyword profit after acquisition costs is smaller than E0, AND the number of clicks is more than 100, AND rank is better than rank 3, THEN decrease bid by 20%.
+Such rules help the advertiser make automated bidding decisions, but they suffer several major drawbacks. First, the number of rules can grow quickly and become cumbersome. Second, different rules might offer contradictory bidding suggestions. Third, the choice of the respective parameters in the rules is rather arbitrary (e.g., why should the bid in rule 1 be increased by 30% and not 20%?).
+To avoid these drawbacks, advertisers might use profit maximization as a single optimization criterion. We present a decision support system, PROSAD (PRofit Optimizing Search engine ADvertising), that can set bids to maximize profit automatically, using a bidding decision model and a newly developed
+
+213
+
+Skiera and Abou Nabout: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+
+214
+
+Marketing Science 32(2), pp. 213­220, © 2013 INFORMS
+
+"costs-per-profit" heuristic. In a field experiment, we show that the use of PROSAD increases return on investment by 21 percentage points.
+2. Related Literature and Desired Properties
+Yao and Mela (2011), Agarwal et al. (2011), and Abou Nabout et al. (2012) all offer effective reviews of previous SEA research. Because PROSAD requires empirical data, we focus our review in Table 1 on previous empirical SEA studies.
+As Table 1 shows, most studies have focused on estimating response functions (e.g., linking bids to ranks or clickthrough and conversion rates) rather than providing recommendations about advertisers' optimized bid (except for Yang and Ghose 2010 and Yao and Mela 2011). The studies also exert considerable effort capturing heterogeneity across keywords by finding appropriate distributions of parameters and correlations of error terms across response functions. Although they outline how sophisticated modeling and estimation techniques (e.g., Bayesian models, structural models) enable advertisers to capture these effects, the calibration of these functions
+
+demands substantial time and human effort. In addition, the models often are tailored to a very specific campaign or industry.
+A decision support system that can support a broad range of companies instead needs to apply to various settings: business and consumer contexts, small and large campaigns, expensive or inexpensive keywords. Little (1970, 2004) and Leeflang et al. (2000) describe several other criteria for a decision support system, including simplicity, robustness, adaptivity, completeness on important issues, and cost-benefit considerations. Simplicity means that managers can easily understand the decision support system. Robustness requires that the decision model never returns unreasonable suggestions, and adaptivity implies that the response functions can be updated frequently (e.g., weekly, even daily). Completeness on important issues suggests including branding profit, in addition to transactional profit. Finally, cost-benefit considerations suggest that the expected benefits exceed the expected costs of the model, including costs to calibrate response functions. Considering the vast number of keywords and moderate profit per keyword, all
+
+Table 1 Review of Empirical Studies on Search Engine Advertising
+
+Study
+
+Data
+
+Aim
+
+Industry
+
+Modeling and calibration
+
+Estimation technique
+
+Human Automation and
+
+effort
+
+robustness
+
+Speed
+
+Recommendation Optimized bid
+
+Rutz et al. (2011)
+
+Quantifying indirect effects of search engine advertising
+
+Automotive
+
+Bayesian elastic net High
+
+No
+
+Slow
+
+No
+
+model
+
+Yao and Mela (2011) Impact of
+
+Music management Dynamic structural
+
+High
+
+No
+
+Slow
+
+Yes
+
+searchers',
+
+software
+
+model
+
+advertisers', and
+
+search engine
+
+interaction on
+
+profit
+
+Agarwal et al. (2011)
+
+Impact of rank on
+
+Retail
+
+revenue and profit
+
+Hierarchical
+
+High
+
+No
+
+Slow
+
+No
+
+Bayesian model
+
+Ghose and Yang (2009)
+
+Impact of keyword attributes on clickthrough and purchase propensities, bid, and rank
+
+Retail
+
+Hierarchical
+
+High
+
+No
+
+Slow
+
+No
+
+Bayesian model
+
+Yang and Ghose (2010)
+
+Analysis of the relationship between organic and sponsored search advertising
+
+Retail
+
+Hierarchical
+
+High
+
+No
+
+Slow
+
+Yes
+
+Bayesian model
+
+This study
+
+Bidding decision
+
+Industrial goods,
+
+Ordinary least
+
+Low
+
+Yes
+
+Fast
+
+Yes
+
+support system to NGOs, mobile
+
+squares
+
+maximize profit
+
+phones, fashion,
+
+travel, software,
+
+retail
+
+Note. NGOs, nongovernmental organizations.
+
+Skiera and Abou Nabout: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+
+Marketing Science 32(2), pp. 213­220, © 2013 INFORMS
+
+215
+
+response functions need to allow for quick calibration with little human intervention, or ideally even automatically.
+
+3. Description of a Bidding Decision Model
+3.1. Basic Idea The bidding decision model links bids to profits and therefore reveals which bid will maximize profit, as Figure 1 shows. The advertiser's bid is the decision variable, which is weighted by ad quality. The weighted bid then determines the ad rank, which affects the number of clicks that the ad receives. The advertiser's acquisition costs per conversion equal the ratio of the bid to the conversion rate (conversion rate = number of conversions/number of clicks, often assumed to be constant, though it could depend on the rank). The number of conversions is also affected by the number of users, the clickthrough rate (= number of clicks/number of searches), and the conversion rate. Finally, the difference between the profit contribution per conversion and the acquisition costs per conversion, multiplied by the number of conversions, yields a keyword's profit after acquisition costs (transactional profit).
+
+3.2. Determination of Optimized Bid
+An advertiser aims to maximize its profit after acqui-
+sition costs, k, by determining the optimized bid per keyword k, with the constraint that Bidk must be positive and lower than the highest possible bid, which achieves rank 1, Bid1k:
+
+Maximize Bidk
+
+k Bidk =
+
+T k
+
+Bidk
+
++
+
+B k
+
+Bidk
+
+Figure 1 Framework for Linking Bid and Profit
+
+subject to
+
+= PCk - gk Bidk
+
++
+
+B k
+
+Bidk
+
+0  Bidk  Bid1k
+
+· Sk Bidk (1) (2)
+
+We summarize the variables in Table 2. The adver-
+
+tiser's profit after acquisition costs is the sum of the
+
+transactional profit
+
+T k
+
+and
+
+the
+
+branding
+
+profit
+
+B k
+
+.
+
+As indicated, transactional profit is the difference
+
+between the profit contribution per conversion, PCk, and the acquisition costs per conversion, gk, multiplied by the number of conversions, Sk. The profit contribution per conversion could be the profit contri-
+
+bution earned through a single purchase (short-term
+
+value) or customer lifetime value (long-term value).
+
+That is, transactional profit reflects the value of con-
+
+versions after these users clicked on ads.
+
+The number of conversions Sk that an advertiser acquires by bidding on a keyword k can be calcu-
+
+lated by multiplying the number of clicks and the
+
+conversion rate CRk. The number of clicks is simply the number of consumers searching for keyword Nk multiplied by the clickthrough rate CTRk:
+
+Sk Bidk = Nk · CTRk Bidk · CRk
+
+(3)
+
+The ratio of the bid to the conversion rate yields the
+
+acquisition costs per conversion. For the sake of sim-
+
+plicity, we approximate the price per click using the
+
+bid (Ghose and Yang 2009); the differences between
+
+bids and prices are small in competitive markets
+
+(Abou Nabout et al. 2012). Thus, the acquisition costs
+
+per conversion gk are a ratio of the bid to the conver-
+
+sion rate:
+
+gk
+
+Bidk
+
+Bidk = CRk
+
+(4)
+
+Profit contribution per conversion
+
+Acquisition costs per conversion
+
+Number of conversions
+
+Profit after acquisition costs
+
+Conversion rate
+
+Clickthrough rate
+
+Number of searches
+
+Rank
+
+Bid
+
+Ad quality
+
+Skiera and Abou Nabout: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+
+216
+
+Marketing Science 32(2), pp. 213­220, © 2013 INFORMS
+
+Table 2 Description of Variables and Parameters
+
+Variable
+
+Description
+
+k
+
+Keyword subscript
+
+Input to decision model PC k
+
+Nk
+
+Bid
+
+1 k
+
+k
+
+k -1
+
+k
+
+CTR
+
+1 k
+
+k
+
+k -1
+
+k
+CR k CPM k
+k
+
+Advertiser's profit contribution per conversion for keyword k
+Number of consumers searching for keyword k
+Prices per click at rank 1 for keyword k Multiplier reflecting the increase in prices
+per click for keyword k Percentage increase in prices per
+click for keyword k Logarithm of multiplier reflecting the increase
+in prices per click for keyword k
+Clickthrough rate at rank 1 of keyword k Multiplier reflecting the increase in
+clickthrough rates for keyword k Percentage increase in clickthrough
+rates for keyword k Logarithm of multiplier reflecting the increase
+in clickthrough rates for keyword k Conversion rate of keyword k Costs per thousand for keyword k Multiplier reflecting the percentage increase
+in the branding profit for keyword k
+
+Advertiser's decision variable
+
+Bid k
+
+Bid for keyword k
+
+Output of decision model
+
+Rank k gk Sk
+T k B k
+k
+
+Rank of keyword k Acquisition costs per conversion for keyword k Number of conversions for keyword k Transactional profit for keyword k Branding profit for keyword k Total profit for keyword k
+
+To calculate the number of searchers that clicked
+on the ad, we assume the click response function is
+continuous and depends on the rank of the ad, Rankk, which in turn depends on the bid Bidk. The clickthrough rate increases at better ranks and reaches its highest value at rank 1, captured by CTR1k. The multiplier k reflects the increase in CTRk from rank (x + 1) to rank x. For example, if an ad earns a CTRk of 10.00% at rank 2 and a CTR1k of 12.60% at rank 1, the percentage increase in CTRk is 26%, and the corresponding multiplier k equals 1.26. In line with prior research (Feng et al. 2007), we model the click
+response function as
+
+CTRk Bidk =
+
+CTR1k
+Rankk Bidk -1
+
+(5)
+
+k
+
+The price per click depends on the price per click at rank 1, Bid1k, and the multiplier reflecting the increase
+in prices per click from rank (x + 1) to rank x, k.
+The prices per click need to be positive and increase
+
+exponentially at better ranks (Ganchev et al. 2007).
+
+Thus,
+
+Bidk =
+
+Bid1k
+Rankk Bidk -1
+
+(6)
+
+k
+
+The rank function is the inverse of the price function
+
+from Equation (6):
+
+Rankk
+
+Bidk
+
+=1-
+
+ln
+
+Bidk/Bid1k ln k
+
+(7)
+
+By combining Equations (3)­(7), we recognize that the advertiser's transactional profit for keyword k is
+
+T k
+
+Bidk
+
+=
+
+PCk
+
+-
+
+Bidk CRk
+
+· Nk · CTRk Bidk · CRk
+
+(8)
+
+Some advertisers do not concentrate only on trans-
+
+actional profits of SEA, or
+
+T k
+
+,
+
+so
+
+we
+
+also
+
+consider
+
+branding profit, or
+
+B k
+
+,
+
+which
+
+captures
+
+the
+
+perception
+
+generated by the display of an ad in the sponsored
+
+search results. For this measure, the cost per thou-
+
+sand CPMk equals 0 if the advertiser believes that SEA does not offer significant branding profit. We
+
+assume branding profit increases exponentially with
+
+better ranks, so the multiplier k reflects the increase in the branding profit from rank (x + 1) to rank x:
+
+B k
+
+Bidk
+
+=
+
+Nk · CPMk
+
+Rankk k
+
+Bidk
+
+-1 · 1
+
+000
+
+(9)
+
+Inserting Equations (3)­(7) into Equations (8) and (9), we uncover profit after acquisition costs related to the bid for keyword k, as in Equation (10). It equals the sum of transactional and branding profit and results in the following decision model:
+
+Max Bidk
+
+k Bidk =
+
+PCk
+
+-
+
+Bidk CRk
+
+·Nk ·CTR1k ·
+
+ln Bidk/Bid1k /ln k
+
+k · CRk
+
++
+
+ln Bidk/Bid1k /ln k
+
+k
+
+Nk ·
+
+CPMk 1 000
+
+(10)
+
+subject to 0  Bidk  Bid1k
+
+(11)
+
+The nonlinearities in the rank, clickthrough rate, and branding profit functions do not allow for a closed-form solution for the optimized bid from Equations (10) and (11). However, we can use the Newton search method to compute the optimized bid per keyword.
+If the branding profit is 0, the Kuhn­Tucker firstorder optimality conditions instead can solve Equations (10) and (11). The closed-form solution for the optimized bid Bidk depends on the profit contribution per conversion PCk, the conversion rate CRk, and
+k and k, which are logarithms of the multipliers in
+
+Skiera and Abou Nabout: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+
+Marketing Science 32(2), pp. 213­220, © 2013 INFORMS
+
+217
+
+prices per click, or k, and the clickthrough rates, k, such that k = ln k , and k = ln k . In turn,
+
+ 
+
+PCk
+
+·
+
+CRk
+
+·
+
+k
+
+
+
+
+
+if Bidk < Bid1k
+
+Bidk =
+
+k+ k
+
+(12)
+
+Bid1k
+
+if Bidk  Bid1k
+
+Because rank 1 is the highest possible rank, we also
+consider a boundary solution: if the optimized bid is lower than the highest possible bid for rank 1 (Bidk < Bid1k , the resulting rank is worse than rank 1. If the optimized bid is higher than or equal to the bid at rank 1 (Bidk  Bid1k , the ad is displayed at rank 1.
+Inserting the optimized bid into Equation (4) and
+the corresponding result into Equations (7), (5),
+and (3), we determine the optimized acquisition costs
+per conversion gk and the optimized number of conversions Sk:
+
+ PCk · k  
+
+if Bidk < Bid1k
+
+gk Bidk
+
+ 
+
+k+
+
+=
+
+  
+
+Bid1k
+
+k
+
+ CRk
+
+if Bidk  Bid1k
+
+(13)
+
+and
+
+Sk Bidk
+
+Nk · CRk · CTR1k
+
+
+
+
+
+
+
+
+
+ 
+=
+ 
+
+PCk · CRk · k · Bid1k · k + k
+
+k/ k
+if Bidk < Bid1k
+
+(14)
+
+
+
+
+
+
+
+Nk · CRk · CTR1k
+
+if Bidk  Bid1k
+
+3.3. Optimized Costs per Profit The optimized bid in Equation (12) is the investment per click; it depends on the product of the profit contribution per conversion and the conversion rate, PCk ·CRk (i.e., return per click). Dividing Equation (12)
+
+by PCk · CRk and rearranging the terms yields an advertiser's optimized share of acquisition costs at the profit contribution per conversion, or "costs per profit," CPP:
+
+CPP Bidk
+
+Bidk = PCk ·CRk
+
+
+
+k
+
+
+
+gk Bidk
+
+ 
+
+k+
+
+k
+
+=
+
+PCk
+
+=
+ 
+
+Bid1k
+
+
+
+PCk ·CRk
+
+if Bidk < Bid1k if Bidk  Bid1k
+
+(15)
+
+As long as the optimized bid is lower than the bid at rank 1, the optimized costs per profit depend only on percentage increases in prices per click and clickthrough rates within ranks, as reflected by the multipliers k and k, respectively. The optimized costs per profit decrease with ascending percentage increases in prices per click. The intuition is as follows: if the percentage increase in prices is high, the advertiser can bid substantially lower for worse ranks, which strongly reduces the acquisition costs per conversion and results in lower optimized costs per profit. A greater percentage increase in the clickthrough rates within ranks has the opposite effect: if the percentage increase in clickthrough rates is high, the number of clicks diminishes substantially within ranks, which makes better ranks more attractive. Then the advertiser submits higher bids, which leads to higher optimized costs per profit.
+According to Equation (15), if the percentage increase in prices equals the percentage increase in clickthrough rates, the optimized costs per profit are 50% (e.g., ln(1.25)/(ln(1.25) + ln(1.25)) = 0 50). Using four empirical data sets, we reveal that the mean percentage increase in prices per click lies between 52.93% and 93.16% (median: 46.55%­87.01%); in clickthrough rates, it ranges between 48.42% and 73.63% (median: 46.13%­70.31%). Table 3 uses these values to calculate the respective optimized costs per profit: 50% is a good guess.
+
+Table 3 Percentage Increases in Prices per Click and Clickthrough Rates
+
+Fashion (%)
+
+Mobile phones (%)
+
+Industrial goods (%)
+
+Travel (%)
+
+Percentage increases
+Optimized costs per profit (CPP )
+
+Mean Median
+
+Price(%) ( k - 1)
+
+CTR ( k - 1)
+
+67.28 64.68
+
+73.18 70.31
+
+52.09
+
+Price ( k - 1)
+
+CTR ( k - 1)
+
+63.28 60.32
+
+73.63 57.71
+48.89
+
+Price ( k - 1)
+
+CTR ( k - 1)
+
+93.16 87.01
+
+57.73 56.59
+39.41
+
+Price ( k - 1)
+
+CTR ( k - 1)
+
+52.93 46.55
+
+48.42 46.13
+
+49.77
+
+Notes. N = 90 in each industry. Both multipliers reflecting the increase in prices per click and CTR are typically larger than 1. For example, a percentage increase k - 1 of 50% indicates a multiplier of 150%, inserted into Equation (15). The same is true for the percentage increase k - 1. To calculate the optimized costs per profit, we use the median percentage increases in CTR and prices per click, because the mean values might be too heavily influenced by outliers.
+
+Skiera and Abou Nabout: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+
+218
+
+Marketing Science 32(2), pp. 213­220, © 2013 INFORMS
+
+4. Calibration of Response Functions
+
+4.1. Estimation of Price and Click Response Functions
+The quick automatic calibration of the price response function (Bid1k and k and the click response function (CTR1k and k is challenging, because it requires a robust, fast estimation procedure. As a consequence, we use regressions that estimate a response function for each keyword separately. Thus, in favor of a fast estimation approach, we do not apply the simultaneous equation model proposed by Ghose and Yang (2009), which puts more emphasis on accounting for potential endogeneity of rank.
+In addition, the estimation procedure needs to deal with unreasonable parameter values, which might reflect noise in the data. Search engine providers typically inform advertisers about prices per click, ranks, number of consumers searching for a keyword, number of clicks, number of conversions, and the QS of their own SEA campaigns. However, advertisers do not receive competitors' data. That is, an advertiser knows its own price for a keyword at time t and rank x but not the price for that keyword at any other rank or time. We thus need to control for differences across time in prices and QS (Abou Nabout and Skiera 2012).
+We model the price of keyword k at time t as dependent on its rank, time, and QS, and we estimate the keyword-specific parameters with ordinary least squares regressions:
+
+ln Bidkt = k + 1k · Rankkt + 2k · t
+
++ 3k · QSkt + kt
+
+(16)
+
+where ln Bidtk denotes the logarithm of the bid for keyword k at time t. Thus, we can estimate the above regression for every keyword at different points in time and do not need keyword attributes as proxies to account for unobserved heterogeneity of individual keyword (the same applies to Equation (17)). As the appendix outlines, the multiplier reflecting the increase in prices per click k equals
+
+k = 1/ exp 1k
+
+(17)
+
+Because prices decrease in worse ranks, 1k is likely negative, and k should be greater than 1. Similarly, we can model the click response function as depen-
+dent on rank, time, and QS:
+
+ln CTRkt = k + 1k · Rankkt + 2k · t
+
++ 3k · QSkt + kt
+
+(18)
+
+where ln CTRtk denotes the logarithm of the CTR for keyword k at time t. As the appendix shows, the mul-
+
+tiplier reflecting the increase in clickthrough rates is
+
+given by
+
+k = 1/ exp 1k
+
+(19)
+
+Similar to the multiplier reflecting the increase in
+prices per click, 1k is negative, and k is greater than 1.
+
+4.2. Outline of Heuristic We check whether the calibrations of the price and click response functions are successful, such that they lead to reasonable values for percentage increases in clickthrough rates and prices per click. A negative percentage increase would be inconsistent with theory and extant results (Agarwal et al. 2011, Ghose and Yang 2009), because it suggests higher clickthrough rates or prices per click for worse ranks. Missing data, too few observations, measurement errors, or omitted variables could produce such unreasonable values, and thus poor bids.
+If the calibration of the response function yields reasonable values (87.5% of cases), we solve Equations (10) and (11) to determine the optimized bid; otherwise, we use the heuristic that costs per profit should be 50%, because the percentage increases in clickthrough rates and prices per click are frequently equal (see Table 3). Thus, we determine a heuristic bid:
+
+BidHk euristic = 50% · PCk · CRk
+
+(20)
+
+The beauty of this heuristic is its simplicity, which reflects our finding that only percentage increases in clickthrough rates and prices per click influence the optimized costs per profit. The simple heuristic also guarantees that the acquisition costs per conversion do not exceed the profit contribution per conversion. Although such a requirement clearly should be fulfilled, our experience reveals that it is frequently violated in practice.
+
+5. Application of PROSAD
+SoQuero (http://www.soquero.de) is a Frankfurtbased online advertising agency that manages SEA campaigns for more than 40 advertisers (e.g., Best Western, Mettler-Toledo, Royal Caribbean). We implemented PROSAD (http://www.prosad.de) in SoQuero's bid management software, to be employed in the daily management of campaigns that feature an average of 2,000 keywords. The system automatically calibrated response functions and suggested optimized bids that a campaign manager may accept or discard.
+Clients often are hesitant to participate in field experiments and tend to reject suggested bids, which makes it difficult to evaluate the financial impact across campaigns. However, we convinced a small client, conducting a nationwide campaign for toys and kindergarten materials, to rely on PROSAD for 20 keywords over a period of 10 weeks. In the field
+
+Skiera and Abou Nabout: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+
+Marketing Science 32(2), pp. 213­220, © 2013 INFORMS
+
+219
+
+experiment, the client first managed the campaign itself without PROSAD, then allowed SoQuero to manage 20 keywords using PROSAD. To ensure that changes in the advertiser's clickthrough and conversion rate did not result from changes in the ad creative or landing page, we kept both the ad creative and landing page constant over time. The results of the field experiment therefore include weekly information about the numbers of searches, clicks, and conversions; average cost per click; average rank; acquisition costs; and the profit after acquisition costs for each keyword, as we show in Table 4.
+Without PROSAD, the 20 keywords generated an overall loss of -E2.69 (average per keyword = -E0 13); they earned a profit of +E124.85 (average per keyword = +E6.24) with PROSAD. The client bid too high on most keywords, which our experience suggests is a common phenomenon. These high bids resulted in overly high acquisition costs that diminished profit after acquisition costs, though the profit before acquisition costs was considerably higher before PROSAD's application. The field experiment thus suggests that acquisition costs can be reduced by 38% (= 48 78 - 30 05)/48.78), and return on investment increases from 0% (= E48 65/ E48 78 - 1) to 21% (= E36.29/E30.05 - 1).
+These results reflect the entire 10-week observation period. During that time, an average keyword yielded an additional profit of E6.37 with PROSAD. Over a year, the average keyword therefore would realize an additional profit of E33.12. Although this value may seem small or even negligible, the vast number of keywords included in most campaigns (e.g., 2,000 in SoQuero campaigns) suggests a substantial impact. SoQuero manages 40 campaigns on behalf of its clients each year, so the annual profit potential of PROSAD for SoQuero and its clients is about E2.7 million (= E33.12 · 2,000 · 40).
+
+Table 4 Results of Field Experiment
+
+Average values per keyword
+
+Without PROSAD With PROSAD
+
+Number of keywords
+Number of searches
+Number of clicks
+CTR (%)
+CPC (E)
+Rank
+Number of conversions
+Conversion rate (%)
+Profit before acquisition costs (E) Total acquisition costs (E) Profit after acquisition costs (E)
+Return on investment (%)
+
+20 4 510 60
+185 30 4 11 0 19 2 97 3 50 0 08 48 65
+48 78 -0 13 0
+
+20 4 510 60a
+107 58 2 39 0 13 3 78 1 12 0 02 36 29 30 05
++6 24 21
+
+Note. CPC, cost per click. aTo ensure the comparabiliy of the two experimental groups, we set the
+number of searches "With PROSAD" to be equal to the number of searches "Without PROSAD." All other variables were adjusted by actual clickthrough and conversion rates.
+
+The simplicity of our modeling approach means that it does not take competitive reactions into account. If competitors adjust their bids in response to a change in the focal advertiser's bid, the percentage increase in prices per click changes. Is a weekly calibration of the response functions then sufficient? In the field experiment, PROSAD placed optimized bids at the beginning of the week; competitors might react after the second day of the week, at the earliest. We thus compare ranks and prices per click of the first two versus the last two days of the week but find no statistically significant difference.1 That is, competitive reactions to changes in the focal advertiser's bid do not appear to occur within a single week.
+Another drawback related to the simplicity of our modeling approach is that we do not model the link between clickthrough rate and QS, though an increase (decrease) in the optimized bid might lead to a better (worse) rank and thus a higher (lower) clickthrough rate, which in turn might lead to a better (worse) QS. Then the rank might improve (worsen) even further, and the price might decrease (increase) (see Abou Nabout and Skiera 2012). To evaluate this drawback, we analyze by how much and how quickly the QS changes in response to changes in the clickthrough rate using a fixed effects model of different lag structures of clickthrough rate on QS. None of the lags of the clickthrough rate had a significant impact on QS; the low impact of this drawback corresponds with the findings of Abou Nabout and Skiera (2012) that QS changes occur just once every six months on average. However, prices per click and clickthrough rate changed, on average, 22 times during the same observation period.
+6. Summary
+We have reported on a large-scale implementation of marketing science models to solve the bidding problem in SEA. In cooperation with SoQuero, an online marketing agency, we have developed the PROSAD (PRofit Optimizing Search Engine ADvertising) bidding decision support system and implemented it in the agency's bid management software. PROSAD can automatically determine optimized bids that maximize the advertiser's profit. It estimates all response functions using ordinary least squares, so the calibration is rapid. Our field experiment shows that PROSAD not only increases the return on investments in SEA by 21 percentage points but also better captures the trade-off between the number of conversions and the money spent to acquire those conversions.
+1 The results are robust to other combinations, such as the first versus the last four days or the first two versus last three days of the week.
+
+Skiera and Abou Nabout: A Bidding Decision Support System for Profit Optimizing Search Engine Advertising
+
+220
+
+Marketing Science 32(2), pp. 213­220, © 2013 INFORMS
+
+We acknowledge several limitations to our study. First, we do not consider indirect effects of SEA (Chan et al. 2011, Rutz and Bucklin 2011, Rutz et al. 2011). Such effects might lead to situations in which SEA performance is either under- or overstated. For instance, branded keywords usually convert at an exceptionally high rate, but they do not actually initiate the customer journey--their performance is overstated in that case. Yet they might also generate sales in off-line channels, in which case their performance is understated. In addition, we are not able to account for intraday variation in rank because Google and other search engines only provide advertisers with average ranks and prices per day. These intraday variations increase noise in the data so that future research should develop better instruments to track these variations.
+
+Appendix In the main text, Equation (5) describes the click response
+function:
+
+CT Rk Bidk =
+
+CT R1k
+Rankk Bid -1
+
+k
+
+(A1)
+
+Rewriting this equation yields
+
+CT Rk Bidk = CT R1k · k ·
+
+1 Rankk Bidk
+k
+
+= CT R1k · k · exp ln 1 · Rankk Bidk
+k
+
+= k · exp 1k · Rankk Bidk
+
+(A2)
+
+where k = CT Rk1 · k and 1k = ln 1/ k . Consequently, k = 1/exp 1k . Rearranging the terms in Equation (6) from the main text, which describes the price response function,
+yields
+
+Bidk =
+
+Bidk1
+Rankk Bidk -1
+
+= Bidk1 ·
+
+k·
+
+k
+
+1 Rankk Bidk
+k
+
+= Bidk1 · k · exp · ln 1 · Rankk Bidk
+k
+
+= k · exp k · Rankk Bidk
+
+(A3)
+
+where k = Bidk1 · k and 1k = ln 1/ k . Therefore, k = 1/exp 1k .
+
+References
+Abou Nabout N, Skiera B (2012) Return on quality improvements in search engine marketing. J. Interactive Marketing 26(3): 141­154.
+Abou Nabout N, Skiera B, Stepanchuk T, Gerstmeier E (2012) An analysis of the profitability of fee-based compensation plans for search engine marketing. Internat. J. Res. Marketing 29(1):68­80.
+Agarwal A, Hosanagar K, Smith MD (2011) Location, location, location: An analysis of profitability of position in online advertising markets. J. Marketing Res. 48(6):1057­1073.
+Chan TY, Wu C, Xie Y (2011) Measuring the lifetime value of customers acquired from Google search advertising. Marketing Sci. 30(5):837­850.
+Chen J, Liu D, Whinston AB (2009) Auctioning keywords in online search. J. Marketing 73(4):125­141.
+Edelman B, Ostrovsky M, Schwarz M (2007) Internet advertising and the generalized second-price auction: Selling billions of dollars worth of keywords. Amer. Econom. Rev. 97(1):242­259.
+Feng J, Bhargava HK, Pennock DM (2007) Implementing sponsored search in web search engines: Computational evaluation of alternative mechanisms. INFORMS J. Comput. 19(1):137­148.
+Ganchev K, Kulesza A, Tan J, Gabbard R, Liu Q, Kearns M (2007) Xiaotie D, Fan Chung G, eds. Internet and Network Economics (Springer, Berlin), 541­548.
+Ghose A, Yang S (2009) An empirical analysis of search engine advertising: Sponsored search in electronic markets. Management Sci. 55(10):1605­1622.
+Jerath K, Ma L, Park Y-H, Srinivasan K (2011) A "position paradox" in sponsored search auctions. Marketing Sci. 30(4):612­627.
+Katona Z, Sarvary M (2010) The race for sponsored links: Bidding patterns for search advertising. Marketing Sci. 29(2):199­215.
+Leeflang PSH, Wittink DR, Wedel M, Naert PA (2000) Building Models for Marketing Decisions (Kluwer Academic Publishers, Dordrecht, The Netherlands).
+Little JDC (1970) Models and managers: The concept of a decision calculus. Management Sci. 16(8):B-466­B-485.
+Little JDC (2004) Comments on "Models and managers: The concept of a decision calculus." Management Sci. 50(12):1854­1860.
+Rutz OJ, Bucklin RE (2011) From generic to branded: A model of spillover in paid search advertising. J. Marketing Res. 48(1):87­102.
+Rutz OJ, Trusov M, Bucklin RE (2011) Modeling indirect effects of paid search advertising: Which keywords lead to more future visits? Marketing Sci. 30(4):646­665.
+Varian HR (2007) Position auctions. Internat. J. Indust. Organ. 25(6):1163­1178.
+Yang S, Ghose A (2010) Analyzing the relationship between organic and sponsored search advertising: Positive, negative, or zero interdependence? Marketing Sci. 29(4):602­623.
+Yao S, Mela CF (2008) Sponsored search auctions: Research opportunities in marketing. Foundations Trends Marketing 3(2):75­126.
+Yao S, Mela CF (2011) A dynamic model of sponsored search advertising. Marketing Sci. 30(3):447­468.
+
+

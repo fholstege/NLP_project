@@ -1,0 +1,1290 @@
+Vol. 33, No. 1, January­February 2014, pp. 27­46 ISSN 0732-2399 (print) ISSN 1526-548X (online)
+
+http://dx.doi.org/10.1287/mksc.2013.0803 © 2014 INFORMS
+
+Morphing Banner Advertising
+
+Glen L. Urban
+MIT Sloan School of Management, Massachusetts Institute of Technology, Cambridge, Massachusetts 02139, glurban@mit.edu
+Guilherme (Gui) Liberali
+Erasmus School of Economics, Erasmus University Rotterdam, 3000 DR Rotterdam, The Netherlands; and MIT Sloan School of Management, Massachusetts Institute of Technology, Cambridge, Massachusetts 02139, liberali@ese.eur.nl
+Erin MacDonald
+Department of Mechanical Engineering, Iowa State University, Ames, Iowa 50011, erinmacd@iastate.edu
+Robert Bordley
+Booz Allen Hamilton, Troy, Michigan 48084, bordley_robert@bah.com
+John R. Hauser
+MIT Sloan School of Management, Massachusetts Institute of Technology, Cambridge, Massachusetts 02139, hauser@mit.edu
+Researchers and practitioners devote substantial effort to targeting banner advertisements to consumers, but they focus less effort on how to communicate with consumers once targeted. Morphing enables a website to learn, automatically and near optimally, which banner advertisements to serve to consumers to maximize click-through rates, brand consideration, and purchase likelihood. Banners are matched to consumers based on posterior probabilities of latent segment membership, which are identified from consumers' clickstreams.
+This paper describes the first large-sample random-assignment field test of banner morphing--more than 100,000 consumers viewed more than 450,000 banners on CNET.com. On relevant Web pages, CNET's clickthrough rates almost doubled relative to control banners. We supplement the CNET field test with an experiment on an automotive information-and-recommendation website. The automotive experiment replaces automated learning with a longitudinal design that implements morph-to-segment matching. Banners matched to cognitive styles, as well as the stage of the consumer's buying process and body-type preference, significantly increase click-through rates, brand consideration, and purchase likelihood relative to a control. The CNET field test and automotive experiment demonstrate that matching banners to cognitive-style segments is feasible and provides significant benefits above and beyond traditional targeting. Improved banner effectiveness has strategic implications for allocations of budgets among media.
+Key words: online advertising; banner advertising; behavioral targeting; context matching; website morphing; cognitive styles; field experiments; electronic marketing; dynamic programming; bandit problems; strategic optimization of marketing
+History: Received: July 10, 2012; accepted: April 24, 2013; Preyas Desai served as the editor-in-chief and Sunil Gupta served as associate editor for this article. Published online in Articles in Advance October 8, 2013.
+
+1. Introduction
+This paper describes the first random-assignment field test of morphing with a sample size sufficient to observe steady-state behavior (116,168 unique CNET consumers receiving 451,524 banner advertisements). A banner advertisement morphs when it changes dynamically to match latent cognitive-style segments, which, in turn, are inferred from consumers' clickstream choices. Examples of cognitive-style segments are impulsive-analytic, impulsive-holistic, deliberative-analytic, and deliberative-holistic. The website automatically determines the best "morph" by solving a dynamic program that balances exploration of morph-to-segment effectiveness with
+
+the exploitation of current knowledge about morphto-segment effectiveness. Banner morphing modifies methods used in website morphing (Hauser et al. 2009), which changes the look and feel of a website based on inferred cognitive styles. (For brevity, we use "HULB" as a shortcut citation to Hauser et al. 2009.) Morphing adds behavioral-science-based dynamic changes that complement common banner-selection methods such as context matching and targeting.
+HULB projected a 21% improvement in sales for the BT Group's broadband-sales website, but the projections were based on simulated consumers whose behavior was estimated from data obtained in vitro. The BT Group did not allocate resources necessary to obtain a sufficient sample for an in vivo field
+
+27
+
+28
+
+test.1 (By in vivo, we refer to actual websites visited
+
+by real consumers for information search or purchas-
+
+ing. By in vitro, we refer to laboratory-based websites
+
+that simulate actual websites and that are visited by
+
+a randomly recruited panel of consumers. In vitro
+
+experiments attempt to mimic in vivo field experi-
+
+ments, but they never do so perfectly.)
+
+Online morphing is designed for high-traffic web-
+
+sites with tens of thousands of visitors. Simulations
+
+in HULB (presented in Figure 3, p. 209) suggest
+
+that 10,000­20,000 consumers are necessary to real-
+
+ize substantial gains from website morphing. Banner
+
+morphing is likely to require higher sample sizes
+
+than website morphing because successful banner
+
+outcomes (click-throughs) occur relatively less often
+
+than successful website-morphing outcomes (sales of
+
+broadband services). Our field test (see §4.9) has a
+
+sufficient sample size to observe a significant 83%­
+
+97% lift in click-through rates between test and con-
+
+trol cells above and beyond context matching.
+
+Although click-through rates are a common indus-
+
+try metric, we also sought to test whether banner
+
+morphing increases brand consideration and pur-
+
+chase likelihood. Because brand-consideration and
+
+purchase-likelihood measures are intrusive, such
+
+metrics are difficult to obtain in vivo. We there-
+
+fore supplement the large-sample field test with a
+
+smaller-sample random-assignment experiment on an
+
+in vitro automotive information-and-review website.
+
+We avoid the need for extremely large samples with
+
+three longitudinal surveys that act as surrogates for
+
+the HULB dynamic program. The first two surveys
+
+measure advertising preference, cognitive styles, and
+
+the stage of the consumer's buying process. The third
+
+survey,
+
+separated
+
+from
+
+the
+
+pre-measures
+
+by
+
+4
+
+1 2
+
+weeks,
+
+exposes consumers to banner advertising while they
+
+search for information on cars and trucks. In the test
+
+group, consumers see banners that are matched to
+
+their cognitive style and buying stage. Banners are not
+
+matched in the control group. This sample of 588 con-
+
+sumers is sufficient because (1) we substitute direct
+
+measurement for Bayesian inference of segment mem-
+
+bership, and (2) we substitute measurement-based
+
+morph assignment for the HULB dynamic program.
+
+The in vitro experiment suggests that matching ban-
+
+ners to segments improves brand consideration and
+
+purchase likelihood relative to the control.
+
+2. Banner Advertising:
+Current Practice
+In the last 10 years, online advertising revenue has more than tripled (PricewaterhouseCoopers 2013). In
+
+1 Hauser et al. (2013) reported a field implementation of website morphing with a small sample. Their results are suggestive but not significant. The morphing algorithm did not reach steady state on their sample.
+
+Urban et al.: Morphing Banner Advertising Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+the United States, online ad spending totaled $36.6 billion in the same year, which is a growth of 15.2% over 2011 (PricewaterhouseCoopers 2013). Banner advertisements, paid advertisements placed on websites, account for 21% of online advertising revenue-- about $7.7 billion in 2012 (PricewaterhouseCoopers 2013). Banner advertisement placements cost roughly $2­$10 per thousand impressions. Click-through rates are low and falling from 0.005 click-throughs per impression in 2001 to 0.001 in 2009 (Dahlen 2001, DoubleClick 2010, PricewaterhouseCoopers 2011). Website managers and marketing managers are highly interested in methods that improve banner effectiveness.
+Current theory and practice attempt to increase click-through rates with a variety of methods. For example, Sundar and Kalyanaraman (2004) used laboratory methods to examine the effect of the speed and order of animation. Gatarski (2002) used a genetic algorithm on a training sample to search 40 binary features of banners. He achieved a 66% lift above a 1% click-through rate based on 16 "generations" seeing approximately 200,000 impressions.
+Iyer et al. (2005) and Kenny and Marshall (2000) suggested that click-through rates should improve when banners appear on Web pages deemed to be relevant to consumers. Early attempts matched textual context. For example, Joshi et al. (2011) cited an example where the word "divorce" in a banner is matched to the word "divorce" on the Web page. But context matters-- it is not effective to place a banner for a divorce lawyer on a gossip site discussing a celebrity's divorce. Instead, Joshi et al. achieved a 3.3% lift by matching a banner's textual context to a combination of Web page content and user characteristics. In a related application to Yahoo!'s news articles rather than banners, Chu et al. (2009, p. 1103) used context-matching methods to increase click-through rates significantly (3.2% lift based on "several million page views"). Context matching is quite common. For example, General Motors (GM) pays Kelley Blue Book to show a banner advertisement for the Chevrolet Sonic when a consumer clicks on the compact-car category.
+Relevance can also be inferred from past behavior: According to Chen et al. (2009), "Behavioral targeting (BT) leverages historical user behavior to select the ads most relevant to users to display" (p. 209). Chen et al. used cookie-based observation of 150,000 prior banners, Web pages, and queries to identify the consumers who are most likely to respond to banners. They report expected lifts of approximately 16%­26% based on in-sample analyses.
+Laboratory experiments manipulate consumers' goals (surfing the Web versus seeking information) to demonstrate that banner characteristics, such as size and animation, are more or less effective depending on consumers' goals (Li and Bukovac 1999, Stanaland
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+29
+
+and Tan 2010). This Web-based research is related to classic advertising research that suggests advertising quality and endorser expertise (likability) are more or less effective depending on relevance (involvement) for consumers (e.g., Chaiken 1980, Petty et al. 1983).
+Morphing differs from prior research in many ways. First, banners are matched to consumers based on cognitive styles rather than context relevance or past behavior. Second, latent cognitive-style segments are inferred automatically from the clickstream rather than manipulated in the laboratory. Third, morphing learns (near) optimally about morph-to-segment matches in vivo as consumers visit websites of their own accord. Thus, morphing is a complement rather than a substitute for existing methods such as context matching. If successful, morphing should provide incremental lift beyond context matching.
+3. Brief Review of Banner Morphing
+The basic strategy of morphing is to identify a consumer's segment from the consumer's clickstream and show that consumer the banner that is most effective for his or her segment. Because the clickstream data cannot completely eliminate uncertainty about
+
+the consumer's segment, we treat these segments as latent--we estimate probabilities of segment membership from the clickstream. In addition, there is uncertainty about which banner is most effective for each latent segment. Using latent-segment probabilities and observations of outcomes, such as click-throughs, the morphing algorithm learns automatically and near optimally which morph to give to each consumer. Morphing relies on fairly complex Bayesian updating and dynamic programming optimization. Before we provide those details, we begin with the conceptual description depicted in Figure 1.
+In Figure 1 we label the latent segments as Segments 1­4. Typically, the segments represent different cognitive styles, but segments can also be defined by other characteristics such as the stage of the consumer's buying process. A design team uses artistic skills, intuition, and past experience to design a variety of alternative websites (as in HULB) or alternative banners (as in this paper). We call these banners (or websites) morphs. In Figure 1 we label these Morphs 1­Morph 4. Designers try to give the system a head start by designing morphs they believe match segments, but, in vivo, the best matches are
+
+Figure 1 Conceptual Diagram of Banner Morphing (Illustrative Values Only)
+
+Urban et al.: Morphing Banner Advertising
+
+30
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+identified automatically and optimally by the morphing algorithm.
+If the segments could be measured directly, rather than identified latently, the morphing optimization would be indexable. Indexability implies that we can solve the optimal allocation of morphs to segments by computing an index for each morph×segment combination. The index is called a Gittins (1979) index. The Gittins indices evolve based on observed consumers' behavior. The optimal policy for the nth consumer would be to assign the morph with the largest index for the consumer's segment. For example, if the upper left bar chart represents the Gittins indices computed after 100 consumers, and if segments were known, the algorithm would assign Morph 3 to Segment 4 because Morph 3 has the largest Gittins index for Segment 4 (largest of the dark bars). Similarly, it would assign Morph 1 to Segment 2.
+But segment membership cannot be observed directly. Instead, the HULB algorithm uses a precalibrated Bayesian model to infer the probabilities that the consumer belongs to each latent segment. The probabilities are inferred from the clickstream on the website, possibly including multiple visits. Illustrative probabilities are shown by the bar chart in the middle of Figure 1. We use these segment-membership probabilities and the Gittins indices to compute expected Gittins indices (bar chart in the upper right of Figure 1). There is now one expected Gittins index per morph. Based on research by Krishnamurthy and Mickova (1999), the (near-) optimal policy for latent segments is to assign the morph with the highest expected Gittins index. The bar chart in the upper right corner tells us to assign Morph 3 to the 101st consumer. Because a sample size of 100 consumers is small, the system is still learning morph-to-segment assignments, and hence, the bars are more or less of equal height. If the 101st consumer had made different clicks on the website, the segment probabilities would have been different, and perhaps, the morph assignment would have been different.
+As more consumers visit the website, we observe more outcomes--sales in the case of website morphing or click-throughs in the case of banner morphing. Using the observed outcomes, the algorithm refines the morph × segment indices (see below for details). The middle left and lower left bar charts reflect refinements based on information up to and including the 20,000th and 80,000th consumer, respectively. As the indices become more refined, the morph assignments improve. (In Figure 1's illustrative example, the expected Gittins index assigns Morph 3 after 100 consumers, changes to Morph 2 after 20,000 consumers, and discriminates even more effectively after 80,000 consumers.)
+State-of-the-art morphing imposes limitations. First, because many observations are needed for each
+
+index to converge, the morphing algorithm is limited to a moderate number of morphs and segments. (HULB used 8 × 16 = 128 Gittins indices rather than the 16 indices we used in Figure 1.) Second, although designers might create morphs using underlying characteristics, and morphing may define segments based on underlying cognitive dimensions, the dynamic program does not exploit factorial representations. Schwartz (2012) and Scott (2010) proposed an improvement to handle such factorial representations to identify the best banners for the nonmorphing case, but their method has not been extended to morphing.
+We now formalize the morphing algorithm. Our description is brief, but we provide full notation and equations in Appendix A. Readers wishing to implement morphing will find sufficient detail in the abovecited references. Our code is available upon request.
+3.1. Assigning Consumers to Latent Segments Based on Clickstream Data
+Figure 2 summarizes the two phases of morphing. We call the first phase a calibration study. The in vitro calibration study measures cognitive styles directly using established scales. Such measurement is intrusive and would not be feasible in vivo. Respondents for the calibration study are drawn from the target population and compensated to complete the calibration tasks. Using the questions designed to identify segment membership, we assign calibration study consumers to segments. For example, HULB asked 835 broadband consumers to complete a survey in which the consumers answered 13 "agree or disagree" questions such as "I prefer to read text rather than listen to a lecture." HULB factor-analyzed answers to the questions to identify four bipolar cognitive-style dimensions. They used median splits on the dimensions to identify 16 (2 × 2 × 2 × 2) segments.
+Calibration study respondents explore an in vitro website as they would in vivo. We observe their chosen clickstream. We record each respondent's clickstream as well as the characteristics of all possible click choices (links) on the website. An example "click characteristic" is whether the click promises to lead to pictures or text. Other click characteristics are dummy variables for areas of the Web page (such as a comparison tool), expectations (the click is expected to lead to an overall recommendation), or other descriptions. These calibration data are used to estimate a logit model that maps click characteristics to the chosen clicks (see Equation (A1) in Appendix A). The parameters of the logit model are conditioned on consumers' segments. The calibration study also provides the (unconditioned) percent of consumers in each segment--data that form prior beliefs for in vivo Bayesian calculations.
+During the day-to-day operation of the in vivo website, we do not observe consumers' segments; instead,
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+31
+
+Figure 2
+
+The Different Roles of the Calibration Study and the Day-to-Day Banner Morphing Algorithm
+
+Calibration study
+(prior to in vivo morphing)
+
+Tasks
+1. Measure cognitive styles with established questions and define cognitive-style segments.
+
+Outcomes
+1. Assign each calibration study consumer to a cognitive-style segment (using questions only in the calibration study).
+
+2. Observe clicks and characteristics of clicks for consumers in each cognitive-style segment.
+
+2. Calibrated model that can infer segment membership probabilities from clickstream.
+
+Day-to-day operation (of in vivo website)
+Exploration
+
+1. Observe clickstream. Use calibrated model to infer consumers' latent cognitive-style segments.
+2. Observe outcomes (e.g., clickthroughs). Update Gittins indices for each segment × morph combination.
+
+1. Cognitive-style probabilities for each latent segment.
+2. Gittins index value for each segment × morph combination after the nth consumer.
+
+Exploitation
+
+3. Use latent segment probabilities and Gittins indices to compute the expected Gittins index.
+
+3. (Near-) optimal assignment of a morph to the nth consumer to balance exploration and exploitation.
+
+we observe consumers' clickstreams. The calibrated model and observed click characteristics give likelihoods for the observed clickstream conditioned upon a consumer belonging to each of the (now latent) segments. Using Bayes theorem (and prior beliefs), we compute the probabilities that a consumer with the observed clickstream belongs to each segment (as shown in the middle of Figure 1). See Appendix A, Equation (A1). In notation, let n index consumers, r index segments, and t index clicks. Let cnt be consumer n's clickstream up to the tth click. The outcomes of the Bayesian calculations are the probabilities Pr rn = r cnt that consumer n belongs to segment r conditioned on the consumer's clickstream.
+In HULB the first 10 clicks on the in vivo website were used to identify the consumer's segment and select the best morph. We adopt the same strategy of morphing after a fixed and predetermined number of clicks. We label the fixed number of clicks with to. Hauser et al. (2013) proposed a more complex algorithm to determine the optimal time to morph, but their algorithm was not available for our experiments. Thus, our experiments are conservative because morphing would likely do even better with an improved algorithm.
+3.2. Automatically Learning the Best Banner for Each Consumer
+For ease of exposition, temporarily assume that we can directly observe the consumer's latent segment. Let m index morphs, and let prm be the probability of a good outcome (a sale or a click-through)
+
+given that a consumer in segment r experienced morph m for all clicks after the first to clicks. One suboptimal method to estimate prm would be to observe outcomes after assigning morphs randomly to a large number, Nlarge, of consumers. This policy, similar to that used by Google's Web optimizer and many behavioral-targeting and context-matching algorithms, is suboptimal during the calibration period because Nlarge consumers experience morphs that may not lead to the best outcomes.2 To get a feel for Nlarge, assume eight morphs and four segments as in the CNET experiment. Assume a typical click-through rate of 2/10ths of 1% and calculate the sample size necessary to distinguish 2/10ths of 1% from a null hypothesis of 1/10th of 1%. We would need to assign suboptimal banners to approximately 128,000 consumers to obtain even a 0.05 level of significance (exact binomial calculations for each morph × segment combination). Morphing identifies optimal assignments with far fewer suboptimal banners.
+Optimal assignment for directly observed segments is a classic problem in dynamic programming. The dynamic program balances the opportunity loss incurred while exploring new morph-to-segment assignments with the knowledge gained about the optimal policy. The updated knowledge is gained by observing outcomes (sales or click-throughs) and is summarized by posterior estimates of the prm. (See
+2 Google is now implementing Gittins' experimentation but has not yet implemented morphing (http://support.google.com/analytics/ bin/answer.py?hl=en&answer=2677320, accessed April 2012).
+
+Urban et al.: Morphing Banner Advertising
+
+32
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+Equation (A2) in Appendix A.) Improved posterior estimates enable us to assign morphs more effectively to future consumers.
+For known segments, the optimal solution to the dynamic program has a simple form: we compute an index for each r m combination. This index is the Gittins index, Grmn, and is the solution to a simpler dynamic program that depends only on assignments and outcomes for those consumers who experienced that r m combination (see Equation (A3) in Appendix A). For the nth consumer, the optimal policy assigns the morph that has the largest index for the consumer's segment (Gittins 1979). The indices evolve with n.
+Because we do not observe the consumer's segment directly, we must estimate the probabilities that the consumer belongs to each latent segment. Thus, in vivo, the problem becomes a partially observable Markov decision process (POMDP). Krishnamurthy and Mickova (1999) established that the POMDP is indexable and that an intuitive policy is near optimal. Their policy assigns the morph with the largest expected Gittins index. The expected Gittins index is defined by EGmn = r Pr rn = r cnt Grmn. We still update the prm's and Grmn's, but we now do so using Pr rn = r cnt . The key differences between the expected Gittins index policy and the naïve calibration-sample policy (Nlarge are that the expected Gittins index policy (1) learns while minimizing opportunity loss, (2) continues to learn as n gets large, and (3) can adapt when prm changes as a result of unobserved shocks such as changes in tastes, new product introductions, or competitive actions. Recalibration is automatic and optimal.
+4. CNET Field Experiment
+4.1. Smartphone Banners on CNET.com CNET.com is a high-volume website that provides news and reviews for high-tech products such as smartphones, computers, televisions, and digital cameras. It has eight million visitors per day and has a total market valuation of $1.8 billion (Barr 2008). Banner advertising plays a major role in CNET's business model. Context-matched banners demand premium prices. For example, a computer manufacturer might purchase banner impressions on Web pages that provide laptop reviews. Nonmatched banners are priced lower. Morphing provides a means for CNET to improve upon context-matching and, hence, provide higher value to its customers. CNET accepted our proposal to compare the performance of morphing versus a control on its website and to explore interactions with context matching.
+The banners advertised AT&T smartphones. Consumers visiting CNET.com were assigned randomly
+
+to test and control cells. In each experimental cell, some banners were context-matched and some were not (as occurred naturally on CNET). To ensure a sufficient sample for the morphing algorithm to be effective, we assigned 70% of the consumers to the test cell. CNET's agency developed a pool of eight AT&T banner advertisements about refurbished HTC smartphones. Five of the banners were square banners that could appear anywhere on the website; three of the banners were wide rectangular banners that appear at the top of the page. These banners are depicted in Figure 3; we provide more detail about their design in §4.3. (AT&T was out of stock on new HTC smartphones; AT&T followed industry practice to focus on refurbished smartphones when new phones were out of stock. Industry experience suggests lower click-through rates for refurbished products, but the decrease should affect the test and control cells equally.)
+4.2. CNET Calibration Study We first identified a candidate set of cognitive-style questions using those suggested by HULB augmented from the references therein and from Novak and Hoffman (2009). We drew 199 consumers from the Greenfield Online panel for a prestudy. These consumers answered all cognitive-style questions. Factor analysis and scale purification identified 11 questions likely to categorize CNET consumers. (Detailed questions and prestudy analyses are available from the authors.)
+In the calibration study, 1,292 CNET users answered the 11 purified questions. We factoranalyzed the answers and identified three factors, which we labeled impulsive versus deliberative, analytic versus holistic, and instinctual versus not. See Table B.1 in Appendix B for factor loadings. Following standard procedures (e.g., Churchill 1979), we repurified these scales, resulting in three multiitem bipolar cognitive-style dimensions with reliabilities of 0.75, 0.66, and 0.57, respectively. CNET's designers felt they could most effectively target consumer segments that varied on the two most reliable cognitive-style dimensions. We followed the methods in HULB and assigned consumers to segments based on median splits of the two bipolar scales. The four segments were deliberative-holistic, deliberativeanalytic, impulsive-holistic, and impulsive-analytic. Although the dimensions are orthogonal by construction, there is no reason to expect that the four segments contain equal numbers of consumers. In vivo posterior estimates were 9%, 42%, 23%, and 27%, respectively.
+4.3. Banner Characteristics (Designed by CNET's Agency)
+CNET's agency varied morph characteristics such as the smartphone image (home screen versus pictures
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+33
+
+Figure 3 Square and Top-of-Page Banner Advertisements (CNET Field Experiment)
+
+Note. S denotes square banners; T denotes top-of-page banners.
+
+of people), the size of the image, the size and colors of the fonts, the background colors, and information content (online only, free shipping versus a list of smartphone features). The designers also varied hot links such as "get it now," "learn more," "watch video," "benefits of Android technology," "see phone details," and "offer details." With only a moderate number of banners, it was not feasible to vary all of these banner characteristics in a fractional factorial. Rather, we relied on CNET's designers to provide banners that varied substantially. The morphing algorithm automatically and optimally assigned the banners to latent segments (via the Gittins indices). CNET's choice of potential banners is an empirical trade-off--more banners might achieve greater discrimination, but more banners might compromise the optimal policy by spreading updates over a greater number of morph × segment indices. More empirical experience might suggest procedures to determine the number of banners that optimizes this trade-off.
+CNET's agency relied on the judgment of their designers. With more empirical experience, banner designers should be better able to design banners that target latent segments. Researchers might
+
+use prestudies to link banner characteristics to segments identified in the calibration study. Analyses similar to the logit model that links click preferences to segments could help designers select banner characteristics.
+4.4. Calibrated Model of Segment-Specific Click Preferences
+We observed the clickstreams for all 1,292 consumers in the calibration study. We decomposed every click alternative into a vector of 22 click characteristics including dummy variables for areas on the homepage ("carousel," "navigation bar," "promotion bar," "more stories," "popular topics," etc.), areas on other pages (product-specific reviews, "CNET says," "inside CNET," etc.), usage patterns (search category, social influences, tech-savvy news, etc.), and independent judges' evaluations of expected click outcomes (pictures, graphs, data, etc.). The same decomposition applied to the website in the calibration study and to the tracked areas of the in vivo website. Using the calibration data, we estimated segment-specific clickcharacteristic weights, r . The specific model mapping characteristics to clicks is a logit model that is
+
+Urban et al.: Morphing Banner Advertising
+
+34
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+conditioned upon segment membership. See Equation (A1) in Appendix A and HULB (Equation (4)). Parameter values are given in Appendix C.
+4.5. Posterior Beliefs About Latent Cognitive-Style Segments In Vivo
+During the day-to-day operation on the CNET website, we used Bayesian updating to estimate the probabilities that each consumer belongs to each latent segment; see Equation (A1) in Appendix A and HULB (Equation (5)). Simulations based on the calibration study suggested that five clicks (t0 = 5) would provide sufficient observations to obtain reasonable posterior estimates of Pr rn = r cnt .
+In contrast to HULB, in CNET we used cookies so that updating continued through multiple consumer visits. We defined an active consumer as a consumer who has made at least five clicks on tracked areas of the website. In the control cell we tracked clicks but only to determine whether a consumer was active. Before becoming active, neither test nor control consumers were shown any banners. After becoming active, test consumers saw a banner selected by the morphing algorithm and control consumers saw a randomly chosen banner.
+4.6. Defining a Successful Click-Through When There Are Multiple Sessions
+The same banner might be shown in many sessions. (CNET considers a session to be "new" after 30 minutes of inactivity.) CNET (and AT&T) considers the banner a success if the consumer clicks through in at least one session. We adopt this definition when we update the prm. To account for interrelated sessions, we use a strategy of temporary updates and potential reversals.
+This strategy is best illustrated with a three-session example. Suppose that a consumer sees the same banner in three sessions and clicks through only in the second session. A naïve application of HULB would make three updates to the parameters of the posterior distributions for the success probabilities, prm. The updates would be based erroneously on observations classified as a failure, then a success, and then a failure. Instead, using CNET's success criterion, the correct posterior is computed after the third session based on one success because the banners achieved their collective goal of at least one consumer clickthrough. Until we reach the third session, updates should represent all information collected to that point. We update as follows. After the first session (no click-through), we update the posterior distribution based on a failure--this is the best information we have at the time. After the second session (clickthrough), we reverse the failure update and update as if it were a success. After the third session (no clickthrough), we do nothing because the update already
+
+reflects a success on CNET's criterion. The mathematical formulae for CNET's success criterion are given in Appendix A.
+4.7. Priors for Morph × Segment Probabilities (Used in Computing Indices)
+The morphing algorithm requires that we set priors for the morph × segment click-through probabilities. The findings in HULB suggest that weakly informative priors suffice. We set priors equal to the historic click-through probability for banners for refurbished smartphones--the same for all banners. To ensure that the priors are weakly informative, we select parameters of the prior distribution based on an effective sample size of 40 consumers, which is small compared with the anticipated number of CNET consumers.
+4.8. Interaction Between Morphing and Context Matching
+CNET uses context matching; thus one goal of the field experiment was to determine whether morphing adds incremental lift. The context-matching literature reports lifts of approximately 3% for in vivo testing and 26% for in-sample projections (see §2). These lifts were calculated for banners or page views, not on a consumer-by-consumer basis.
+The information technology literature consistently postulates that context matching is effective because the banner is more relevant to the consumer (e.g., Chen et al. 2009, p. 209; Chu et al. 2009, p. 1103; Joshi et al. 2011, p. 59). Relevance has a long history in advertising research. For example, classic studies postulate that "persuasion may work best depending on whether message-relevant thought occurs" (Petty et al. 1983, p. 137). Chaiken (1980, p. 760) manipulated issue involvement as "personal relevance" and demonstrated that better-quality advertising is more persuasive with high involvement but not with low involvement. Zaichkowsky (1986, p. 12) summarized that "although there does not seem to be a single precise definition of involvement, there is an underlying theme focusing on personal relevance." Her survey of the literature indicated that "under high involvement, attitudes were influenced by the quality of the arguments in the message." Prescriptive theories of targeting make similar predictions (Iyer et al. 2005, Kenny and Marshall 2000).
+If these theories apply to banner advertising, and if morphing increases the effective quality of the communication, then we expect an interaction between morphing (increased quality) and context matching (relevance). If cognitive-style matching makes it easier for consumers to learn their preferences, then a morphing-by-context-matching interaction is also consistent with observed interactions between
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+35
+
+targeting and preference learning (Lambrecht and Tucker 2011).
+In our field experiment, we manipulate morphing (test versus control) randomly. Within each experimental cell, some banners match context and some do not. Context matching occurs naturally on the CNET website and in the same manner in the test cell as in the control cell.
+
+4.9. Results of the CNET Field Experiment
+
+CNET placed banners on its website for all active con-
+
+sumers in the test and control cells between April 11,
+
+2011 and May 13, 2011. Naturally, there were non-
+
+AT&T/HTC banners placed on CNET during this
+
+31-day test period, but these banners were placed ran-
+
+domly between the test and control. Both we and
+
+CNET went to great lengths to ensure there were
+
+no systematic effects of non-AT&T/HTC banners or
+
+interactions with AT&T/HTC advertising. Sampling
+
+appeared random--we detected no systematic differ-
+
+ences in the placement of control banners across esti-
+
+mated
+
+(latent)
+
+cognitive-style
+
+segments
+
+(
+
+2 30
+
+= 15 9,
+
+p = 0 98).
+
+Table 1 summarizes the field test results. Over-
+
+all, 116,168 consumers saw 451,524 banners. Of these,
+
+32,084 consumers (27.4%) saw 58,899 banners (13.0%)
+
+on Web pages where any smartphone was rated, com-
+
+pared, priced, discussed, or pictured. We consider
+
+such Web pages to be context matched. Consistent
+
+with theories of relevance-quality interactions, mor-
+
+phing achieves significant and substantial incremen-
+
+tal improvements for banners on context-matched
+
+Web pages (t = 3 0 p = 0 003). Because many con-
+
+sumers saw multiple banners, we also calculated
+
+click-through rates on a consumer-by-consumer basis.
+
+Morphing is significantly better than the control on
+
+consumer click-through rates when the banners are
+
+placed on context-matched Web pages (t = 2 2 p =
+
+0 028 .
+
+Table 1 CNET Field Test of Banner Advertisement Morphing
+
+Web pages
+
+Sample size Test Control
+
+Click-through ratea Lift
+Test Control (%) Significance
+
+Context-matched All banners 40 993 Per consumer 22 376
+Noncontext-matched All banners 262 911 Per consumer 59 362
+
+17 906 0 307b 9 708 0 250b
+129 714 0 151 24 722 0 144c
+
+0.168 +83 0.127 +97
+0.160 -6 0.197 -27
+
+0.003 0.028
+0.495 0.081
+
+aClick-through rates are given as fractions of a percentage, e.g., 0.307 of 1%.
+bTest cell has a significantly larger click-through rate than control cell at the 0.05 level or better.
+cTest cell has a marginally significantly smaller click-through rate than the control cell at the 0.10 level.
+
+Morphing almost doubled click-through rates for context-matched banners (83% and 97% lifts, respectively, for banners and for consumers). To put these lifts in perspective, context matching alone achieved a 5% lift in banner click-through rates, but the difference was not significant (t = 0 3 p = 0 803 . A 5% lift is consistent with Joshi et al. (2011) and Chu et al. (2009), who reported lifts of 3.3% and 3.2%, respectively, on large samples. Context matching alone had a negative lift on per-consumer click-through rates, but the lift was not significant (t = 1 4 p = 0 167).
+Table 1 also suggests that gains to morphing require that the banners be relevant to the Web page visited by the consumer. There was a decline for banners and consumers when the banners were not on context-matched Web pages (t = 0 5 p = 0 495 and t = 1 74, p = 0 081, respectively), but that decline is marginally significant at best. Interactions between morphing and context matching were significant for banners ( 2 = 161 8 p < 0 01) and for consumers ( 2 = 8 2, p = 0 017).
+4.10. Morphing Discriminates Among Latent Cognitive-Style Segments
+Segment membership is latent; we do not observe segment membership directly. Instead, we use posterior estimates of segment membership to examine the probability that morph m was assigned to segment r. Table 2 reports posterior probabilities for square and top-of-page banners. On average, top-of-page banners did better than square banners--a result that does not appear connected to cognitive-style morphing. For example, in the context of search advertising, eye-tracking studies suggest a "golden triangle" or "F-shaped" attention pattern; top-of-page sponsored links received substantially more attention than rightof-page sponsored links (Buscher et al. 2010). Buscher et al. (p. 47) suggested further that high-quality sponsored links receive twice as much visual attention as low-quality sponsored links. For ease of comparison between different types of banners, we renormalize click-through rates for top-of-page banners.
+Morph-to-segment matching worked well for square banners. Some square banners are differentially better for specific cognitive-style segments. For example, the best morph for the deliberativeanalytic latent segment (r = 2) is Morph S1. The best morph for the impulsive-holistic segment (r = 3) is Morph S5. The morphing algorithm discriminates less well for the deliberative-holistic segment (r = 1), likely because that segment is a much smaller segment than the others (9% of the consumers).
+The deliberative-analytic segment (r = 2) and the impulsive-holistic segment (r = 3) together account for 65% of the consumers, and each received their best morphs most often. The morphing algorithm does
+
+Urban et al.: Morphing Banner Advertising
+
+36
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+Table 2 CNET Field Test: Posterior Click-Through Rates and Assignment Probabilities
+
+Square banners (%)
+
+Top-of-page banners (%)
+
+Posterior click-through rates Deliberative-holistic segment (r = 1, 9%) Deliberative-analytic segment (r = 2, 42%) Impulsive-holistic segment (r = 3, 23%) Impulsive-analytic segment (r = 4, 27%)
+Posterior Pr m r square a Deliberative-holistic segment (r = 1, 9%) Deliberative-analytic segment (r = 2, 42%) Impulsive-holistic segment (r = 3, 23%) Impulsive-analytic segment (r = 4, 27%)
+Posterior click-through rates Deliberative-holistic segment (r = 1, 9%) Deliberative-analytic segment (r = 2, 42%) Impulsive-holistic segment (r = 3, 23%) Impulsive-analytic segment (r = 4, 27%)
+Posterior Pr m r top of page a Deliberative-holistic segment (r = 1, 9%) Deliberative-analytic segment (r = 2, 42%) Impulsive-holistic segment (r = 3, 23%) Impulsive-analytic segment (r = 4, 27%)
+
+m = S1 0.16 0.47 0.42 0.41
+m = S1 14 41 15 11
+
+m = S2 0.12 0.43 0.25 0.65
+m = S2 7 5 5
+24
+
+m = S3 0.28 0.30 0.24 0.33
+m = S3 9
+35 21 30
+
+m = S4 0.27 0.42 0.40 0.54
+m = S4 18 7 22 10
+
+m = S5 0.13 0.43 0.44 0.63
+m = S5 51 12 37 24
+
+m = T1 0.35 0.45 0.45 0.63
+m = T1 46 76 66 75
+
+m = T2 0.26 0.35 0.32 0.48
+m = T2 13 12 21 16
+
+Notes. Posterior segment sizes are shown in parentheses (percentage of total consumers). Largest values in a column are shown in bold. aRows sum to 100%.
+
+m = T3 0.26 0.39 0.33 0.35
+m = T3 41 12 13 9
+
+less well for the remaining 35% of the consumers. For the impulsive-analytic (r = 4) segment and the deliberative-holistic segment (r = 1), the best morph was given more often than average, but other morphs were given even more often.
+The posterior probabilities for top-of-page banners illustrate a situation where designers did not achieve enough variation. The algorithm learned correctly that Morph T1 was best for all latent segments. Overall, the morph assignments were enough to achieve substantial lift, but the lift would likely have improved if the algorithm had run longer. When click-through rates are low, the CNET data suggest convergence even beyond 82,000 consumers. This result illustrates why large samples are necessary to evaluate in vivo banner morphing.
+We attempted to link the features of the best morphs to cognitive style segments. Some assignments made sense. For example, the best morph for the deliberative-analytic segment included a detailed list of product features and the best morph for the impulsive-holistic segment included a link to "get it now." We are hesitant to overinterpret these qualitative insights because in the CNET field test, there are many more features than morphs.
+5. Automotive Experiment to Test Matching Morphs to Segments
+Banner advertising generates click-throughs, but banners are also display advertising and may enhance a brand's image whether or not a consumer clicks
+
+through. For example, Nielsen (2011) described a survey in which "54 of those surveyed believe online ads are highly effective at `enhancing brand/product image.' " Because managers are often interested in more than click-through rates, we supplement the CNET field experiment with an in vitro automotive experiment. (Organizational differences between CNET and AT&T, and proprietary concerns, made it impossible to track click-through rates back to sales of AT&T telephones.) In the automotive experiment, we abstract from the mechanics of Gittins' learning to test whether morph-to-segment matching increases brand consideration and purchase likelihood as well as click-through rates. The automotive experiment enables us to further test the hypothesis that banner advertisements are more effective when targeted to consumer segments that vary on cognitive styles.
+Measures of brand consideration and purchase likelihood require intrusive questions, unlike measures of click-through rates, which can be observed unobtrusively. To measure brand consideration and purchase likelihood, we invited consumers to complete questionnaires before and after searching for information on an automotive information-and-review website. Because a sample size of tens of thousands of consumers was not feasible with this design, we used longitudinal methods as a surrogate for dynamic program optimization. Figure 4 summarizes the longitudinal methods. In Phase 1, consumers rated all test and control advertisements for their buying stage and preferred body type. Two weeks later, in Phase 2, consumers answered a series of questions that enabled us to assign consumers to cognitive-style segments.
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+37
+
+Figure 4 Automotive Experiment: Longitudinal Design as a Surrogate for Morph-to-Segment Matching
+
+Phase 1 Develop potential banners (morphs) based on prestudies Screen consumers for target market Consumers indicate body-type preference and stage of buying process Consumers rate potential banners on meaningfulness, relevance, information content, and believability 5 minutes
+
+Phase 2 (2 weeks later) Consumers complete 29 cognitive-style scales Pre-measures for consideration and purchase likelihood 10 minutes
+Identify consumer segments (4 cognitive styles) × (3 buying stages)
+Assign consumers to segments
+Identify the best two morphs for each segment (Two of 15 possible morphs for each segment)
+All morphs match body-style preference
+
+Phase 3 (experiment, 4½ weeks after Phase 1) Consumers explore "Consumer Research Power " website; observe click-throughs on banners Consumers exposed to banners in natural search
+Test: Banners assigned by morph-to-segment rules Control: Current in vivo Chevrolet banners Post-measures for consideration and purchase likelihood 20 minutes
+Note. Phases 1 and 2 replace in vivo Bayesian inference and expected Gittins index optimization.
+
+In Phase 2, we also obtained pre-measures of brand
+
+consideration and purchase likelihood. Phases 1 and
+
+2 replaced Bayesian inference and Gittins-index-based
+
+optimization with in vitro measurement. Phases 1
+
+and 2 assigned each consumer to a segment and
+
+identified the best banners for each segment, thus
+
+replacing two tasks performed in vivo in the CNET
+
+experiment. The actual experiment, Phase 3, occurred
+
+2
+
+1 2
+
+weeks
+
+after
+
+Phase
+
+2
+
+(4
+
+1 2
+
+weeks
+
+after
+
+consumers
+
+rated banners in Phase 1). In the experiment (Phase 3),
+
+consumers saw banners while exploring an automo-
+
+tive information-and-review website. In the test cell,
+
+banners were matched to cognitive styles (plus buy-
+
+ing stage and body-type preference), whereas in the
+
+control cell, banners were matched only to body-
+
+type preference. (Note that this experiment extends
+
+the definition of consumer segments to include buy-
+
+ing stage, a practical consideration in the automotive
+
+market.)
+
+The experimental design, its implications, and
+
+potential threats to validity are best understood and
+
+evaluated within context. Thus, before we describe the Phase 3 experiment, we first describe the website, the automotive consumer segments, and the test and control banner advertisements.
+5.1. Automotive Banners on an Information-and-Recommendation Website
+Information-and-recommendation websites, such as Edmunds', Kelley Blue Book, Cars.com, and AutoTrader, play major roles in automotive purchasing. For example, Urban and Hauser (2004) estimated that at least 62% of automotive buyers search online before buying a car or truck. More recently, Giffin and Richards (2011) estimated that 71% of automotive buyers search online and that online search was more influential in purchase decisions than referrals from family or friends, newspapers, and other media sources. Because information-and-recommendation websites attract potential purchasers, automotive manufacturers invest heavily in banner advertising on these websites. The importance of such expenditures
+
+38
+Figure 5 Simulated Website for Automotive Experiment Matching Morphs to Segments
+
+Urban et al.: Morphing Banner Advertising Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+Note. Landing page is on the left; one of many subsequent pages is on the right.
+
+motivated General Motors to test morph-to-segmentmatching for banner advertising targeted for their Chevrolet brand. General Motors' managerial motivation matched our scientific desire to test whether morph-to-segment matching would enhance brand consideration and purchase likelihood.
+We created a website that simulated actual information-and-recommendation websites. Figure 5 illustrates the landing page and an example search page. Consumers could search for information, receive tips and reviews, learn about insurance, and read reviews just like they would on commercial information-and-recommendation websites. To mimic best practices, all test and control banners were targeted by consumers' expressed preferences for one of five body types. Such targeting is typical on commercial websites. For example, Edmunds.com displays body-type category links (coupe, convertible, sedan, SUV, etc.) prominently on the landing page and uses click-through information from these links to place relevant banner advertising on subsequent Web pages and site visits. Body-type targeting enhances external validity and relevance. (Recall that morphing was most effective on relevant CNET Web pages.)
+5.2. Cognitive Styles and Stage of the Automotive Buying Process
+Body-type preference and the automotive buying stage were measured in Phase 1; cognitive styles were measured in Phase 2. General Motors defines buyingstage segments by collection, comparison, or commitment. Collection segments included consumers who indicated they were more than a year away from buying a car or truck but were in the process of collecting information. Comparison segments included consumers less than a year away from buying a car or
+
+truck and who had already gathered information on specific vehicles or visited a dealer. Commitment segments included consumers who planned to purchase in the next three months, who have collected information on specific vehicles, and who have visited a dealer.
+To identify cognitive styles, we asked consumers in a prestudy to answer 29 questions adapted from HULB and Novak and Hoffman (2009). We factoranalyzed their answers to identify three factors. Based on the questions that load together, we labeled the first two factors as rational versus intuitive and impulsive versus deliberative. The third factor was hard to define. See Table B.2 in Appendix B for factor loadings. Following standard procedures (e.g., Churchill 1979), we purified the scales, resulting in three multi-item cognitive-style dimensions with reliabilities of 0.87, 0.87, and 0.36, respectively. Because morphing requires a moderate number of discrete segments, we defined four cognitive-style segments by mean-splits on the first two cognitive dimensions.3 4 The four segments were rationalimpulsive, rational-deliberative, intuitive-impulsive, and intuitive-deliberative.
+3 Despite differences in the underlying questions, the type of consumer, and the buying context, the cognitive dimensions for hightech consumers and automotive consumers were not dissimilar. For each set of consumers, one dimension was impulsive verus deliberative. The other dimension was either analytic versus holistic (hightech) or rational versus intuitive (automotive). More experience might identify common dimensions that can be used across applications. If cognitive dimensions are situation specific, then research might identify a paradigm that relates the dimensions to a set of defined situations.
+4 In the automotive experiment, GM used mean-splits rather than median-splits to define segments. There is no reason to believe this will affect the results. Indeed, the two categorizations are quite similar. When we correct for the differences between median- and
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+39
+
+5.3. Test and Control Banner Advertisements Banner designers created test banners that varied on characteristics they judged would appeal to consumer segments with different cognitive styles. Some banners emphasized information; others compared targeted vehicles to competitors, and still others stressed test drives, finding a dealer, and purchase details. The banners also varied in the size of the images, the number of images, the amount of information provided, the size of the headlines, the amount of content in the headlines, whether content emphasized product features or recommendations, and other design characteristics. Clicks on banners took consumers to different target Web pages (as promised in the banners). The designers judged that these characteristics provided sufficient variation for Phases 1 and 2 to target the banners to each cognitive-style segment. In total, there were 75 test banners: 5 variations to appeal to different cognitive styles × 3 variations to appeal to different stages of the buying process × 5 variations using Chevrolet vehicles chosen to appeal to consumers interested in different body types. Figure 6 provides examples of 15 test banners for one body type, the Chevrolet Tahoe.
+In Phase 1, consumers evaluated potential test (and control) banners on meaningfulness, relevance, information content, and believability. Using the average score on these measures, we identified the best two test banners for each consumer segment. In Phase 3, consumers in the test cell saw the banners that were matched to their segment. Consumers in the control cell saw the control banners. We allowed consumers' preferences to override designers' prior beliefs just as in the CNET field experiment the dynamic program overrode designers' prior beliefs.
+There were 10 control banners: two banners for each of five body types. Control banners did not vary by cognitive style or buying stage. The control banners were the banners that Chevrolet was using on real information-and-recommendation websites at the time of the automotive experiment.
+The control banners in Figure 6 were most relevant to General Motors' business decisions, but if we are to use them as a scientific control we must establish that they are a valid control. The literature uses a random selection of "morphs" as a no-morphing control. If General Motors' current banners are better than a random selection of test banners, then any differences between test and control cells would underestimate the gain as a result of morph-to-segment matching. We could then conclude that the improvement as a result of matching is at least as large as we measure. However, if current banners are worse than a random
+mean-splits, the test group is still significantly better than the control group.
+
+selection of test banners, then we could not rule out that the test banners are, on average, simply better than the control banners.
+The average score for a test banner is 3.36 (out of 5); the average score for a control banner is 3.70. The combined control banners have significantly larger average scores than random test banners (t = 10 3 p < 0 01). For a stronger comparison, we compare the two best test banners to the two control banners. Even in this comparison, the average test score is still less than the control score (t = 2 7 p < 0 01). We therefore conclude that the current Chevrolet banners are a sufficient control. If morph-to-segment matching is superior to the current Chevrolet banners, then it is highly likely that morph-to-segment matching will be superior to either a randomly-selected set of test banners or a nonmatched mix of the two best test banners.
+5.4. Experimental Design and Dependent Measures
+In Phase 3 consumers were invited to explore an information-and-recommendation website called "Consumer Research Power." Consumers searched naturally as if they were gathering information for a potential automotive purchase. They did so for a minimum of five minutes. While consumers searched, we recorded click-throughs on the banners. During this search, we placed banner advertisements for Chevrolet models as they would be placed in a natural setting. Test consumers received banners that alternated between the best and second-best banner for their cognitive-style and buying-process segment. Control consumers received banners that alternated between the two control Chevrolet banners.5 All banners were targeted by body-type preference.
+Consumers who clicked through on banners were redirected to various websites; these varied by banner (and hence, consumer segment). For example, banners targeted to impulsive consumers in the commitment buying stage linked to maps of nearby dealerships, whereas banners targeted to rational consumers in the commitment buying stage linked to information on loans, purchasing, and options packages. We balanced the variety of click-through targets to include enough variation to implement targeting by segment, but not so much that consumers were directed outside the in vitro Web environment. Our in vitro targeting likely underestimates variation obtainable in vivo and is thus conservative.
+5 Control consumers also received a more general banner on the landing page. This more general banner mimics in vivo practice. When we include the more general banner in our analyses, the exposure-weighted rating of all control banners (3.75) remains significantly better than the exposure-weighted rating of the test banners (3.46), reaffirming the validity of the control (t = 3 0, p < 0 01). To be conservative, we do not include clicks from landing-page banners for either the test or control cells.
+
+40
+Figure 6 Example Test and Control Banner Advertisements for the Automotive Experiment
+
+Urban et al.: Morphing Banner Advertising Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+Notes. The leftmost banners are controls. The other columns contain five banners designed for each buying-stage segment. In the experiment there were 10 potential control banners: body type × two banners. There were 75 potential test banners: body type × buying stage × cognitive style.
+
+After consumers completed their search on the Consumer Research Power website, we measured Chevrolet brand consideration and purchase likelihood (post-measures).
+
+5.5. Potential Threats to Validity
+
+One potential threat to validity is that exposure to
+
+banners in Phase 1 might have contaminated the
+
+Phase 3 measures. We took steps to minimize this
+
+threat. The Phase 1 questionnaire was relatively short
+
+(five
+
+minutes)
+
+and
+
+occurred
+
+4
+
+1 2
+
+weeks
+
+before
+
+the
+
+Phase 3 experiment. In Phase 1 consumers were not
+
+allowed to click through on the banners and, hence, did not receive the same rich information experience as in Phase 3. Instructions were written carefully to disguise the goals of the later phases--consumers believed that the Phase 3 website experience was a test of the website, not an advertising test. We believe that the time delay, the number of banners rated, the lack of active click-through in Phase 1, and instructions that disguised later phases combined to limit contamination from Phase 1 to Phase 3.
+More importantly, the experimental design minimizes potential false positives that might be due to
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+41
+
+contamination. First, Phase 2 is more proximate in time than Phase 3. Contamination, if any, should be larger in Phase 2 than in Phase 3, making it more difficult to show an effect on Phase-3-versus-Phase-2 measures. Second, contamination, if any, would affect test and control cells equally and have no impact on statistical tests of differences that are invariant with respect to constant effects.
+Another potential threat to validity is that the morph-to-segment test chooses from more banners than the control. If a consumer saw a greater variety of banners in the test cell, then we would be concerned about biases as a result of wearout in the control cell or biases because of greater variety in the test cell. All else equal, greater variety in the banners that a consumer actually sees increases the odds that a banner is the best one for a consumer. Our design minimizes this threat because consumers in both test and control cells saw only two different banners.
+5.6. Results of the Automotive Experiment Testing the Behavioral Premise of Morphing
+We invited 2,292 members of the Gongos Automotive Panel to participate in a multiphase study of website design. Consumers were screened so that they were an equal or sole decision maker in automotive purchases and planned to purchase a new car or truck in less than three years. This mimics standard practice. Of these, 1,299 consumers agreed to participate (61% response rate), and 588 consumers completed Phases 1, 2, and 3 (45.3% completion rate). More consumers were assigned to the test cell (70%) than the control cell (30%) so that we had sufficiently many consumers in each consumer segment. All statistical tests take unequal cell sizes into account. Dependent measures included click-through rates for banners, click-through rates per consumer, post-measures of brand consideration and purchase likelihood, and comparisons of brand consideration and purchase likelihood between the post-measures (after Phase 3) and the pre-measures (during Phase 2).
+5.7. Test-vs.-Control Analyses (Post Only) Because the preconditions were the same in the test and control cells, we begin with post-only results. Table 3 reports the post-only comparisons for the morph-to-segment-matching experiment. As in the CNET field experiment, on body-type-relevant Web pages, the lift in click-through rates is significant. The test-versus-control difference in click-through rates is significant whether we focus on impressions (245% lift, t = 3 3 p < 0 01) or consumers (66% lift, t = 4 4 p < 0 01). The automotive experiment enables us to look beyond click-through rates to brand consideration and purchase likelihood. Both measures increase significantly based on morph-to-segment
+
+Table 3
+
+Automotive Experiment: Banner Advertisement Morphing (Post-Only Results)
+
+Sample size Test Control
+
+Outcome measurea
+Lift Testb Control (%) Signif.
+
+Click-through rates All banners Per consumer
+Brand consideration
+Purchase likelihood
+
+6 348 421 421
+421
+
+2 643 167 167
+167
+
+0 97% 15 9% 42 8%
+3 28
+
+0 26% +245 < 0 01 9 6% +66 < 0 01 32 9% +30 < 0 01
+3 05 +8 < 0 01
+
+Notes. All banners are targeted by body-type preference. Brand consideration is a consider-or-not measure that we report as a percentage of the sample. Purchase likelihood is measured with a five-point scale.
+aClick-through rates are given as percentages. bTest cell is significantly larger at the 0.01 level.
+
+matching with consideration the most substantial (30% lift, t = 4 9, p < 0 01 and 8% lift, t = 4 1, p < 0 01, respectively). As a test of face validity, Chevrolet brand consideration is roughly 29% on a nationwide basis, comparable to the 32% measured in the control cell.
+Table 3 compares all consumers in the test cell to all consumers in the control cell whether or not they clicked on a banner. We gain insight by comparing those consumers who clicked on a banner to those who did not. The comparison of clickers to nonclickers is consistent with self-selection; brand consideration is 45% higher (t = 2 9 p < 0 01) and purchase likelihood is 14% higher (t = 13 5 p < 0 01) for clickers versus nonclickers.
+Brand consideration improved for both nonclickers (22% lift) and clickers (17% lift); purchase likelihood improved for nonclickers (9% lift) and stayed the same for clickers (0% lift). Recall that these relative lifts are computed on a higher base for clickers than nonclickers because both brand consideration and purchase likelihood are substantially higher for clickers. We consider these results tentative because the test-versus-control lifts are not statistically significant when we split the sample to within clickers or nonclickers. Nonetheless, the results are at least consistent with a hypothesis that the banners acted as display advertising.
+5.8. Test-vs.-Control and Pre-vs.-Post Analyses We increase statistical power by accounting for the pre-measures (as in differences of differences) and for variation in segment membership or demographics as a result of stochastic variation in random assignment. Table 4 reports the results where we control for pre-measures, segment membership, and demographics. Click-through and brand consideration are quantal measures (i.e., click or not, consider
+
+Urban et al.: Morphing Banner Advertising
+
+42
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+Table 4 Automotive Experiment: Banner Advertisement Morphing Controlling for Pre-Measures, Segment Membership, and Demographics
+
+Clicks all banners
+
+Clicks per consumer
+
+Brand consideration
+
+Purchase likelihood
+
+Coefficient Signif. Coefficient
+
+Signif.
+
+Coefficient
+
+Signif.
+
+Coefficient
+
+Signif.
+
+Intercept Test-vs.-control treatment Pre-measure Buying-process dummies
+Collection Comparison Commitment
+Cognitive-style segment dummies Rational-deliberative Rational-impulsive Intuitive-impulsive Intuitive-deliberative
+Male vs. female Age Income Log-likelihood ratio
+
+-7 860 1 246 --
+0 359 0 763
+--
+
+< 0 01 < 0 01
+--
+0 458 < 0 01
+--
+
+0 417
+
+0 114
+
+0 094
+
+0 290
+
+0 537
+
+0 513
+
+--
+
+--
+
+-0 414
+
+0 157
+
+0 025
+
+0 033
+
+0 000
+
+0 547
+
+-349.845
+
+-3 657 0 564 --
+0 580 1 007
+--
+
+< 0 01 0 061 --
+0 126 < 0 01
+--
+
+-0 038
+
+0 972
+
+0 102
+
+0 792
+
+0 407
+
+0 259
+
+--
+
+--
+
+-0 344 0 020
+
+0 162 0 055
+
+-0 002
+
+0 451
+
+-223.039
+
+-4 132 0 759 3 570
+0 777 0 503
+--
+
+< 0 01 < 0 01 < 0 01
+0 026 0 065 --
+
+0 389
+
+0 038
+
+0 221
+
+0 144
+
+0 707
+
+0 022
+
+--
+
+--
+
+0 285
+
+0 247
+
+0 014
+
+0 184
+
+0 000
+
+0 476
+
+-232.013
+
+0 091 0 150 0 801
+0 347 0 105
+--
+
+0 629 0 019 < 0 01
+< 0 01 0 205 --
+
+-0 001
+
+0 172
+
+0 082
+
+0 142
+
+0 103
+
+0 059
+
+--
+
+--
+
+0 079
+
+0 300
+
+0 006
+
+0 065
+
+-0 000
+
+0 767
+
+-734.298
+
+Notes. Sample size is 8.991 impressions or 588 consumers. All equations are significant at the 0.01 level. Test-versus-control treatment is also significant at the 0.01 level with a differences of differences specification (available in the online appendix).
+Significant at the 0.05 level; significant at the 0.10 level.
+
+or not); therefore we use a logit formulation for these measures. Purchase likelihood is a scaled measure, so a regression suffices. Click-through (all banners) and brand consideration are significant at the p < 0 01 level, and purchase likelihood is significant at the p = 0 02 level. Click-through (per consumer) is marginally significant at the p = 0 06 level.
+In Table 4 we used the pre-measure as an independent variable because the pre-measure accounts for measurement error and accounts, in part, for unobserved heterogeneity in consumers' propensity to consider or purchase Chevrolet. We can also remove unobserved heterogeneity with doubledifference formulations. When we do so, test-versuscontrol treatment is significant at the 0.01 level for both brand consideration and purchase likelihood (details are available in the online appendix, available as supplemental material at http://dx.doi.org/ 10.1287/mksc.2013.0803).
+Together, Tables 3 and 4 suggest that morph-tosegment matching increases brand consideration and purchase likelihood (for automotive consumers) as well as click-through rates. In addition, morph-tosegment matching may have improved overall brand image even among consumers who did not click through. When combined with the CNET field experiment, the automotive experiment suggests that the effectiveness of banners improves when morphing targets banners to consumer segments.
+6. Implications and Future Directions
+Online morphing is a nascent technology for improving the effectiveness of banner advertising. HULB established the potential for increasing sales if
+
+websites morphed their look and feel, but the evaluation was based on data generated in a calibration study. Subsequently, Hauser et al. (2013) demonstrated that website morphing could be implemented in vivo, but their sample size was not sufficient to establish that the improved outcomes were significant.
+The CNET field experiment establishes that an expected Gittins index policy enables an in vivo website to learn automatically the best morph for each consumer segment. Click-through rates improve substantially for context-matched (relevant) Web pages on a high-traffic website. The automotive experiment establishes that morph-to-segment matching also increases brand consideration and purchase likelihood.
+The expected Gittins index provides near-optimal learning; we know of no better strategy. By the principle of optimality, the expected Gittins index policy is superior to a policy that sets aside the first Nlarge consumers for a random-assignment experiment. On high-traffic websites with low click-through rates, the improvement over an Nlarge policy can be substantial.
+6.1. Strategic Implications When morphing increases click-through rates, the marginal return to banners increases. As firms reoptimize their advertising spending, they will allocate proportionally more to banners and less to more traditional media. However, there is a fixed cost to the development of multiple banners for use in morphing. The targeted banners for the automotive experiment would have a cost of $250,000 to produce if done at market rates (based on a quote from an advertising agency to GM to do this work). For high-volume
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+43
+
+brands, as in our tests, the incremental improvements in click-through rates, consideration, and purchase intentions justify the fixed cost. For smaller websites or advertisers, the fixed cost may be too steep a price to pay.
+The effect of increased banner productivity on total advertising spending is ambiguous and dependent on the detailed marginal costs and revenues. Addressing this question requires meta-analyses across a variety of product categories, media, and countries. Such meta-analyses are now underway through a consortium of researchers and should provide insights on the future of media spending.
+6.2. Norms Rather Than Calibration Studies State-of-the-art morphing technology requires a calibration study to (1) establish the definitions of consumer segments and (2) obtain data on click preferences for each segment (the r ). We envision future applications that rely on norms rather than calibration studies. For example, in applications to date, the definitions of the cognitive-style segments are somewhat similar. With more applications, we might use meta-analyses to stabilize cognitive-style definitions so that we might identify segments without a calibration study. Researchers might also investigate whether consumers' cognitive styles (as they relate to websites and banners) are inherent characteristics of consumers or whether cognitive styles vary based on the situation the consumer faces as he or she navigates the website.
+Similarly, meta-analyses might provide strong priors for segment-based click-characteristic preferences, r . We might also identify the click-alternative characteristics that best distinguish consumer segments. Such empirical generalizations would enable a website or an advertiser to rely on norms or an abridged calibration study. A similar diffusion of knowledge has taken place in pretest market simulators for consumer packaged goods. Initial studies explored methods, but later studies built the normative databases. Today, most pretest-market forecasts rely on norms. When norms become established, we expect morphing to flourish.
+6.3. Practical Challenges The banner-morphing experiments in this paper, and the prior website-morphing tests, relied on experienced designers to develop banners or websites to match consumer segments. Morphing implementation updates priors about which banners are best for each segment. The results were sometimes nonintuitive and serendipitous and spurred further creative development. As we gain more experience, we expect that scientific studies will lead to greater insight into the challenge of designing a priori banners that best target latent segments. Such studies are fertile
+
+grounds for new research. Similarly, if banner characteristics are varied systematically in a design in which the contribution of each characteristic can be identified, then a posteriori researchers might gain further insight into the optimal design of banners.
+Another practical challenge is transportable code. All code has been specific to the application (and open source). Conjoint analysis, hierarchical Bayes, multinomial logit analyses, and other marketing science methods diffused widely when generalized software became available. We hope for the same diffusion with banner and website morphing.
+Finally, morphing relies on discrete definitions of segments and morphs. We are aware of research to define morphs by a factorial design of features and to find the best portfolio of morphs (e.g., Schwartz 2012, Scott 2010). We are unaware of any research to match morphs to segments that are based on continuous cognitive-style dimensions, but such research would be interesting.
+Supplemental Material Supplemental material to this paper is available at http://dx .doi.org/10.1287/mksc.2013.0803.
+Acknowledgments This research was supported by the MIT Sloan School of Management, the Center for Digital Business at the Massachusetts Institute of Technology (http://ebusiness .mit.edu), GM, WPP/Kantar, Google, CNET.com, and the Erasmus Centre for Marketing of Innovations (http://ecmi.nl). The authors gratefully acknowledge the contributions of their industrial collaborators, research assistants, and faculty colleagues: Dorothee Bergin, Angela Chow, Tousanna Durgan, Shirley S. Fung, Will Hansen, Patricia Hawkins, Douglas Hwang, Tom Kelley, Jong-Moon Kim, Clarence Lee, Jimmy Li, Cordelia Link, Ladan Nafissi, Andy Norton, Jonathon Owen, George Pappachen, Chris Perciballi, Joyce Salisbury, Linda Tan, David Vanderveer, and Kevin Wang.
+Appendix A. Mathematical Summary of Morphing Algorithm
+A.1. Notation Let n index consumers, r index consumer segments, m index morphs, t index clicks, and j index click alternatives. Capital letters indicate totals. Let cntj = 1 if n chooses the jth click alternative (link) on the tth click, and let cntj = 0 otherwise. Let mn = 1 if we observe a positive outcome when n sees morph m, and let mn = 0 otherwise. Let cnT be the vector of the cntj up to and including the T th click, let xjtn be the vector of characteristics of the jth click alternative for the tth click for consumer n, let r be the vector of preference weights for the xjtn for the rth segment, let Pr0 rn = r be the prior probability that n is in segment r, let qrn be the probability that n belongs to segment r, let prm be the probability of observing an outcome (sale, click-through, etc.) if a consumer in segment r sees morph m, let Grm be Gittins index for r and m, and let a be the consumer-to-consumer discount rate.
+
+Urban et al.: Morphing Banner Advertising
+
+44
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+A.2. Assigning Consumers to Segments
+We first estimate the r from a calibration study in which consumers answer questions to identify their segments. We also we observe the click alternatives they choose. The estimation is based on a logit likelihood using either maximum-likelihood or Bayesian methods. Details are standard, available in HULB, and not repeated here. For online morphing we know the xjtn for key click alternatives. We compute xjtn r , which is n's observed utility for the jth click alternative for the tth click. Using the logit likelihood (HULB, Equations (4) and (5)), we obtain the probability that observed clicks are chosen given that the consumer is in segment r; Bayes theorem provides qrn:
+
+Pr cnT r xjkns = Pr cnT rn = r
+
+T Jk
+=
+t =1 j =1
+
+exp xjtn r
+
+cntj
+
+Jk l=1
+
+exp
+
+xltn
+
+r
+
+(A1)
+
+qrn = Pr rn = r cnT =
+
+Pr cnT rn = r Pr0 rn = r
+
+R s=1
+
+Pr
+
+cnT
+
+rn = s Pr0 rn = s
+
+A.3. Updating Beliefs About the Probability of an Outcome Given a Morph and Segment
+After observing outcomes for each consumer, n, we update our beliefs about outcome probabilities. Call these probabilities prmn. Using beta-binomial updating, we represent posterior knowledge about these probabilities with a beta distribution with parameters rmn and rmn. If we knew the consumer's segment with certainty, we could update these parameters with standard formulae. However, segment membership is only partially observable; hence we use the segment-membership probabilities to treat the nth observation as R fractional observations, where R is the number of latent segments. The binomial formula is a welldefined probability density function for noninteger values:
+
+rmn = rm n-1 + mnqrn rmn = rm n-1 + 1 - mn qrn
+
+(A2)
+
+Equation (A2) suffices for website morphing, but for ban-
+ner morphing, the relevant criterion is at least one click-
+through per consumer. For this criterion we take multiple
+sessions into account. In banner morphing we use Equa-
+tion (A2) at the end of the first session of a new consumer.
+Subsequently, if any prior outcome was a success ( mn = 1), we do nothing. If all prior outcomes were failures ( mn = 0) and we observe a failure, we do nothing. If all prior out-
+comes were failures ( mn = 0) and we now observe a success ( mn = 1), we reverse the update. Prior failures did not change the rmn for each r, so we now add qrm. When a failure becomes a success, we undo the update that was added
+to the rmn for each r. Earlier failures caused us to add qrn for each r to the rmn; hence we now subtract qrn for each r from the rmn.
+
+A.4. Calculating the Gittins Indices for Each Morph and Segment
+First assume the consumer's segment is known. Gittins index theorem enables us to decompose a dynamic program over M morphs into M much simpler dynamic programs. The optimal strategy is to choose in each period the morph
+
+with the largest index in that period. Gittins index provides the needed metric for each uncertain morph by comparing it to a fixed option with a probability, Grm, of a positive outcome. Bellman's equation for the morph-and-segmentspecific dynamic program is given as follows. (Details are provided in HULB, pp. 207­208, and Gittins 1979.) In this equation, R rmn rmn a) is Bellman's value function. We solve this equation for fixed points to table Grm as a function of rmn and rmn (a is fixed):
+
+R rmn rmn a
+
+= max
+
+Grmn 1-a
+
+rmn
+
+1 + aR rmn + 1 rmn a
+
+rmn + rmn
+
++
+
+rmn aR rmn rmn + 1 a
+
+rmn + rmn
+
+(A3)
+
+A.5. Choosing the Morph in Each Period
+
+When consumer segments are latent, we chose the morph
+
+in each period that has the highest value for the expected
+
+Gittins index, EGmn. Krishnamurthy and Mickova (1999) showed that this expected index identifies a (near-) optimal
+
+policy:
+
+R
+
+EGmn = qrnGrmn rmn rmn
+r =1
+
+(A4)
+
+Appendix B. Factor Loading Matrices for the CNET and Automotive Experiments We factor-analyze consumers' self-evaluations on cognitivestyle items questions using principle component analysis and varimax rotation with Kaiser normalization retaining factors with eigenvalues greater than 1. We interpret the factors based on the factor loadings and then use scale purification with Cronbach's alpha to select scale items (Churchill 1979). Segments are based on retained scales (sufficient reliability). In the calibration study, consumers are assigned to segments based on median-splits (CNET) or mean-splits (automotive) of sum scores.
+Although three cognitive-style dimensions were identified initially for both the CNET and automotive experiments, each experiment used only the first two cognitive-style dimensions to define latent segments. In the CNET experiment, CNET's designers judged they could best target the first two dimensions. In the automotive experiment, the third dimension was difficult to interpret and did not have sufficient reliability. For completeness, we report in Tables B.1 and B.2 all three dimensions for both experiments.
+
+Table B.1
+
+Cognitive-Style Factor Loadings for the CNET Field Experiment
+
+Question
+
+Impulsive vs. Analytic vs. Instinctual
+
+deliberative
+
+holistic
+
+vs. not
+
+I rely on my first impressions. I am detail-oriented and start
+with the details in order to build a complete picture. I find that to adopt a careful, analytic approach to making decisions takes too long.
+
+0 086 -0 711
+-0 005
+
+0 208 -0 066
+
+0 654 -0 057
+
+0 699
+
+0 166
+
+Urban et al.: Morphing Banner Advertising
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+45
+
+Table B.1 (Cont'd.)
+
+Question
+
+Impulsive vs. Analytic vs. Instinctual
+
+deliberative
+
+holistic
+
+vs. not
+
+I go by what feels good to me. When making a decision, I
+take my time and thoroughly consider all relevant factors. I do not like detailed explanations. I reason things out carefully. Given enough time, I would consider every situation from all angles. I do not tackle tasks systematically. I use my instincts. I do not approach tasks analytically.
+
+-0 055 -0 794
+0 220 -0 748 -0 747
+0 058 -0 100
+0 108
+
+0 289 -0 098
+0 570 -0 139 -0 034
+0 753 -0 033
+0 759
+
+0 680 0 067
+0 173 0 000 0 061
+0 047 0 798 0 103
+
+Table B.2
+
+Cognitive-Style Factor Loadings for the Three-Phase Automotive Experiment
+
+Question
+
+Rational vs.
+intuitive
+
+Impulsive vs.
+deliberative
+
+Ignore images, focus on details
+
+I reasoned things out carefully.
+I tackled this task systematically.
+I figured things out logically. I approached this task
+analytically. I applied precise rules to
+deduce the answer. I was very aware of my
+thinking process. I used my gut feelings. I went by what felt good to
+me. I relied on my sense of
+intuition. I relied on my first
+impressions. I used my instincts. Ideas just popped into my
+head. I tried to visualize the images
+as 3D shapes. I read the text carefully.
+I skimmed the text. I concentrated on the images. I ignored the images. I made comparisons of
+different facts. I made comparisons between
+different images. I did not notice there were
+video reviews. The video reviews were
+helpful in making my decision.
+
+0 71
+0 58
+0 64 0 62
+0 63
+0 62
+0 29 0 30
+0 41
+0 22
+0 30 0 30
+0 54
+0 57 -0 18
+0 48 -0 20
+0 53
+0 47
+-0 22
+0 49
+
+-0 32
+-0 37
+-0 33 -0 40
+-0 18
+-0 24
+0 72 0 69
+0 67
+0 66
+0 67 0 59
+0 24
+-0 25 0 23 0 44
+-0 15 -0 16
+0 19
+0 05
+0 29
+
+0 01
+0 15
+0 18 0 16
+0 16
+0 04
+0 08 0 13
+0 06
+0 14
+0 11 0 05
+-0 26
+-0 13 0 31
+-0 34 0 66
+-0 09
+-0 27
+0 58
+-0 19
+
+Table B.2 (Cont'd.)
+
+Question
+
+Rational vs.
+intuitive
+
+Impulsive vs.
+deliberative
+
+Ignore images, focus on details
+
+I like detailed explanations.
+
+0 53
+
+I enjoy deciphering graphs,
+
+0 56
+
+charts, and diagrams about
+
+products and services.
+
+I prefer planning before
+
+0 49
+
+acting.
+
+I'm usually more interested in
+
+0 31
+
+parts and details than in the
+
+whole.
+
+I like to make purchases
+
+0 11
+
+without thinking too much
+
+about the consequences.
+
+I tend to see problems in their 0 52
+
+entirety.
+
+I see what I read in mental
+
+0 55
+
+pictures.
+
+I am detail-oriented and start
+
+0 60
+
+with the details in order to
+
+build a complete picture.
+
+-0 21 -0 19
+-0 31 0 23
+0 47
+-0 18 0 20
+-0 23
+
+0 02 0 12
+0 06 0 43
+0 31
+0 08 -0 13
+0 17
+
+Appendix C. Estimation of r for the CNET Experiment We follow the procedures detailed in HULB to estimate click-characteristic preferences. We use these values to compute the posterior probabilities for latent cognitive-style segments in real time. Table C.1 provides maximum likelihood estimates of r . This estimation explains 60.5% of the uncertainty (U 2 (pseudo-R2) of 0.605). The sample size is likely sufficient; U 2 degrades only to 59.4%, 57.4%, and 56.7% if we use 50%, 33%, and 20% of the data, respectively.
+
+Table C.1
+
+Maximum-Likelihood Estimates of r for CNET Experiment Segment indicator variable
+
+Dummy
+
+Impulsive vs. Analytic vs. Constant deliberative holistic
+
+Expect the linked page to have pictures or graphs
+Expect the linked page to be focused on a specific question (technical)
+Expect the linked page to have large amount of data
+Navigation bar Carousel More stories Promotion bar Popular topics Tabs Inside CNET Search category Product-specific reviews Social influences: Expert opinion
+("CNET says") Social influences: Consumer
+opinion ("What others do") Tech-savvy
+
+0 257
+-3 947
+1 181
+6 931 3 946 5 208 5 762 3 818 -14 585 5 036 3 706 3 741 3 360
+2 087
+0 263
+
+0 209
+-1 120
+0 095
+-2 459 0 190 1 053
+-1 853 1 517 1 236 2 597
+-2 856 -2 299
+1 322
+0 768
+0 036
+
+Significant at the 0.05 level; significant at the 0.10 level.
+
+-0 292
+1 351
+-0 221
+2 349 0 665 0 808 2 630 -0 981 -0 032 -0 858 2 818 2 083 -1 226
+-0 237
+-0 176
+
+Urban et al.: Morphing Banner Advertising
+
+46
+
+Marketing Science 33(1), pp. 27­46, © 2014 INFORMS
+
+References
+Barr C (2008) CBS buying CNET in online push. Fortune Daily Briefing (blog), May 15, http://web.archive.org/web/ 20080517215301/http:/dailybriefing.blogs.fortune.cnn.com/2008/ 05/15/cbs-buying-cnet-in-online-push/.
+Buscher G, Dumais ST, Cutrell E (2010) The good, the bad, and the random: An eye-tracking study of ad quality in Web search. Proc. 33rd Internat. ACM SIGR Conf. Res. Development Information Retrieval (SIGIR '10) (ACM, New York), 42­49.
+Chaiken S (1980) Heuristic versus systematic information processing and the use of source versus message cues in persuasion. J. Personality Soc. Psych. 39(5):752­766.
+Chen Y, Pavlov D, Canny JF (2009) Large-scale behavioral targeting. Proc. 15th ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining (ACM, New York), 209­218.
+Chu W, Park S-T, Beaupre T, Motgi N, Phadke A, Chakraborty S, Zachariah J (2009) A case study of behavior-driven conjoint analysis on Yahoo! Front Page Today module. Proc. 15th ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining (ACM, New York), 1097­1104.
+Churchill GA Jr (1979) A paradigm for developing better measures of marketing constructs. J. Marketing Res. 16(1):64­73.
+Dahlen M (2001) Banner advertisements through a new lens. J. Advertising Res. 41(4):23­30.
+DoubleClick (2010) 2009 year-in-review benchmarks. Report, DoubleClick, New York. http://static.googleusercontent.com/ external_content/untrusted_dlcp/www.google.com/en/us/ doubleclick/pdfs/DoubleClick-07-2010-DoubleClick-Benchmarks -Report-2009-year-in-Review-US.pdf.
+Gatarski R (2002) Breed better banners: Design automation through online interaction. J. Interactive Marketing 16(1):2­13.
+Giffin B, Richards J (2011) The role of the Internet in the new and used vehicle purchase process. Polk View report, (February), https://www.polk.com/knowledge/polk_views/ role_of_internet_in_new_and_used_vehicle_purchase_process.
+Gittins JC (1979) Bandit processes and dynamic allocation indices. J. Roy. Statist. Soc. Ser. B 41(2):148­177.
+Hauser JR, Liberali G, Urban GL (2013) Website morphing 2.0: Switching costs, partial exposure, random exit, and when to morph. Working paper, MIT Sloan School of Management, Cambridge, MA.
+Hauser JR, Urban GL, Liberali G, Braun M (2009) Website morphing. Marketing Sci. 28(2):202­223.
+Iyer G, Soberman D, Villas-Boas JM (2005) The targeting of advertising. Marketing Sci. 24(3):461­476.
+Joshi A, Bagherjeiran A, Ratnaparkhi A (2011) User demographic and behavioral targeting for content match advertising. Proc.
+
+Fifth Internat. Workshop Data Mining Audience Intelligence Advertising (ADKDD 2011) (ACM, New York), 53­60.
+Kenny D, Marshall JF (2000) Contextual marketing. Harvard Bus. Rev. 78(6):119­125.
+Krishnamurthy V, Mickova J (1999) Finite dimensional algorithms for the hidden Markov model multi-armed bandit problem. IEEE Internat. Conf. Acoustics, Speech, Signal Processing, Vol. 5 (Institute of Electrical and Electronics Engineers, Washington, DC), 2865­2868.
+Lambrecht A, Tucker CE (2011) When does retargeting work?: Timing information and specificity. Working paper, London Business School, London.
+Li H, Bukovac JL (1999) Cognitive impact of banner ad characteristics: An experimental study. Journalism Mass Comm. Quart. 76(2):341­53.
+Nielsen (2011) Beyond clicks and impressions: Examining the relationship between online advertising and brand building. Report, Nielsen, New York. http://www.brandchannel .com/images/papers/531_nielse_wp_brand_building_beyond _clicks_1011.pdf.
+Novak TP, Hoffman DL (2009) The fit of thinking style and situation: New measures of situation-specific experiential and rational cognition. J. Consumer Res. 36(1):56­72.
+Petty RE, Cacioppo JT, Schumann D (1983) Central and peripheral routes to advertising effectiveness: The moderating role of involvement. J. Consumer Res. 10(2):135­146.
+PricewaterhouseCoopers (2011) IAB Internet advertising revenue report. Report, PricewaterhouseCoopers, London. http:// www.iab.net/media/file/IAB_Full_year_2010_0413_Final.pdf.
+PricewaterhouseCoopers (2013) IAB Internet advertising revenue report. Report, PricewaterhouseCoopers, London. http://www .iab.net/media/file/IABInternetAdvertisingRevenueReportFY 2012POSTED.pdf.
+Schwartz EM (2012) The attribute-based multi-armed bandit for adaptive marketing experiments. Dissertation thesis, University of Pennsylvania, Philadelphia.
+Scott SL (2010) A modern Bayesian look at the multi-armed bandit. Appl. Stochastic Models Bus. Indust. 26(6):639­658.
+Stanaland AJS, Tan J (2010) The impact of surfer/seeker mode on the effectiveness of website characteristics. Internat. J. Advertising 29(4):569­595.
+Sundar SS, Kalyanaraman S (2004) Arousal, memory, and impression-formation effects of animation speed in Web advertising. J. Advertising 33(1):7­17.
+Urban GL, Hauser JR (2004) "Listening in" to find and explore new combinations of customer needs. J. Marketing 68(2):72­87.
+Zaichkowsky JL (1986) Conceptualizing involvement. J. Advertising Res. 15(2):4­14.
+
+

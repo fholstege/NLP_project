@@ -1,0 +1,828 @@
+MOVIEMOD: An Implementable DecisionSupport System for Prerelease Market Evaluation of Motion Pictures
+
+Jehoshua Eliashberg · Jedid-Jah Jonker · Mohanbir S. Sawhney · Berend Wierenga
+University of Pennsylvania, The Wharton School, Philadelphia, Pennsylvania 19104-6371, eliashberg@wharton.upenn.edu
+Tinbergen Institute and Econometric Institute, Erasmus University Rotterdam, 3000 DR Rotterdam, The Netherlands, jjjonker@few.eur.nl
+Kellogg Graduate School of Management, Northwestern University, Evanston, Illinois 60208, mohans@nwu.edu Rotterdam School of Management, Erasmus University Rotterdam, 3000 DR Rotterdam, The Netherlands, bwierenga@fbk.eur.nl
+
+Abstract
+In spite of the high financial stakes involved in marketing new motion pictures, marketing science models have not been applied to the prerelease market evaluation of motion pictures. The motion picture industry poses some unique challenges. For example, the consumer adoption process for movies is very sensitive to wordof-mouth interactions, which are difficult to measure and predict before the movie has been released. In this article, we undertake the challenge to develop and implement MOVIEMOD--a prerelease market evaluation model for the motion picture industry. MOVIEMOD is designed to generate box-office forecasts and to support marketing decisions for a new movie after the movie has been produced (or when it is available in a rough cut) but before it has been released. Unlike other forecasting models for motion pictures, the calibration of MOVIEMOD does not require any actual sales data. Also, the data collection time for a product with a limited lifetime such as a movie should not take too long. For MOVIEMOD it takes only three hours in a "consumer clinic" to collect the data needed for the prediction of box-office sales and the evaluation of alternative marketing plans.
+The model is based on a behavioral representation of the consumer adoption process for movies as a macroflow process. The heart of MOVIEMOD is an interactive Markov chain model describing the macro-flow process. According to this model, at any point in time with respect to the movie under study, a consumer can be found in one of the following behavioral states: undecided, considerer, rejecter, positive spreader, negative spreader, and inactive. The progression of consumers through the behavioral states depends on a set of movie-specific factors that are related to the marketing mix, as well as on a set of more general behavioral factors that characterize the movie-going behavior in the population of interest. This interactive Markov chain model allows us to account for word-of-mouth interactions among potential adopters and several types of word-of-mouth spreaders in the population. Marketing variables that influence the transitions among the states are movie theme acceptability, promotion strategy, distribution strategy, and the movie experience. The model is calibrated in a consumer clinic experiment. Respondents fill out a questionnaire with general items related to their movie-going and movie communication behavior, they are exposed to different sets of information stimuli, they are actually shown the movie, and finally, they fill out
+Marketing Science  2000 INFORMS
+Vol. 19, No. 3, Summer 2000, pp. 226­243
+
+postmovie evaluations, including word-of-mouth intentions. These measures are used to estimate the word-of-mouth parameters and other behavioral factors, as well as the movie-specific parameters of the model.
+MOVIEMOD produces forecasts of the awareness, adoption intention, and cumulative penetration for a new movie within the population of interest for a given base marketing plan. It also provides diagnostic information on the likely impact of alternative marketing plans on the commercial performance of a new movie. We describe two applications of MOVIEMOD: One is a pilot study conducted without studio cooperation in the United States, and the other is a full-fledged implementation conducted with cooperation of the movie's distributor and exhibitor in the Netherlands. The implementations suggest that MOVIEMOD produces reasonably accurate forecasts of box-office performance. More importantly, the model offers the opportunity to simulate the effects of alternative marketing plans. In the Dutch application, the effects of extra advertising, extra magazine articles, extra TV commercials, and higher trailer intensity (compared to the base marketing plan of the distributor) were analyzed. We demonstrate the value of these decision-support capabilities of MOVIEMOD in assisting managers to identify a final plan that resulted in an almost 50% increase in the test movie's revenue performance, compared to the marketing plan initially contemplated. Management implemented this recommended plan, which resulted in box-office sales that were within 5% of the MOVIEMOD prediction. MOVIEMOD was also tested against several benchmark models, and its prediction was better in all cases.
+An evaluation of MOVIEMOD jointly by the Dutch exhibitor and the distributor showed that both parties were positive about and appreciated its performance as a decision-support tool. In particular, the distributor, who has more stakes in the domestic performance of its movies, showed a great interest in using MOVIEMOD for subsequent evaluations of new movies prior to their release. Based on such evaluations and the initial validation results, MOVIEMOD can fruitfully (and inexpensively) be used to provide researchers and managers with a deeper understanding of the factors that drive audience response to new motion pictures, and it can be instrumental in developing other decision-support systems that can improve the odds of commercial success of new experiential products.
+(Motion Pictures; New Products; Pretest Market Evaluation; Fore-
+casting; Decision Support; Markov Chains)
+0732-2399/00/1903/0226/$05.00 1526-548X electronic ISSN
+
+MOVIEMOD: AN IMPLEMENTABLE DECISION-SUPPORT SYSTEM FOR PRERELEASE MARKET EVALUATION OF MOTION PICTURES
+
+Introduction
+The entertainment industry1 is an important sector of the economy. Consumers in the United States spent almost $113.5 billion on entertainment in 1996 (Veronis et al. 1997). The average U.S. adult spends 3,400 hours per year using consumer media, and entertainment is the leading U.S. export (Gleckman 1995). Despite its economic significance, the entertainment industry has only recently attracted the attention of marketing scholars (Jones and Ritz 1991, Eliashberg and Sawhney 1994, Eliashberg and Shugan 1997, Krider and Weinberg 1998, Neelamegham and Chintagunta 1998, Radas and Shugan 1998). Our objective in this article is to add to the extant set of models by developing and implementing a model and measurement procedure for prerelease market evaluation of motion pictures, a $35 billion subset of the entertainment industry. The model provides estimates of box-office performance of motion pictures before they have been introduced into the market and assists managers in making better launch decisions for new motion pictures.
+The motion picture industry is fertile ground for the application of new product forecasting and prerelease market evaluation models given the high stakes and high risks in motion picture marketing. Of any 10 major theatrical films produced in the United States, on the average, 6 or 7 are not considered successful based on their domestic performance (Stevens and Grover 1998, Vogel 1994 p. 27). According to the Motion Picture Association of America (MPAA), the cost of launching a new motion picture in the United States was $75 million in 1997--$50 million for production and $25 million for marketing and distribution. Hence, forecasting and diagnostic information are useful not only before the production begins, but also once the movie is completed and decisions for advertising and distribution have to be made before the release of the movie.
+Despite these facts, practitioners in the motion picture industry have been reluctant to use marketing science concepts, forecasting models, and decisionsupport systems. As Squire (1992) observes, "In no
+1The entertainment industry includes filmed entertainment, music, television, and cable programming.
+
+other business is a single example of product fully created at an investment of several millions of dollars with no real assurance that the public will buy it." Motion picture marketers believe that every motion picture is "unique," and that show business is different from any other business (Austin 1989, p. 6). This belief gives rise to a high degree of skepticism and risk aversion concerning investments in methodologies that can support decision making.
+There exists a wide range of pretest market models applied in consumer packaged goods (e.g., Blackburn and Clancy 1980, Pringle et al. 1982, Silk and Urban 1978, Yankelovich et al. 1981). However, unlike consumer packaged goods, movie experiences are subjective, emotional, and intangible. Movies have few objective attributes. Consumers leave with nothing concrete besides memories of their experience. These experiences are typically shared immediately at the end of the consumption experience among consumers through personal communication. Although the motion picture industry has invoked certain market research techniques to evaluate trailers, titles, TV spots, and to track awareness and interest concerning soonto-be released movies, well in advance prerelease forecasting remains a challenge. Such forecasting models for motion pictures must pay special attention to the spread of positive as well as negative information through personal influence, in addition to modeling the diffusion of mass-media information. They also should provide diagnostic information to managers with regard to strategic decisions such as advertising and distribution.
+Distribution represents another important factor in determining the role of personal influence and media advertising in consumer adoption of motion pictures (Jones and Ritz 1991, Sawhney and Eliashberg 1996). Movies can be either promoted heavily and distributed widely (the so-called "blitz" release pattern), or they can be distributed selectively at first, with the distribution being widened gradually as demand builds due to word of mouth (the "platformed" pattern). The blitz release strategy relies on advertising to create demand, whereas the platformed strategy relies on the premise that positive word of mouth will be generated and enhance demand for the movie. Both strategies require the intensity of distribution to be incorporated and
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+227
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+managed over the movie's life cycle. Unlike durable products and consumer packaged goods where distribution only affects product availability, in the motion picture industry, distribution intensity influences the future demand for movies through its effect on wordof-mouth diffusion. In developing our model, we account for the dynamics of distribution intensity and the effect of distribution intensity on the word-ofmouth diffusion process.
+Many pretest market models rely heavily on norms derived from data on similar products to estimate likely consumer response to a new product (Urban et al. 1990). Forecasting models for consumer packaged goods use category norms to convert preference and purchase intention measures into actual choice and purchases. Norms-based forecasting is much less reliable for motion pictures because of the lack of comparability between movies. Comparisons between movies cannot be based on objective attributes, so it is difficult to create "category norms." In calibrating our model, we confine ourselves to measures based on direct consumer measurement for the specific movie under study and marketing plan inputs.
+Our model is built upon the marketing science literature describing dynamic stochastic models for forecasting the performance of new products. Consistent with this literature, (Dodson and Muller 1978, Mahajan et al. 1984 and Urban et al. 1990), we distinguish between a number of behavioral states, and define flows between these states. We use a Markovian representation, which has also been used, for instance, by Hauser and Wisniewski (1982) and (implicitly) by Urban et al. (1990). Our model differs from previous research in that we use the interactive Markov chain specification as developed by Conlisk (1976). The interactive Markov chain allows the transition probabilities between states to formally depend on the number of people already in other states. This specification naturally links the modeling of word of mouth (the diffusion aspect of the model) and the adoption as described by the transitions between states. The macroflow model of Urban et al. (1990) also seems to use this property (the number of word-of-mouth interactions depends on the number of owners of the product), but their model does not make a distinction between positive and negative word of mouth. Although we are not
+
+the first to integrate aspects of adoption and diffusion models (see, for instance, Roberts and Urban 1988) in our integration, we consider explicitly the following four aspects of word of mouth:
+(1) The distinction between positive and negative word of mouth (as has also been done by Mahajan et al. 1984).
+(2) The duration of word of mouth: The probability of discussing a product that has been adopted tends to decline over time. In modeling word of mouth, Roberts and Urban (1988) let it depend on the number of people who have already bought the product, but they do not take into account the probability that people will still talk about their purchase depending on how long ago the product has been bought. This effect of time will be stronger for a product with a short lifetime (such as movies) compared with durables. Urban et al. (1990) let the intensity of word of mouth decline with time, but their parameter estimates are based on managerial judgment, control car sales, and past survey data. Our estimates are obtained directly from consumers.
+(3) The intensity of word of mouth by measuring how often people talk about a movie they have seen.
+(4) The estimates are obtained directly from consumers. We could potentially also look at different segments of consumers, because we obtain individuallevel information on movies communication parameters. These could then be related to socioeconomic variables to determine the best marketing strategy for each segment.
+Our model can thus be seen as an integration as well as extension of previous work on prelaunch forecasting of new products applied to products where word of mouth is critical. Most of the prelaunch forecasting models (Roberts and Urban 1988, Urban et al. 1990) have focused on durables. Although certain aspects of these models may also be applicable to nondurables, the latter category possesses aspects that do require different handling. Because of the limited lifetime of nondurables, the data collection procedure should not take much time. Hauser and Wisniewski (1982), for example, describe a data collection procedure that consists of eight periods of two weeks. Mahajan et al. (1984) use eight weeks of data collection for calibration.
+
+228
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+Roberts and Urban (1988) describe an interview procedure and Urban et al. (1990) describe a clinic that includes exposure to word of mouth, advertisements, and a test drive. Although they do not specify the length of the data collection, the nature of the task seems quite involved. Our MOVIEMOD experiment requires only three hours to collect the necessary data. Once the experimental data are obtained, we are able to provide quick estimates of the parameters of the model.
+In summary, keeping in mind the unique aspects of motion pictures, the skepticism and lack of modelbased decision-making experience on the part of executives in the industry, and their resistance to making large investments in marketing models, we believe that MOVIEMOD incorporates the following important features:
+· It is based on and integrates, to the extent possible, previous successfully implemented marketing science models.
+· It pays very close attention to and considers explicitly several aspects of word of mouth: nature (positive/negative), intensity, duration, and individuallevel consumer-based measurement.
+· Its calibration period is short (approximately three hours).
+· It is inexpensive to implement.
+Model Description
+Behavioral Representation Following Mahajan et al. (1984), we partition the potential moviegoer population into six mutually exclusive behavioral states (see Figure 1 for the behavioral representation).2 We track the evolution of the proportion of consumers in each state, beginning with the first time period when the mass media communication begins. The behavioral states are:
+1. Undecideds: Consumers who are unaware of the new movie or are undecided about seeing it.
+2. Considerers: Consumers who have decided to
+2The model is described at an aggregate level. However, it can be calibrated separately for several segments within a moviegoer population to guide segmentation and targeting decisions.
+
+see the movie after being exposed to positive information, but have not yet acted on the decision.
+3. Rejecters: Consumers who have been exposed to movie information and have decided not to see it.
+4. Positive Spreaders: Consumers who have seen the movie, liked the movie, and are spreading positive word of mouth.
+5. Negative Spreaders: Consumers who have seen the movie, did not like the movie, and are spreading negative word of mouth.
+6. Inactives: Consumers who have seen the movie and are no longer actively spreading word of mouth.
+Description of State Transitions. Initially, all consumers are assumed to be in the Undecided state. In any discrete time period, Undecideds may be exposed to media advertising or (positive or negative) word-ofmouth information. The probability of exposure to advertising is a function of advertising spending and the media plan. The probability of exposure to positive or negative word of mouth depends on the number of Positive and Negative Spreaders in the population, respectively. Word-of-mouth exposure probabilities also depend on the frequency with which Spreaders interact with Undecideds and the duration for which an average Spreader spreads word of mouth.
+Depending on the effectiveness of advertising, an advertising exposure may lead to a behavioral transition from the Undecided state to the Consider state (we call this a "positive" exposure), or it may have no effect (we call this an "ineffective" exposure). Advertising exposure may also lead to a transition from the Undecided state to the Rejecter state (a "negative" exposure), if it suggests an unacceptable storyline or theme. Similarly, exposure to positive word of mouth can be a positive exposure, an ineffective exposure, or a negative exposure. Exposure to negative word of mouth has similar outcomes, with one difference. The negative exposure in this case may be either due to rejection of the movie theme, or it may be due to the negative evaluation of the movie by Negative Spreaders.
+Undecideds who have had a positive information exposure move to the Considerer state. Although Considerers may see the movie during the same time period in which they are exposed to positive information, they typically will not act immediately on their deci-
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+229
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+Figure 1 Behavioral Representation of Consumer Adoption Process in MOVIEMOD
+
+sion. Following Sawhney and Eliashberg (1996), we assume that the delay between the decision to adopt and the actual adoption decision may be due to the wait for the next movie-going occasion, or it may be related to the availability of the movie at a convenient theater. We term this delay the distribution-related delay to reflect the fact that the delay is at least in part dependent on the distribution intensity. Considerers may again move back to the Undecided stage when the delay is too long. In that time they have forgotten about their decision to see the movie.
+Considerers are assumed to eventually see the movie, and make the transition into the (Positive or Negative) Spreader state, based on their satisfaction/ dissatisfaction with the movie experience. Viewers who have a satisfactory experience are assumed to become Positive Spreaders, and viewers who are dissatisfied are assumed to become Negative Spreaders. Positive and Negative Spreaders are assumed to engage in word-of-mouth spreading activity for a finite duration and eventually lapse into the Inactive state.
+
+Impact of Marketing Variables on State Transitions. The state transitions are influenced by the following marketing variables:3
+· Movie theme (storyline, genre, cast); · Promotion strategy (creative strategy, media budget, choice of media vehicles, media schedule); · Distribution strategy (release pattern and distribution intensity); and · Movie quality (production values, direction, acting, cinematography, etc.). The movie theme influences the proportion of the Undecideds who reject the movie based on exposure to information about the movie theme. Promotion decisions influence the rate at which Undecideds become Considerers, because they determine the reach and effectiveness of media advertising. Distribution decisions impact the time that Considerers take to act on
+3We do not include pricing decisions, because theatrical movie admission prices tend to be relatively constant for all movies and over time in the theatrical release.
+
+230
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+their decision to see the movie by affecting the proximity of the closest retail location. Finally, the movie quality determines the relative proportion of viewers who become Positive or Negative Spreaders after seeing the movie.
+Assumptions in the Behavioral Representation. For the sake of empirical tractability, we make some simplifying assumptions in the behavioral representation. We assume independence between the exposures to different information sources, a common assumption in the forecasting literature (e.g., Hauser and Wisniewski 1982, Urban et al. 1990). We assume that advertising and word-of-mouth exposures are binary (effective or ineffective)--we do not allow for "partial" impact of an information exposure that cumulates over successive exposures. This is reasonable for a low-involvement purchase like motion pictures. We ignore prerelease word-of-mouth information or "hype" (Wind and Mahajan 1987) from consumers who have not yet seen the movie. This information is less influential than word of mouth from movie adopters, because it not based on personal experience (Cooper-Martin 1993). We also ignore word of mouth spread by Rejecters for similar reasons. Like Mahajan et al. (1984), we ignore the effect of "neutral" word-ofmouth information, as well as the possibility of an "immune" group that does not participate in the word-ofmouth spreading process. We do not allow Considerers and Rejecters to change their minds once they have made an adoption/rejection decision, which is a reasonable assumption in the context of the short life cycle of motion pictures. Finally, we ignore less probable second-order effects like simultaneous exposure to advertising and word of mouth, or positive as well as negative word of mouth within the same time period. This assumption also characterizes previous research on macro-flow models for motion picture adoption (Mahajan et al. 1984).
+Mathematical Development
+The Interactive Markov Chain Model. We model the transitions among behavioral states as an interactive Markov chain with a discrete state-space in discrete time. The Markovian property assumes that the vector of population frequencies at time t  1 depends
+
+only on the vector of population frequencies at time t, and is independent of the previous history of the population frequencies. Thus,
+
+Qt1  PtQt
+
+(1)
+
+where Qt  [qit] is the (6  1) vector of population frequencies at time t; and Pt  [pijt] is the (6  6) matrix of state transition probabilities at time t, assumed to
+
+apply to all individuals in the population.
+
+The standard Markov chain formulation assumes
+
+that there is no social interaction among individuals.
+
+Clearly, this assumption is violated for the motion pic-
+
+ture adoption process because of the word-of-mouth
+
+interactions between Spreaders and Undecideds. This
+
+requires us to invoke a more general version of the
+
+Markov chain model. Conlisk (1976, 1978) proposed a
+
+set of models that allows for interaction between in-
+
+dividuals, yet has all the appealing characteristics of
+
+Markov chains. These models are called interactive
+
+Markov chains.
+
+The key generalization proposed by Conlisk is that
+
+an individual's state transition probabilities are al-
+
+lowed to depend on the distribution of other individ-
+
+uals across the state space. Interactive Markov models
+
+can be used to model a wide range of social phenom-
+
+ena, including fashion cycles, brand switching with
+
+loyalty effects, switching of political parties, and popu-
+
+lation migration. The generic interactive Markov chain
+
+model that Conlisk (1976) proposes is:
+
+Qt1  P[Qt]Qt.
+
+(2)
+
+Conlisk (1976) suggests several special cases of P[.] that can represent a variety of social interaction phenomena. Of particular interest to us is a two-state interactive diffusion process that reinterprets a standard diffusion model (e.g., Bartholomew 1973, pp. 298­300) as a two-state interactive Markov chain with:
+
+  P[Qt] 
+
+1 0
+
+1
+
+ eq1t eq1t
+
+;
+
+
+
+
+
+0.
+
+(3)
+
+The above specification assumes that, during the time period (t, t  1), the probability that any unaware person is informed by at least one aware person increases exponentially with the proportion of aware persons in the population. This specification of P[.] satisfies the "ogive property," which means that the proportion of awares in the population increases with time
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+231
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+at an accelerating rate up to some time t0, and increases with time at a decelerating rate thereafter (Conlisk 1976, Theorem 6). The ogive property is consistent with empirical diffusion patterns of innovative products (cf., Mahajan et al. 1993).
+Conlisk (1976) proposes several extensions of the basic interactive Markov chain model. These extensions include a model that allows for different intensities of within-group contacts relative to between-group contacts, and a "mover-stayer" formulation that allows for differing patterns of influence of some individuals (i.e., leaders) over others (i.e., followers) in the diffusion process. He also suggests that the specification for the state transition matrix in (3) can be modified to allow for forgetting, additional diffusion from a central source, and an expanded state space. Following this suggestion, we propose a generalization of the interactive Markov chain model along all these dimensions. Specifically, we allow for exogenous marketing variables and incorporate additional behavioral phenomena like forgetting, rejection, and decay in word-ofmouth spreading activity.
+Notation. We expand the two-state diffusion model suggested in (3) to a six-state model that is consistent with the behavioral representation in Figure 1. We denote the vector of population frequencies (the fraction of the population in a specific behavioral state) at time t as
+Qt  [Ut Rt Ct S t S t It]T, where:
+Ut Fraction of the population in the Undecided state at time t;
+Rt Fraction of the population in the Rejecter state at time t;
+Ct Fraction of the population in the Considerer state at time t;
+S t  Fraction of the population in the Positive Spreader state at time t;
+S t  Fraction of the population in the Negative Spreader state at time t;
+It Fraction of the population in the Inactive state at time t.
+By definition, these population frequencies are mutually exclusive and collectively exhaustive, and they
+
+sum to one. We also define two sets of model parameters--movie-related parameters that are specific to a movie, and behavioral parameters that represent moviegoing behavior and are specific to the selected population.
+Movie-Related Parameters: PT: Theme acceptability. Probability that a randomly
+selected potential adopter will find the movie theme acceptable after exposure to movie information.
+Pr(A)t: Advertising exposure probability. Probability of at least one advertising exposure during the period [t,t1], influenced by the media plan.
+bA, bw, bw: Impact factors for advertising, positive word of mouth, and negative word of mouth, respectively. Probability that an exposure to the source will lead to a state transition, conditioned on the acceptability of the movie theme (0  b  1).
+Ps: Satisfaction probability. Probability that a viewer will be satisfied with the movie experience and will positively recommend the movie.
+Behavioral Parameters: k  Word-of-mouth frequency. Rate parameter for
+the word-of-mouth spreading process. Assumed to follow an exponential distribution.
+l  Word-of-mouth duration. Rate parameter that determines the duration of word-of-mouth spreading activity. Assumed to follow an exponential distribution.
+d  Consideration duration. Rate parameter for the forgetting process for Considerers. Assumed to follow an exponential distribution.
+ct  Distribution-related delay. Influenced by movie-going frequency and distribution intensity. Assumed to follow an exponential probability distribution with a time-varying parameter.
+Calculating Transition Probabilities: An Illustration. The individual elements pijt of the transition probability matrix P can be calculated by representing all possible transition probabilities between states i and j at time t in terms of the model parameters and summing these (independent) probabilities for each pair of states. For the sake of brevity, we illustrate how this is done for one case.
+We first need to calculate some intermediate expressions for the probabilities of exposure to information
+
+232
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+during a given time. Following Conlisk (1976), the probability that an Undecided consumer is exposed to at least one positive word-of-mouth conversation during the time period [t, t  l] (i.e., a period of one timeunit duration) can be written as:
+
+Pr[W]t  (1  ek)St,
+
+(4)
+
+where k is the frequency of word-of-mouth conversations among Spreaders and Undecideds, and S t is the proportion of the population that are Positive Spreaders. Similarly, the probability that an Undecided consumer is exposed to at least one negative word-ofmouth conversation during the time period [t, t  l] is:
+
+Pr[W]t  (1  ek)St.
+
+(5)
+
+Note that an exposure to advertising or word-ofmouth information may not be "effective," because only a fraction of the people exposed to word-ofmouth information will undergo a state transition. Further, some exposures may lead to rejection because the theme is not acceptable. Now, if we assume independence among exposures to different information sources, we can write the following expression for the first element of the probability transition matrix pUUt (Undecided to Undecided) as
+
+pUUt  1  [Pr(A)t  (1  ek)St
+
+ (1  ek)S t ]  [PT((1  bA)Pr(A)t
+
+ (1  bW)(1  ek)St
+
+ (1  bW)(1  ek)S t )].
+
+(6)
+
+Equation (6) can be interpreted as the probability of not being influenced by any of the available information sources (the first part of the equation) and the probability of not being influenced with sufficient impact (the second part of the equation). Following similar logic, we can write the transition probabilities for any other pair of behavioral states.
+The state transition probabilities depend on the elements of the population frequency vector S t and S t . This is the interactive Markov extension that allows us to capture word-of-mouth interactions. We test empirically the usefulness of incorporating such interaction effects. By equating the terms involving S t and S t to
+
+zero, our model would reduce to a standard Markov model where the state transition probabilities vary with time, but not with the population frequency vectors.
+
+Rate of Adoption. The focus of the model is, of course, on the adoption rate over time. Once the initial conditions and the state transition matrix at time t are known, the vector of population frequencies at time t  l can be computed using (2). This vector Qtl is a function of Qt, the vector of population subproportions at time t. Consequently, Qtl needs to be evaluated recursively on a one-step-ahead basis. There are no closed form analytical solutions for the steady-state values of the state variables. The adoption rate is the sum of the adoption due to advertising, the adoption due to (positive) word-of-mouth influence, and adoption due to conversion of Considerers into viewers. The recursive expression for the rate of adoption Xt can be written as
+
+Xt  [PTbA Pr(A)t(1  ect)]Ut  [PT(1  ek)bW
+
+(1  ect)S t ]Ut  (1  ect)Wt.
+
+(7)
+
+This concise expression for the adoption rate captures a rich set of behavioral phenomena (forgetting, word-of-mouth spreading activity), as well as a rich set of marketing mix effects (theme acceptability, advertising exposure probability, advertising impact, distribution intensity, and satisfaction probability with the movie).
+
+Operationalization and Empirical Testing
+Two empirical implementations of MOVIEMOD have been conducted. Basically the same measurement procedures were used for the two experiments, but as we will show, there were some differences in details.
+A pilot implementation was conducted in the United States to assess the feasibility of the consumer measurement, as well as to evaluate the forecasting capabilities of MOVIEMOD. The pilot test was carried out on two movies: Groundhog Day and The Cemetery Club, and used 140 undergraduate students from a large northeastern university as respondents. We acquired advertising materials (print and TV advertising) for
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+233
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+these movies, and created simulated word-of-mouth conversations to reflect positive and negative interpersonal communication for each movie. We scanned the relevant universe of TV and print media vehicles to reconstruct the actual media plans for each movie.
+The predictive results were encouraging. MOVIEMOD predicted a very low penetration level of 3.5% for The Cemetery Club among the population, against the actual penetration of 3.3%. On the other hand, it predicted a fairly high penetration of 26.5% for Groundhog Day, which was close to the observed penetration of 23.0%. Nationally, MOVIEMOD projected that Groundhog Day would gross $69.4 million at the box office; The Cemetery Club was projected to gross $8.3 million. The actual national grosses for the two movies were $70.8 million and $5.6 million, respectively.
+The U.S. implementation was followed by a more comprehensive implementation in the Netherlands, conducted in cooperation with the movie distributor and exhibitor. This implementation was designed to further evaluate the predictive performance of MOVIEMOD and to explore the use of MOVIEMOD as a decision-support tool. We first describe the measures used to calibrate the model, and then discuss the clinic design for consumer measurement.
+Measurement of Parameters
+Measures for Behavioral Parameters. MOVIEMOD consists of four behavioral parameters--word-ofmouth spreading frequency (k), word-of-mouth spreading duration (l), consideration duration (d), and distribution-related delay (ct). These parameters are estimated by direct elicitation from respondents in a single-shot experiment. Recognizing that self-reported estimates are subject to measurement error, we developed multiple measures for each parameter, and averaged these measures to arrive at the final parameter estimates. For each behavioral parameter, we created a direct measure, where the same respondents in the clinic were asked to self-report their behavior. In addition, we created an indirect measure, where respondents were asked to estimate the probability that they would be engaging in a particular behavior beyond a certain duration (say two weeks). Specific measures used for each parameter are as follows:
+
+Word-of-mouth spreading activity (k): The direct measure was the self-reported "estimate of the number of people that you would talk to in a week about a movie that you had recently seen." The indirect measure was the self-reported estimate of the "total number of people you would talk to about a movie you had recently seen" and "the number of weeks that you would talk about a movie you had recently seen." The indirect measure can be calculated as k  E(Nw)/E(tw), where E(NW) is the expected number of total word-of-mouth conversations, and E(tW) is the expected length of time during which these conversations occur.
+Word-of-mouth spreading duration (l): The direct measure for l was the self-reported "number of weeks that you talk about a movie that you have just seen." The indirect measure was the self-reported "probability that respondents would be still be talking about a movie that they had recently seen k weeks after they had seen the movie." Denoting this survival probability as pk, and assuming an exponentially distributed process for word-of-mouth spreading duration, we can calculate l as
+
+ pk 
+
+ lelt dt  l  ln(pk) .
+
+k
+
+k
+
+(8)
+
+Consideration duration (d): The direct and indirect measures for the consideration duration parameter were similar to the measures used for the word-ofmouth spreading duration.
+Distribution-related delay parameter (ct): The distribution-related delay parameter was estimated by asking respondents to estimate the average number of weeks that elapsed between the time they decided to see a new movie and the time that they actually saw the movie. They were asked to estimate this delay for two situations--when the movie was playing at a conveniently located theater where they usually see movies, and when the movie was playing at only a few theaters, so that they would have to travel to a less convenient theater. These measures provided us with the distribution-related delay at high distribution intensity (cH) and the delay at low distribution intensity (cL). In the Dutch experiment, this distinction could not be made because all theaters in Rotterdam are located in the same area (the city center). Hence we made the distinction based on comfort: whether the movie was
+
+234
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+playing in a large screening room with good sound and comfortable seats, or whether the movie was playing in a "less convenient," small or medium-sized screening room.
+
+Measures for Movie-Specific Parameters. The movie-specific parameters were estimated by direct elicitations of intentions following exposure to information stimuli related to the movie. Intentions were measured on an 11-point scale. The top/bottom 4 scale points were taken as indications of positive/negative intentions. Theme acceptability (PT) was measured as the average proportion of respondents who did not have a negative viewing intention after being exposed to the movie description. The impact factors for advertising and positive word-of-mouth (bA and bw) were estimated as the proportion of respondents who reported a positive viewing intention after being exposed to advertising or positive word-of-mouth information, provided the movie theme was acceptable to them. The impact factor for negative word-of-mouth (bw) was estimated as the proportion of respondents who reported a negative viewing intention after being exposed to negative word-of-mouth information, provided the movie theme was acceptable to them. The satisfaction probability was estimated as the proportion of the respondents who indicated that they would positively recommend the movie to their friends after they had seen the movie.
+
+Advertising Exposure Probability. Consistent with existing awareness forecasting models (e.g., Mahajan et al. 1984), the advertising exposure probability would ideally be estimated as a simple exponential relationship between the effective gross rating points (GRPs) generated by the movie's media plan and the resultant awareness derived from the awareness tracking surveys:
+
+Pr(A)t  1  enGRPt.
+
+(9)
+
+Such a relationship can be calibrated for a historical sample of movies and used to forecast the likely awareness for a new movie prior to launch, using the intended media plan. However, in the Dutch market, movie distributors and exhibitors do not track awareness on an ongoing basis. This required us to create a modified estimation procedure.
+
+We had access to the media plans of six movies that were playing in the theaters at the time the consumer measurement testing was conducted (January 1997), this well before the release of the test movie (May 1997). During the consumer measurement, respondents were asked about their awareness of these movies. They were also asked to indicate the media sources from which they had heard about (i.e., were aware of) the movie (e.g., trailers, TV advertising, newspaper advertising, radio advertising, etc.). For each media type, we classified the media vehicle intensity (based on the average number of showings per week) into three levels: low, average, and high. Next, based on consumers' responses, we estimated the average weekly awareness generated by the different intensity levels for each media vehicle and for each movie. We used this relationship to forecast the awareness created by alternative levels of media intensity of each vehicle for the new (test) movie. We had to resort to a low-averagehigh classification because we had data on only six movies. To obtain a continuous relationship between advertising and awareness, a longitudinal panel should be used.
+To calculate the probability of awareness through at least one media vehicle, it is necessary to correct for overlap among the various media vehicles. If Pi denotes the probability of being exposed to media vehicle i (based on its intensity level and the relationship described above), then the probability of being exposed to at least one media can be written as
+
+I
+
+ Pr(A)t  (1  Pi).
+
+(10)
+
+i1
+
+Note that the awareness probability in (10) can be replaced by the well-accepted functional form in (9) once a database of media plans and corresponding awareness proportions is created for a large number of movies.
+We summarize the parameters of the model, the source of the measurement, and the measurement approach for each parameter in Table 1.
+
+Consumer Measurement Procedure In the Dutch implementation, we secured the collaboration of a Dutch movie distributor and exhibitor for an implementation of MOVIEMOD on the movie
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+235
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+Table 1 MOVIEMOD Parameters and Measurement Approach
+
+MOVIEMOD Parameter
+
+Notation
+
+Source of Parameter Estimate
+
+Theme acceptability Advertising exposure probability Advertising impact Positive word-of-mouth impact Negative word-of-mouth impact Satisfaction probability
+
+PT Pr(A )t
+bA bW bW PS
+
+Movie-Specific Parameters Experimental measurement
+Media plan, awareness measures Experimental measurement
+Experimental measurement
+Experimental measurement
+Experimental measurement
+
+Word-of-mouth frequency
+
+Behavioral Parameters
+
+k
+
+Direct elicitation
+
+Word-of-mouth duration
+
+l
+
+Direct elicitation
+
+Consideration duration
+
+d
+
+Direct elicitation
+
+Distribution-related delay (intensive distribution level)
+Distribution-related delay (selective distribution level)
+
+cH
+
+Direct elicitation
+
+cL
+
+Direct elicitation
+
+Operationalization and Measurement Approach
+Proportion of respondents finding movie acceptable after exposure to information
+Awareness forecasting model Proportion of respondents intending to see the movie
+after exposure to movie advertising Proportion of respondents intending to see movie after
+exposure to positive word-of-mouth information Proportion of respondents rejecting the movie after
+exposure to negative word-of-mouth information Proportion of respondents intending to positively
+recommend the movie after seeing the movie
+· Direct measure--average frequency of word-of-mouth conversations
+· Indirect measure--average number of interactions and average duration of interactions
+· Direct measure--average length of word-ofmouthactivity
+· Indirect measure--probability of active spreading after 2 weeks
+· Direct measure--average length of consideration in weeks
+· Indirect measure--probability of consideration after 2 weeks
+Direct measure of delay between decision and action if theater location is convenient
+Direct measure of delay between decision and action if theater location is inconvenient
+
+Shadow Conspiracy in the Rotterdam market. The clients asked to use the Rotterdam population to project the movie's national box-office attendance and revenues and to recommend changes in the marketing plan to improve the movie's performance. A representative sample of 102 respondents was recruited and invited to a "consumer clinic" in Rotterdam on January 25, 1997. The movie was released in Rotterdam on May 8, 1997. Because the experiment was held before the release date of the movie in the United States (January 31, 1997), most respondents were unaware of the movie. This enabled us to measure and influence their opinions about the movie by providing stimuli conveying either a positive or negative message about the movie.
+
+The consumer clinic design for calibrating MOVIEMOD consisted of the following steps:
+1) Respondents completed a questionnaire with items related to movie-going behavior. This information was used to estimate the behavioral parameters.
+2) Respondents were exposed to information stimuli, including trailers and/or other advertisements interspersed between advertisements of other movies, as well as simulated word-of-mouth conversations. Different groups of respondents were exposed to different combinations of stimuli to control for order effects. After each stimulus, viewing intentions were recorded by asking whether respondents would actually pay the regular ticket price to see the test movie. This information was used to measure the impact of specific
+
+236
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+information sources and the movie theme on the intention to see the movie.
+3) Respondents were shown the movie, and they filled out post-movie evaluations, including word-ofmouth intentions. These measures were based on exit polling questions used in the motion picture industry, and were used to estimate the Satisfaction probability and proportion of Positive/Negative Spreaders.
+4) Respondents also provided information on awareness of specific movies and media habits. These data were used to calibrate the awareness forecasting model discussed above.
+In all, each respondent spent approximately three hours in the clinic.
+Stimuli. For advertising exposures, we used movie trailers instead of TV advertisements for two reasons. TV advertising of movies is much less prevalent in the Dutch market than in the United States. Further, unlike TV advertising, the viewing of movie trailers is a forced exposure, so the heightened salience of advertising exposure in a laboratory setting does not pose a problem. To make the trailer viewing experience more realistic and to conceal the identity of the test movie, respondents were also shown trailers for three movies scheduled to be released around the same time as the test movie.
+Simulated positive and negative word-of-mouth conversations were generated by audiotaping scripted conversations between "actors" who were representative for the population of interest. This approach to generating interpersonal informational stimuli is consistent with previous empirical research where actors have been used successfully to simulate word-ofmouth stimuli (e.g., Urban et al. 1990).
+Projection to National Attendance and Revenues. The forecasted attendance and revenues generated by MOVIEMOD in the Rotterdam sample were projected to national box-office attendance by estimating a regression relationship between the penetration of 30 randomly selected movies within the respondent sample and the national attendance figures of these movies in the Netherlands, controlling for distribution intensity (numbers of screens).
+
+Results and Decision-Support Analysis
+Parameter Estimates. It is interesting to compare the estimates of the MOVIEMOD parameters for the United States with those for Holland, as presented in Table 2. Groundhog Day had the strongest theme acceptability of the three movies (0.888), but its advertising impact (0.362) was less effective than that for Shadow Conspiracy (0.490), possibly because the Dutch respondents were exposed to 90-second trailers, whereas the U.S. respondents were exposed to 30second TV advertisements. We also note that The Cemetery Club not only had the lowest theme acceptability (0.589), it also had poor audience satisfaction (0.296). These factors combined to make the movie a commercial failure. It is interesting to note that negative word of mouth was significantly more influential relative to positive word of mouth in the Dutch implementation (0.636 vs. 0.327), compared to the U.S. implementation (0.451 vs. 0.581 for Groundhog Day, 0.280 vs. 0.563 for The Cemetery Club).
+Turning to behavioral parameters, we note that the parameter estimates are reasonably similar between the Dutch and U.S. respondents. Word-of-mouth frequency is lower in the Netherlands (1.01) relative to the United States (2.69), which may be attributable to the lower involvement with movies in the Netherlands in general (the frequency of moviegoing in the United States is four times that in the Netherlands). Also lower in the Netherlands is the delay time between a decision to adopt a new movie and actual adoption (the inverse of cH and cL). This is attributable to the fact that most theaters are conveniently located in Rotterdam, and the convenience is determined more by the size of the theater (large vs. small) than by the location of the theater.
+Decision-Support Application. After we calibrated the parameters of MOVIEMOD, we first used the model as a decision-support tool to recommend media plan and distribution decisions for Shadow Conspiracy. Next, we developed forecasts for the marketing plan that was actually selected. These results can be compared with the actual box-office revenues to validate the predictive performance of MOVIEMOD. We first describe the decision-support application and then report the predictive results.
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+237
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+Table 2 Parameter Estimates for the U.S. and Dutch MOVIEMOD Implementations
+
+Dutch Implementation
+
+Parameter
+
+Notation
+
+Shadow Conspiracy
+
+Theme acceptability Advertising impact Positive word-of-mouth impact Negative word-of-mouth impact Satisfaction probability
+Word-of-mouth frequency Word-of-mouth duration Consideration duration Distribution-related delay (intensive distribution level) Distribution-related delay (selective distribution level)
+
+Movie-Specific Parameters
+
+PT
+
+0.708
+
+bA
+
+0.490
+
+bW
+
+0.327
+
+bW
+
+0.636
+
+PP
+
+0.550
+
+Behavioral Parameters
+
+k
+
+1.01 week1
+
+l
+
+0.425 week1
+
+d
+
+0.157 week1
+
+cH
+
+0.704 week1
+
+cL
+
+0.665 week1
+
+U.S. Implementation
+
+Groundhog Day
+
+The Cemetery Club
+
+0.888 0.362 0.581 0.451 0.491
+2.69 week1 0.398 week1 0.250 week1 0.444 week1 0.336 week1
+
+0.589 0.218 0.563 0.280 0.296
+
+The distributor and exhibitor provided us with the media and distribution plan for Shadow Conspiracy two months before the movie was released and several weeks before the media spending would begin. Here, these plans are called the base plans. The base media plan provided by the distributor is shown in Table 3. The media plan indicates the level of activity for nine media types in every week that at least one of these nine is used. As mentioned earlier, for every media type, we distinguish three activity levels: Low (L) ("low" including "none"), Average (A), and High (H). The time clock is such that the media plans start in week 1, and the movie is released in week 5.
+The distribution plan for Shadow Conspiracy provided by the exhibitor indicated that the movie would play for four weeks: the first week in a large theater and subsequently for three weeks in a small theater. This is a common showing for an average movie in the Netherlands. Using these base plans, MOVIEMOD predicted that the movie would generate a total attendance of 13,170 visitors and box-office revenue of fl. 151,455 (see Table 4).
+The distributor and exhibitor were disappointed by the forecasted market response to Shadow Conspiracy, and asked us to use MOVIEMOD to examine if alternative marketing plans might improve the movie's performance. We showed the distributor the effects of
+
+Table 3 Base Media Plan for Shadow Conspiracy in Rotterdam
+
+Media Type
+
+Week 5 Week Week Week Week (release Week
+1 2 3 4 week) 6
+
+Newspapers (advertisements)
+
+H
+
+A
+
+Newspapers (articles)
+
+L
+
+Magazines (advertisements)
+
+Magazines (articles)
+
+H
+
+A
+
+TV (commercials)
+
+TV (programs)
+
+A
+
+Radio (commercials)
+
+Trailers
+
+AAAA
+
+Outdoor advertisements
+
+LLL
+
+L
+
+Note. H  high; A  average; L  low.
+
+Table 4
+Week
+1 2 3 4 Total
+
+Forecasted Results Using the Base Media and Distribution Plan
+
+Predicted Penetration in Rotterdam (%)
+
+Predicted National Attendance (number of attendees)
+
+3.15
+
+6,720
+
+1.65
+
+3,520
+
+0.87
+
+1,860
+
+0.50
+
+1,070
+
+6.17
+
+13,170
+
+238
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+a number of modifications of the base media plan. Although each of the nine media types can be varied in the media plan, we varied only those media types that were relatively important in determining cumulative attendance and those media types for which the distributor was likely and able to change the planned activity level. For instance, the distributor indicated that they would not use advertisements in magazines. We considered the following modifications of the base media plan:
+1. Extra advertising (with average intensity) in newspapers in week 7,
+2. Extra articles in magazines (with average intensity) in week 6,
+3. Extra TV commercials in weeks 4 and 5, and 4. High intensity trailers in week 4 and extra high intensity trailers in week 5. The forecasted cumulative results using the modified media plans are shown in Table 5. Although the media plans result in increased revenues and attendance, it is not obvious that they result in incremental profits. To determine incremental profitability, we need to know the incremental costs of each modified plan and the incremental revenues created by the modification. We calculated the incremental revenues for the distributor and the exhibitor by using the revenue-split agreement negotiated between the distributor and the exhibitor. Our analyses produced the following insights: 1. An extra advertisement in three national newspapers costing fl. 2,100 would result in incremental revenue of fl. 3,200 for the distributor. 2. Extra publicity articles are free, but the distributor would need to approach additional magazines and persuade them to publish articles about the movie. This would result in incremental revenue of fl. 5,700.
+
+Table 5 Forecasted Results from Four Modified Media Plans
+
+Base Modified Modifed Modified Modified Plan Plan 1 Plan 2 Plan 3 Plan 4
+
+Predicted Cumulative
+
+6.17 6.41
+
+Penetration in Rotterdam (%)
+
+Predicted National
+
+13,170 13,780
+
+Dutch Attendance (n)
+
+6.59 14,240
+
+6.56 14,160
+
+7.55 16,740
+
+3. One TV commercial of 30 seconds during prime time (during the 8 PM news) for two weeks at a cost of fl. 10,000 would produce only incremental revenue of fl. 5,200. This modification would be unprofitable.
+4. Showing additional trailers would not cost anything to the distributor. The distributor would only have to persuade the exhibitor to show more trailers of the movie. This modification turned out to be most profitable, because it indicated incremental revenue of fl. 19,000 for the distributor. The fact that trailers are an effective and cheap way to improve awareness came as a pleasant surprise to the distributor and the exhibitor.
+After we presented this analysis to the distributor and the exhibitor, they decided to use the fourth recommended media plan, which involved showing additional trailers of Shadow Conspiracy in weeks 4 and 5 at high intensity and implementing a media schedule that peaked during the week of release.
+Validation Results. In validating pretest market evaluation models, sometimes the implemented action differs from the model's recommended strategy (Urban and Katz 1983). When Shadow Conspiracy was actually released, the implemented media plan differed from the base plan, and the actual distribution plan also differed from the expected plan. The exhibitor expected the movie to play for four weeks in Rotterdam, but it actually played for five weeks. It also played for two weeks in a large theater, whereas the expectation was that it would play for only one week. This difference between the expected and the actual distribution plan is an indirect result of the change in the media plan--because the movie performed better as a result of the adjusted media plan, the distribution plan was also adjusted. The media plan actually used for the movie is shown in Table 6.
+Based on the implemented plans, MOVIEMOD projected an attendance of 19,352 visitors and cumulative box-office revenues at fl. 222,548. These numbers represent an increase of almost 50% over the base plan. The actual box-office revenue was fl. 214,038, which is within 5% of the predicted revenue (see Table 7 for details). To assess the usefulness of employing all six behavioral states in the model, nested models with
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+239
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+Table 6 Implemented Media Plan for Shadow Conspiracy
+
+Media Type
+
+Week 5 Week Week Week Week (release Week
+1 2 3 4 week) 6
+
+Newspapers (advertisements)
+
+H
+
+A
+
+Newspapers (articles)
+
+L
+
+Magazines (advertisements)
+
+Magazines (articles)
+
+H
+
+A
+
+TV (commercials)
+
+TV (programs)
+
+A
+
+Radio (commercials)
+
+Trailers
+
+AAAH
+
+H
+
+Outdoor advertisements
+
+LLL
+
+L
+
+fewer behavior states were also employed. Their predictive performance was inferior to the complete version of MOVIEMOD. Whereas MOVIEMOD predicted the cumulative attendance and revenues reasonably well, the forecasted sales pattern was less accurate. The strong decline in attendance from week 1 to week 2 was not predicted accurately, and the attendance in week 5 was overestimated.
+Comparison of MOVIEMOD Against Benchmark Models. The forecast of MOVIEMOD can be compared to a number of benchmark models that also provide a prelaunch forecast of the performance of a new movie. The simplest (and weakest) benchmark model uses the U.S. box-office performance of movies as a predictor of the Dutch performance of the movie in an OLS regression (this method is in line with Smith and Smith 1986). This method can provide prelaunch estimates, because Hollywood movies are usually released
+
+in the United States well before they are released in the Netherlands. We estimated this relationship using boxoffice data for 30 movies. In this analysis the possible effects of genres of movies (indicating differences in taste between the United States and the Netherlands) are taken into account. The observed relationship was reasonably strong (R2  .84). Using this relationship, the predicted performance of Shadow Conspiracy was estimated to be 7,400 visitors. This prediction is 60% lower than the actual attendance of 18,612.
+The second benchmark model is based on the BOXMOD model developed by Sawhney and Eliashberg (1996), and uses the first few weeks of revenues to predict the total revenues of the movie. This prediction is based on the shape of the revenue curve that can be described by three parameters. In their article, the authors also describe a meta-analysis procedure to predict the performance of a movie prior to launch. The meta-analysis procedure uses historical data for a number of movies to estimate the relationship between the characteristics of a movie and the BOXMOD parameters for the movie. This relationship can subsequently be used to predict the BOXMOD parameters for a movie that has not been released yet, in this case for Shadow Conspiracy. We used a set of 15 movies. This is a limited set, because weekly attendance figures for movies in the Netherlands are not publicly available. Using BOXMOD and the meta-analysis procedure, we obtained a prediction that is 8.7% lower than the actual attendance figures.
+A key characteristic of MOVIEMOD is the fact that it accounts for word-of-mouth interactions among potential moviegoers and spreaders, using the interactive
+
+Table 7 MOVIEMOD Results in Dutch Implementation
+
+Week
+
+Predicted Penetration in Rotterdam (%)
+
+Predicted National Attendance (number of attendees)
+
+1
+
+3.89
+
+2
+
+2.38
+
+3
+
+1.17
+
+4
+
+0.67
+
+5
+
+0.42
+
+6
+
+Total
+
+8.53
+
+8,825 5,400 2,654 1,520
+953
+19,352
+
+Predicted Box-Office Revenues (fl.)
+fl. 101,488 fl. 62,100 fl. 30,521 fl. 17,480 fl. 10,960
+fl. 222,548
+
+Actual National Attendance (number of attendees)
+9,116 3,844 3,562 1,425
+528 137
+18,612
+
+Actual Box-Office Revenues (fl.)
+fl. 104,834 fl. 44,206 fl. 40,963 fl. 16,387 fl. 6,072 fl. 1,576
+fl. 214,038
+
+240
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+Markov chain representation. We can investigate whether accounting for interaction improves the model performance by calculating the forecast of attendance that does not account for word of mouth. This is done by equating the terms involving S t , and S t to zero in the transition probability matrix (Equations (4) to (7)). If the resulting forecast is significantly lower than the actual attendance, this would suggest that incorporating interaction effects improves the forecasts and that the interactive Markov chain representation is a more realistic mathematical representation of the movie decision process. The predicted attendance from the simple Markov chain version of MOVIEMOD is 17,030, which is 8.5% lower than the actual attendance. This is consistent with the expectation that excluding word-of-mouth effects underestimates the information flows and hence the rate of adoption. Further, the interactive version of MOVIEMOD has a lower forecast error (4%) than the noninteractive version.
+We summarize the predictive performance for the different benchmark models and MOVIEMOD in Table 8 and find that MOVIEMOD outperforms the benchmark models. In addition, MOVIEMOD also provides valuable diagnostics on why the performance is likely to be poor/good, and what could be done to improve the performance. These decision-support capabilities make MOVIEMOD a richer forecasting and planning tool than BOXMOD or the other benchmark models. The decision-support application of MOVIEMOD suggests that this "what-if" capability is quite valuable.
+Evaluation of the MOVIEMOD Implementation by the Managers. An important consideration in implementing any decision-support tool is the evaluation
+
+Table 8 MOVIEMOD Results and Benchmark Models
+Model
+Na¨ive model (U.S. box-office performance as predictor) BOXMOD (Sawhney and Eliashberg 1996) MOVIEMOD (no interaction) MOVIEMOD (with interaction)
+
+Prediction vs. Actual
+60% 8.7% 8.5% 4.0%
+
+of the tool by managers who were involved in the implementation. We asked two managers from the exhibitor (Pathe´) who had been closely involved in the MOVIEMOD implementation for Shadow Conspiracy to evaluate MOVIEMOD. We did the same with two managers from the distributor (RCV). Evaluations were measured on a "perceived usefulness" scale developed by Davis (1989) for the evaluation of decisionsupport systems. This scale measures perceived usefulness through six items. We also asked the managers about their beliefs with respect to the potential contribution of MOVIEMOD to the profitability of their company and about their intention to use MOVIEMOD for other new movies if MOVIEMOD were available for application on an ongoing basis. The average evaluations are shown in Table 9.
+The managerial evaluations suggest that the distributor is quite satisfied with MOVIEMOD, whereas the exhibitor, although positive in its overall evaluation, is less satisfied with MOVIEMOD. This is not surprising, because MOVIEMOD is intended to be used by distributors to optimize the performance of their movies. Exhibitors are more concerned with maximizing the overall yield from their theaters and in getting better revenue-sharing arrangements. We should emphasize that before the MOVIEMOD implementation, neither the distributor nor the exhibitor in the Netherlands used any analytical means for forecasting or decision support. They rely primarily on experience and intuition for making marketing decisions, and they felt that models like MOVIEMOD can contribute significantly to the quality of decision making in this industry. Market research techniques are used in the industry for various simple tasks. However, we conjecture that
+
+Table 9 Outcomes from Evaluation by Managers
+
+Evaluation Attribute
+
+Exhibitor Distributor
+
+Perceived Usefulness of MOVIEMOD (7-point scale) 4.00
+
+4.75
+
+Perceived potential contribution of MOVIEMOD to the
+
+profitability of the own company (7-point scale)
+
+4.25
+
+5.75
+
+Intention to use MOVIEMOD for subsequent
+
+new movies:
+
+Probability of using (%)
+
+50
+
+85
+
+Frequency of using (times per year)
+
+5­10 10
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+241
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+wider adoption of more comprehensive models such as MOVIEMOD will take time and will require overcoming cultural resistance to marketing science tools by practitioners in this industry. We hope that the preliminary implementations of MOVIEMOD will pave the way for the use of pretest market evaluation techniques in the motion picture industry.
+Summary, Limitations, and Directions for Future Research
+MOVIEMOD is a prerelease evaluation system for motion pictures with a number of important features:
+· An explicit mechanism for modeling word-ofmouth interactions between spreaders and potential adopters using the interactive Markov chain model;
+· Consideration of a variety of information sources including publicity and reviews from critics;
+· Recognition that different information sources have differing degrees of impact on consumer adoption intention; and
+· Development of a consumer measurement methodology to estimate the nature and magnitude of positive and negative word-of-mouth information flows prior to launch.
+We demonstrated the managerial utility of MOVIEMOD as a decision-support tool for making better marketing decisions in the motion picture industry. Although several refinements can be made to the model, the empirical results clearly suggest that managers in the entertainment industry can benefit from quantitative modeling techniques. The encouraging validation results should help to overcome the deep-rooted skepticism among entertainment industry managers regarding the use of decision-support systems.
+MOVIEMOD can be extended and refined in several ways by incorporating additional behavioral phenomena. The awareness forecasting methodology can be developed further. For an ongoing series of applications of MOVIEMOD, the relationship between media activity and awareness could be estimated using a longitudinal panel and measuring the awareness for a large number of movies with known media plans. Another important direction for extending MOVIEMOD would be to more explicitly incorporate competitive effects. In the current formulation, competitive effects
+
+are captured indirectly via the impact on the share of screens (distribution outlets) for the test movie. Competitive effects could be incorporated by allowing the forgetting parameter to depend on competitive intensity or by allowing the advertising impact factor to depend upon the level of competitive advertising. A third refinement of MOVIEMOD could involve the inclusion of a capacity restriction ( Jain et al. 1993). The present formulation model does not account for the possibility of a movie being sold out. A simple way to implement this restriction would be to force people to remain in their current state when the movie demand exceeds capacity, and to allow for a finite probability of "balking," where consumers who cannot see the movie are no longer interested in seeing the movie. Finally, the model can be refined to include seasonality by allowing, for instance, the delay parameter (whose value is partly determined by average movie-going frequency) to be indexed to the market size for each week based on historical seasonality patterns.
+MOVIEMOD can be also applied to a broader set of managerial decision settings. For instance, exhibitors and distributors can use MOVIEMOD in negotiating exhibition contracts. Distributors could show MOVIEMOD results to convince exhibitors of the potential of a specific movie and to negotiate favorable terms for their movies. Exhibitors, in turn, could use MOVIEMOD results for different movies as input in making decisions on allocating their screens optimally over the set of available movies.4
+Appendix
+The appendix for this article can be found on the Marketing Science website at the following URL: http://mktsci.pubs.informs.org.
+References
+Austin, Bruce A. 1989. Immediate Seating: A Look at Movie Audiences. Wadsworth Publishing Company, Belmont, CA.
+4The authors are listed alphabetically, and contributed equally to the paper. Financial assistance from the Huntsman Center for Innovation and Global Competition at the Wharton School of the University of Pennsylvania and the cooperation of Pathe´ Cinemas and RCV Film Distribution in implementing MOVIEMOD in the Netherlands are gratefully appreciated and acknowledged. The authors also thank the Associate Editor and the referees for their valuable comments. The usual disclaimer applies.
+
+242
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+ELIASHBERG, JONKER, SAWHNEY, AND WIERENGA MOVIEMOD: An Implementable Decision-Support System
+
+Bartholomew, David J. 1973. Stochastic Models for Social Processes. John Wiley & Sons, London, UK.
+Blackburn, Joseph D., Kevin J. Clancy. 1980. LITMUS: A new product planning model. R. P. Leone, ed. Proceedings: Market Measurement and Analysis. The Institute of Management Sciences, Providence, RI, 182­193.
+Conlisk, John. 1976. Interactive Markov chains. J. Math. Soc. 4 157­ 185.
+----. 1978. A stability theorem for an interactive Markov chain. J. Math. Soc. 6 163­168.
+Cooper-Martin, Elizabeth. 1993. Effects of information format and similarity among alternatives on consumer choice processes. J. Acad. Marketing Sci. 21(3) 239­246.
+Davis, F. D. 1989. Perceived usefulness, perceived ease of use, and user acceptance of information technology. MIS Quart. 13(2) 319­340.
+Dodson, Joe A., Jr., Eitan Muller. 1978. Models of new product diffusion through advertising and word-of-mouth. Management Sci. 24(15) (November) 1568­1578.
+Eliashberg, Jehoshua, Mohanbir S. Sawhney. 1994. Modeling goes to Hollywood: Predicting individual differences in movie enjoyment. Management Sci. 40(9) 1151­1173.
+----, Steve Shugan. 1997. Film critics: Influencers or predictors? J. Marketing 61 (2) 68­78.
+Gleckman, Howard. 1995. Welcome to the entertainment economy. Bus. Week August 14.
+Hauser, John R., Kenneth Wisniewski. 1982. Dynamic analysis of consumer response to marketing strategies. Management Sci. 28(5) 455­486.
+Jain, Dipak C., Vijay Mahajan, Eitan Muller. 1991. Innovation diffusion in the presence of supply restrictions. Marketing Sci. 10(1) (Winter) 83­90.
+Jones, Morgan J., Christopher J. Ritz. 1991. Incorporating distribution into new product diffusion models. Internat. J. Res. Marketing 8(2) 91­112.
+Klady, Leonard. 1998. More b. o. oracles take up tracking. Variety October 19­25.
+Krider, Robert E., Charles B. Weinberg. 1998. Competitive dynamics and the introduction of new products: The motion picture timing game. J. Marketing Res. 35(1) 1­15.
+Mahajan, Vijay, Eitan Muller, Frank Bass. 1993. New product diffusion models. J. Eliashberg, G. L. Lilien, eds. Handbooks in Operations Research and Management Science, vol. 5. Elsevier, Amsterdam, The Netherlands.
+----, ----, Roger A. Kerin. 1984. Introduction strategy for new products with positive and negative word-of-mouth. Management Sci. 30(12) 1389­1404.
+----, ----, Subhash Sharma. 1984. An empirical comparison of
+
+awareness forecasting models of new product introduction. Marketing Sci. 3(3) (Summer) 179­197. Neelamegham, Ramya, and Pradeep K. Chintagunta. 1999. A Bayesian model to forecast new product performance in domestic and international markets. Marketing Sci. 18(2) 115­136. Pringle, Lewis G., R. Dale Wilson, Edward I. Brody. 1982. NEWS: A decision oriented model for new product analysis and forecasting. Marketing Sci. 1 (1) 1­30. Radas, Sonja, Steve Shugan. 1998. Seasonal marketing and timing new product introductions. J. Marketing Res. 35(3) 296­315. Roberts, John H., Glen L. Urban. 1988. Modeling multiattribute utility, risk, and belief dynamics for new consumer durable brand choice. Management Sci. 34(2) 167­185. Sawhney, Mohanbir S, Jehoshua Eliashberg. 1996. A parsimonious model for forecasting gross box-office revenues of motion pictures. Marketing Sci. 15(2) 113­131. Silk, Alvin J., Glen L. Urban. 1978. Pre-test market evaluation of new packaged goods: A model and a measurement methodology. J. Marketing Res. 15(2) 171­179. Smith, Sharon P., V. Kerry Smith. 1986. Successful movies: A preliminary empirical analysis. Appl. Econom. 18(5) 501­507. Squire, Jason E. 1992. The Movie Business Book (2nd Edition). Simon & Schuster, New York. Stevens, Elizabeth L., Ronald Grover. 1998. The entertainment glut. Bus. Week February 16. Urban, Glen L. 1970. "SPRINTER MOD III: A Model for the Analysis of New Frequently Purchased Consumer Products," Oper. Res. 18 (September­October) 805­853. ----, John R. Hauser. 1993. Design and Marketing of New Products (2nd Edition). Prentice-Hall, Englewood Cliffs, NJ. ----, Gerald M. Katz. 1983. Pre-test market models: Validation and managerial implications. J. Marketing Res. 20(3) (August) 221­ 234. ----, John R. Hauser, John H. Roberts. 1990. Prelaunch forecasting of new automobiles. Management Sci. 36(4) 401­421. ----. 1993. Pretest Market Forecasting. J. Eliashberg, G. L. Lilien, eds. Handbooks in Operations Research and Management Science, vol. 5. Elsevier, Amsterdam, The Netherlands. Veronis, Suhler and Associates. 1997. The VS & A Communications Industry Transactions Report. Vogel, Harold L. 1994. Entertainment Industry Economics: A Guide for Financial Analysis (3rd Edition). Cambridge University Press, Cambridge, UK. Wind, Jerry, Vijay Mahajan. 1987. Marketing hype: A new perspective for new product research and introduction. J. Product Innovation Management 4(1) 43­49. Yankelovich, Skelley and White, Inc. 1981. LTM Estimating Procedures. Yoram Wind, Vijay Mahajan, Richard D. Cardozo, eds. New Product Forecasting. Lexington Books, Lexington, MA.
+
+This paper was received January 5, 1998, and has been with the authors 16 months for 3 revisions; processed by Charles Weinberg.
+
+Marketing Science/Vol. 19, No. 3, Summer 2000
+
+243
+
+

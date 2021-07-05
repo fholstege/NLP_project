@@ -1,0 +1,2044 @@
+Vol. 24, No. 4, Fall 2005, pp. 595­615 issn 0732-2399 eissn 1526-548X 05 2404 0595
+
+informs ®
+doi 10.1287/mksc.1050.0123 © 2005 INFORMS
+
+Prediction in Marketing Using the Support Vector Machine
+
+Dapeng Cui
+Ipsos Insight, North America, 111 North Canal, Suite 405, Chicago, Illinois 60606, dapeng.cui@ipsos-na.com
+David Curry
+College of Business Administration, University of Cincinnati, Cincinnati, Ohio 45221-0145, david.curry@uc.edu
+Many marketing problems require accurately predicting the outcome of a process or the future state of a system. In this paper, we investigate the ability of the support vector machine to predict outcomes in emerging environments in marketing, such as automated modeling, mass-produced models, intelligent software agents, and data mining. The support vector machine (SVM) is a semiparametric technique with origins in the machine-learning literature of computer science. Its approach to prediction differs markedly from that of standard parametric models. We explore these differences and benchmark the SVM's prediction hit-rates against those from the multinomial logit model. Because there are few applications of the SVM in marketing, we develop a framework to position it against current modeling techniques and to assess its weaknesses as well as its strengths.
+Key words: automated modeling; choice models; kernel transformations; multinomial logit model; predictive models; support vector machine
+History: This paper was received January 8, 2003, and was with the authors 14 months for 2 revisions; processed by Duncan Simester.
+
+1. Introduction
+Many marketing problems require accurately predicting the outcome of a process or the future state of a system. In the past two decades, prediction of consumer choice has attracted the most attention, but prediction of other marketing phenomena plays a fundamental role in modern marketing practice and is essential to accomplish the deeper goals of marketing science. Examples include predicting segment membership, most "switchable" customers, most effective ad, and website navigational choices. This paper presents a systematic study of the strengths and weaknesses of a methodology well suited for a variety of prediction environments in marketing, the support vector machine (SVM). Accurate prediction, though essential, is often hindered by complex relationships between predictor and target variables and an absence of theory to guide model identification. For reasons explained in this research, the support vector machine predicts accurately in such environments.
+The support vector machine is a semiparametric technique with origins in the machine-learning literature of engineering and computer science. There are currently no applications of the support vector machine reported in the marketing literature and
+
+only one application reported in any major busi-
+
+ness journal; i.e., Viaene et al. (2002). The SVM is
+
+novel, but as Bucklin et al. (2002) emphasize, with
+
+today's diverse data sets, " it may be counterpro-
+
+ductive to rely primarily on standard statistical meth-
+
+ods. Emphasizing scalable methods and predictive
+
+results may enable us to observe a richer set of behav-
+
+ioral phenomena in
+
+marketing data."1
+
+1.1. Objectives Though relatively unstudied in marketing, the support vector machine has demonstrated its utility in a variety of other disciplines, including statistics, computer science, agriculture, and engineering. The present research clarifies the strengths and weaknesses of the SVM for the kinds of applications, traditional and future, most relevant to marketing scientists. This goal is accomplished through a combination of analytic discourse and direct empirical comparisons with the multinomial logit model (MNL).2 In marketing, the logit is the gold standard;
+
+1 The text has been altered slightly to emphasize marketing data, not just clickstream data, as is the focus of the Bucklin et al. (2002) passage.
+2 We employ several versions--conditional, nested--of the multinomial logit model and recognize the variety of forms that this
+
+595
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+596
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+it is widely applied and is known to perform well. It provides a well-understood benchmark for the SVM.3 However, in later sections of the paper, we emphasize the complementary, not competitive, relationship between the SVM, MNL, and other existing models in marketing.
+Although marketing scientists have traditionally emphasized structural understanding over predictive accuracy, in many emerging marketing contexts there is a notable absence of theory, and prediction-- not structural understanding--is the primary goal. These contexts include automated modeling, intelligent agents, and data mining, to name just a few. In the present study, we engineer environments with properties like those expected in these and other areas relevant to marketing's expanding scope. These environments require individual-level predictions, but data are not collected using a controlled experimental design. More likely, the data are pure one-shot field data that mix information about the prediction target, the individual, and the prediction context.
+Such contexts represent a proving ground for the support vector machine. The SVM behaves mathematically in a way that avoids overreliance on particular structural assumptions. It implicitly automates the model identification process, and by so doing, enters the parameter estimation phase with a family of structural possibilities rather than a single possibility. The SVM uses a kernel-induced transformation from the original attribute space to a higherdimensional space to capture relevant features of the data. Through clever use of kernel transforms, the SVM solves a nonlinear problem with a linear model.4 The approach has certain stability and robustness characteristics lacking in the maximumlikelihood procedure, whether based on actual or simulated likelihood.5 These characteristics also control overfitting. Thus, in this paper, the term "prediction" always means out-of-sample prediction, not goodness-of-fit.
+class of models takes, as well as the sophisticated estimation methods being used and under development. For simplicity, we use the terms "logit model," "logit," or "MNL" to refer to this class of models. In subsequent sections, the precise nature of the models used in this research is clarified.
+3 A simple (OLS) version of the support vector machine has already been shown to outpredict a variety of "soft-computing" techniques, including artificial neural nets, k-nearest neighbor, decisiontree, Bayesian learning multilayer perceptron, and tree-augmented Bayes (Viaene et al. 2002).
+4 Kernel transformations are explained briefly in the main text and more thoroughly in Appendices A and B.
+5 Today's newer estimation techniques using the Gibb's Sampler (Allenby et al. 1995, Hofstede et al. 2002), simulated likelihood (Kamakura et al. 2003), hierarchical Bayes (Rossi and Allenby 2003, Andrews et al. 2002), and hybrid logit kernel models overcome this problem to some extent.
+
+1.2. Omitted Topics This research is defined as much by what it omits as by what it includes. Readers interested in a technical exposition of the support vector machine are directed to Burges (1998). For an exposition in a businessoriented setting, see Curry and Cui (2003). This paper only superficially considers statistical learning theory, the theory of statistical inference underpinning the SVM (Vapnik 1998). We highlight the fundamental result linking machine (model) capacity, sample size, and empirical risk. The bibliography contains abundant references for readers interested in further study of this important topic. Finally, we focus exclusively on one-dimensional, discrete prediction, not predictors with continuous outcomes or 2-d or higher classification. The SVM has been successfully applied to 2-d-type problems, including face detection (Osuna et al. 1997) and image classification (Chapelle et al. 1999). It has also been adapted to problems with continuous outcomes, such as regression problems (Mattern and Haykin 1999, Müller et al. 1999, Schölkopf et al. 1999, Stitson et al. 1999), principle components analysis (Schölkopf et al. 1999), and density estimation (Weston et al. 1999). However, these areas are beyond the scope of the present research.
+The remaining sections of this paper are organized as follows. Section 2 reviews the critical role of prediction in marketing and provides a framework for organizing predictive models. The SVM's position in this framework helps identify the types of problems for which it is well suited. Section 3 outlines major areas where the SVM differs from conventional models. The section addresses topics vitally important to practitioners and modelers alike--including model capacity, boundary bias, and the curse of dimensionality--to build a case for the SVM's superior predictive capability. Section 4 details how and why an SVM works and indicates how we implemented the SVMs used in this research. Section 5 presents the methodology used for the major experimental comparisons presented in this paper, testing the SVM in a variety of environments where it is baselined against the multinomial logit. Section 6 discusses weaknesses of the SVM and shortcomings of our empirical comparisons. Section 7 presents two main directions for future research, both stressing the complementary nature of the SVM and random utility theory (RUT) models. Section 8 offers concluding comments. Appendices A, B, and C in the main text explain technical elements of the SVM, while two online appendices offer additional detail for interested readers (http://mktsci.pubs.informs.org).
+2. Prediction in Marketing
+More than a half-century ago, Politz and Deming (1953, p. 51) noted the vital role of predictive models
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+597
+
+in marketing: "Every (marketing) decision entails the expectation of a specific result. Therefore, every decision, if it is rational, depends on prediction." Because so much is riding on prediction in marketing, taking care to draw the problem in the most refined way possible increases the likelihood of obtaining useful results. To this end, we distinguish four major contexts in which accurate prediction is paramount for marketing success: (a) pure prediction, (b) robust prediction, (c) analytic prediction, and (d) structural gap analysis. These categories position the support vector machine against current methods dominant in marketing.
+2.1. Pure Prediction Pure prediction includes all cases in which structural understanding of a phenomenon is neither feasible nor necessary. Management's mission is entirely practical, not intellectual, because a course of action must be determined or a value computed for a large number of cases. In these contexts, the firm can realize higher revenues, lower costs, or both, by using predictive models. In addition to the burden of too many cases to model "by hand," relevant predictors may change from one case to the next, so that human intervention is not only costly, but not useful. These properties define several important frameworks discussed by marketing scholars and implemented to varying degrees by many firms today, including massproduced models, automated modeling, data mining, intelligent agents, and certain subdomains of other marketing areas, such as direct marketing.
+Mass-produced models have already made important contributions in the consumer packaged-goods (CPG) industry, and their importance is likely to expand during the next decade (Blattberg et al. 1994). Similarly, automated models, inspired by IRI's Cover StoryTM (Schmitz et al. 1990) and PROMOTERTM (Abraham and Lodish 1987, 1993) are being improved and upgraded (Bucklin et al. 1998, Little 2001). With both mass-produced models and automated modeling, the emphasis is on pure prediction precisely because there are too many cases to consider individually. Although predictions are often based on fairly simple models, they are consistent and "accurate enough," relative to the alternative of human intervention.
+Data-mining applications are prominent in direct marketing (Berry and Linoff 1997, Cooper and Giuffrida 2000) and have rapidly expanded in the CPG environment. In CPG applications, data mining emphasizes predictions about the future coincidence of items in a shopping cart, rather than structural understanding or inference (Bucklin et al. 2002). In direct marketing, data-mining algorithms maximize expected profit from solicitations (Ratner 2003),
+
+including cross-selling opportunities (Kamakura et al. 2003).
+Although the agent framework is relatively new in marketing, a number of marketing scientists are actively developing agents and exploring their consequences (Ariely et al. 2004, Avery et al. 1999, Diehl et al. 2003, Gershoff and West 1998, Häubl and Trifts 2000, Iacobucci et al. 2000, West et al. 1999). West and colleagues (1999) foresee a wide range of applications for consumers, many of which require accurate prediction of utility, satisfaction level, and price sensitivity on a client-by-client basis with information sets that are unique to each client and change over time.
+2.2. Robust Prediction The second major marketing context where prediction is a key factor falls under the general rubric of marketing engineering, e.g., the "systematic process of putting marketing data and knowledge to practical use" to enhance decision-makers' mental models (Lilien et al. 2002). In marketing engineering, prediction is only part of the equation, though a crucial part. We call this robust prediction because, paradoxically, the structural accuracy of the model is not as important as its ability to provide the decision maker with an accurate sense of trends, outliers, boundary conditions, and other elements of the "big picture." In fact, robust means structurally naïve but predictively accurate. The models in a marketing management support system (MMSS) (Wierenga et al. 1999, Wierenga and van Bruggen 2000) are valued precisely because they provide intuitive understanding, not scientific explanation (Hunt 1983).
+Conjoint analysis is a good example of robust modeling. In hundreds of commercial applications and nearly all published research, no structure deeper than additive is sought for an individual's utility function. The additive model is robust (Dawes and Corrigan 1974); its predictions are accurate enough, despite the fact that many studies of human information integration reveal a wide assortment of noncompensatory behavior (Einhorn 1970, Kahneman 2002, Kardes 1999, Brazerman 1994, Russo and Shoemaker 1989, Tversky 1972). The success of additive conjoint analysis emphasizes that management clearly accepts the trade-off between deep structural understanding and ease of interpretation in light of respondent effort.
+2.3. Analytic Prediction Analytic prediction describes contexts in which a model is developed to solve a particular problem or class of problems or where an existing model is adapted for this purpose. In many cases the model is just beyond inclusion in the robust prediction category, but could end up there as its structure becomes better understood and its robustness a proven commodity. Recent examples include the model of Moe
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+598
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+and Fader (2001) to predict the conversion rate from website visit to online purchase and Sismeiro's and Bucklin's (2004) model to predict how long a visitor will view each webpage on a given website.
+Discrete-choice models that operationalize RUT are included in this category. Although these models yield important structural insights, it is worth recalling that in both the transportation and marketing literatures, discrete-choice models were originally designed to support "if-then" analysis for policy implications, a purpose for which accurate prediction is a necessity (Domencich and McFadden 1975). In this spirit, Guadagni and Little (1983) thoroughly tested the out-of-sample predictive ability of the multinomial logit they fit to household scanner data.6 They emphasize the model's application as a market response tool to assist managers in anticipating market reactions to changes in marketing-mix variables.
+Discrete-choice models offer both structural insight and accurate prediction. Regarding structure, however, the main evolutionary path has been to refine structural understanding of the stochastic component of the model, not to seek additional structure in the model's deterministic component. Substantial progress has been made to unpool variance due to consumer heterogeneity and other specialized components, such as correlated attributes. This purifies estimates of the parameters in the deterministic component of the model, adding power to significance tests and enhancing analyst confidence in the magnitude and sign of estimates. However, with rare exceptions, Vij = Xij remains linear in attributes even though modern applications of discrete-choice modeling venture far beyond the simple choice contexts envisioned by Luce (1959) and Thurstone (1927). Today's models mix attributes of the choice options with attributes of the customer and the choice environment. It is reasonable to expect interactions and higher-order effects between attributes from different domains, e.g., product attributes and decision-maker attributes. Thus, we argue that there are potential gains from including additional structural complexity in Vij , not just in error.
+2.4. Prediction and Structural Gap Analysis Marketing science demands highly accurate predictive models precisely because such models push analysts to increase their structural understanding of a process. Although unambiguous profit motives drive the previous three cases, here financial gain is subordinated to the search for scientific understanding.
+6 They tested predictions on a new sample (in the same time period), in a new time period (with the original sample), and in single stores (though pooled parameter estimates were derived from data aggregated over stores).
+
+In his thesis of structural identity, Hempel (1965, p. 367) addresses the idea squarely: "(1) every adequate explanation is potentially a prediction, and (2) every adequate prediction is potentially an explanation." Social scientists sometimes defend a model by claiming that it is designed to explain rather than predict a phenomenon. Hunt bluntly calls this excuse vacuous, since "all adequate explanations must have predictive capacity" (1983, p. 117).
+We shall see that the support vector machine, because it predicts so well, has the potential to play a central role in a deeper understanding of marketing phenomena. This role takes the form of presenting the marketing scientist with a prediction gap that leads unequivocally to a structural identification gap. Foreshadowing results, the support vector machine's predictive superiority in nonlinear contexts signals omitted structure in the baseline model. Of course, when this structure is included, the baseline model can predict up to the inherent limits of uncertainty. This is big news, not because the increased predictive power was unexpected, given perfect structural insight, but rather because perfect structural insight is impossible. Finding a reliable technique like the SVM that provides a reasonable target for predictive accuracy supports positivist goals.
+Not all techniques used for prediction in marketing fit neatly into the foregoing framework. Examples include scenario analysis, capabilities analysis, and game theory. The SVM fits easily into the class of pure predictors, but has properties, reviewed next, that suggest potential contributions in all four categories of the framework.
+3. Model Properties and Predictive Ability
+The relative strengths and weaknesses of the SVM can be established by probing four fundamental properties that influence the predictive ability of any model. These properties--decision boundary, structural capacity, boundary bias, and empirical risk--are tightly interconnected. They all contribute to a fifth area, recognition of complexity that involves scientific attitudes and positivist tenets that can stymie methodological progress. We discuss each of these areas in turn to build an understanding of differences between the support vector machine and parametric models in marketing.
+3.1. Implicit Decision Boundaries All parametric models for discrete prediction, including those based directly on the general linear model (GLM), such as discriminant analysis; and those based indirectly on GLM, such as discrete-choice models; involve two basic stages. Stage 1, function estimation, yields continuous decision boundaries that are
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+599
+
+then triggered in Stage 2 when an observation is assigned to a particular discrete class. In the simplest two-outcome, logit model, for example, the boundaries are contours of constant probability of belonging to Class 1, "choose option A," versus Class 2, "choose something else." The statistical prediction rule is based on one of these contours, typically the contour corresponding to 50/50 posterior odds. The logit approximates this contour by using hyperplanes in the space spanned by the predictor variables. The linear combination of predictors is transformed to lie between 0 and 1 in order to approximate probabilities.
+Discrete-choice models with richer structure, such as conditional, nested, and mixed; or hierarchical logit models, place additional constraints on these hyperplanes, but do not alter the most fundamental property of the resulting decision boundary; it is functional, not relational, in nature. Thus parametric models face a structural inadequacy when dealing with a relational boundary between classes. In consumer choice, such a boundary arises even with very simple information integration rules. For example, if a consumer uses the Latitude of Acceptance rule shown in Figure 1, acceptable options (squares) are nested within a ring of unacceptable options (circles) defined by cutoffs on two attributes (West et al. 1997).
+Recognizing a nested relation mathematically is difficult for a parametric model based on function approximation. To illustrate, consider the prediction hit-rates for a simple binary logit model versus an SVM for the data in Figure 1. We estimated parameters of both models using a sample of size l = 400, then used the model to predict the outcome for N = 50 000 observations drawn from the same joint
+
+Figure 1
+x2 10
+
+Latitude of Acceptance Model
+
+9 Max
+8
+
+7
+
+6
+
+Attribute 2
+
+5
+
+4
+
+3
+
+2 Min
+1
+
+0
+
+x1
+
+0 1 2 3 4 5 6 7 8 9 10
+
+Min
+
+Attribute 1
+
+Max
+
+density. Over 10 replications of this exercise, the logit predicts on average 51.7%, while the SVM averaged 97.7% correct predictions. The true odds are 49/51, indicating that the binary logit cannot beat chance.
+There are three basic reasons for the disparity, and these reasons exert their influence interactively. First, the structural capacity of the two models differs substantially. Second, the SVM skips the function estimation step and calculates the optimal decision boundary directly, as described subsequently. Finally, the SVM establishes this boundary while preserving degrees of freedom through the application of a unique data transformation that, contrary to common practice, increases rather than decreases the dimensionality of the solution space. How this works and why it should work well are clarified in the following sections.
+3.2. Machine Capacity Let us elaborate the model as machine analogy through the idea of a machine's capacity. Capacity is akin to the Fisherian notion of structural error caused by model misspecification (Fisher 1950), but is indexed quantitatively in the theory of the support vector machine. Consider the following four functional forms for a regression model.
+1: y = 0 + 1X1 2: y = 0 + 1X1 + 2 X12 3: y = 0 + 1X1 + 2X2 4: y = 0 + 1X1 + 2X2 + 12X1X2
+These forms differ in certain explicit properties such as number of inputs and number of parameters. Several of these models are nested; e.g., 1  2 and
+1  3  4. Among nested models, we naturally think of the super-model as having greater capacity than a submodel in the sense that it must exhibit superior in-sample fit. For nonnested models with the same number of parameters, their relative capacity is not as clear. For example, 2 and 3 have the same number of parameters, but 2 involves only one input while 3 involves two. In such cases, our intuitive notion of capacity is confounded by econometric questions such as multicollinearity, e.g., X1 versus X12. These questions in turn engender others about the nature of the data collection process (field data or experimental data; i.e., are X1 and X12 orthogonal?), and whether the likelihood or simulated likelihood surface is unimodal, a property that can strongly influence the quality of estimation.
+Rather than use nesting, degrees of freedom, or more generally, an object-oriented assessment of observable model properties, Vapnik and Chervonenkis (1964, 1971) focused on an unobservable but more fundamental property from which these others follow. This property, known as the VC-dimension of
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+600
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+Figure 2
+
+Capacity to Shatter 2p Points (a) M1
+
+(b) M2
+
+b a
+c
+
+b
+
+a
+
+c
+
+d
+
+a model, is based on the concept of shattering. A function is said to shatter a set of p points if it can be instantiated so as to subdivide the points into all 2p possible subsets. The function's capacity is the maximum number of points it can shatter. For example, three points can be partitioned eight ways into two groups. Figure 2(a) shows that the linear boundary can shatter three points because it can identify all eight partitions. However, the linear boundary cannot shatter four points, because in panel (b) it cannot achieve the partition ac bd . This partition can be achieved using the quadratic boundary, 2, which has capacity 5. ( 2 can shatter four and five points, but not six.) Put another way, no matter how well we estimate the parameters of the linear machine 1, as a decision boundary it lacks the (structural) capacity to solve problem (b).
+Capacity measured in this way would be, at most, an interesting addendum to the area of structural analysis in modeling if the story ended here. However, Vapnik and colleagues were able to derive a unifying relationship between capacity h , sample size l , and empirical risk Remp (Vapnik and Chervonenkis 1971). To define empirical risk, consider the following characterization of the discrete prediction problem. Suppose we are given l observations drawn independently from an unknown distribution P x y . (P symbolizes the cumulative probability function; vectors and matrices appear in boldface type.) Each observation consists of an n-dimensional vector xi  Rn, i = 1 l and an associated output yi. For binary choice situations, yi is either 0 or 1. For multiclass problems, yi is an element of an index set.
+Suppose that a real-valued function underlies the data-generating process; g xi  yi. The researcher wants to "build" a machine to approximate this function and use it to predict outcomes. The machine is defined by a family of possible functions f x , where is a set of adjustable (hyper)parameters of the family. For a fixed , the machine is deterministic. It will generate the same output f x if the same x is input. However, f x may or may not equal the true value of y. Under these conditions, the actual
+
+(expected) empirical risk is the expectation of predic-
+
+tion error for a perfectly trained machine; i.e., R =
+
+1 2
+
+y-f
+
+x
+
+dP x y . However, because we do not
+
+know the function P , R can only be approximated.
+
+This approximation produces empirical risk, defined as
+
+the observed mean error rate on a training set for a
+
+fixed number of observations
+
+Remp
+
+=
+
+1 2l
+
+l i=1
+
+yi - f^
+
+xi
+
+Note that Remp is based on an approximation to the true f . For a fixed sample size, there are infinitely many such realizations. Thus, the approximation f^ is a realization of the random variable f . The realization varies as a function of the observations in the training set. Note further that f x may not belong to the same class of functions as the actual data-generating process g. In the best case, f  g, but it may not be so, because the class of mathematical functions is not ordered. For example, a quadratic can be used to approximate y = 0 1 - e- 1x , but neither function is a special case of the other.
+Vapnik (1998) refers to the use of Remp to approximate the function R as the empirical risk minimization (ERM) principle. Remp is computed without reference to a probability distribution. It is a fixed number for a particular choice of and a given set of training data xi yi i = 1 l . Various models and associated computational methods have been proposed to approximate R based on Remp . However, minimizing empirical risk (in-sample fit conditional on f ) can be, but need not necessarily be, equivalent to minimizing expected total risk. The difference R - Remp is bounded and is the subject of the second contributor to overall risk, structural risk, caused by the choice of f in relation to the true g. At the heart of the SVM approach is the goal of optimally trading-off empirical and structural risk. Unlike parametric approaches that address this task sequentially--i.e., fix structure first, then minimize empirical risk--the SVM solves the problem simultaneously.
+The unifying relationship between capacity h , sample size l , and empirical risk was originally developed by Vapnik and Chervonenkis (1971) for losses taking either 1 or 0. Using 0   1, they show that the following bounds hold with probability 1 - .
+
+R  Remp
+
++ h log 2l/h + 1 - log /4
+
+(1)
+
+l
+
+The right-hand side (rhs) of (1) is the risk bound and the term under the radical is called VC confidence. VC
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+601
+
+confidence, for a fixed sample size l, monotonically
+
+increases in capacity h . For a fixed capacity, VC con-
+
+fidence shrinks as l  . As this value shrinks, the
+
+rhs of (1) more tightly bounds expected risk; i.e., the
+
+approximation R  Remp becomes better. Thus, with large samples, fixing structure and focusing on
+
+empirical risk minimization can give good results.
+
+More precisely, for a given sample, if the ratio l/h
+
+is "large" (sample size is much larger than capacity),
+
+expected risk is dominated by empirical risk. In this
+
+case, minimizing empirical risk is roughly equiva-
+
+lent to minimizing expected risk. This is the path
+
+followed when using classical criteria such as the like-
+
+lihood ratio statistic, AIC, or BIC. However, each of
+
+these criteria depends on the asymptotic properties
+
+of the probability distribution presumed to generate
+
+the data, whereas (1) does not. Furthermore, if the
+
+ratio l/h is "small," then empirical risk and expected
+
+(actual) risk are quite different. What one means by
+
+"small" is, therefore, of paramount importance for
+
+assessing the quality of a model.
+
+The trade-offs in (1) serve as defining logic for the
+
+support vector machine. We illustrate using models
+
+from the classes, 1 and 2, mentioned earlier, and
+
+their application to a two-group prediction problem.
+
+Let x = x1 x2 T be drawn with probability 0.5 from
+
+either N1 1 1 or N2 2 2 , where 1 = 0 0 T ,
+
+2 = 2 0 T,
+
+1 = I2×2, and
+
+2=
+
+1 05
+
+05 1
+
+.
+
+Applying
+
+Bayes' theorem to classify x based on the maximum
+
+posterior probability of group membership leads to
+
+a quadratic boundary Q between the two groups in
+
+the x1, x2 attribute space, as shown in Figure 3. Pooling the variance-covariance (vcv) matrices leads to the
+
+structurally incorrect, linear (L) boundary. Q is the
+
+Bayesian (optimal) rule, while L is computed using
+
+Bayes' theorem, but based on less information.
+
+These rules are virtually identical in the areas where
+
+probability mass is more highly concentrated. Thus,
+
+intuition suggests that their empirical counterparts
+
+should have very similar prediction hit-rates. More
+
+important, nothing from Figure 3 suggests that the
+
+structurally misspecified model L should outperform
+
+the structurally correct model Q. The relation (1)
+
+implies, however, that with small sample sizes, empir-
+
+ical risk and true risk will differ significantly. This
+
+means that with smaller sample sizes, empirical real-
+
+izations of the structurally misspecified model will
+
+outperform those from the structurally correct model.
+
+We offer additional explanation of why this should be
+
+so after viewing results.
+
+Table 1 shows results when estimation sample
+
+size l is varied over the values 10 50 100 200 400 .
+
+Within each sample size, 100 trials were run. In each
+
+trial, both the linear and quadratic discriminant mod-
+
+els were estimated using the same l observations,
+
+balanced to reflect equal priors. Each instantiated
+
+Figure 3 Sample Size, Capacity, and Generalization
+
+5
+
+Q
+
+4
+
+L
+
+3
+
+2
+
+1 x2
+0
+
+­1
+
+­2
+
+­3
+
+­4
+­4 ­3 ­2 ­1 0 1 2 3 4 5 x1
+
+model was then used to predict the group membership of N = 1 000 fresh draws from the population, again balanced 500/500. For each trial, Table 1 (column (a)) shows the frequency of times each model wins; column (b) shows each model's mean error rate misses = 1 - hit rate ; and columns (c) and (d) show the standard deviation and range, respectively, of these error rates over the 100 trials for the sample size in question. Column (a) shows that for smaller estimation samples, the linear model resoundingly outpredicts the structurally correct model, despite the apparent similarity in their decision boundaries. When l = 10, Q wins in only 15 cases. Even though Q generates the data, its prediction error rate is 26% higher on average than the error rate of the linear machine. When l = 200, L still wins by a 3:2 margin, though hit-rates are nearly equal. This pattern
+
+Table 1 Sample Size, Capacity, and Generalization
+
+Est.
+
+Model
+
+(a)
+
+(b)
+
+(c)
+
+sample type Freq (Wins)a Mean Std
+
+(d) Range
+
+min
+
+max
+
+l = 10
+
+L
+
+Q
+
+l = 50
+
+L
+
+Q
+
+l = 100 L Q
+
+l = 200 L Q
+
+l = 400 L Q
+
+85
+
+0.1894 0.0475 0.1360 0.4120
+
+15
+
+0.2388 0.0769 0.1300 0.5050
+
+69
+
+0.1575 0.0123 0.1295 0.1970
+
+31
+
+0.1611 0.0121 0.1355 0.2030
+
+66
+
+0.1524 0.0080 0.1340 0.1710
+
+34
+
+0.1547 0.0093 0.1240 0.1780
+
+60 5
+
+0.1509 0.0096 0.1330 0.1800
+
+39 5
+
+0.1522 0.0088 0.1310 0.1745
+
+47
+
+0.1501 0.0088 0.1240 0.1725
+
+53
+
+0.1501 0.0088 0.1245 0.1720
+
+aTies were split evenly between L and Q. Ties occurred when l = 100 (4 ties), l = 200 (7), and l = 400 (6).
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+602
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+persists up to l = 400, where Q finally wins in slightly more than half the trials. Even with this "large" sample size--relative to the number of parameters estimated--the linear machine's mean empirical error rate is virtually identical to that of Q.
+3.3. Positivist Habits, Structural Diagnosticity, and Prediction
+This simple example shows that a marketing scientist who focuses on uncovering the "real" latent structure generating data will be misled. In all cases above, it must be true that Q fits better in sample than L, because L  Q. However, neither this fact nor the fact that L outpredicts Q can be trusted to find the actual model generating the data. As engineers of the datagenerating process, we have the benefit of knowing the real process. The marketing scientist trying to reverse engineer the data to judge whether L is structurally right or wrong would be misled (especially for smaller sample sizes) by L's superior in-sample fit (adjusted for df ), its superior out-of-sample prediction rate, and its relative simplicity, which satisfies the scientific standard for parsimony.
+3.4. Decision Boundary Bias In discrete-class prediction, decision boundary bias interacts with the ERM principle to further complicate the scientist's ability to recognize true structure. Recall that empirical risk is calculated using f^ xi , an approximation of the function used by a perfectly trained machine. This approximation is one realization of the random variable, f . Figure 3 shows the true boundaries L and Q for the engineered process. However, in each sample summarized in Table 1, the estimated boundaries L^ and Q differ from their population counterparts. (Q is the real process, thus using the analogy g  Q and f  L, we see that f^ is a double approximation to g. In the present case, f  g, but this fact is specific to our example.)
+The discrete predictions generating the hit-rates for Table 1 are obtained using the classic two-phase process, function estimation followed by discrete classification. It is well known that the function estimation phase improves monotonically with increasing sample size. However, using a clever decomposition of variance, Friedman (1997) shows that, surprisingly, this is not the case for improvements in the discrete classification phase. In particular, given a training sample (of size l), the error rate, averaged over all future predictions at a given point x, depends on whether the classification rule is Bayes' rule (the optimal rule) or not. If it is, then the error rate is the irreducible error associated with Bayes' rule (i.e., class overlap in 2-d).7
+7 Class overlap in 2-d is irreducible error in x1 x2 , but not necessarily globally irreducible error because in higher dimensions
+
+If not, there is an added component of variance that depends on the variance of the estimated decision boundary; e.g., V f^ = E f^ - E f^ 2. The classification error rate and the function estimation error rate are influenced completely differently by this variance. Decreasing V f^ decreases classification error when decision boundary bias is negative, but increases it when bias is positive. Thus, focusing on improved function accuracy; i.e., minimizing V f^ can actually make the discrete-choice prediction phase less accurate. In such cases, a simpler (but incorrect) model will outpredict the structurally correct model if it is biased on the "correct side" of x more often than not. This is precisely the case for L in our example. Table 1 shows that the paradox persists to the point where the sample size is large enough to reduce empirical risk and boundary bias (of Q in this case) below that of L^ . This usually requires very large samples, where large is indexed by the ratio of sample size to capacity, i.e., the VC-dimension of the model.
+3.5. Dimensionality, Parametric Estimation, and Prediction
+As Ben-Akiva et al. (1997, p. 279) noted, "When the utility function has many covariates, the data points are sparse over the high dimensional space and the estimation becomes unstable As the number of dimensions increase (sic), an exponential increase in sample size is needed to maintain reliable estimation." This trade-off between model complexity, available data, and empirical risk (Bellman 1961) interacts with decision boundary bias in parametric models as suggested in Figure 4. Ultimately, the selected decision boundary is subject to a three-link chain of instability. These links involve (a) the hypothesized parametric form(s) selected to model various stochastic elements of the process, (b) the relationship between the dimensionality of the problem space and the number of data points (and their sampling properties) when empirically approximating the identified form(s), and (c) properties of the estimation technique (analytic or numeric), i.e., estimation in RUT entails finding the global optimum of the likelihood or simulated likelihood surface.
+Figure 4 suggests very generally how the SVM avoids these potential pitfalls. Foremost, the decision boundary is found directly from available data, not indirectly through function approximation. (This derivation is shown in the next section.) In fact, Vapnik's (1979) original work focused on finding the optimal decision boundary for linearly separable outcome classes. The result, known as the maximum margin optimal classifier, does not depend on any
+the overlap may disappear. This, of course, is a restatement of the deeper question of whether or not nature contains inherent randomness.
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+603
+
+Figure 4 Dimensionality and Prediction
+
+Model identification
+Select parametric form
+
+Parametric modeling
+
+Sampling
+
+Estimation & function approximation
+
+Observe data
+
+Estimate parameters given form
+
+The support vector machine
+
+Implied decision boundary
+
+Observe data Implicit function estimation
+
+Prediction
+
+Linear boundary in feature space is nonlinear in attribute space
+Structural diagnosticity
+
+Optimal decision boundary
+Interpret structure
+
+parametric assumptions about the process generating the data, but requires only that samples be drawn independently from this process. Boser et al. (1992) extended this result to nonlinear problems using a kernel function to map attribute space into a higherdimensional feature space. In feature space, a linear boundary is still sought. However, classes that are linearly separable in feature space may be nested or otherwise highly intertwined in attribute space. The resulting boundary, when translated back to attribute space may, therefore, be nonlinear. Cortes and Vapnik (1995) then extended the solution to soft-margin classifiers to deal with data that are not perfectly separable, even in feature space.
+The parameters of the optimal linear classifier in feature space are solutions to a constrained quadratic programming problem. As such, these estimates are provably globally optimal and are not conditioned on a particular parametric form or chain of forms.8 They are mathematical in nature (like OLS or minimum chi-square), not statistical in nature (like maximum likelihood). We return to this point because it clearly forces additional reflection about the--not necessarily mutually exclusive--goals of prediction and structural diagnostics. The resulting decision boundary is not subject to decision boundary bias because it is not the discretized version of a function approximation exercise, but rather a direct attack on the optimal boundary problem. As Figure 4 implies, structural
+
+8 For example, Vapnik (1995) documents the failure of analytic maximum likelihood to solve a mixture of normal distributions. Train and Sándor (2002), while exploring various draw techniques for mixed logit models (e.g., pseudorandom draws, Halton sequences, orthogonal arrays, and Latin hypercube draws) identify cases where the maximum of the simulated likelihood function is never found.
+
+interpretations are possible with the support vector machine, but they are made post hoc once the model's predictive capacity has been fully utilized. Figure 4 links the SVM and classic parametric paradigms to emphasize their complementary rather than competitive nature.
+
+4. Implementing an SVM
+The support vector machine combines concepts from abstract Hilbert spaces with modern optimization techniques. We concentrate in this section on the main steps required to implement an SVM rather than on technical detail. Technical detail is provided in Appendix A for the optimization components of the SVM, including extensions to soft-margin classifiers and multiclass problems. Appendix B illustrates how kernel transformations work. Kernel transformations are a fundamental ingredient of a support vector machine because they allow a linear machine to solve a nonlinear problem.
+
+4.1. Maximum Margin Classifiers Vapnik (1979) approached the discrete classification problem from the perspectives of function capacity and shattering. He reasoned that although many hyperplanes can fit between linearly separable groups, the optimal separating hyperplane should lie midway between the convex hulls of the two groups and be orthogonal to the shortest line connecting these hulls. The solution has both a primal and a dual form, as shown in (2). (The observations x and xi are vectors in n.) Each form can be solved as a quadratic programming problem (see Appendix A).
+
+n
+
+f x = w · x + w0 =
+
+i yi x · xi + w0
+
+(2)
+
+i=1
+
+Note that the dual representation contains the inner product x · xi . The dual's dependence on these inner products is key because it facilitates solutions to nonlinear variations of the problem. In particular, Vapnik (1995) noted that a problem in attribute space could be transformed to a problem in a higher-dimensional feature space without altering the solution form. This technique--mapping a problem to a new domain, solving it there (where the solution technique is easier), then mapping the solution back to the original domain--is frequently used in mathematics. A simple example is solving multiplication problems by addition using the mutually inverse log/exp transforms. A second example is solving differential equations using Laplace (and inverse Laplace) transforms to migrate between the time and frequency domains.
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+604
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+4.2. Kernel Transformations The SVM machine uses kernel transformations that take the general form x · z = x · z . That is, the transform of the inner product of the n-vectors x and z is the vector inner product of their transformed images. This means that the form of the dual problem is the same whether it is solved in attribute space using x · z or in feature space using x · z . Note further that the inherent size of the problem is the same in both spaces. The degrees of freedom used in estimating the decision boundary depends only on the number of data points, l, not on the product l · n as with maximum likelihood estimators. In fact the boundary depends on a subset of l, the vectors that form the inner edges of the convex hulls of the two classes: the problem's support vectors. Hence, the curse of dimensionality is neutralized.
+The optimal boundary is calculated as the solution to the dual quadratic programs (QPs) problem in feature space.
+
+n
+
+n
+
+Max
+
+i
+
+-
+
+1 2
+
+i j yiyj
+
+i=1
+
+i j=1
+
+xi · xj
+
+n
+s.t. yi i = 0
+i=1
+
+i0 i=1 l
+
+(3a) (3b)
+
+We implement the solution using Platt's (1999) highly
+
+efficient Sequential Minimization Optimization (SMO)
+
+algorithm. SMO breaks the problem into a series of
+
+smallest possible QPs that are solved analytically. The
+
+algorithm uses less memory and is easier to imple-
+
+ment than "standard" algorithms, and can be more
+
+than 1,000 times faster (Platt 1999).
+
+Two types of kernels are most often used in prac-
+
+tice, the Gaussian (or radial basis) kernel x z =
+
+exp - x - z 2/ 2 with hyperparameter and the
+
+polynomial kernel x z = x · z + 1 d with hyper-
+
+parameter d. If the data have dimensionality n, then
+
+the feature space mapped by a polynomial kernel
+
+has dimension
+
+n+d d
+
+.
+
+The
+
+dimensionality
+
+of
+
+a
+
+feature
+
+space mapped by a Gaussian kernel can be infinite
+
+(Burges 1998).
+
+Appendix B contains numerical details of a com-
+
+plete example using a polynomial kernel. We selected
+
+a problem known to be unsolvable with standard
+
+GLM methods and with multinomial logit. Neither
+
+can the problem be solved by the artificial intelli-
+
+gence technique known as perceptrons (Minsky and
+
+Papert 1969). It can be solved using an artificial neural
+
+net with hidden layers, but the solution is very slow
+
+to converge (Langley and Burgess 2000). The SVM
+
+solution using a second-degree polynomial kernel is
+
+intuitive and numerically efficient, solving virtually
+
+instantly even with more than the two predictors
+
+illustrated in Appendix B.
+
+The support vector machine implemented by a kernel family imposes a structure on the set of functions that comprise the learning machine. Currently, there is no metatheory regarding the choice of kernel family. Normally, this choice is based on domain knowledge or researcher preference supplemented by numerical results (Boser et al. 1992). If both standard kernels (Gaussian and polynomial) prove ineffective, more elaborate kernels can be constructed from "building blocks" according to mathematical principles from the theory of integral operators (Cristianini and Shawe-Taylor 2000). Empirical evidence suggests that the choice of kernel family has little influence on the generalization performance of the machine (Vapnik 1995, Schölkopf et al. 1998). In other words, the best kernel in the polynomial family and the best kernel in the Gaussian family typically perform equally well in a given problem context. However, training times to achieve this performance may differ by several orders of magnitude as a function of the selected kernel. The procedure we used to estimate the hyperparameters of the kernels used in the empirical tests reported next is based on well-known resampling techniques (Edgington 1995, Efron and Tibshirani 1993, Good 2005).
+5. Empirical Tests of the Support Vector Machine
+We turn now to comprehensive tests of the predictive capacity of the support vector machine baselined by direct comparisons to those from multinomial logit.9 For this purpose, Monte Carlo simulation is appropriate because it allows us to control key aspects of the data-generating process over a wide range of experimental conditions.10 Ben-Akiva and Lerman (1985) discuss seven variables relevant to the performance of a discrete-choice model: (1) the number of product attributes, (2) the estimation sample size, (3) the magnitude of error in the stochastic component of the random utility model, (4) the number of individual characteristics, (5) the number of choice alternatives, (6) the type of error distribution, and (7) whether or not a correlated error structure is present. We manipulate these seven variables in a 25 × 32 factorial design using the levels shown in Table 2. Levels were chosen to cover a broad range of situations encountered in practice, particularly in consumer choice experiments using the logit model.
+9 We use a consumer choice prediction task because of the prominence of discrete-choice modeling in marketing and the widespread understanding of logit as opposed to most of the emerging models mentioned in §2.
+10 Toubia et al. (2004, p. 123) provide a detailed explanation of why Monte Carlo experiments are widely used and appropriate for testing model performance in consumer choice experiments of the type reported here.
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+605
+
+Table 2 Independent Variables in Simulation Study
+
+Variable symbol
+
+Variables
+
+Low (L) Med (M) High (H)
+
+level
+
+level
+
+level
+
+A
+
+Number of product attributes
+
+2
+
+4
+
+6
+
+B
+
+Estimation sample size
+
+100
+
+400
+
+1 600
+
+C
+
+Error size (stochastic
+
+0.5%
+
+10%
+
+component)
+
+D
+
+Number of individual
+
+1
+
+3
+
+characteristics
+
+E
+
+Number of choices
+
+2
+
+6
+
+F
+
+Type of error distribution
+
+Normal
+
+Gamma
+
+G
+
+Correlated error structure
+
+No
+
+Yes
+
+Given our focus on predictive accuracy, the dependent variable is the first-choice hit-rate produced by an estimated model in a validation sample (of size 3,000) from the same data-generating process that created the estimation/training sample. A 16-treatment fraction of the full factorial is used.11 The plan permits clear estimation of all main effects along with six selected two-way interactions. We repeat the experiment 10 times within each treatment.
+5.1. Data-Generating Functions For the deterministic component of utility, we simulate a variety of data-generating functions that mimic known consumer decision structures. We illustrated in §3.1 that for pure noncompensatory structures, such as latitude of acceptance, logit will not perform well. In the tests reported here, we confine attention to cases where logit has no inherent limitations. Thus, we constrain decision rules to be compensatory, but not necessarily linear. Further, we include no effect higher than quadratic. Quadratic effects in utility are common for many product attributes. We include effects in pure form, for an attribute alone, and in moderated form where an effect interacts with an individual characteristic. For example, many consumers exhibit a quadratic response to variations in price. This response is likely to be moderated by an individual's income level. We also include bilinear interactions between two product attributes and allow these to be moderated by individual characteristics.
+The systematic components of utility are shown in Table 3. These functions share the following properties. Each component includes two linear terms of product attributes and one linear term of individual characteristic. Each component includes one interaction term between two product attributes. Each includes two interaction terms between a product attribute and an individual characteristic. Each contains a quadratic effect for a product attribute. Finally, each component contains a quadratic by linear interaction between a product attribute (quadratic) and an
+11 See Hahn and Shapiro (1966; Plan Code 65A, Master Plan 5).
+
+Table 3 Systematic Components of Utility
+
+Deterministic component of the utility function
+
+Utility 1 Utility 2 Utility 3 Utility 4 Utility 5
+Utility 6
+
+xik = xik1 xik2 xik1xik2 xik1zi xik2zi xi2k1 xi2k2zi zi xik1, xik2 are Person i Choice k's attribute data; zi is Person i's
+single individual characteristic.
+xik = xik1 xik2 xik1xik2 xik1zi1 xik2zi2 xi2k1 xi2k2zi2 zi3 xik1, xik2 are Person i Choice k's attribute data; zi1, zi2, and zi3
+are Person i's three individual characteristics.
+xik = xik1 xik2 xik1xik2 xik2zi xik3zi xi2k3 xi2k4zi zi xik1, xik2, xik3, and xik4 are Person i Choice k's attribute data;
+zi is Person i's single individual characteristic.
+xik = xik1 xik2 xik1xik2 xik2zi1 xik3zi2 xi2k3 xi2k4zi2 zi3 xik1, xik2, xik3, and xik4 are Person i Choice k's attribute data;
+zi1, zi2, and zi3 are Person i's three individual characteristics.
+xik = xik1 xik2 xik1xik2 xik3zi xik4zi xi2k5 xi2k6zi zi xik1, xik2, xik3, xik4, xik5, and xik6 are Person i Choice k's
+attribute data; and zi are Person i's single individual characteristics.
+xik = xik1 xik2 xik1xik2 xik3zi1 xik4zi2 xi2k5 xi2k6zi2 zi3 xik1, xik2, xik3, xik4, xik5, and xik6 are Person i Choice k's
+attribute data; zi1, zi2, and zi3 are Person i's three individual characteristics.
+
+individual characteristic (linear). This latter type of effect was recovered by Brynjolfsson and Smith (2001) in their study of online consumer decision making. All six deterministic components have the same number of terms.
+These six components of the overall data-generating process get progressively more complex as more product attributes and individual characteristics are incorporated. Because data are represented in an "exploded" form when estimating a logit model, the size of the design matrix increases in number of choices, number of product characteristics, and number of individual characteristics. Thus, even though the number of individuals in the validation sample is held constant in each case, the effective estimation/ prediction effort varies by treatment.
+We implemented the SVM using a polynomial kernel with hyperparameter training using resampling. For logit modeling, we used SAS's multinomial discrete-choice procedure (MDC). MDC supports a wide variety of structural forms, including simple, conditional, and nested logit. We use logit models with alternative specific constants and alternative specific individual characteristics. Whenever error terms are correlated, we fit a nested logit model and assume that the nested structure is known a priori. These assumptions provide an advantage to the logit class of models, giving maximum flexibility to capture the data-generating process within the confines of what we refer to as "standard practice;" e.g., linear-inparameters forms as described in §§2.3 and 3.3.
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+606
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+Table 4 Predictive Performance of the Support Vector Machine and Logit Model
+
+Logit model
+
+Support vector machine
+
+Logit model
+
+Training Testing Training Testing
+
+Training Testing
+
+1 0 7910 0 0292
+2 0 6178 0 0150
+3 0 8166 0 0034
+4 0 6260 0 0132
+5 0 8890 0 0256
+6 0 7715 0 0068
+7 0 9134 0 0020
+8 0 8265 0 0070
+
+0 7874 0 0183
+0 6162 0 0086
+0 8145 0 0023
+0 5934 0 0058
+0 8520 0 0101
+0 7806 0 0055
+0 9088 0 0017
+0 8144 0 0044
+
+0 8070 0 0523
+0 7087 0 046
+0 8292 0 0071
+0 6939 0 0233
+0 9230 0 0337
+0 8234 0 0180
+0 9552 0 0048
+0 8942 0 0213
+
+0 8009 0 0132
+0 6929 0 0102
+0 8359 0 0025
+0 6664 0 0060
+0 8598 0 0054
+0 8521 0 0057
+0 9491 0 0025
+0 8897 0 0077
+
+9 0 7410 0 0360
+10 0 8994 0 0036
+11 0 7136 0 0033
+12 0 8690 0 0095
+13 0 3200 0 0231
+14 0 8742 0 0087
+15 0 3347 0 0081
+16 0 9103 0 0041
+
+0 6694 0 0203
+0 8872 0 0048
+0 7100 0 0021
+0 8490 0 0047
+0 3038 0 0139
+0 8558 0 0042
+0 3316 0 0056
+0 9068 0 0038
+
+Support vector machine
+
+Training Testing
+
+0 9960 0 0052
+0 9501 0 0124
+0 9066 0 0024
+0 8834 0 0174
+0 8450 0 0438
+0 8949 0 0162
+0 8917 0 0074
+0 9572 0 0114
+
+0 9688 0 0176
+0 9317 0 0051
+0 9045 0 0017
+0 8797 0 0051
+0 8193 0 0114
+0 8796 0 0046
+0 8930 0 0023
+0 9345 0 0055
+
+5.2. Results Table 4 shows the mean first-choice hit-rates for both estimation (training) and validation (prediction) in each of the 16 treatment conditions. Each mean is the average of the 10 values in its corresponding cell. The standard deviation among these 10 values is shown in parentheses. Table 4 indicates that in every treatment condition the SVM outpredicts the corresponding logit model. This is true not only on average, but for every one of the 160 total cases run across all cells. The overall mean prediction rate of the logit is 72.7% while this hit-rate is 85.9% for the support vector machine. Computing the percent dominance within treatment, then averaging these 16 values, the SVM predicts 29.9% better on average than the logit, ranging from a virtual tie in cell 5 to 169.6% and 169.3% better in cells 13 and 15. (For reference, Cell 13 has four product attributes, estimation sample size of 100, high error, one individual characteristic, six choice alternatives, a nonnormal error density, and no correlated error. Cell 15 has six choice alternatives, uses the large sample size, and has low, normally distributed correlated error.)
+5.3. Subexperiments on Main Effects To develop a better understanding of the direct impact of certain factors, we conducted three subexperiments. We focused on three of the four largest sources of variation from the main experiment: (a) the number of choice alternatives, (b) the number of individual characteristics, and (c) the estimation sample size.12 (Table 5 shows proportion of variance
+12 All three subexperiments used the conditions: four attributes, normal, uncorrelated error at 10%. These levels correspond to those
+
+explained by each factor and estimable interactions in the main experiment. Results are significant at p < 0 05 or better unless otherwise indicated.)
+In the subexperiments, nonmanipulated factors were held fixed while the manipulated factor was varied. Manipulating just one factor removes confounding in the raw marginal means from the main experiment.13 In the subexperiment for number of choice alternatives, we expanded the number of levels to five (2­6 alternatives) to get a complete picture of the marginal effect of this important variable.
+Figure 5 shows results. Because each subexperiment was replicated 10 times, every difference between hit-rate proportions is statistically significant at a minimum of p < 0 01, and usually at much smaller p-values. Panel (a) indicates that as the number of choice alternatives increases, the prediction hitrate of each model falls. This is expected because the "first-choice" prediction task increases in difficulty with more alternatives. However, the decline is much steeper for the MNL, dropping from 85.6% at two alternatives to 74.9% with six, a 12.4% decline. The falloff for the SVM, from 88.0% to 84.2%, is a
+in cell 14 of the main experiment, where the SVM and MNL perform nearly the same; i.e., cell 14 is a reasonable starting point for comparisons of marginal effects. When not varied, the estimation sample size was l = 400, the number of choice alternatives was three, and the number of individual characteristics was three. Note that manipulating the number of attributes factor would alter the "common size" of the utility functions shown in Table 4. Hence, this factor was not included in the subexperiments.
+13 Although the fractional design in the main experiment is orthogonal, it is unbalanced due to mixing factors with two and three levels. Thus, raw marginal means do not correspond to weighted contrasts.
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+607
+
+Table 5 ANOVA Results (Variance Explained Normalized to 100%)
+
+Symbol
+
+Manipulated factor
+
+Logit SVMs models SVMs-logit
+
+A B C D E F G Subtotal
+AB AC AE BC BE CE
+Subtotal Error Total
+
+Main effects Number of product attributes Sample size Error size Individual characteristics Number of choices Type of error distribution Correlated error structure
+Two-way interactions No. of attributes × sample size No. of attributes × error size No. of attributes × number of choices Sample size × error size Sample size × number of choices Error size × number of choices
+
+61 12 6 60
+11 44 0 24 6 36 0 23 1 65 87 64
+9 61 0 41 -ns-ns-ns0 56
+10 58 1 78 100
+
+2 54 10 63 0 56 3 45 52 84 0 25 0 00 70 26
+9 74 0 08 -ns-ns-ns19 66
+29 48 0 25 100
+
+7 97 14 94 0 76 3 15 48 05 0 27 0 10 75 24
+4 40 0 09 -ns-ns-ns19 47
+23 97 0 79 100
+
+Figure 5 Three Subexperiments (a) 0.90
+
+Prediction hit-rate
+
+0.85 0.80 0.75
+2 (b) 0.90
+0.85 0.80
+
+SVM
+
+3
+
+4
+
+5
+
+No. of choice alternatives
+
+MNL 6
+
+SVM MNL
+
+Prediction hit-rate
+
+4.3% decline over the same range. Panel (b) shows that adding individual characteristics--and therefore, complicating the structural form of the relationship between predictors and target--has no effect on the performance of the SVM. The SVM's hit-rate actually improves slightly in the case shown. The MNL, because it performs density estimation prior to the prediction step, is more sensitive to the ratio of parameters to sample size. Since sample size is fixed (at l = 400 in this experiment), cases with three individual characteristics require additional parameters be estimated. This use of degrees of freedom negatively impacts prediction ability. Finally, Panel (c) shows that all else being equal, increased sample size helps both models as expected. The MNL is more sensitive to the change, improving 3.62% over the range shown versus 1.84% for the SVM. Of course, the SVM starts from a significantly higher base prediction rate, and hence has less room to improve.
+These subexperiments allow us to anticipate the marginal effect on prediction hit-rate in tasks with varying numbers of alternatives, individual characteristics, and estimation sample sizes. However, from the main experiment, we found significant interactions between certain factors. Because the fractional experimental design limited our search for interactions, we suspect higher-order interactions are also at work, particularly given the very low prediction rates for the MNL in cells 13 and 15.
+5.4. Discussion Results suggest that the SVM has considerable promise for accurately predicting consumer choice in the "pure prediction" environments found in automated modeling, mass-produced models, intelligent
+
+0.75
+(c) 0.90 0.85 0.80
+
+1 Char
+
+3 Char
+
+No. of individual characteristics
+
+SVM MNL
+
+Prediction hit-rate
+
+0.75 n = 100
+
+n = 400 Sample size
+
+n = 1,600
+
+agents, and data mining. In our main experiment, a single SVM significantly outpredicts the best model from a set of appropriate MNL models even though perfect a priori knowledge is used to correctly select the nesting structure in cases with correlated error. In practice, analyst insight is desirable in controlled experimental settings or with surveyed field data, but in areas where automated modeling is useful, the "one size fits all" aspect of the SVM is a definite advantage.
+Results from our subexperiments suggest that the prediction hit-rates of MNL are more severely affected by increases in the choice set size and the number of individual characteristics than are those from the SVM. Although further experimentation is warranted, the addition of more individual characteristics seems not to negatively impact the predictive accuracy of the SVM and may even increase it. Increased
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+608
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+accuracy would follow from the fact that individual differences mediate the main effects of choice dimensions. This effect is likely to be much stronger in real choice tasks when covariates are judiciously selected. In other words, with the SVM, more covariates will drive predictive accuracy up, not down.
+6. Limitations of the Present Research
+6.1. Weaknesses of the Support Vector Machine Although the support vector machine shows promise, there are obstacles to overcome before the approach gains acceptance in marketing. The SVM's novel inferential philosophy requires additional theoretical development before it can be routinely used in practical situations. Because there are no probability density assumptions made, the SVM does not yield probability estimates for hypothesis testing (classical view) or predictive/posterior bounds (Bayesian view). Efforts to provide such estimates are available (Platt 2000, Vapnik and Chapelle 2000), but a support vector machine does not generate them naturally. Lack of easy-to-use computer software will also impede the SVM's acceptance in marketing, although better software should be forthcoming in the next few years. More fundamentally, there is no complete, working metatheory to assist with the selection of kernel transformation for an SVM. Depending on the choice of kernel family, parameter estimation can be time consuming.
+Although our focus is on prediction, not structural diagnostics, having both is a plus for any model. In the area of interpretability, the SVM faces a catch-22. Its most significant advantages are in nonlinear environments, precisely the environments in which estimated parameters cannot be interpreted directly. True, in these situations numerical analysis can be performed to yield response coefficients for the SVM as outlined in Appendix C. Nevertheless, implementing these analyses requires custom programming.
+6.2. Weaknesses of the Experimental Comparisons Although we took considerable care to be thorough and fair in conducting the experiments reported here, our methods can be criticized on several fronts. The main experiment could be enriched by including more levels on certain factors. For example, using six product attributes and three individual characteristics may be too restrictive in some cases. Countering this, Figure 5 suggests that the SVM's predictive accuracy is not sensitive to the number of individual characteristics. Furthermore, when predictive tasks involve seven-plus attributes, in the kinds of "ad hoc" data collection environments we envision, data preprocessing can filter out redundant information prior to the SVM modeling step (Guyon and Elisseeff 2003). Find-
+
+ings suggest that, comparatively, the SVM would gain rather than lose ground in more complex cases.
+Researchers specializing in discrete-choice modeling may be disappointed that more sophisticated RUT models were not used in this research. However, our goal was not to pit MNL against SVM in any direct way, but rather to use reasonably sophisticated MNL models to create a workable baseline to provide perspective on the predictive accuracy of the support vector machine. The MNL models performed well in this research, and using more sophisticated versions could improve MNL predictive hit-rates. We offer our data to specialists developing and testing more flexible models. However, these models require custom programming and considerable human intervention in the identification and fitting stages, steps that defeat the purpose of predictive modeling in the environments on which we focus.
+7. Directions for Future Research
+Our directions for future research stress two areas where SVM and random utility theory (RUT) models are complementary: structural gap identification and simultaneously improving prediction and diagnosticity when nonlinear information integration rules are in play.
+7.1. The SVM as a Structural Gap Identifier Given a set of predictor variables x, the conditional density y x may contain irreducible uncertainty about the target variable y. However, when an SVM yields out-of-sample prediction rates that significantly exceed those from a structurally rich RUT model (with both methods using precisely the same input), this is a clear signal that the set x contains additional predictive information in higher-order effects. Under these circumstances, the support vector machine complements standard modeling in two useful ways. First, it puts the analyst on guard when interpreting estimated coefficients as measures of marginal response. Second, it provides motivation to add additional terms to the systematic component of utility (in RUT models) or, more generally, to the functional relationship between target and predictors in other types of models. For example, if a polynomial kernel is used in the SVM, the degree of the polynomial serves as an upper limit to the nested set of functions that need to be searched to better specify the model. Although the perfect structure is unlikely to be found, adding additional effects should achieve much higher prediction rates and structural accuracy than the linear model under consideration.
+7.2. Predictive Power and Structural Diagnostics: Convergent Research for Noncompensatory Information Integration Rules
+Because the SVM is predictively robust even with very small samples, future research using the SVM
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+609
+
+may blend emerging directions in choice-based conjoint and aggregate-level, discrete-choice modeling. (Technical Appendix B provides an overview of choice-based conjoint modeling and its relation to the present work.) For example, Gilbride and Allenby (2004) have recently published models from the RUT class that stress structural accuracy by identifying and modeling noncompensatory information processing. Meanwhile, Bradlow (2003) has wished for predictively accurate conjoint models for choices from noncompensatory information integration rules. These and other modelers from the "choice-based conjoint" camp rightfully want to be able to estimate models at the individual level that are both structurally accurate and highly predictive. This goal is being actively pursued by Evgeniou et al. (2005), who use an SVM-style kernel transformation for analyzing data from choicebased conjoint experiments. This is a promising blend of research streams. The idea may be extended further. The goals would be, first, to isolate the attributes involved in noncompensatory rules at the individual respondent level (because these may differ by person) and, second, to associate explicit patterns of SVM parameter estimates with specific noncompensatory processing strategies--latitude of acceptance, conjunctive, disjunctive, XOR, etc.--to identify which consumers use these strategies, and with what attributes. Results from such models would yield highly useful insights to marketing strategists in the areas of new product design and market segmentation.
+8. Concluding Comments
+In this paper, we argue that highly predictive models will play an increasingly important role in 21st century marketing applications, particularly in areas such as automated modeling, mass-produced models, intelligent software agents, and data mining. Politz and Deming (1953) argued forcefully that predictive accuracy is the standard by which model quality should be measured. More than 50 years later the argument still resonates with marketing scientists (Allenby et al. 2002). The support vector machine performs well on predictive tasks where the relationship between predictors and target is complex. Although its modeling philosophy is nonstandard, the SVM and related kernel methods may provide not only accurate "pure prediction," but a unique link between structural diagnostics and predictive accuracy in a wide variety of marketing applications.
+Acknowledgments The computer code and data used in the simulation studies are available upon request. Special thanks to Sharon McFarland for editorial comments on earlier drafts of this
+
+paper. The authors gratefully acknowledge the insightful comments of the reviewers and the area editor. The authors are listed in alphabetical order. Contributions were equal and synergistic.
+
+Appendix A. Implementing a Support Vector Machine
+This appendix reviews the fundamental derivations required to implement a support vector machine. Results fall into three primary areas, the optimal maximum margin classifier (Vapnik 1979), extensions to nonlinear decision functions using kernel transformations (Boser et al. 1992), and extensions to soft-margin classifiers (Cortes and Vapnik 1995).
+
+The Optimal Margin Classifier
+
+An optimal margin classifier finds a particular linear bound-
+
+ary between two perfectly separable classes in an attribute
+
+space of raw data. The idea is similar in spirit to OLS
+
+because the problem is stated and solved as a nonparamet-
+
+ric optimization problem, not as a parametric (maximum-
+
+likelihood) problem. Suppose we have data sampled
+
+from an unknown distribution P x y where y takes on
+
+two values. (Multivalued extensions are discussed subse-
+
+quently.) A linear decision function that completely sepa-
+
+rates the observations can be expressed as the inner product
+
+between a weight vector w and an input vector x, plus a
+
+constant, w0.
+
+f x = w · x + w0
+
+(A1)
+
+In the two-class case, the sign of f x determines the mem-
+bership class of the point x. Thus, for points xi, i = 1 l, the problem is to find w w0 such that
+
+w · xi + w0 > 0 if yi = 1
+
+(A2a)
+
+w · xi + w0 < 0 if yi = -1
+
+(A2b)
+
+These inequalities can be expressed compactly as A3.
+
+yi w · xi + w0 > 0 for i = 1
+
+l
+
+(A3)
+
+The formulation (A3) leads to a direct solution of the classification problem without attempting to estimate the probability density P x y . However, the model is underidentified because, for linearly separable data, there are an infinite number of linear functions that can perform the separation without error. To choose one solution among many, the support vector machine defines the optimal decision function as the one that leaves the largest possible margin on both sides of the decision boundary. The margin of the ith point xi yi with respect to a particular function f is the quantity i = yif xi , which is positive if f correctly classifies the observation, and nonpositive otherwise. Given a specific sample with linearly separable points, the support vector algorithm finds the separating function with maximum margin of the training set with respect to the class of functions under consideration (Cristianini and ShaweTaylor 2000). The optimal classifier is called the maximum margin classifier or optimal margin classifier. Vapnik (1998) shows that this classifier is unique to a given data set.
+
+Derivation--Binary Scenario To derive the maximum margin classifier, one must minimize the norm of the weight vector, w, under the con-
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+610
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+straints that the margin values are greater than or equal to 1, as shown in (A4).
+
+min
+
+1 2
+
+w2
+
+s.t. yi w · xi + w0  1 for i = 1 l
+
+(A4a) (A4b)
+
+Using Lagrangian multipliers, (A4) can be transformed into
+its dual form, where the Kuhn-Tucker conditions guarantee a unique solution.14 The dual form is
+
+n
+
+n
+
+Max
+
+i
+
+-
+
+1 2
+
+i j yiyj xi · xj
+
+i=1
+
+i j=1
+
+(A5a)
+
+n
+s.t. yi i = 0
+i=1
+
+i0 i=1 l
+
+(A5b)
+
+where i is the Lagrange multiplier for inequality i in (A4b). The dual problem is a quadratic program, efficiently
+solvable using the recursive procedure developed by Platt
+(1999). Transitioning from (A4) to (A5) yields
+
+n
+
+w =
+
+ i
+
+yi
+
+xi
+
+i=1
+
+(A6)
+
+where
+
+ 1
+
+ 2
+
+ n
+
+are
+
+solutions
+
+to
+
+the
+
+problem
+
+(A5).
+
+The
+
+data points with nonzero i are the problem's support vec-
+
+tors. The optimal constant, w0, can be derived using any
+
+single support vector, but more often--to achieve numer-
+
+ical stability--is calculated using their mean. The optimal
+
+decision function can be represented in terms of either the
+
+primal or dual optimal solution as shown in A7.
+
+n
+
+f x = w · x + w0 =
+
+i yi x · xi + w0
+
+i=1
+
+(A7)
+
+Two properties of the solution are important. First, the optimal boundary is a function only of the relatively few support vectors, not all data points. Although counterintuitive from a sampling perspective, these "inliers" are not as susceptible to boundary bias as are boundaries based on all data points. Second, the size of the dual problem scales directly with the sample size, not with the dimensionality of the data model (e.g., the function class with its respective parameters). Thus, solutions do not suffer from the curse of dimensionality. This property is illustrated in Appendix B, which provides a complete numerical example of an SVM.
+
+Kernel-Induced Transformations In practice, observations are rarely linearly separable in the original space, but may be linearly separable in a specially constructed higher-dimensional space. The SVM uses a kernel-induced transformation Rn  to map the original input space into a higher-dimensional space, called feature space. is chosen so that data points appear in the algorithm uniquely in the form of dot products, i.e., functions where the vector inner product, x · xi in (A7), takes the form of the inner product between the images x · xi in . This property is satisfied by a kernel function, K, such that K x xi = x · xi . Replacing x · xi everywhere with
+
+14 Readers interested in a step-by-step derivation of Equations (A4) and (A5) are referred to Cui and Curry (2003).
+
+x · xi , a support vector machine finds an optimal linear boundary in , the feature space, which maps to a nonlinear decision function in the original n-dimensional attribute space (see Appendix B for details). The decision function with kernel (A7) becomes (A8).
+
+n
+
+Dx =
+
+ i
+
+yi
+
+K
+
+x
+
+xi
+
++ w0
+
+i=1
+
+where K x · xi =
+
+x·
+
+xi , and
+
+ i
+
+i=1
+
+tions to the QP maximization problem (A9).
+
+(A8) l are solu-
+
+l
+
+l
+
+Max
+
+i
+
+-
+
+1 2
+
+i j yiyj K x xi
+
+i=1
+
+i j=1
+
+n
+s.t. yi i = 0
+i=1
+
+i0 i=1 l
+
+(A9a) (A9b)
+
+Soft-Margin Classifiers In practice, a data set normally contains nonseparable observations due to the nature of the problem domain, random error, theoretical ignorance, variable deficiency, and data mislabeling. In such situations, using the maximum margin classifier will lead to "overfitting" noisy data (Cortes and Vapnik 1995, Cristianini and Shawe-Taylor 2000). Softmargin classifiers seek an optimal decision function with maximum margins for observations that can be separated accurately and, simultaneously, a minimum number of errors for nonseparable observations. To accomplish this goal, positive slack variables i i = 1 l are included in the decision function; yi w · xi + w0  1 - i; i = 1 l. The weight of the slack variables is controlled by a hyperparameter (or penalty term) C. This alters the quadratic programming problem, where (A9c) replaces (A9b).
+
+n
+
+yi i = 0 0  i  C i = 1
+
+n
+
+i=1
+
+(A9c)
+
+The soft-margin classifier (A9c) is identical to the maximum margin classifier (A9) if the penalty term C is infinite.
+
+Multiclass Classification Formulation The SVM classifier described above is binary. Although direct generalization to multigroup classifiers is possible (e.g., Weston and Watkins 1998, Vapnik 1998), the direct approach is not necessarily efficient. SVM researchers often combine binary classifiers to handle multiclass situations (Krebel 1999, Platt et al. 2000). Suppose we have m classes; a simple and effective procedure is to train m one-versusrest binary classifiers (say, "one" positive, "rest" negative) and assign a test observation to the class with the largest positive distance (Boser et al. 1992, Vapnik 1995). This procedure has been shown to give excellent results and is the method we use in our multiclass tests, described later.
+
+SVMs and Capacity Control A kernel-induced transformation may result in a very highdimensional feature space. For example, in classification problems the most often used kernels are polynomial kernels (A10) and Gaussian kernels (A11).
+
+K xi xj = xi · xj + 1 d K xi xj = e- xi-xj 2/2 2
+
+(A10) (A11)
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+611
+
+If the data have dimensionality n, then the feature space
+
+mapped by a polynomial kernel of degree d has dimen-
+
+sion
+
+n+d d
+
+.
+
+The
+
+dimensionality
+
+of
+
+a
+
+feature
+
+space
+
+mapped
+
+by a Gaussian kernel can be infinite (Burges 1998). A linear
+
+function in a very high-dimensional feature space will not
+
+yield a machine that generalizes well.15 However, an SVM
+
+looks for a linear separating function with maximum mar-
+
+gin. By maximizing the margin of the training set, SVMs
+
+control the capacity of the optimal linear function in feature
+
+space. In fact, it can be shown that the margin of a train-
+
+ing set is an effective capacity measure; i.e., the structural
+
+risk bound (1) can be expressed as a function of a measure
+
+of margin on the training set (Shawe-Taylor and Cristianini
+
+1999a, b, and c; Cristianini and Shawe-Taylor 2000). Thus,
+
+observing a large margin is equivalent to minimizing the VC-
+
+dimension, resulting in good generalization from a small sample.
+
+In fact, Vapnik (1998) shows that the capacity of the sup-
+
+port vector machine is bounded when the observations are
+
+completely separable.
+
+Appendix B. Kernel Transformations: An Example We engineer a simple but complete example to explain how kernel transformations work. The support vector machine uses such transformations to map the original data in attribute space to a higher-dimensional feature space. In feature space, a linear decision function is found that corresponds to the nonlinear function in input space. Equation (B1) shows the dual form of this function, which includes the kernel mapping K x · xi = x · xi explained in this appendix.
+
+n
+D x = iyiK x xi + w0
+i=1
+
+(B1)
+
+The
+
+ i
+
+are
+
+solutions
+
+to
+
+the
+
+dual
+
+QP
+
+maximization
+
+problem,
+
+as outlined in Appendix A, Equations (A5) and (A7).
+
+Example The four data points shown in Table B1 are members of two groups with coordinates on axes x1 and x2 and group membership indexed by y  -1 +1 . The points are shown in Figure B1 using the symbols indicated in the table.
+This classification problem is known as the XOR problem in the literature of artificial intelligence. Minsky and Papert (1969) were the first to note that the problem could not be solved by perceptrons. Hinton et al. (1986) rediscovered the problem, and MacKay and Oldfield (1995) presented a solution using a nonlinear, hidden, layered artificial neural net. When implementing this solution, Langley and Burgess (2000) found convergence to be extremely slow.16
+Figure B1 shows that a linear boundary cannot separate these four points. However, four points can be shattered
+
+15 For example, suppose that we have 200 10-dimensional data points. Mapping the 10-dimensional feature space with a polynomial kernel of degree 10 would result in a 184,756-dimensional feature space. A linear function in such a feature space has 184,757 parameters, and can memorize all 200 points.
+16 The data in Table B1 represent a linearly transformed version of an exclusive OR truth table, where class membership is indicated by the binary sum of a point's coordinates. Points belong to class false = -1 if their scores on each dimension match. Otherwise, they belong to class true = +1 , and the outcome, y = x1 + x2 mod 2 .
+
+Table B1 Data Set (Attribute Space)
+
+Data point
+
+x1
+
+x2
+
+y
+
+a
+
+0
+
+-1
+
+-1
+
+b
+
+-1
+
+0
+
++1
+
+c
+
+0
+
++1
+
+-1
+
+d
+
++1
+
+0
+
+-1
+
+Symbol
+Square Circle Square Circle
+
+Figure B1 Four Points in Two Classes x2 c
+1
+
+b 0
+
+d x1
+
+­1
+
+a
+
+­1
+
+0
+
+1
+
+by a second-degree polynomial. The inner product kernel for a polynomial of degree two is given by the nonlinear function in (B2).
+
+x z =K x z = x·z+1 2
+
+(B2)
+
+Expanding (B2) for our two-dimensional attribute space, we find x z = x · z as follows:
+
+Kx z =
+
+x1 x2
+
+z1 z2
+
+2
++ 1 = x1z1 + x2z2 + 1 2
+
+= x12z21 + x22z22 + 2x1x2z1z2 + 2x1z1 + 2x2z2 + 1
+
+= x12
+
+x22
+
+ 2x1x2
+
+ 2x1
+
+ 2x2
+
+1
+
+ 
+
+z21  z22
+2z1z2 
+2z1 
+2z2
+
+ 
+
+1
+
+= x· z
+
+(B3)
+
+In words, the kernel function is chosen so that its application to vectors in attribute space will yield the inner product of their representations in feature space. Result (B3) generalizes to (B4), which shows that the transformation
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+612
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+yields an inner product matrix, albeit between vectors in -space.
+
+n
+K x z  x · z + 1 2 = xizi + 1
+i=1
+
+n
+xj zj + 1
+j =1
+
+nn
+
+n 
+
+=
+
+xixj zizj +
+
+2xi 2zi +12
+
+i j= 1 1
+
+i=1
+
+=
+
+xi · xj
+
+nn i j= 1
+
+1
+
+ 2xi
+
+1
+
+ 
+
+zi · zj
+
+nn i j= 1
+
+
+
+2zi
+
+1
+
+ 
+
+1
+
+= x· z
+
+(B4)
+
+(The algebra goes through for arbitrary d and c. See
+
+Cristianini and Shawe-Taylor 2000, Chapter 3). With d = 2,
+
+the terms involved in this higher-dimensional inner product are quadratic xixi = xi2, bilinear xixj , linear 2xi , and constant (1) terms from the attribute space. The choice of
+
+the constant (c = 1) determines the relative weights applied
+
+to these terms in feature space. The induced structure con-
+
+tains the types of terms--quadratic, bilinear, and higher-
+
+order interactions--that may be present in choice data or in
+
+other data-generating processes.
+
+Inner product matrices are always square and symmetric,
+
+and their size is simply the number of data points. With four
+
+points, we expect to see the 4 × 4 matrix K shown in (B5).
+
+For example, the entry K2 1 = 1 is found from the following
+
+inner product:
+
+
+
+
+
+
+
+K2 1 = -12 02 2·-1·0 2·-1 2·0 1
+
+· 02
+
+- 12
+
+ 2 · 0 · -1
+
+ 2·0
+
+ 2 · -1
+
+1 T =1
+
+
+
+
+
+4101
+
+K
+
+=
+
+
+
+1 0
+
+4 1
+
+1 4
+
+0 1
+
+
+
+1014
+
+(B5)
+
+K is known as the kernel or gram matrix corresponding to
+
+the kernel function K. Because K is an inner product matrix
+
+in n, it is a positive semidefinite, symmetric matrix that
+
+can be factored as K = P PT , where is a diagonal matrix
+
+of the eigenvalues t  0 of K with corresponding eigen-
+
+vectors, pt = pt1
+
+ptn T as the columns of P. (See Young
+
+and Householder 1940; Bronson 1991, Chapter 9.) Using the
+
+mapping
+
+xi 
+
+t pti
+
+n t=1
+
+
+
+n i=1
+
+n , it follows
+
+directly that is a kernel function corresponding to the fea-
+
+ture mapping ; e.g.,
+
+n
+
+xi · xj =
+
+t ptiptj = P PT ij = Kij = K xi xj
+
+t=1
+
+(B6)
+
+With a particular choice of weightings in the kernel function (Mercer kernels), the analyst can even insure that the features will be orthogonal. Burges (1998) derives this property, which is a deeper result from continuous mathematics in Hilbert spaces (Courant and Hilbert 1953, Vapnik 1995).
+In summary, SVM kernels map vectors in a lowdimensional attribute space into their inner products in a high-dimensional feature space. These functions directly provide the inner product that appears in the dual form of the separating hyperplane quadratic program, avoiding the
+
+need to perform calculations in feature space. Because estimation involves only inner products of data points, the problem size scales with sample size, not the dimensionality of the data. This neutralizes the "curse of dimensionality" that afflicts parametric models (see Ben-Akiva et al. 1997, Friedman 1997).
+
+Optimal Decision Function The optimal decision function is obtained by substituting the four data points into the decision function (B1) and expanding. This yields Expression (B7).
+
+Dx = =
+
+1K x x1 - 2K x x2 + 3K x x3 - 4K x x4 +w0
+
+1
+
+2
+
+0
+
+2
+
+1 x1 x2 0 + 1 - 2 x1 x2 1 + 1
+
+-1
+
+2
+
++ 3 x1 x2
+
++1 0
+
+0
+
+2
+
+- 4 x1 x2 -1 + 1 + w0
+
+= 1 x1 + 1 2 - 2 x2 + 1 2 + 3 -x1 + 1 2 - 4 -x2 + 1 2 + w0
+
+(B7)
+
+The optimal decision boundary--which is linear in feature space--is found by solving the optimization problem (B8), a constrained quadratic program.
+
+4
+
+Max
+
+Qa =
+
+1+
+
+2+
+
+3+
+
+4
+
+-
+
+1 2
+
+i j yi yj Kij
+
+i j=1
+
+(B8)
+
+4
+s.t. yi i = 1 - 2 + 3 - 4 = 0
+i=1
+0 i i=1 4
+
+Solution
+
+The solution to the QP problem is
+
+ 1
+
+=
+
+ 2
+
+=
+
+ 3
+
+=
+
+ 4
+
+=
+
+0
+
+5,
+
+indicating that all four points are support vectors. The func-
+
+tional Q reaches its maximum of 1.0 at this point. The
+
+decision function in the dual form--which is nonlinear in
+
+attribute space--is given by (B9).
+
+4
+
+Dx =
+
+ i
+
+yi
+
+K
+
+x
+
+xi
+
++ w0
+
+i=1
+
+=
+
+1 2
+
+x1 + 1 2 - x2 + 1 2 + -x1 + 1 2 - -x2 + 1 2 + w0
+
+= x12 - x22 + w0
+
+(B9)
+
+We can use any one of the support vectors to solve for the
+constant w0; i.e., yi · D xi = 1 or solving, we find w0 = 0. Therefore, the optimal decision boundary has the form
+x12 = x22 or x1 + x2 x1 - x2 = 0, which yields the nonlinear boundary function shown in Figure B2.
+
+Appendix C. Structural Diagnostics with the SVM
+
+Suppose we have a data set where each observation consists
+
+of an n-dimensional vector xi  Rn, i = 1
+
+l and an asso-
+
+ciated output yi. We use xk to represent the kth predictor
+
+variable, k  1 n . The sensitivity of the output D x
+
+with respect to the kth input xk can be determined from the
+
+partial derivative D x / xk of the decision function with
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+613
+
+Figure B2 The SVM Decision Boundary
+
+x2
+
+x1 = ­ x2
+
+c
+
+1
+
+x1 = x2
+
+put xk evaluated at a given input response category is calculated by integrating over respondents who choose category C, denoted l yi=C .
+
+1 Sxk = l yi=C
+
+l yi =C i
+
+Dx xk
+
+(C5)
+
+b 0
+
+d x1
+
+­1
+
+a
+
+­1
+
+0
+
+1
+
+respect to xk. This derivative is evaluated at the observed
+
+value of xk holding other variables xm, m = k at their
+
+observed values. The net effect of xk is then determined by
+
+averaging over respondents in each response category for
+
+each variable.
+
+In a support vector machine, partial derivatives are easy
+
+to determine because the decision function is linear; e.g.,
+
+Dx =
+
+s j =1
+
+ j
+
+yj
+
+K
+
+x
+
+xj
+
++ w0. Thus, a given kernel, K,
+
+yields Equation (C1).
+
+Dx xk
+
+s
+= aj yj
+j =1
+
+K x xj xk
+
+(C1)
+
+However, results vary by kernel type. We illustrate for three kernel families--identity, Gaussian, and polynomial--using two-dimensional data x = x1 x2 . If K is the identity transformation, results are carried out in attribute space and
+
+Dx s
+
+x1
+
+= aj yj
+j =1
+
+xj1 · x1 + xj2 · x2 x1
+
+s
+= aj yj xj1
+j =1
+
+(C2)
+
+which is a constant as expected. If a Gaussian kernel is used, we have the chain of reasoning shown as (C3).
+
+Dx x1
+
+s
+= aj yj
+j =1
+
+exp - xj1 · x1 + xj2 · x2 /2 x1
+
+2
+
+=
+
+s
+aj yj
+j =1
+
+-xj1 22
+
+exp
+
+-
+
+xj1 · x1 + xj2 · x2 22
+
+(C3)
+
+This expression can be easily evaluated. If a polynomial kernel is used, we have Equation (C4). Similarly, we can derive sensitivity formulae for other types of kernels.
+
+Dx
+
+s
+
+x1
+
+= aj yj
+j =1
+
+xj1 · x1 + xj2 · x2 + 1 d x1
+
+s
+ = aj yj xj1d xj1 · x1 + xj2 · x2 + 1 d-1
+j =1
+
+(C4)
+
+Posttraining when s, aj , and the support vectors are known, the average sensitivity of output D x with respect to out-
+
+References
+Abraham, Magid, Len Lodish. 1987. Promoter: An automated promotion evaluation system. Marketing Sci. 6(1) 1­25.
+Abraham, Magid, Len Lodish. 1993. An implemented system for improving promotion productivity using store scanner data. Marketing Sci. 12(3) 248­269.
+Allenby, Greg M., Neeraj Arora, James L. Ginter. 1995. Incorporating prior knowledge into the analysis of conjoint studies. J. Marketing Res. 35(May) 152­162.
+Allenby, Greg, Neeraj Arora, Chris Diener, Jaehwan Kim, Mike Lotti, Paul Markowitz. 2002. Distinguishing likelihoods, loss functions and heterogeneity in the evaluation of marketing models. Canadian J. Marketing Res. 20(1) 44­59.
+Andrews, Rick L., Asim Ansari, Imran S. Currim. 2002. Hierarchical Bayes versus finite mixture conjoint analysis models: A comparison of fit, prediction, and partworth recovery. J. Marketing Res. 39(February) 87­98.
+Ariely, Dan, John G. Lynch Jr., Manuel Aparicio, IV. 2004. Learning by collaborative and individual-based recommendation agents. J. Consumer Psych. 14(1 & 2) 81­95.
+Avery, Christopher, Paul Resnick, Richard Zeckhauser. 1999. The market for evaluations. Amer. Econom. Rev. 89(June) 564­584.
+Bellman, Richard E. 1961. Adaptive Control Processes: A Guided Tour. Princeton University Press, Princeton, NJ.
+Ben-Akiva, Moshe, Steven R. Lerman. 1985. Discrete Choice Analysis: Theory and Application to Travel Demand. MIT Press, Cambridge, MA.
+Ben-Akiva, Moshe, Daniel McFadden, Abe Makoto, Ulf Bockenholt, Denis Bolduc, Dinesh Gopinath, Takayuki Morikawa, Venkatram Ramaswamy, Vithala Rao, David Revelt, Dan Steinberg. 1997. Modeling methods for discrete choice analysis. Marketing Lett. 8(3) 273­286.
+Berry, Michael, Gordon Linoff. 1997. Data Mining Techniques: for Marketing, Sales, and Customer Support. John Wiley and Sons, New York.
+Blattberg, Robert C., Byung-Do Kim, Jianming Ye. 1994. Large-scale databases: The new marketing challenge. Robert C. Blattberg, Rashi Glazer, John D. C. Little, eds. The Marketing Information Revolution. Harvard Business School Press, Boston, MA, 173­203.
+Boser, Bernhard E., Isabelle M. Guyon, Vladimir Vapnik. 1992. A trained algorithm for optimal margin classifier. Fifth Annual Workshop on Computational Learning Theory. ACM, Pittsburgh, PA, 144­151.
+Bradlow, Eric T. 2003. Current issues and a "wish list" for conjoint analysis. Working paper, The Wharton School of the University of Pennsylvania, Philadelphia, PA, 1­10.
+Brazerman, Max H. 1994. Judgment in Managerial Decision Making, 3rd ed. J. Wiley, New York.
+Bronson, Richard. 1991. Matrix Methods: An Introduction, 2nd ed. Academic Press, Inc., Boston, MA.
+Bucklin, Randolph E., Donald R. Lehmann, John D. C. Little. 1998. From decision support to decision automation: A 2020 vision. Marketing Lett. 9(3) 235­246.
+Bucklin, Randolph E., James M. Lattin, Asim Ansari, Sunil Gupta, David Bell, Eloise Coupey, John D. C. Little,Carl Mela, Alan
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+614
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+Montgomery, Joel Steckel. 2002. Choice and the Internet: From clickstream to research stream. Marketing Lett. 13(3) 245­258.
+Burges, Christopher J. C. 1998. A tutorial on support vector machines for pattern recognition. Data Mining Knowledge Discovery 2 121­167.
+Chapelle, Olivier, Patrick Hallner, Vladimir Vapnik. 1999. SVM for histogram-based image classification. IEEE Trans. Neural Networks 10(5) 1055­1064.
+Cooper, Lee G., Giovanni Giuffrida. 2000. Turning datamining into a management science tool. Management Sci. 46(2) 249­264.
+Cortes, Corinna, Vladimir Vapnik. 1995. Support vector networks. Machine Learning 20 273­297.
+Courant, Rourant, David Hilbert. 1953. Methods of Mathematical Physics, Vol. 1. Interscience Publishers, Inc., New York.
+Cristianini, Nello, John Shawe-Taylor. 2000. An Introduction to Support Vector Machines--and Other Kernel-Based Learning Methods. Cambridge University Press, Cambridge, UK.
+Cui, Dapeng, David Curry. 2003. Applications of support vector machines in marketing: An exposition. Working paper.
+Dawes, Robyn M., B. Corrigan. 1974. Linear models in decisionmaking. Psych. Bull. 81 95­106.
+Diehl, Kristin R., Laura J. Kornish, John G. Lynch, Jr. 2003. Smart agents: When lower search costs for quality information increase price sensitivity. J. Consumer Res. 30(June) 56­71.
+Domencich, Thomas A., Daniel McFadden. 1975. Urban Travel Demand: A Behavioral Analysis. North-Holland Publishing Co., Amsterdam, The Netherlands.
+Edgington, Eugene S. 1995. Randomization Tests, 3rd ed. Marcel Dekker, Inc., New York.
+Efron, Bradley, Robert J. Tibshirani. 1993. An Introduction to the Bootstrap. Chapman and Hall, New York.
+Einhorn, Hillel J. 1970. The use of nonlinear, non-compensatory models in decision making. Psych. Bull. 73 221­230.
+Evgeniou, Theodoros, Constantinos Boussios, Giorgos Zacharia. 2005. Generalized robust conjoint estimation. Marketing Sci. 24(3) 415­429.
+Fisher, Ronald A. 1950. Contributions to Mathematical Statistics. Wiley, New York.
+Friedman, Jerome H. 1997. On bias, variance, 0/1--Loss, and the curse of dimensionality. Data Mining Knowledge Discovery 1 55­77.
+Gershoff, Andrew, Patricia M. West. 1998. Using a community of knowledge to build intelligent agents. Marketing Lett. 9(January) 79­91.
+Gilbride, Timothy J., Greg M. Allenby. 2004. A choice model with conjunctive, disjunctive, and compensatory screening rules. Marketing Sci. 23(3) 391­406.
+Good, Phillip I. 2005. Resampling Methods: A Practical Guide to Data Analysis, 3rd ed., Vol. XX. Birkhäuser Book (Springer), Boston, MA.
+Guadagni, Peter M., John D. C. Little. 1983. A logit model of brand choice calibrated on scanner data. Marketing Sci. 2(3) 203­238.
+Guyon, Isabelle, André Elisseeff. 2003. An introduction to variable and feature selection. J. Machine Learning Res. 3(March) 1157­1182.
+Hahn, G. J., S. S. Shapiro. 1966. A catalog and computer program for the design and analysis of orthogonal symmetric and asymmetric fractional factorial experiments. Technical report no. 66-C-165, General Electric Research and Development Center, Schenectady, NY.
+Häubl, Gerald, Valerie Trifts. 2000. Consumer decision making in online shopping environments: The effects of interactive decision aids. Marketing Sci. 19(1) 4­21.
+Hempel, Carl G. 1965. Aspects of scientific explanation. Aspects of Scientific Explanation and Other Essays in the Philosophy of Science. The Free Press, New York, 331­496.
+
+Hinton, G. E., J. L. McClelland, D. E. Rumelhart. 1986. Distributed representations. D. E. Rumelhart, J. L. McClelland, the PDP Research Group, eds. Parallel Distributed Processing: Explorations in the Microstructure of Cognition. MIT Press, Cambridge, MA, 77­109.
+Hofstede, Frenkel Ter, Youngchan Kim, Michel Wedel. 2002. Bayesian prediction in hybrid conjoint analysis. J. Marketing Res. 39(May) 253­261.
+Hunt, Shelby D. 1983. Marketing Theory: The Philosophy of Marketing Science. Richard D. Irwin, Inc., Homewoods, IL.
+Iacobucci, Dawn, Phipps Arabie, Anand Bodapati. 2000. Recommendation agents on the Internet. J. Interactive Marketing 14(3) 2­11.
+Kahneman, Daniel. 2002. Maps of bounded rationality: A perspective on intuitive judgment and choice. Nobel Prize Lecture (December 8) 449­489. http://nobelprize.org/ economics/laureates/2002.
+Kamakura, Wagner A., Michel Wedel, Fernando de Rosa, Jose Afonso Mazzon. 2003. Cross-selling through database marketing: A mixed data factor analyzer for data augmentation and prediction. Internat. J. Res. Marketing 20(1) 45­65.
+Kardes, Frank R. 1999. Consumer Behavior and Managerial Decision Making. Addison-Wesley, Reading, MA.
+Krebel, Ulrich. 1999. Pairwise classification and support vector machines. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Kernel Methods--Support Vector Learning. MIT Press, Cambridge, MA, 255­268.
+Langley, Keith, Neil Burgess. 2000. Linear and nonlinear hidden units in artificial neural networks. Under review.
+Lilien, Gary L., Arvind Rangaswamy, Gerrit H. van Bruggen, Berend Wierenga. 2002. Bridging the marketing theory-practice gap with marketing engineering. J. Bus. Res. 55 111­121.
+Little, John D. C. 2001. Marketing automation on the Internet. 5th Invitational Choice Symposium, U. C. Berkeley/Asilomar, June 1­ 5, Berkeley, CA.
+Luce, Duncan R. 1959. Individual Choice Behavior: A Theoretical Analysis. Wiley, New York.
+MacKay, David J. C., Martin J. Oldfield. 1995. Generalization error and the number of hidden units in a multilayer perceptron. Working paper, Cambridge University, Cambridge, UK.
+Mattern, David, Simon Haykin. 1999. Support vector machines for dynamic reconstruction of a chaotic system. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Kernel Methods--Support Vector Learning. MIT Press, Cambridge, MA, 211­242.
+Minsky, Marvin, Seymour Papert. 1969. Perceptrons: An Introduction to Computational Geometry. MIT Press, Cambridge, MA.
+Moe, Wendy W., Peter S. Fader. 2004. Dynamic conversion behavior at e-commerce sites. Management Sci. 50(3) 326­335.
+Müller, Klaus-Robert, Alexander J. Smola, Gunnar Rätsch, Bernhard Schökopf, Jens Kohlmorgen, Vladimir Vapnik. 1999. Using support vector machines for time series prediction. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Kernel Methods--Support Vector Learning. MIT Press, Cambridge, MA, 243­253.
+Osuna, Edgar, Robert Freund, Federico Girosi. 1997. Training support vector machines: An application to face detection. Proc. Comput. Vision Pattern Recognition, 130­136.
+Platt, John C. 1999. Fast training of support vector machines using sequential minimal optimization. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Kernel Methods--Support Vector Learning. MIT Press, Cambridge, MA, 185­208.
+
+Cui and Curry: Prediction in Marketing Using the Support Vector Machine
+
+Marketing Science 24(4), pp. 595­615, © 2005 INFORMS
+
+615
+
+Platt, John C. 2000. Probabilities for SV machines. Alexander J. Smola, Peter L. Bartlett, Bernhard Schölkopf, Dale Schuurmans, eds. Advances in Large Margin Classifiers. MIT Press, Cambridge, MA, 61­74.
+Platt, John C., Nello Cristianni, John Shawe-Taylor. 2000. Large margin DAGs for multiclass classification. S. A. Solla, T. K. Leen, K.-R. Müller, eds. Advances in Neural Information Processing Systems. MIT Press, Cambridge, MA, 547­553.
+Politz, Alfred, W. Edwards Deming. 1953. On the necessity to present consumer preferences as predictions. J. Marketing (July). [Reprinted in Marketing Res. (June 1990) 50­55.]
+Ratner, Bruce. 2003. Statistical Modeling and Analysis for Database Marketing: Effective Techniques for Mining Big Data. CRC Press. http://dmstat1.com.
+Rossi, Peter E., Greg M. Allenby. 2003. Bayesian statistics and marketing. Marketing Sci. 22 304­328.
+Russo, J. Edward, Paul J. H. Shoemaker. 1989. Decision Traps. Doubleday/Currency, New York.
+Sándor, Zsolt, Kenneth, Train. 2004. Quasi-random simulation of discrete choice models. Transportation Res. Part B 38 313­327.
+Schmitz, John, Gordon O. Armstrong, John D. C. Little. 1990. CoverStory--Automated news finding in marketing. Interfaces 20(6) 29­38.
+Schölkopf, Bernhard, Alex J. Smola, Klaus-Robert Müller. 1999. Kernel principle component analysis. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Kernel Methods--Support Vector Learning, Advances in Kernel Methods. MIT Press, Cambridge, MA, 327­352.
+Schölkopf, Bernhard, Peter Barlett, Alex Smola, Robert Williamson. 1999. Shrinking the tube: A new support vector regression algorithm. Michael S. Kearns, Sara A. Solla, David A. Cohn, eds. Advances in Neural Information Processing Systems. MIT Press, Cambridge, MA, 330­336.
+Schölkopf, Bernhard, P. Simard, Alex J. Smola, Vladimir Vapnik. 1998. Prior knowledge in support vector kernels. Michael I. Jordan, Michael S. Kearns, Sara A. Solla, eds. Advances in Neural Information Processing Systems, Vol. 10. MIT Press, Cambridge, MA, 640­646.
+Shawe-Taylor, John, Nello Cristianini. 1999a. Margin distribution and soft margin. A. J. Smola, P. Bartlett, B. Scholkopf, C. Schuurmans, eds. Advances in Large Margin Classifiers. MIT Press, Cambridge, MA, 349­357.
+Shawe-Taylor, John, Nello Cristianini. 1999b. Margin distribution bounds on generalization. Proc. Eur. Conf. Comput. Learning Theory, EuroColt'99, 263­273.
+Shawe-Taylor, John, Nello Cristianini. 1999c. Further results on the margin distribution. Proc. Conf. Comput. Learning Theory, COLT 99, 278­285.
+Sismeiro, Catarina, Randolph E. Bucklin. 2004. Modeling purchase behavior at an e-commerce web site: A task completion approach. J. Marketing Res. XLI 306­323.
+Smith, Michael D., Erik Brynjolfsson. 2001. Consumer decision making at an Internet Shopbots brand still matters. J. Indust. Econom. XLIX(4) 541­558.
+Stitson, Mark O., Alex Gammerman, Vladimir Vapnik, Volodya
+
+Vovk, Chris Watkins, Jason Weston. 1999. Support vector regression with ANOVA decomposition kernels. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Kernel Methods--Support Vector Learning. MIT Press, Cambridge, MA, 285­292.
+Thurstone, L. L. 1927. A law of comparative judgment. Psych. Rev. 34 273­286.
+Toubia, Oliver, John R. Hauser, Duncan I. Simester. 2004. Polyhedral methods for adaptive choice-based conjoint analysis. J. Marketing Res. 41(February) 116­131.
+Tversky, Amos. 1972. Elimination by aspects: A theory of choice. Psych. Rev. 79(July) 281­299.
+Vapnik, Vladimir. 1979. Estimation of Dependences Based on Empirical Data. Springer Verlag, New York.
+Vapnik, Vladimir. 1995. The Nature of Statistical Learning Theory. Springer Verlag, New York.
+Vapnik, Vladimir. 1998. Statistical Learning Theory. Wiley, New York.
+Vapnik, Vladimir, A. Chervonenkis. 1964. A note on one class of perceptrons. Automation Remote Control 25(1).
+Vapnik, Vladimir, A. Chervonenkis. 1971. On the uniform convergence of relative frequencies of events to their probabilities. Theory Probab. Its Appl. 16(2) 264­280.
+Vapnik, Vladimir, Olivier Chapelle. 2000. Bounds on error expectation for SVM. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Large Margin Classifiers. MIT Press, Cambridge, MA, 261­280.
+Viaene, Stijn, Richard A. Derrig, Bart Baesens, Guido Dedene. 2002. A comparison of state-of-the-art classification techniques for expert automobile insurance claim fraud detection. J. Risk Insurance 69(3) 373­421.
+West, Patricia M., Patrick L. Brockett, Linda L. Golden. 1997. A comparative analysis of neural networks and statistical methods for predicting consumer choice. Marketing Sci. 16(4) 370­391.
+West, Patricia M., Dan Ariely, Steve Bellman, Eric Bradlow, Joel Huber, Eric Johnson, Barbara Kahn, John D. C. Little, David Schkade. 1999. Agents to the rescue? Marketing Lett. 10(3) 285­300.
+Weston, Jason, Chris Watkins. 1998. Support vector machines for multi-class pattern recognition. Michel Verleysen, ed. Proc. 6th Eur. Sympos. Artificial Neural Networks ESANN , Bruges, Belgium, 276­288.
+Weston, Jason, Alex Gammerman, Mark O. Stitson, Vladimir Vapnik, Volodya Vovk, Chris Watkins. 1999. Support vector density estimation. Bernhard Schölkopf, Christopher J. C. Burges, Alexander J. Smola, eds. Advances in Kernel Methods--Support Vector Learning. MIT Press, Cambridge, MA, 293­306.
+Wierenga, B., G. H. van Bruggen. 2000. Marketing Management Support Systems: Principles, Tools and Implementation. Kluwer Academic Publishing, Boston, MA.
+Wierenga, Beremd, Gerrit H. van Bruggen, Richard Staelin. 1999. The success of marketing management support systems. Marketing Sci. 18(3) 196­207.
+Young, Gale, A. S. Householder. 1940. Factorial invariance and significance. Psychometrika 5 47­56.
+
+

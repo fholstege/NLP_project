@@ -1,0 +1,2156 @@
+Vol. 27, No. 6, NovemberญDecember 2008, pp. 995ญ1011 issn 0732-2399 eissn 1526-548X 08 2706 0995
+
+informs ฎ
+doi 10.1287/mksc.1080.0369 ฉ 2008 INFORMS
+
+Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis
+Timothy J. Gilbride
+Mendoza College of Business, University of Notre Dame, Notre Dame, Indiana 46556, tgilbrid@nd.edu
+Peter J. Lenk
+Stephen M. Ross School of Business, University of Michigan, Ann Arbor, Michigan 48109, plenk@umich.edu
+Jeff D. Brazell
+The Modellers, LLC, Salt Lake City, Utah 84047, jeff.brazell@themodellers.com
+Choice-based conjoint analysis is a popular marketing research technique to learn about consumers' preferences and to make market share forecasts under various scenarios for product offerings. Managers expect these forecasts to be "realistic" in terms of being able to replicate market shares at some prespecified or "basecase" scenario. Frequently, there is a discrepancy between the recovered and base-case market share. This paper presents a Bayesian decision theoretic approach to incorporating base-case market shares into conjoint analysis via the loss function. Because defining the base-case scenario typically involves a variety of management decisions, we treat the market shares as constraints on what are acceptable answers, as opposed to informative prior information. Our approach seeks to minimize the adjustment of parameters by using additive factors from a normal distribution centered at 0, with a variance as small as possible, but such that the market share constraints are satisfied. We specify an appropriate loss function, and all estimates are formally derived via minimizing the posterior expected loss. We detail algorithms that provide posterior distributions of constrained and unconstrained parameters and quantities of interest. The methods are demonstrated using discrete choice models with simulated data and data from a commercial market research study. These studies indicate that the method recovers base-case market shares without systematically distorting the preference structure from the conjoint experiment.
+Key words: Bayesian decision theory; conjoint analysis; constrained optimization; cross-validation; hierarchical Bayes; loss function; market share prediction; penalized maximum likelihood; posterior risk
+History: This paper was received December 1, 2006, and was with the authors 4 months for 2 revisions; processed by John Hauser. Published online in Articles in Advance July 31, 2008.
+
+1. Introduction
+Discrete choice conjoint analysis has proven to be a useful tool for investigating consumer preferences in both applied and academic studies. In applied settings, results from a typical conjoint analysis are used by managers to decide on the most attractive combination of product features and price given the competitive offering, or anticipated changes to the competitive set. To facilitate "what-if" analysis, commercial market research firms frequently provide software packaged as a "market simulator." These simulators use the results from the conjoint study together with manager-supplied inputs on product features and pricing to produce market share forecasts. When a manager enters a "base-case scenario" consisting of a set of actual product features and prices, there is usually a discrepancy between the forecast from the simulator and the actual market share. Although there are many reasons why the forecasted and actual market shares may differ, when
+
+this occurs a manager may doubt the quality of the study and/or the reliability of the forecasts. The manager really has two goals from the conjoint study: to represent consumer preferences and to produce "realistic" forecasts. An interesting question is how analysts should use managers' "base-case" scenario expectations. This paper presents a Bayesian decision theoretic approach to incorporating base-case scenario projections into choice-based conjoint analysis via the loss function.
+Forecasted market share from a conjoint study may differ from actual market share for a variety of reasons. In an early survey on the commercial use of conjoint analysis, Cattin and Wittink (1982) list five difficulties in making market share predictions using conjoint analysis. These include the inherent difference between stated and revealed preferences, attributes present in the marketplace but excluded from the conjoint study, and the inability of conjoint studies to include the effect of mass communication,
+
+995
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis
+
+996
+
+Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+distribution, competitive reaction, and other effects. Orme and Johnson (2006) reiterate many of these reasons in their summary of practitioners' methods of adjusting simulated market shares to match actual market shares. It is important to note that Orme and Johnson do not advocate adjusting the results from market simulators and instead argue that managers should be educated on the reasons why simulated and actual market shares may not agree. Allenby et al. (2005) review additional reasons why choice experiments differ from actual market choices and outline data collection procedures and new types of models, which may improve the predictive accuracy of choice models. Ding et al. (2005) propose incentive aligned conjoint experiments to improve out-ofsample predictions.
+In a Bayesian analysis, the base-case market share can be modeled as part of the likelihood function, as informative prior information, or through the loss function. Some researchers have suggested that stated and revealed preference data be incorporated into a unified model to overcome problems with conjoint studies. Louviere (2001) notes that there is a close correspondence between stated and revealed preferences. However, it may be necessary to calibrate either the location or scale parameter from analyses that only include stated preferences to account for the inherent differences between experimental and actual choice behavior. Morikawa et al. (2002) detail statistical methods of combining stated preference and revealed preference data. When available, conjoint analysis data should be augmented with actual market place choices and the full set of data modeled. However, not all studies are amenable to this solution either for logistical reasons (i.e., market data are not available for conjoint participants) or due to the lack of available models for incorporating aggregate market share results with experimental studies. Further, there is no guarantee that such analyses will necessarily produce market share projections that match a manager's base-case scenario.
+The base-case scenario and accompanying market share used by a manager will typically require several decisions. Market shares vary over time and geography due to changes in prices, promotion, advertising intensity or message change, fluctuations in distribution, changes in competitive offerings, etc. Managers must decide if the base-case scenario will reflect a very specific measure (e.g., one week, in one particular market) or an aggregated measure (e.g., annual market share for all markets served). If the latter, then the manager must choose whether "average values" of the product attributes will be used or if "representative values" will be selected. Selecting a point estimate to serve as the base-case scenario is not trivial.
+
+Our experience suggests that managers use a combination of "known facts," aggregated, and "representative values" to arrive at the base-case scenario and accompanying market share estimates or expectations. These choices are unique to the manager and will largely be dictated by the specific decision or forecasting context.
+From the analyst's perspective, the manager's basecase scenario is most appropriately viewed as a constraint placed on the forecasts provided by the market simulator. Bayesian decision theory implies that these constraints should be incorporated into the loss function. Essentially, our approach to making market share forecasts is to approximate a procedure that integrates over the regions of the posterior distribution of parameters that are consistent with the market share constraints.
+We have several objectives in mind when developing the loss function approach. Most explicitly, we require that the market shares at the base case be sufficiently close to the managerially specified market shares such that the choice-based conjoint (CBC) analysis has face validity for the marketing manager. Clearly, this alone is not sufficient to identify the adjustment procedure, and one could imagine any number of methods to reach this objective. For example, one could adjust the preferences of a subset of subjects while leaving others untouched, or one could modify the coefficients for only a subset of attributes. The second objective is that instead of being heavy-handed with the adjustments, we want the final results to be as true as possible to the CBC data. The adjustment procedure that we develop perturbs all of the estimated parameters from the CBC data as little as possible to leave the preference structure of the CBC data relatively intact. The main purpose of most conjoint studies is to project beyond current market assumptions, and our method maintains fidelity of the CBC preferences structure as the assumptions move away from the base case. Our adjustment terms are additive factors with mean zero, and we specify the variance to be as small as possible while satisfying the constraints. By minimizing the adjustments to the CBC data we explicitly assume the conjoint study yields useful information; thus, the loss function approach will not turn a poorly designed or executed study into a "good" study. Finally, we separate the estimation of the CBC parameters from the process of perturbing them to match the constraints. This allows the analyst to judge the degree of adjustment and to maintain the integrity of the CBC results.
+We contrast the loss function approach with several others including treating the base-case scenario as an informative prior. The first problem one faces with treating the constraints as data or prior information is establishing the correct weighting between the
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis
+
+Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+997
+
+CBC data and the base case. Because we lack revealed preference data for the subjects in the CBC data and because the base-case market shares are based on a different sample than the CBC study, the relative weight to place on the prior versus the likelihood is not identified. Should the analyst treat the base-case market shares for M products as M bits of information, or should he or she treat them as millions of transactions? In the former case, the CBC data will overwhelm the market information, and one will not recover the base-case market shares. In the later case, the CBC data, which are based on a few thousand hypothetical choices, will be overshadowed by the market data and will be less useful for projecting new product ideas and positioning. The relative weights of the CBC and market share data can be treated as a tuning parameter; however, a single study is not sufficient to identify it.
+Although Bayesian analyses are perfectly amenable to incorporating subjective prior information, there is a difference between "prior information" and basecase market share restrictions on the analysis. Our view is that meeting the base-case scenario with the market simulator is an ancillary goal of the analysis. Contrast this with other instances in the marketing literature that use informative priors to reflect essential features of the model. Boatwright et al. (1999) use truncated normal distributions to ensure price coefficients are negative in retail/market-level sales response models, and Allenby et al. (1995) enforce an a priori "more is better" ordering on part-worths in conjoint analysis. In these cases, economic theory informed the choice of prior distributions.
+The loss function approach has been implemented in the statistics literature to capture ancillary goals of the analyses; see, for instance, Louis (1984) and Ghosh (1992) who use the loss function to "match" the posterior distributions of parameters to certain empirical distributions of the data. As noted by Shen and Louis (1998), a strength of the Bayesian paradigm is its ability to "structure complicated models, inferential goals, and analyses" and that "methods should be linked to an inferential goal via the loss function." The loss function approach we outline matches the baseline market share forecast with minimal changes to the preferences as revealed in the CBC study.
+Our solution dovetails nicely with hierarchical Bayes (HB) inference, which is commonly used to analyze conjoint studies to obtain individual-level estimates. However, constrained estimation also has a rich tradition in non-Bayesian statistics (cf. Aitchison and Silvey 1958, Dupacova and Wets 1988, Liew 1976, Wang 1996). These papers not only solve the constrained optimization problem, but also describe the statistical properties of the solution. We illustrate the
+
+use of market share constraints in non-Bayesian models by adding them to the mathematical programming procedure of Evgeniou et al. (2007), which also produces individual-level estimates in CBC. The underlying HB and mathematical programming models are nearly the same, but the estimation method differs: Markov chain Monte Carlo (MCMC) versus constrained optimization. Consequently, the results of the two procedures are nearly identical.
+The remainder of the paper is organized as follows. First we set up the discrete choice analysis, review the role of the loss function in Bayesian decision theory, and propose a specific loss function that incorporates market share constraints. This loss function minimizes changes in preferences as represented in the conjoint study while being within an acceptable range of the manager's base-case market share expectations. We then contrast the loss function with approaches using informative priors and a non-Bayesian method. Simulation and MCMC methods are detailed for conducting the analysis implied by the loss function and necessary for obtaining market share forecasts. These can be incorporated into the same computer program used to estimate the discrete choice model and produce posterior distributions of parameters with and without the market share constraint. We illustrate the proposed methods using simulated data for the multinomial logit (MNL) discrete choice model and examine in-sample and out-of-sample performance. We show the results from a commercial market research study and conclude with a summary and suggestions for future research.
+2. The Loss Function and Bayesian Decision Theory
+2.1. Discrete Choice Model and Market Share Constraints
+This section begins by stating the discrete choice model and defines various terms. We envision a commercial market research study where the data consists of a sample of respondents who have completed a CBC study and management has provided market share estimates at some base-case set of product attributes for some set of the brands or products in the CBC study.
+The exact form of the model is not important to our loss function adjustment procedure, but to fix ideas the model set-up is as follows. N subjects evaluate Ji choice occasions for subject i. Each choice occasion or task consists of M alternatives or product profiles. In the CBC design, there are p attribute levels, including brand intercepts. Subject i's latent random utility for product profile j is a given by
+Yij = xij i + ij where i  normal or extreme value
+i = + i where i  Np 0
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis
+
+998
+
+Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+where the observed attributes xij and the parameter vector i are p-vectors, and ij are error terms. Let W be the observed choices from the CBC.
+
+Our primary objective is to use the set of { i} in functions g i to obtain estimates of quantities of interest such as predicted market share. Let
+
+Xo represent the matrix of product attributes in the base-case scenario and let S1 SK represent the cor-
+responding market shares. Let S1 SK represent the estimated market shares using Xo and { i}, e.g., g i Xo . We define the discrepancy between the estimated and base-case market shares as
+
+K
+
+Sk - Sk =
+
+(1)
+
+k=1
+
+Our goal is to produce estimates of Sk that are "close"
+
+to Sk and reflect the information obtained in the con-
+
+joint study. We assume that in addition to Xo and
+
+S1
+
+SK, management can provide t, a target level,
+
+or acceptable level of discrepancy between the pre-
+
+dicted and base-case market shares. Let C represent
+
+the set of parameters used to estimate Sk that satisfy the market share constraint  t.
+
+2.2. Loss Functions In decision analysis (cf. DeGroot 1970), the loss function L d quantifies the loss to the decision maker of taking action (or estimate) d when the state of nature (or parameter) is equal to . (Here is any arbitrary parameter.) Savage (1954) derived Bayesian loss functions from the axioms of rational preferences and developed a decision-theoretic approach to inference. Loss functions are closely related to utility functions and therefore represent the individual circumstances of the decision context and the decision maker, and not necessarily universal objective functions. Because the state of nature is not known, the Bayesian decision maker wishes to minimize the posterior expected loss represented by
+
+d= L d
+
+Wd
+
+(2)
+
+where represents the current distribution of given the observed data W , in this case the posterior. The Bayes rule is the selection of d  D, the set of allowable decisions, that minimizes d . The Bayes risk integrates (2) over the sample space for W . The value of d that minimizes (2) also minimizes the Bayes risk (cf. Casella and Berger 1990, p. 474). The overall risk to the decision maker is the weighted average of how likely an event is to occur and the loss to the decision maker for taking action d if it does occur.
+The statistical problem of point estimation is one application of the loss function. In this case, d is the particular estimate of to report and use in additional analysis. A common-loss function is squared error loss represented as L d = - d 2 for a scalar parameter and L d = - d - d for a vector
+
+of parameters. When a squared error loss function is used and (2) is minimized with respect to d, the resulting Bayes rule, or point estimate for is equal to the mean of the posterior distribution or
+
+ฏ=
+
+W d =E W
+
+(3)
+
+where ฏ represents the Bayes rule. In fact, the posterior mean is frequently reported in both applied and academic studies using Bayesian methods. However, Bayesian decision analysis can be applied to any loss function. For example, absolute error loss results in the Bayes rule being the median of the posterior distribution (Berger 1985, p. 162), and 0/1 loss gives the posterior mode: the value of that maximizes the posterior density (Berger 1985, p. 162). The expected posterior loss at the Bayes rules quantifies estimation risk. Under squared error loss, this measure is the posterior variance of .
+To enforce market share constraints on the CBC analysis, we will use a variant of the squared error loss function. The loss function is represented as
+L g d = g B - d g B - d for B  C (4)
+where B = i is the set of parameters from the CBC data; C is the constraint set defined by the market share at the base case; and d is the estimator of the functional g. The functional g can be of any form and will not generally involve Xo. Here, the requirement that only coefficients that satisfy the market share constraints are used is represented as B  C, which means that i  C for i  B. This can be seen as limiting the set of allowable decisions, d  D. This loss function says that the decision maker gets no utility (e.g., the loss function is ) from any forecast if the analysis lacks face validity, where "face validity" is defined in terms of the base-case forecast being close to the manager's definition of the base-case market share. We use the loss function because "face validity" is defined by the individual decision maker and is specific to each decision context.
+In addition to meeting the market share constraints, we want to make sure that the changes to the preference structure are, in some sense, minimal and we want to explicitly separate the estimated { i} from the conjoint study from the constrained estimates. To do so, we introduce additive factors { i} for each subject where each i is a p-vector, and use the adjusted parameters { i + i} in computing market share forecasts. Clearly, the additive factors will not be unique: for a given set of { i} there are any number of { i} that will satisfy the market share constraints. To regularize the problem, we assume that i  Np 0 -1Ip , where Ip is a p ื p identity matrix. Our procedure then forces each i to be as close to 0 as possible by making
+as large as possible; this will be used to help identify the { i}.
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis
+
+Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+999
+
+This choice of the normal distribution for the
+
+adjustment factors is not arbitrary. We set the mean
+
+to zero with the desire to keep the adjusted estima-
+
+tors as close as possible to the unadjusted estimators.
+
+We use a spherical variance structure to be indifferent
+
+about the set of attributes to adjust. We use a nor-
+
+mal distribution because its tails decline rapidly, so
+
+that the estimate for any single attribute or subject
+
+will not be greatly modified relative to the adjustment
+
+for other parameters. In addition, the normal distri-
+
+bution maximizes entropy, a measure of uncertainty,
+
+given that the mean is zero and the precision is
+
+(cf. Bernardo and Smith 1994, pp. 207ญ209). In other
+
+words, given the mean and the variance, the normal
+
+density imposes less structure on the { i} than other choices for the distribution.
+
+We illustrate the approach by considering a sin-
+
+gle parameter i. Panel A of Figure 1 illustrates a posterior distribution i W ; within i W there are regions, perhaps disjoint, that satisfy some
+
+exogenous constraints as indicated by the shaded
+
+regions. Given a draw
+
+r i
+
+from
+
+this
+
+posterior
+
+distri-
+
+bution, we generate adjustment factors { i} as shown
+
+in Panel B from a normal distribution N 0 -1 with
+
+density
+
+, where the precision parameter is
+
+one over the variance. We consider draws of i that
+
+map into the shaded region of the posterior via
+
+r i
+
++
+
+r i
+
+and
+
+satisfy
+
+the
+
+base-case
+
+constraints.
+
+This
+
+is
+
+illus-
+
+trated in Panel C of Figure 1. The i is not a parameter
+
+in the likelihood function, but a device we use to sat-
+
+isfy an external constraint. Note that in this example,
+
+the region defined by ( i + i) is disjoint, so functions such as E i + i where the expectation is with
+respect to i W , are not particularly meaningful.
+Next we develop the loss function that corresponds
+
+to this procedure. Let A = i be the set of additive factors; let B = i be the set of conjoint parameters; and define A + B = i + i . To obtain point estimates of market share forecasts or for any function h A + B ,
+
+we use the loss function:
+
+L h d = h A+B -d h A+B -d for A + B  C (5)
+
+where C, the market share constraints at the base case X0, limits the set of allowable decisions, d  D, to those that have face validity for the manager. The
+posterior expected loss, which includes these adjust-
+ment factors, becomes
+
+d = h A+B -d h A+B -d
+C
+
+ทA
+
+B W dA dB where (6)
+
+N
+
+A=
+
+i
+
+i=1
+
+BW = 1
+
+and NW
+
+Figure 1
+
+Mapping into Constrained Area of the Posterior Distribution Panel A
+
+Posterior distribution (i | W )
+
+ญ10 ญ8 ญ6 ญ4 ญ2 0 2 4 6 8 10
+
+i*
+
+i*
+
+Panel B
+
+ ( | )
+
+ญ15
+
+ญ10
+
+ญ5
+
+0
+
+5
+
+0
+
+Panel C
+
+10
+
+15
+
+Posterior distribution (i | W )
+
+ญ10 ญ8 ญ6 ญ4 ญ2 0 2 4 6 8 10 ir ir
+
+Notes. Panel A: Areas
+
+ i
+
+such
+
+that
+
+external
+
+constraint
+
+is
+
+satisfied.
+
+Panel
+
+B:
+
+Normal density for adjustment factors. Panel C: For any random draw
+
+r i
+
+from
+
+i W , map into area satisfying the constraint via
+
+r i
+
++
+
+r i
+
+with
+
+r i
+
+drawn from
+
+.
+
+The requirement A + B  C is subsumed into the area of integration. To obtain the Bayes rule d, we differ-
+entiate (6) with respect to d and set it equal to 0:
+
+d = h A + B f A B W C dA dB
+
+where fABW C
+
+=A
+
+BW
+
+PC W
+
+for A+B  C (7)
+
+PC W = A
+C
+
+B W dA dB
+
+The support for the density f A B W C is C, and the normalizing constant is P C W . Thus Equation (7) states that the Bayes rule for h A + B is the
+
+1000
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+expected value of the function when the values of A and B are drawn from a specific density. The values of
+i + i drawn from f A B W C in (7) are dependent on all other s and s. However, this specific distribution is a by-product of the loss function and arriving at an estimate for h A + B : the posterior distribution for and all other parameters in the model are obtained using standard procedures and without reference to or the market share constraints.
+The Bayes rule is conditional on meeting the market share constraints and the value of ; determines "how close" the adjustment factors are to 0 and thus how much the CBC parameters are adjusted. If is too large, then values of i from Np 0 -1Ip may be too close to 0 to satisfy A + B  C, the market shareconstraint. If is too small, then i will have a large variance and although we may satisfy the constraint, A + B will be poorly identified and we may inadvertently alter the individual s more than is necessary or desired.
+Formally, we select the value of by minimizing the Bayes risk. In this case, the Bayes risk can be minimized by substituting the Bayes rule d into posterior expected loss and minimizing it with respect to . This is represented by
+
+r = h A + B - d h A + B - d
+C
+
+ทA
+
+B W dA dB
+
+=P C W
+
+h A + B - d h A + B - d
+C
+
+ท f A B W C dA dB
+
+M
+
+=P C W
+
+var hm A + B W C
+
+(8)
+
+m=1
+
+where M is the number of market shares we are
+
+estimating, and the variance is with respect to the
+
+density f . When the market share constraints are
+
+meaningful, e.g. they cannot be satisfied by the unad-
+
+justed parameters alone, increasing decreases the
+
+probability of meeting the constraint, P C W ,
+
+because A will be closer to 0; this will reduce r .
+The var hm A + B W C will also be reduced by large values of because i  Np 0 -1Ip and large
+implies less variance. This suggests that we want
+
+to be as large as possible as long as the market share
+
+constraints are satisfied. We show numerical results
+
+with simulated data that reinforce this intuition. First,
+
+we present several alternative methods of incorporat-
+
+ing market share constraints into CBC.
+
+3. Informative Priors and Non-Bayesian Approaches
+3.1. Informative Priors An alternative to the loss function approach is to treat the base-case scenario as informative prior
+
+information about the CBC parameters. This section compares and contrasts the loss function and prior information approaches. The crux of the problem with using market share information in the prior distribution for the CBC parameters is getting the "correct" weight between the prior and CBC data. If too much weight is placed on the CBC data, the simulated market shares at the base case will not match the actual market shares. If too much weight is placed on the market share information, then the prior overwhelms the CBC data. One could fine-tune the weight, but that would violate setting the prior before analyzing the data.
+A prior formulation that leads to the Bayes rule d in Equation (7) is to treat both A and B as parameters where A is the prior for A with the restriction that A is restricted to C given B. The joint posterior is
+
+B A W l B W B A
+
+for A  C B (9)
+
+Note that we use the conditioning argument C B so that values of B are drawn without reference to A or the market share constraint, and draws of A depend on B. An alternative and perhaps more traditional way to think about the market share constraint as an informative prior is to represent (9) as
+
+B A W l B W B A for A + B  C (10)
+
+Then draws of B are dependent on A and the market share constraints. This model confounds the CBC data with the analyst's desire to satisfy the inferential goals of the manager. Marginal posterior distributions of B from (9) will not match those from (10) and will not match the analysis of the CBC data without market share constraints.
+Market share constraints can also be incorporated through informative priors without using the additive factor A. For instance, one can treat the forecasted market shares at Xo as a "parameter" in the model and place an informative prior on them. Consider the following transformations:
+
+zk
+
+=
+
+ln
+
+Sk SK
+
+and
+
+k
+
+=
+
+ln
+
+Sk SK
+
+for k = 1 K - 1 (11)
+
+Let
+
+ NK-1 z -1IK-1 . The prior parameter
+
+determines the trade-off between the managerial con-
+
+straints and the CBC data. Very large will result in
+
+posterior distributions "relatively" close to the base
+
+case, although how close will be a function of the
+
+data, which, as previously noted, violates the rules of
+
+Bayesian inference.
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+1001
+
+We favor the loss function approach because we feel the circumstances in most analyses are consistent with treating the base-case market shares as constraints on the allowable set of answers. As noted earlier, the decision on how to measure market share, the attribute values at the base-case scenario, and what constitutes a "close enough" answer are management decisions and not data nor conjoint issues.
+
+3.2. A Non-Bayesian Approach Evgeniou et al. (2007) proposed a mathematical programming approach to individual-level estimation in CBC.1 They use the following convex optimization program to obtain individual-level coefficients:
+Problem 3.2.1
+ = arg min Cross-Validation and
+
+wi w0 D
+= arg min
+wi w0 D
+
+-
+
+1
+
+
+N
+
+Ji
+log
+
+i=1 j=1
+
+exijm wi
+
+e M
+
+xijm wi
+
+m=1
+
+N
+
++ wi - w0 D-1 wi - w0
+
+(12)
+
+i=1
+
+subject to D is a positive semi-definite matrix scaled to have trace 1
+
+where wi and w0 are vectors of length p, D is a p ื p matrix, m indicates the chosen alternative, and all
+other notation follows earlier definitions. Multiplying Equation (12) by -  gives the following maximiza-
+tion problem:
+
+N Ji
+log
+i=1 j=1
+
+xijm wi
+
+e - M
+
+xijm wi
+
+e m=1
+
+N
+ wi - w0 D-1 wi - w0
+i=1
+
+This can be viewed as penalized maximum likelihood estimation (PMLE), where the first term is the standard log-likelihood function for logistic regression in CBC, and the second term is a penalty function.
+PMLE is a regularization technique for ill-posed problems, such as the estimation in a large dimensional parameter space. Kimeldorf and Wahba (1970) and Good and Gaskins (1971) introduced roughness penalties to control complexity in nonparametric regression and density estimation, respectively. PMLE balances fit to the data, measured by the loglikelihood function, and complexity, expressed by a penalty term. A critical feature of PMLE is judging the relative weight, expressed here by , between fit and complexity. Predictive cross-validation (CV) is commonly used to select by minimizing holdout prediction error. Stone (1974) and Geisser (1975) introduced
+
+1 We thank the associate editor for drawing our attention to this approach.
+
+CV in the statistical literature. Craven and Wahba (1979), Good and Gaskins (1980), Golub et al. (1979), and Wahba (1983) used CV in PMLE. Evgeniou et al. (2000) provide an excellent review of these procedures and their applications to vector support machines.
+Subject-level parameter estimation in CBC is an ill-posed problem: the MLE does not exist or is instable when the number of individual-level observations is small relative to the number of individuallevel parameters, which frequently occurs in practice. Hierarchical Bayes methods shrink individual-level estimates to an aggregate estimate where the amount of shrinkage depends on the relative precisions and degree of heterogeneity in the data (cf. Lenk et al. 1996). Bayesian models provide an alternative regularization method in both nonparametric density estimation (cf. Lenk 1988, 2003) and regression (cf. Lenk 1999). In essence, Bayesian models incorporate the penalty term into the model formulation and replace the CV step by using prior distributions for and updating them.
+A novel aspect of the Evgeniou et al. (2007) application to conjoint analysis is using PMLE and CV to regularize the estimation of individual-level parameters. (Also, see Anderson and Blair 1982.) Evgeniou et al. (2007) refer to Equation (12) as a "loss function," where the first term reflects fit and the second term reflects shrinkage to the mean (or complexity control). For sake of clarity, we will refer to Equation (12) as an "objective function" because we will reserve "loss function" for the Bayesian loss function. The trade-off between fit and complexity is governed by the value of  that is determined by CV.
+As noted by many of the previously cited papers, PMLE has a Bayesian interpretation. Setting aside the cross-validation term and the restrictions on D, the convex optimization problem represents the solution to an analogous Bayesian problem. The Bayesian problem specifies a multinomial logit likelihood, wi  N w0 D for heterogeneity, and improper priors for w0 and D such that the normalizing constants for the distribution of heterogeneity cancel out. Finally, the 0/1 Bayesian loss function results in point estimates that are the maximum of the posterior distribution; this would give identical results to minimizing a corresponding objective function (analogous to Problem 3.2.1). Hence, the underling models for HB and PMLE are nearly the same, and they should produce similar results, which we confirm with an empirical example in ง5.3.
+One of the computational advantages of the approached outlined in Problem 3.2.1 is that conditional on , w0, and D, the problem can be approached by solving N separate optimization problems, that is, one optimization problem for each respondent. Evgeniou et al. (2007) present an iterative procedure
+
+1002
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+for obtaining optimal values of all the variables in the objective function. However, market share constraints pose constraints across respondents that necessitate different solution procedures.
+The structure of Problem 3.2.1 and the loss function approach of conditioning on the posterior distribution of the hs suggest an alternative, two-step problem. Given the set {wi} from solving Problem 3.2.1, solve:
+Problem 3.2.2
+
+min ai
+
+1
+
+K
+
+N
+Sk - Sk 2 +
+
+ai ai
+
+k=1
+
+i=1
+
+K
+
+subject to
+
+Sk - Sk  t
+
+k=1
+
+where ai are the p vectors of adjustment factors, Sk is the managerially supplied market share at the
+
+base case for brand k, and Sk is the forecasted market share using the adjusted coefficients {wi + ai}.
+Here, controls the trade-off between meeting the
+
+market share constraint and ensuring that the adjust-
+
+ment factors ai are close to 0. By adjusting so
+
+that
+
+K k=1
+
+Sk
+
+- Sk
+
+
+
+t is minimally satisfied, this
+
+puts as much emphasis as possible on keeping the
+
+adjustment factors close to 0. We use squared error
+
+instead of absolute error of the market shares in the
+
+objective function because our optimization algorithm
+
+uses gradients, and absolute error is not differentiable
+
+everywhere.
+
+4. MCMC Estimation
+
+Because B is independent of A and relies only on
+
+the CBC data, standard algorithms for estimating
+
+hierarchical Bayesian conjoint models can be modi-
+
+fied to obtain samples of B + A to use in estimating
+
+E h A + B W C . Alternatively, current programs
+
+can be used to obtain samples of B, and in a separate
+
+program A can be sampled such that A + B  C. Well-
+
+known sampling and MCMC methods are used to
+
+obtain draws from f A B W C from Equation (7)
+
+with the challenge that the market share constraints
+
+create dependencies among subject-level parameters.
+
+The generation of the adjustment factors could
+
+either be performed inline with the analysis of the
+
+CBC model or it could be performed offline and
+
+after the MCMC for the CBC data. The inline MCMC
+
+algorithm goes through the following steps on each
+
+iteration:
+
+Step 1. For i = 1 N ;
+
+(a) Draw i W X
+
+: Use standard methods
+
+for either probit or MNL models;
+
+(b) Draw i i, { -i}, { -i}, Xo, , t: Detailed in the appendix;
+
+Step 2.
+
+i : Standard conjugate set-up;
+
+Step 3.
+
+i : Standard conjugate set-up.
+
+For the probit model, steps are added for data aug-
+
+mentation and drawing the error-covariance matrix;
+
+see McCulloch and Rossi (1994). In Step 1(b), the
+
+notations { -i} and { -i} indicate the sets of parameters for all respondents other than i. Thus the draw of
+
+for person i is dependent on the current value of
+
+and for all other respondents. The offline algorithm
+
+treats the random draws {
+
+g i
+
+},
+
+for
+
+subject
+
+i
+
+and
+
+MCMC
+
+iteration g, from the MCMC algorithm as input and
+
+draws
+i
+
+a
+
+separate
+
+given
+
+g i
+
+g
+i
+is
+
+, as in
+
+detailed
+
+C
+
+g i
+
+.
+
+in
+
+the
+
+appendix,
+
+from
+
+A random walk Metropolis-Hastings (Chib and
+
+Greenberg 1995) or a weighted bootstrap (Smith and
+
+Gelfand 1992) is used to draw i for each i on each iteration of the algorithm. The chain converges to the
+
+stationary distribution implied by the posterior distri-
+
+bution f A B W C from the loss function. Note
+
+that the algorithm naturally produces draws of both
+
+B and B + A, whether performed inline or offline;
+
+this makes comparison of analyses with and with-
+
+out the market share constraints straightforward. As
+
+in other simulation-based methods, point estimates
+
+of E h A + B W C are obtained by computing
+
+h A + B for each draw of A + B and averaging over
+
+the draws.
+
+There are several other practical implementation
+
+issues that are detailed with suggestions in the Tech-
+
+nical Appendix, found at http://mktsci.pubs.informs.
+
+org. Primary among these is a method for increasing
+
+in the distribution for  Np 0 -1Ip as the MCMC chain progresses, subject to A + B  C. In the next sec-
+
+tion we show results from simulated data sets includ-
+
+ing an importance sampling scheme used to estimate
+
+the value of the posterior expected loss for different
+
+values of .
+
+5. Simulation Studies
+5.1. In-Sample Results It is not surprising that one can use additive factors to adjust the CBC parameter estimates to recover basecase market shares. The purpose of this simulation study is to quantify the distortion of the CBC preference structure by using the proposed method. The simulation shows that relatively small additive factors are needed to meet the constraints in an MNL model. Additional results with a correlated probit model are available from the first author. The simulated data set consists of 300 respondents, 12 choice sets per respondent, with each choice set consisting of four brands. Each brand in each choice set was described by two randomly generated continuous covariates and one binary covariate intended to mimic a discrete product attribute.
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+1003
+
+A standard MNL model set-up is used. Choices are restricted to one of the four alternatives and wellknown algorithms are used to estimate the hierarchical Bayes MNL model. A base set of attributes Xo was randomly generated and the market share using the actual set of i was measured. The market share constraints, e.g., S1 SK, were then set arbitrarily, but different than the market share using the true values of the parameters. The model is identified by dropping one of the brand intercepts (Brand D). The MCMC chain was run for 30,000 iterations with a sample of every 10th from the last 10,000 used to describe posterior moments.
+Table 1 presents selected results from the simulations with the target level of discrepancy t set at 0.10, 0.05, and 0.02. In all instances the algorithm was able
+
+Table 1 Simulation Results for MNL Bayesian Approach
+
+Brand
+A B C D
+
+MS at Xo using { i }
+0 54 0 25 0 05 0 15
+
+MS constraint at Xo
+0 40 0 35 0 15 0 10
+
+Actual
+(1) -0 43 (2) 0 50 (3) 0 34 (4) -1 00 (5) 0 82 (6) 1 47
+
+Brand
+
+Posterior MS at Xo
+
+Posterior
+
+Posterior average (+)
+
+t = 0 10
+
+A
+
+0 417 (0.008) (1) -0 386 (0.09) (1) -0 615 (0.07)
+
+B
+
+0 348 (0.006) (2) 0 466 (0.09) (2) 0 672 (0.07)
+
+C
+
+0 107 (0.005) (3) 0 309 (0.09) (3) 0 432 (0.07)
+
+D
+
+0 128 (0.007) (4) -1 010 (0.08) (4) -0 793 (0.06)
+
+(5) 0 782 (0.07) (5) 0 789 (0.04)
+
+(6) 1 520 (0.08) (6) 1 166 (0.05)
+
+-1 = 0 00001
+
+MAD = 0 189
+
+ญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญ
+
+t = 0 05
+
+A
+
+0 404 (0.005)
+
+(1) -0 420 (0.09)
+
+(1) -0 638 (0.07)
+
+B
+
+0 349 (0.003)
+
+(2) 0 449 (0.08)
+
+(2) 0 649 (0.06)
+
+C
+
+0 129 (0.003)
+
+(3) 0 291 (0.09)
+
+(3) 0 479 (0.07)
+
+D
+
+0 118 (0.005)
+
+(4) -1 022 (0.08)
+
+(4) -0 767 (0.05)
+
+(5) 0 788 (0.07)
+
+(5) 0 792 (0.03)
+
+(6) 1 524 (0.09)
+
+6) 1 108 (0.06)
+
+-1 = 0 00001
+
+MAD = 0 213
+
+ญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญ
+
+t = 0 02
+
+A
+
+0 402 (0.003)
+
+(1) -0 413 (0.09)
+
+(1) -0 630 (0.07)
+
+B
+
+0 349 (0.002)
+
+(2) 0 453 (0.09)
+
+(2) 0 642 (0.06)
+
+C
+
+0 143 (0.002)
+
+(3) 0 296 (0.09)
+
+(3) 0 526 (0.07)
+
+D
+
+0 106 (0.003)
+
+(4) -1 025 (0.09)
+
+(4) -0 757 (0.06)
+
+(5) 0 785 (0.07)
+
+(5) 0 806 (0.03)
+
+(6) 1 518 (0.09)
+
+(6) 1 062 (0.05)
+
+-1 = 0 00001
+
+MAD = 0 230
+
+Notes. MS, market share. Xo, "Base-case" design matrix. Posterior mean and (standard deviation) displayed. MAD, mean absolute difference between
+posterior and posterior average ( + ).
+
+to increase , the precision of the additive factors A,
+
+to the maximum value of 100,000 (variance = -1 =
+
+0 00001) while meeting the market share constraints.
+
+The posterior mean of is from the CBC data and is
+
+close to the true . If one were to average the posterior
+
+means of i (not reported in the table), they would be close to the posterior mean of . Selected individual-
+
+level histograms of i + i were inspected and it does not appear that f A B W C is disjoint for these
+
+data sets. We therefore present the empirical aver-
+
+age of + averaged across individuals and draws
+
+from the MCMC chain. These are provided as a point
+
+of comparison to the posterior mean of from the dis-
+
+tribution of heterogeneity. Note that brand intercept
+
+parameters are adjusted in the expected direction
+
+given the differences between the actual and con-
+
+strained market share. For example, the market share
+
+constraint 0.15 for brand C at Xo is greater than the market share 0.05 using only the CBC data. Conse-
+
+quently, the average of + for brand C is greater
+
+than the posterior mean of for brand C, thus increas-
+
+ing the preference for brand C to satisfy the market
+
+share constraints. Figure 2 plots the individual-level
+
+average average
+
+ฏ
+
+i
+
+i
+
++ for
+
+i compared to the selected parameters
+
+individual-level when t = 0 02.
+
+The top panel is the partworth for Brand C. The
+
+loss function approach tends to increase the prefer-
+
+ence for subjects with moderate partworths, while
+
+leaving subjects with extreme partworths untouched.
+
+The plots show that individual-level parameters are
+
+adjusted differently, but that adjustments are gener-
+
+ally small and directionally consistent.
+
+Taken together, these results suggest that the loss
+
+function approach is capable of meeting the market
+
+share constraints with minimal influence on the aver-
+
+age preference structure from just the CBC data. How-
+
+ever, the exact amount of change needed to meet the
+
+market share constraints will depend on each data
+
+set and the discrepancy with the base-case market
+
+share. Note also that the average values are not used
+
+in market share simulations; they would not neces-
+
+sarily match the base-case scenario. The market share
+
+constraints are met by using the additive factors A to
+
+coordinate the draws of B + A in each iteration of the
+
+MCMC chain.
+
+There is a trade-off between the target level of dis-
+
+crepancy t and the size of the adjustment factors i. As t gets smaller (e.g., recovered market shares must
+
+be closer to the managerial base case), the adjustment
+
+factors tend to be larger. This can be seen in Table 1
+
+by comparing the columns "Posterior " to "Posterior
+
+average ( + )" across the different levels of t, or
+
+more directly by looking at the value of the mean
+
+absolute difference (MAD) between the two columns.
+
+At t = 0 10 the MAD is 0.189 as compared to 0.230 at
+
+t = 0 02.
+
+1004
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+Figure 2
+
+Simulated MNL Model: Posterior Mean of Individual-Level Parameters
+i3 vs. i3 + i3 3
+
+2
+
+1
+
+0
+
+ญ3
+
+ญ2
+
+ญ1
+
+0
+
+1
+
+2
+
+3
+
+ญ1
+
+ญ2
+
+ญ3
+i6 vs. i6 + i6 3
+
+2
+
+1
+
+0
+
+ญ3
+
+ญ2
+
+ญ1
+
+0
+
+1
+
+2
+
+3
+
+ญ1
+
+ญ2
+
+ญ3
+
+The posterior expected loss was investigated for
+
+different values of with t = 0 02. Recall that the
+
+value of that minimizes the posterior expected loss
+
+also minimizes the Bayes risk. Using Equation (7), the
+
+natural log of the posterior expected loss was calcu-
+
+lated for the function h B + A that estimates the mar-
+
+ket share at the base-case scenario Xo. Draws of B + A from the MCMC sampler were used together with an
+
+importance sampling algorithm to estimate the func-
+
+tion along a grid of values for , presented as -1 in
+
+Table 2. Full details on the importance sampling algo-
+
+rithm are available from the authors. The posterior
+
+expected loss is dominated by ln P C W and
+
+because the market share constraints are binding, the
+
+smallest value of -1 minimizes the function. The
+
+lower half of Table 2 shows additional quantities cal-
+
+culated using the importance sampler. As expected,
+
+the value of E
+
+N i-1
+
+i
+
+i
+
+XC
+
+, which measures the
+
+dispersion of the adjustment factors from 0, reaches
+
+its minimum value at the minimum value of -1, but
+
+the improvement is marginal beyond -1 = 0 005. The
+
+values of d equal to E h A + B W C were the
+
+Table 2 Importance Sampling Results for MNL Model: Simulated Data
+
+-1
+
+ln r
+
+ln P C
+
+ln
+
+M m=1
+
+var
+
+hm
+
+A+B
+
+XC
+
+01 0 05 0 01 0 005 0 001 0 0001 0 00001
+
+Estimates of log posterior expected loss and its components
+
+-2 630 13 -6 000 95 -33 440 36 -68 188 66 -346 274 81 -3 474 688 49 -34 759 079 73
+
+-2 625 64 -5 996 46 -33 435 87 -68 184 17 -346 270 32 -3 474 684 00 -34 759 075 24
+
+-4 48 -4 49 -4 49 -4 49 -4 49 -4 49 -4 49
+
+-1
+
+d Brand A d Brand B d Brand C d Brand D E
+
+N i =1
+
+i
+
+i
+
+XC
+
+01 0 05 0 01 0 005 0 001 0 0001 0 00001
+
+Estimates of Bayes rule for various quantities
+
+0 400 0 401 0 402 0 402 0 402 0 402 0 402
+
+0 348 0 349 0 349 0 349 0 349 0 349 0 349
+
+0 146 0 145 0 144 0 143 0 143 0 143 0 143
+
+0 106 0 106 0 106 0 106 0 106 0 106 0 106
+
+719 882 685 926 650 930 645 793 641 802 640 861 640 857
+
+same up to the third decimal place for all the different values of -1.
+Because the posterior expected loss and hence the Bayes risk involves var[hm A + B ], then the minimizing value of will be dependent on the form of h A + B , or for purposes of market forecasts, the values of attributes used in the market simulator. A dogmatic Bayesian will determine the value of that minimizes the posterior expected loss for each different form of h A + B and different values of attributes. However, the above analysis suggests a more pragmatic approach of conditioning on the value of . When adjustment factors are needed, set as large as possible and use draws of h A + B from f A B W C to estimate E h A + B W C . Although it is possible to investigate the value of that minimizes the posterior expected loss, the practical benefits of doing so are unclear.
+5.2. Out-of-Sample Results Conjoint is frequently used to project market shares when attributes are different than existing product offerings. Here we want to know if imposing market share constraints results in "poor" predictions as compared to the unconstrained analysis. This section investigates the effect of the market share constraints on market share simulators when the attributes are "near" and "far" from the base-case scenario. The results show that the additive factors do not greatly impact market shares for scenarios other than the base case.
+The conjoint design was adapted from an actual study used in a commercial market research application. Details of the simulations are provided in Table 3 and a full report is available from the first author. The simulation involved 300 "respondents" and 10 brands described by three binary attributes, three continuous attributes, and nine brand-specific dummies. The
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+1005
+
+Table 3 Out-of-Sample Predictions: Simulation Details
+
+Conjoint data ท 10 brands, 3 binary attributes, 3 continuous attributes (one representing price) ท 10 choice sets per respondent ท Each experimental choice set contained 6 brands ท 300 "respondents"
+
+Distortions ท "Additive"--for each respondent, randomly select up to 5 coefficients, add random term from U(1, 3) distribution ท "Scale"--for each respondent, divide all coefficients by random term from a U(0.50, 0.75) distribution ท "Missing Attributes"--include one binary and one continuous attribute in "base-Case" and "out-of-sample" choice designs that are not included in the conjoint data
+
+Base case ท All 10 brands included in base case ท One binary attribute set = 0 for all brands; represents "new to market" feature ท All other attribute levels set at random
+
+Out-of-sample prediction tasks "Near" the base case
+ท 30 new choice sets ท Each choice set includes all 10 brands ท Randomly add "new" feature to some brands and randomly
+adjust price +/-50% ท All other attributes the same as base case (including
+"missing attributes")
+
+"Far" from the base case ท 30 new choice sets ท Each choice set includes all 10 brands ท All attribute levels randomly set for all brands and attributes (including "missing attributes")
+
+Simulations ท Conjoint choice data generated using the "distorted" coefficients ท Market share constraints and prediction results measured for: All 10 brands; 5 "high" market share brands; 5 "low" market share brands; 2 arbitrary brands ท Prediction accuracy measured using p where the "known" market share is estimated using the "undistorted" coefficients and "missing attributes"
+
+choice data consisted of 10 choice sets per respondents, where 6 of the 10 brands were included in each choice set. We introduced several distortions between the conjoint data and the observed market shares. These represent possible reasons why forecasted and base-case or out-of-sample predictions do not match. The "additive" distortion assumes that consumers are much more sensitive to some attributes in the conjoint exercise than they are when making actual choices. The "scale" distortion assumes that there is more variance in actual market-place choices than revealed in the conjoint data; that is, our consumers are more consistent when making hypothetical choices. Finally, we assumed that there were attributes present in the market that were not included in the conjoint design. This condition is labeled "missing attributes."
+Design matrices were generated for a "base case" and for a relatively large number of out-of-sample choice sets. The out-of-sample choice sets represent the possible "what-if" scenarios of interest to managers. The base case consisted of all ten brands. Attribute levels were chosen randomly2 except for one binary attribute that was set to 0 for all alternatives; this binary attribute represents a "new to the market" attribute. Thirty out-of-sample choice sets were
+2 Additional simulations showed that the results were not sensitive to the level of the attributes in the base case.
+
+generated to minimize the chance that the predictive results were being driven by one or two wellchosen (or poorly chosen) choice sets. Two separate predictive exercises were considered. "Near" the base case was intended to mimic marginal changes to the current product configuration: add the new attribute to randomly selected alternatives and change price +/-50%. In the "far" condition all attributes were randomly generated and is intended to encompass a wider array of new product configurations.
+Brand managers may not have market share information on all brands and may be interested in out-of-sample predictions for only their own products and/or a subset of competitors. To investigate this situation, market share constraints were applied to different subsets of brands: all 10 brands, the 5 "high" market share brands, the 5 "low" market share brands, and 2 arbitrary brands. Separate results were estimated for each of the different market share constraints. The target level of for the base case was set to 0.02; the lowest level of -1 was set at 0.00001. The targeted level of and the lowest value of -1 were reached for all the different types of distortions and different market share constraints.
+Out-of-sample predictions were calculated by integrating over a sample of 1,000 observations from the posterior distribution for each respondent, with constraints and without, for each of the 30 choice
+
+1006
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+Table 4
+
+Out-of-Sample Prediction Results; Percentage Improvement in Absolute Error of the Loss Function Adjustments Compared to Standard Market Shares from Conjoint Simulators
+
+Type of distortion
+
+"Scale" "Additive" (%)
+
+"Missing attributes" "Scale"
+"Additive" (%)
+
+"Near" the base case
+
+All 10 brands
+
+52
+
+69
+
+5 "high" mkt share brands
+
+49
+
+76
+
+5 "low" mkt share brands
+
+47
+
+40
+
+2 brands
+
+49
+
+20
+
+"Far" from the base case
+
+All 10 brands
+
+23
+
+7
+
+5 "high" mkt share brands
+
+9
+
+6
+
+5 "low" mkt share brands
+
+19
+
+-3
+
+2 brands
+
+3
+
+-2
+
+Notes. Numbers in bold indicate that there is less than 5% posterior probability that the two methods produce identical estimates; i.e., bold numbers indicate a "significant" difference between the adjusted and unadjusted estimates. Out-of-sample predictions based on 30 choice sets with 10 brands in each choice set.
+
+sets. The discrepancy between the predicted market share and the actual market share was measured using p from Equation (1), again for the constrained and unconstrained model. p was calculated for each choice set and then averaged across the 30 out-ofsample choice sets included in each simulation.
+In the simulations, the "additive" and "scale" distortions are combined and presented in one set of results, and these are combined with the "missing attributes" distortion in a separate analysis. The results are contained in Table 4. The chart shows the relative performance of the loss function approach compared to the standard method. Positive numbers represent the percentage improvement in p, the absolute error between the actual and predicted market shares, for the loss function approach, whereas negative numbers represent a decrease in predictive accuracy. Numbers in bold indicate that the 95% highest posterior density of the mean difference in between the two measures does not include 0; i.e., the results are "statistically significant."
+In the area around the base case, the loss function approach produces significantly more accurate predictions than the standard approach. However, the changes induced by the loss function do not result in significantly worse predictions even over a broad range of out-of-sample data.3 Thus, the more accurate localized predictions do not come at the expense of less accurate predictions in the range of the attribute
+
+3 We used "accurate" market share constraints. An experiment with inaccurate market share constraints resulted in less accurate predictions near the base case, but no difference in the broader range of the out-of-sample data. This is consistent with the results in Table 4.
+
+levels of interest to brand managers. In the "far" condition, the adjusted and unadjusted coefficients produced very similar market share forecasts. The only substantive difference in the predictive accuracy in the "far" condition was for the "scale" and "additive" distortions for "all 10 brands": the adjusted coefficients improved predictive accuracy by 23% over the unadjusted coefficients. However, for this condition, the mean absolute difference in market share forecasts between the two methods was only 1.35 percentage points across all brands in all choice sets.
+5.3. PMLE Results In this section we investigate the mathematical programming approaches outlined in ง3.2. Because published studies using mathematical programming techniques have not incorporated market share constraints, we restrict ourselves to an illustrative example. We anticipate future research will result in better and more robust mathematical programming techniques. Nonetheless, our results suggest that the mathematical programming approach is feasible.
+For this illustration we return to the simulated data set used in ง5.1. These data consist of 300 respondents, 12 choice sets per respondents, with four alternatives per choice set. Covariates consisted of binary brand indicators (three), two continuous covariates, and a binary covariate. We used the procedure detailed by Evgeniou et al. (2007) to solve Problem 3.2.1 and obtain individual-level coefficients {wi}.4 Table 5 contains results. The average values of {wi} are somewhat smaller but are comparable to the actual and the posterior estimates of from the Bayesian approach in Table 1. We note that using {wi} we obtained a market share forecast at Xo very close to the actual result using the true { i}.
+Market share constraints were incorporated via solving Problem 3.2.2 with the squared error objective function. We used a standard numeric optimization routine.5 To obtain {wi} we (repeatedly) solved 300 problems with six coefficients; by comparison, to obtain {wi + a} we (repeatedly) solved one problem with 300 ื 6 = 1 800 coefficients. The algorithm starts with a relatively large , obtains a solution, decreases , and uses the values from the previous solution as a starting guess to obtain a new solution.
+is decreased until the market share constraint is minimally satisfied.
+We find that using mathematical programming with the squared error objective function is a viable
+4 To solve the optimization problem for each respondent, we used a standard IMSL routine that uses a quasi-Newton method with finite-difference gradient. The same routine was used in the crossvalidation and final steps.
+5 Again, we used an IMSL routine that uses a quasi-Newton method with finite-difference gradient.
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+1007
+
+Table 5
+
+Simulation Results for MNL: Mathematical Programming Approach
+
+Brand
+
+MS at Xo using i }
+
+MS at Xo using {wi}
+
+MS constraint at Xo
+
+Actual
+
+A
+
+0 54
+
+0 55
+
+0 40
+
+(1) -0 43
+
+B
+
+0 25
+
+0 24
+
+0 35
+
+(2) 0 50
+
+C
+
+0 05
+
+0 05
+
+0 15
+
+(3) 0 34
+
+D
+
+0 15
+
+0 16
+
+0 10
+
+(4) -1 00
+
+(5) 0 82
+
+(6) 1 47
+
+ from cross-validation = 0 128
+
+Brand
+A B C D
+
+MS at Xo
+0 420 0 340 0 110 0 130
+
+Average wi
+t = 0 10
+(1) -0 371 (2) 0 366 (3) 0 234 (4) -0 852 (5) 0 649 (6) 1 282
+
+Average (wi + ai )
+(1) -0 539 (2) 0 518 (3) 0 372 (4) -0 678 (5) 0 669 (6) 0 990
+
+= 0 00009
+
+MAD = 0 157
+
+ญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญ
+
+t = 0 05
+
+A
+
+0 407
+
+(1) -0 371
+
+(1) -0 544
+
+B
+
+0 346
+
+(2) 0 366
+
+(2) 0 524
+
+C
+
+0 133
+
+(3) 0 234
+
+(3) 0 425
+
+D
+
+0 114
+
+(4) -0 852
+
+(4) -0 648
+
+(5) 0 649
+
+(5) 0 687
+
+(6) 1 282
+
+(6) 0 933
+
+= 0 00003
+
+MAD = 0 186
+
+ญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญญ
+
+t = 0 02
+
+A
+
+0 403
+
+(1) -0 371
+
+(1) -0 544
+
+B
+
+0 348
+
+(2) 0 366
+
+(2) 0 526
+
+C
+
+0 142
+
+(3) 0 234
+
+(3) 0 445
+
+D
+
+0 107
+
+(4) -0 852
+
+(4) -0 638
+
+(5) 0 649
+
+(5) 0 698
+
+(6) 1 282
+
+(6) 0 911
+
+= 0 000013
+
+MAD = 0 196
+
+Notes. MS, market share. MAD, mean absolute difference between adjusted and unadjusted coefficients. Xo, "Base-case" design matrix.
+
+approach. Table 5 shows that we were able to obtain solutions for t = 0 10, t = 0 05, and t = 0 02. Con-
+sistent with the Bayesian results in Table 1, the mean
+absolute difference between the adjusted and unadjusted coefficients increases as t decreases. Strictly
+speaking, the MAD and adjusted coefficients are not
+comparable between the Bayesian and the mathe-
+matical programming approach because the adjust-
+ments are made to different bases: point estimates of {wi} versus the posterior distribution B W . However, we note that the average adjusted coefficients wi + a are comparable to the posterior average of
+i + i from the Bayes solution but that the MAD is smaller in the mathematical programming approach.
+This may be a result of directly minimizing aiai in the objective function 3.2.2; the loss function penalizes
+
+large i indirectly through the posterior expected loss (8) and the parameter .
+6. Empirical Example
+This section presents the results of a commercial market research study that involved CBC and managerially supplied market share constraints. Due to the proprietary nature of the data set, the specific product and the attributes have been disguised. The product category involved a durable consumer electronic device that is typically used in conjunction with another consumer durable. The product is currently available in the market, but management was interested in measuring demand for products that included many new features that were recently developed.
+The CBC study included 425 respondents who each provided dual response data on 15 choice sets. Each choice set consisted of three alternatives that were uniquely described by 20 binary attributes and the price. As noted above, brand name was not an element in the design matrix. Price was entered as the natural log of price in the response function. Respondents were asked to indicate which one of the three alternatives they preferred, and then in a follow-up question, whether they would actually purchase the alternative if it were available in the market. An uncorrelated, dual response probit model was used to represent the likelihood function with a standard hierarchical structure to represent heterogeneity; standard conjugate, but noninformative priors were used to complete the hierarchy.
+The base-case scenario provided by the study sponsors did not include market share for competing brands. Because of the nature of the product category, management was only able to provide information on the proportion of customers who chose a representative base product, versus the "none" option. The base product was described by the attributes it included and its price. Management provided the choice share for two a priori market segments that were identified by socio-demographic variables. These variables were also available from the CBC study participants. Although the loss function approach was developed assuming that competing brands would make up the base-case scenario, it is straightforward to adopt it to a situation involving a "buy/no buy" choice set with different market segments.
+The loss function approach was used to obtain draws from the posterior distributions of B W and f A B W C with t = 0 01. A single analysis that produced draws from both distributions was performed. The algorithm was run for 20,000 iterations. The target t was met at about iteration 3,000 and -1 met its prespecified minimum of 0.00001
+
+1008
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+Table 6 Selected Summary Statistics: Consumer Electronics Study
+
+Attribute
+
+Posterior
+
+Posterior
+
+pp
+
+average ( + )
+
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 ln(price)
+
+-1 111 (0.20) 0 776 (0.08) 1 008 (0.08) 0 700 (0.07) 0 266 (0.07) 0 370 (0.06) 0 489 (0.06) 0 440 (0.06) 0 432 (0.07) 0 426 (0.06) 0 463 (0.06) 0 235 (0.06) 0 313 (0.06) 0 413 (0.06) 0 176 (0.06) 0 352 (0.06) 0 204 (0.06)
+-0 118 (0.07) 0 043 (0.07) 0 768 (0.07)
+-0 872 (0.05)
+
+3 231 1 176 1 216 1 009 0 784 0 838 0 773 0 866 0 980 0 708 0 841 0 936 0 760 0 766 0 705 0 701 0 774 0 786 0 849 1 042 0 691
+
+-1 032 (0.12) 0 972 (0.07) 1 176 (0.07) 0 915 (0.08) 0 654 (0.07) 0 330 (0.07) 0 403 (0.08) 0 214 (0.07) 0 646 (0.06) 0 269 (0.06) 0 139 (0.06) 0 252 (0.06) 0 221 (0.06) 0 336 (0.07)
+-0 071 (0.06) 0 197 (0.06) 0 449 (0.06)
+-0 344 (0.08) -0 154 (0.09)
+0 631 (0.07) -0 798 (0.04)
+
+Note. Posterior mean and (standard deviation) displayed.
+
++ pp
+3 341 1 454 1 504 1 429 1 367 1 222 1 274 1 318 1 336 1 295 1 345 1 301 1 279 1 255 1 268 1 283 1 301 1 469 1 419 1 434 0 843
+
+Attribute included in base case?
+Yes Yes Yes Yes Yes No No No Yes No No No No No No No Yes No No No Yes
+
+at about iteration 4,000. A sample of every 10th from
+
+the last 10,000 iterations was used to compute sum-
+
+mary statistics. Selected individual-level histograms
+
+of i + i were inspected and it does not appear that f A B W C is disjoint for this data set.
+
+Table 6 contains the summary statistics for the con-
+
+strained and unconstrained parameters including the
+
+standard deviation for i from the distribution of het-
+
+erogeneity pp, compared to the standard deviation
+
++
+
+from the empirical distribution of (
+pp
+
+i+
+
+i). For
+
+attributes included in the "base-case product profile,"
+
+the constrained estimates all increased in importance;
+
+for attributes not included in the "base-case product
+
+profile," parameter values generally decreased (see
+
+below for explanation). The constrained parameters
+
+exhibited somewhat larger measures of heterogeneity.
+
+The top section of Table 7 shows the manage-
+
+rial base-case market shares and estimated market
+
+shares using { i} and { i + i}. All estimates are based on a sample of 1,000 draws from the individual-
+
+level posterior distribution of i or i + i. Table 7 shows that there was a sizable difference between
+
+the estimate using the unconstrained parameters and
+
+the managerial base case. Using the unconstrained
+
+parameters, respondents were estimated to be much
+
+less likely to choose the base product. For market seg-
+
+ment #1, the base case was 18.9% choosing the rep-
+
+resentative product versus a managerial expectation
+
+of 43.6%. To increase the attractiveness of the base
+
+product over the "none" option, the relative attrac-
+
+tiveness of attributes included in the base-case prod-
+
+uct are increased, thus increasing their coefficients in
+
+Table 6. The loss function approach was able to match the base-case choice share to within the prespecified level of accuracy despite the relatively large discrepancy between it and the forecasts using the unadjusted parameters.
+The bottom panel of Table 7 shows the actual and estimated choice shares averaged across choice sets. Recall that in this study, respondents not only indicated which of the three options they preferred, but
+
+Table 7 Choice Share Results: Consumer Electronics Study
+
+Base-case choice share
+using { i }
+
+Managerial base-case choice share
+
+Base-case choice share using { i + i }
+
+Market segment #1 (%)
+
+18 9
+
+43 6
+
+Market segment #2 (%)
+
+23 1
+
+55 6
+
+Compared to managerial base case
+
+0 573
+
+43 6 55 5
+0 001
+
+Raw data
+
+Estimated choice share using { i }
+
+Estimated choice share using { i + i }
+
+Option 1 (%)
+
+29 1
+
+30 0
+
+31 5
+
+Option 2 (%)
+
+33 1
+
+31 8
+
+31 7
+
+Option 3 (%)
+
+37 8
+
+38 2
+
+36 8
+
+With the "none" option
+
+Option 1 (%)
+
+11 7
+
+12 3
+
+16 5
+
+Option 2 (%)
+
+14 1
+
+13 7
+
+16 6
+
+Option 3 (%)
+
+17 2
+
+16 9
+
+19 9
+
+None (%)
+
+57 1
+
+57 1
+
+47 0
+
+Note. Posterior mean displayed.
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+1009
+
+also whether or not they would actually purchase it,
+
+e.g., a dual response format. This allows us to esti-
+
+mate and compare choice shares with and without the
+
+"none" option. We can see compared to the raw data
+
+and estimates based on { hi}, when "none" is included in the choice set the estimates based on { hi + hi}
+decrease the relative frequency of "none" and increase
+
+the relative frequency of the other options. This is
+
+consistent with the market share constraint. However,
+
+when the choice set is restricted to the relative prefer-
+
+ence between the three options, the estimated choice
+
+shares are all reasonably close. This is another example
+
+of the localized nature of the loss function approach.
+
+Figure 3 plots the individual-level average compared to the individual-level average
+
+ฏi + i
+
+i
+for
+
+selected coefficients. Coefficient #3 was selected
+
+because the difference between the posterior mean of
+
+= 1 008 and the posterior mean of + = 1 176
+
+from Table 5 was about average. Coefficient #5 was
+
+selected because it had the largest difference, = 0 266
+
+and + = 0 654. Table 5 and Figure 3 show that
+
+relatively small changes in the is were sufficient to
+
+Figure 3
+
+Consumer Electronics Study: Posterior Mean of Individual-Level Parameters
+i3 vs. i3 + i3 4
+
+3
+
+2
+
+1
+
+0
+
+ญ4
+
+ญ3
+
+ญ2
+
+ญ1
+
+0
+
+1
+
+2
+
+3
+
+4
+
+ญ1
+
+ญ2
+
+ญ3
+
+ญ4
+
+i5 vs. i5 + i5 4
+
+3
+
+2
+
+1
+
+0
+
+ญ4
+
+ญ3
+
+ญ2
+
+ญ1
+
+0
+
+1
+
+2
+
+3
+
+4
+
+ญ1
+
+ญ2
+
+ญ3
+
+ญ4
+
+meet the choice share constraint. Although the loss function approach is designed to minimize changes to the unconstrained CBC estimates, the exact amount of change needed to individual-level parameters will depend on factors such as the number of attributes and the discrepancy between the data and the base case. Because the method produces estimates of both B and B + A, the analysis and changes necessary to meet the market share constraints are completely transparent to both analysts and decision makers.
+This example shows that the loss function approach is able to meet market share constraints with relatively modest adjustments to individual-level parameters using real data, even when there is a big difference between the base case and unconstrained estimates. Further, the method is sufficiently flexible to adapt to "base-case scenarios" that differ from the "K-brands" set-up used earlier to define the loss function approach. The algorithm performed as expected, but we anticipate additional research will provide areas for improving its implementation and for further defining the proper boundaries between the likelihood function, the loss function, and prior information in the Bayesian paradigm.
+7. Conclusion
+In this paper we take the perspective of the marketing research analyst conducting a CBC study who is presented information from the client on current market conditions, which are external to the CBC study. In addition to representing the preferences of the study participants, the client expects the analysis will be able to replicate "base-case" market results. How should the analyst incorporate this information into his/her analysis? This paper presents a Bayesian decision theoretic approach that uses the loss function to capture the various goals of the decision maker. In addition, we illustrate a similar procedure for non-Bayesian models. The Bayesian and non-Bayesian approaches provide similar results because the underlying models are similar: the main differences are the numerical procedures.
+Formally, we introduce additive factors into the loss function that map draws from the posterior distribution into the set that satisfies the market share constraints at the base-case scenario. The set of additive factors are variables from a normal distribution. These are variables in the loss function and not parameters in the likelihood or priors for parameters in the model. We derive the Bayes rule for any function of the model parameters and additive factors via the posterior expected loss and provide an algorithm for simulating the additive factors to satisfy the market share constraints. Conceptually, the loss function approach approximates a procedure that integrates
+
+1010
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+over those regions of the posterior that are consistent with the market share constraints.
+Simulated and real data sets are used to illustrate the proposed approach. These empirical studies demonstrate that the average representation of preferences changes relatively little using the loss function approach. The use of a normal distribution with mean 0 for the adjustment factors minimizes the adjustments at the individual level, while recovering the managerially supplied base-case market shares without distorting the preference structure from the CBC experiment. The algorithm tends to seek opportunities where a small adjustment in the estimated parameters will change choices for the base-case scenario. When predicting scenarios far from the base case, which is often the objective of conjoint studies, the adjusted and unadjusted market shares are similar.
+This paper highlights the need for additional research in a number of areas. First, by adjusting the CBC results as little as possible we assume they accurately capture preferences under the new market conditions represented by the new products, attributes, attribute levels, etc., in the conjoint study. The basecase market share constraint serves to anchor any changes in preferences to a point considered to have face validity by management. If the discrepancy between revealed and stated preferences is purely a methodological artifact, then one would want to model this systematically. Second, and along these same lines, the loss function approach allows all of the coefficients to be adjusted. However, if one assumed that only brand awareness or distribution was responsible for the discrepancy, it is easy to set up the loss function such that only brand intercepts are adjusted; or only the price coefficient; or all coefficients are adjusted uniformly representing a change in scale; or that only certain respondent's coefficients are adjusted. Additional empirical and/or theoretical evidence may suggest that only a subset of coefficients should be adjusted via the loss function or provide insight on how to systematically model any adjustments.
+In this research we assumed only one "base-case" observation was available consistent with our experience in applied settings. However, it is interesting to consider a situation in which multiple base-case observations may be available. Multiple base cases in the loss function should improve prediction. However, the more base cases that are added to the loss function, the greater the possible deviance from the CBC preference structure, in which case a more elaborate adjustment scheme than the one described in this paper may be required. For example, it may be necessary to introduce multiple adjustment factors for
+
+different base cases. We leave this topic for future research.
+Finally, this paper proposed a loss function that linked the goals of the decision maker to the statistical analysis of CBC data; different loss functions for this situation are possible and should be explored. Although Bayesian methods have been used in marketing to produce posterior distributions of quantities of interest, such as parameters, expected profit, expected market share, etc., there is little published research that completes the Bayesian decision theoretic approach and formally incorporates the loss function facing the decision maker.
+
+Appendix. Drawing i The following steps detail how to draw i i, { -i}, { -i}, Xo, , t. Recall that A + B must satisfy A + B  C or S = 1,
+the market share constraint in the loss function. In this
+
+appendix we will use the indicator function S = 1 to indi-
+
+cate when the constraint is satisfied and S = 0 when it
+
+is not. For each individual on each iteration, i is drawn
+
+from i W ) and that draw is used in (6) to draw i from
+
+fAB W C
+
+. Let
+
+o i
+
+represent the draw of
+
+i from the
+
+previous iteration.
+
+Step 1. If o  t, then
+
+S
+
+o i
+
+= 1, else
+
+S
+
+o i
+
+= 0;
+
+(a) Calculate each Sko using
+
+o i
+
+,
+
+i, { -i}, { -i}, and Xo;
+
+(b) Calculate
+
+K k=1
+
+Sk - Sko
+
+=
+
+o.
+
+Step 2. If
+
+S
+
+o i
+
+= 1, then a random walk Metropolis-
+
+Hastings (M-H) step is used to draw i. Form a candidate
+
+or new
+
+i as
+
+n i
+
+=
+
+o i
+
++
+
+, where
+
+is drawn from Np 0 zIp
+
+and z is a scalar chosen to ensure a 50% rejection rate for
+
+the M-H step. Note that may be used instead of Ip. The
+
+distribution f A B W C from Equation (6) implies the
+
+following acceptance probability for
+
+n i
+
+:
+
+min
+
+exp - /2 exp -
+
+n i
+/2
+
+n i
+o i
+
+S
+o i
+
+n i
+
+1
+
+S
+
+n i
+
+is calculated analogous to Step 1. Note that if the
+
+new
+
+n i
+
+does not satisfy
+
+S , then the numerator is 0 and
+
+the old value of i is retained.
+
+Step 3. If
+
+S
+
+o i
+
+= 0, then a weighted bootstrap is used
+
+to draw a new value of i. A challenge in sampling i
+
+from f A B W C is satisfying the market share con-
+
+straint. With an appropriately selected proposal density, the
+
+weighted bootstrap facilitates this process. Let
+
+o i
+
+be the
+
+value of
+
+i from the previous iteration and let
+
+n i
+
+be
+
+the draw from the current iteration.
+
+(a) Define
+
+=
+
+n i
+
+-
+
+o i
+
++
+
+o i
+
+; given {
+
+-i} and {
+
+-i },
+
+n i
+
++
+
+will satisfy the market share constraint.
+
+(i) For r = 1, to R draw
+
+r i
+
+from g
+
+where
+
+g  N -1Ip . The target density implied by (6)
+
+is f 
+
+S and the proposal density for the
+
+weighted bootstrap is g  N -1Ip . (ii) For each draw r, calculate the weight wr :
+
+wr
+
+=
+
+exp exp
+
+- -
+
+/2 /2
+
+rr
+
+ii
+
+r i
+
+-
+
+S
+
+r i
+
+r i
+
+-
+
+Gilbride, Lenk, and Brazell: Market Share Constraints and the Loss Function in Choice-Based Conjoint Analysis Marketing Science 27(6), pp. 995ญ1011, ฉ 2008 INFORMS
+
+1011
+
+(b) Select individual value
+
+r i
+
+with probability:
+
+Pr
+
+i=
+
+r i
+
+=
+
+wr
+
+R r =1
+
+wr
+
+Note that if the market share constraint is not satisfied,
+
+wr = 0 and that value of
+
+r i
+
+cannot be selected.
+
+References
+Aitchison, J., S. D. Silvey. 1958. Maximum-likelihood estimation of parameters subject to restraints. Ann. Math. Statist. 29(3) 813ญ828.
+Allenby, G. M., N. Arora, J. L. Ginter. 1995. Incorporating prior knowledge into the analysis of conjoint studies. J. Marketing Res. 32(May) 152ญ162.
+Allenby, G., G. Fennell, J. Huber, T. Eagle, T. Gilbride, D. Horsky, J. Kim, P. Lenk, R. Johnson, E. Olfek, B. Orme, J. Walker. 2005. Adjusting choice models to better predict market behavior. Marketing Lett. 16(3/4) 197ญ208.
+Anderson, J. A., V. Blair. 1982. Penalized maximum likelihood estimation in logistic regression and discrimination. Biometrika 69(1) 123ญ136.
+Berger, J. O. 1985. Statistical Decision Theory and Bayesian Analysis, 2nd ed. Springer-Verlag, New York.
+Bernardo, J. M., A. F. M. Smith. 1994. Bayesian Theory. John Wiley & Sons, New York.
+Boatwright, P., R. McCulloch, P. Rossi. 1999. Account-level modeling for trade promotion: An application of a constrained parameter hierarchical model. J. Amer. Statist. Assoc. 94(448) 1063ญ1073.
+Casella, G., R. L. Berger. 1990. Statistical Inference. Duxbury Press, Belmont, CA.
+Cattin, P., D. R. Wittink. 1982. Commercial use of conjoint analysis: A survey. J. Marketing Res. 46(Summer) 44ญ53.
+Chib, S., E. Greenberg. 1995. Understanding the metropolishastings algorithm. Amer. Statist. 49(November) 327ญ335.
+Craven, P., G. Wahba. 1979. Smoothing noisy data with spline functions: Estimating the correct degree of smoothing by the method of generalized cross-validation. Numerische Mathematik 31 377ญ403.
+DeGroot, M. 1970. Optimal Statistical Decision. McGraw-Hill, New York.
+Ding, M., R. Grewal, J. Liechty. 2005. Incentive-aligned conjoint analysis. J. Marketing Res. 42(February) 67ญ82.
+Dupacova, J., R. Wets. 1988. Asymptotic-behavior of statistical estimators and of optimal solutions of stochastic optimization problems. Ann. Statist. 16(4) 1517ญ1549.
+Evgeniou, T., M. Pontil, T. Poggio. 2000. Regularization networks and support vector machines. Adv. Comput. Math. 13 1ญ50.
+Evgeniou, T., M. Pontil, O. Toubia. 2007. A convex optimization approach to modeling consumer heterogeneity in conjoint estimation. Marketing Sci. 26(6) 805ญ818.
+Geisser, S. 1975. Predictive sample reuse method with applications. J. Amer. Statist. Assoc. 70(350) 320ญ328.
+
+Ghosh, M. 1992. Constrained Bayes estimation with applications. J. Amer. Statist. Assoc. 87(418) 533ญ540.
+Golub, G. H., M. Heath, G. Wahba. 1979. Generalized crossvalidation as a method for choosing a good ridge parameter. Technometrics 21(2) 215ญ223.
+Good, I. J., R. A. Gaskins. 1971. Nonparametric roughness penalties for probability densities. Biometrika 58(2) 255ญ271.
+Good, I. J., R. A. Gaskins. 1980. Density estimation and bumphunting by the penalized likelihood method exemplified by scattering and meteorite data. J. Amer. Statist. Assoc. 75(369) 42ญ56.
+Kimeldorf, G. S., G. Wahba. 1970. A correspondence between Bayesian estimation on stochastic processes and smoothing by splines. Ann. Math. Statist. 41(2) 495ญ501.
+Lenk, P. 1988. The logistic normal distribution for Bayesian, nonparametric, predictive densities. J. Amer. Statist. Assoc. 83(402) 509ญ516.
+Lenk, P. 1999. Bayesian inference of semiparametric regression. J. Roy. Statist. Soc. Ser. B 61 863ญ879.
+Lenk, P. 2003. Bayesian semiparametric density estimation and model verification using a logistic-gaussian process. J. Comput. Graphical Statist. 12(3) 548ญ565.
+Lenk, P., D. Wayne, G. Paul, Y. Martin. 1996. Hierarchical Bayes conjoint analysis: Recovery of partworth heterogeneity from reduced experimental designs. Marketing Sci. 15(2) 173ญ191.
+Liew, C. K. 1976. Inequality constrained least-squares estimation. J. Amer. Statist. Assoc. 71(355) 746ญ751.
+Louis, T. A. 1984. Estimating a population of parameter values using Bayes and empirical Bayes methods. J. Amer. Statist. Assoc. 79(386) 393ญ398.
+Louviere, J. J. 2001. What if consumer experiments impact variances as well as means? Response variability as a behavioral phenomenon. J. Consumer Res. 28(3) 506ญ511.
+McCulloch, R., P. E. Rossi. 1994. An exact likelihood analysis of the multinomial probit model. J. Econometrics 64 207ญ240.
+Morikawa, T., M. Ben-Akiva, D. McFadden. 2002. Discrete choice models incorporating revealed preferences and psychometric data. Econom. Models Marketing 16 29ญ55.
+Orme, B., R. Johnson. 2006. External effect adjustments in conjoint analysis. Working paper, Sawtooth Software, Sequim, WA. http://www.sawtoothsoftware.com/download/techpop/ externaleffects.pdf.
+Savage, L. J. 1954. The Foundations of Statistics. John Wiley & Sons, New York.
+Shen, W., T. A. Louis. 1998. Triple goal estimates in two-stage hierarchical models. J. Roy. Statist. Soc. Ser. B 60(2) 455ญ471.
+Smith, A. F. M., A. E. Gelfand. 1992. Bayesian statistics without tears: A sampling-resampling perspective. Amer. Statist. 46(May) 84ญ88.
+Stone, M. 1974. Cross-validatory choice and assessment of statistical prediction. J. Roy. Statist. Soc. Ser. B 36(2) 111ญ147.
+Wahba, G. 1983. Bayesian "confidence intervals" for the crossvalidated smoothing spline. J. Roy. Statist. Soc. Ser. B 45(1) 133ญ150.
+Wang, J. D. 1996. Asymptotics of least-squares estimators for constrained nonlinear regression. Ann. Statist. 24(3) 1316ญ1326.
+
+
