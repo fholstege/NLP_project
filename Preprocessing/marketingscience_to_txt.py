@@ -1,29 +1,37 @@
 import pandas as pd
-import subprocess
-import os
-from tqdm import tqdm
 
 # load csv after manually downloading of papers ('filled')
 df = pd.read_csv('../data/raw/marketingscience_urls_filled.csv', sep=';')
 
-# get list of all downloaded pdfs
-pdf_list = os.listdir('../data/raw/marketing_science_pdf')
-
-# convert all pdfs to txt
-for pdf_file in tqdm(pdf_list):
-    
-    # get number of file
-    no_article = os.path.splitext(pdf_file)[0]
-    
-    # convert to txt and save in new folder
-    cmd = f'pdftotext -f 2 ../data/raw/marketing_science_pdf/{no_article}.pdf ../data/raw/marketing_science_txt/{no_article}.txt'
-    subprocess.call(cmd, shell=True)
+# load xml data for each article
+for i, row in df.iterrows():
+    file_name = '../data/raw/marketing_science_xml/' + str(i+1) + '.tei.xml'
+    with open(file_name, 'r', encoding="utf8") as f:
+            df.loc[i, 'body'] = f.read()
 
 # keep only articles (Type == NaN)
-df = df.loc[df['Type'].isna(), 'DOI']
+df['Type'].value_counts()
+df = df.loc[df['Type'].isna(), ['DOI', 'body']]
+df.reset_index(drop = True, inplace = True)
 
-# save scraped DOIs
-df.to_csv('../data/raw/marketingscience_scraped_DOI.csv')
+# convert to DOI without URL prefix
+base_url_informs = 'https://pubsonline-informs-org.eur.idm.oclc.org/doi/pdf/'
+df['DOI'] = df['DOI'].str.replace(base_url_informs, '')
+
+# merge with scopus data
+scopus_df = pd.read_csv('../data/raw/marketingscience_WoS.csv')
+scopus_df = pd.merge(scopus_df, df, how = 'left', on = 'DOI', sort = False)
+
+# how many missing bodies?
+print(f"There are {sum(scopus_df['body'].isna())} missing bodies")
+
+# save scraped data
+scopus_df.to_parquet("../data/scraped/marketingscience_data_lim.gzip", compression='gzip')
+
+
+
+
+
 
 
 
