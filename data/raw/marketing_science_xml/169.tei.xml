@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Bayesian Nonparametric Customer Base Analysis with Model-Based Visualizations</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2018-01-17">January 17, 2018</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Ryan</forename><surname>Dew</surname></persName>
+							<email>ryan.dew@columbia.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Columbia Business School</orgName>
+								<orgName type="institution">Columbia University</orgName>
+								<address>
+									<postCode>10027</postCode>
+									<settlement>New York</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Asim</forename><surname>Ansari</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Columbia Business School</orgName>
+								<orgName type="institution">Columbia University</orgName>
+								<address>
+									<postCode>10027</postCode>
+									<settlement>New York</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Bayesian Nonparametric Customer Base Analysis with Model-Based Visualizations</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2018-01-17">January 17, 2018</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2017.1050</idno>
+					<note type="submission">Received: November 8, 2015 Revised: July 19, 2016; November 21, 2016 Accepted: December 12, 2016</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>customer base analysis</term>
+					<term>dynamics</term>
+					<term>analytics dashboards</term>
+					<term>Gaussian process priors</term>
+					<term>Bayesian nonparametrics</term>
+					<term>visualization</term>
+					<term>mobile commerce</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Marketing managers are responsible for understanding and predicting customer purchasing activity. This task is complicated by a lack of knowledge of all of the calendar time events that influence purchase timing. Yet, isolating calendar time variability from the natural ebb and flow of purchasing is important for accurately assessing the influence of calendar time shocks to the spending process, and for uncovering the customer-level purchasing patterns that robustly predict future spending. A comprehensive understanding of purchasing dynamics therefore requires a model that flexibly integrates known and unknown calendar time determinants of purchasing with individual-level predictors such as interpurchase time, customer lifetime, and number of past purchases. In this paper, we develop a Bayesian nonparametric framework based on Gaussian process priors, which integrates these two sets of predictors by modeling both through latent functions that jointly determine purchase propensity. The estimates of these latent functions yield a visual representation of purchasing dynamics, which we call the model-based dashboard, that provides a nuanced decomposition of spending patterns. We show the utility of this framework through an application to purchasing in free-to-play mobile video games. Moreover, we show that in forecasting future spending, our model outperforms existing benchmarks.</p><p>History: Peter Rossi served as the senior editor and Michel Wedel served as associate editor for this article.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Marketers in multi-product companies face the daunting task of understanding the ebb and flow of aggregate sales within and across many distinct customer bases. Such spending dynamics stem from the natural stochastic process of purchasing characterized by customers' interpurchase times, lifetimes with the firm, and number of past purchases, and from the influence of managerial actions and shocks operating in calendar time. These other shocks are often outside the control of the company, and include events such as holidays, barriers to purchasing such as website outages, and competitor actions. While individual-level factors such as the recency of purchasing are often powerful predictors of future spending activity, managers think and act in calendar time. Hence, to successfully execute a customer-centric marketing strategy, managers need to understand how calendar time events interact with individual-level effects in generating aggregate sales.</p><p>An accurate accounting of the underlying drivers of spending is not possible unless individual-level and calendar time effects are simultaneously modeled. For example, in spending models that omit calendar time and rely solely on individual-level effects, momentary disruptions in spending that occur in calendar time may be erroneously conflated with predictable, individuallevel purchase propensities. Similarly, a small bump in spending on any given calendar day could represent random noise if many customers are still active on that day, or a significant calendar time event if only a few customers are still active. Significantly, activity level is unobserved, but can be captured by individual-level variables such as interpurchase time. Flexibly including both types of effects in an individual-level purchase propensity model is thus crucial for dynamic customer base analysis, and the development of such a framework is our primary objective.</p><p>In this paper, we describe a flexible and robust Bayesian nonparametric framework for customer base analysis that accomplishes that objective by probabilistically modeling purchase propensities in terms of underlying dynamic components. We demonstrate the utility of our new framework on spending data from mobile video games. Our model uses Gaussian process (GP) priors over latent functions to integrate events that occur at multiple time scales and across Dew and Ansari: Bayesian Nonparametric Customer Base Analysis <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 2, pp. 216-235, © 2018</ref> 217 different levels of aggregation, including calendar time and individual-level time scales such as interpurchase time, time since first purchase (customer lifetime), and number of past purchases. Its nonparametric specification allows for the flexible modeling of different patterns of effects, such that the model can be seamlessly applied across different customer bases and dynamic contexts. The resulting latent function estimates facilitate automatic model-based visualization and prediction of spending dynamics.</p><p>Customer base analysis is central to modern marketing analytics. Contributions in this area have focused on the stochastic modeling of individuals in terms of interpurchase time and lifetime, in contractual and noncontractual settings <ref type="bibr" target="#b4">(Fader et al. 2005</ref><ref type="bibr" target="#b5">(Fader et al. , 2010</ref><ref type="bibr" target="#b21">Schmittlein et al. 1987;</ref><ref type="bibr" target="#b22">Schweidel and Knox 2013)</ref>. These papers show that customer-level effects can explain much of the variability of spending over time. However, they typically omit, or assume a priori known, calendar time effects. Events in calendar time, including marketing efforts and exogenous events such as competitor actions, holidays, and day-of-the-week effects, can substantially impact spending in many industries. For digital products, such as those in our application, relevant calendar events include product changes simultaneously launched to all customers, and exogenous shocks such as website or e-commerce platform outages and crashes. Moreover, many of these events pose a common problem to marketing analysts: Although calendar time events undoubtedly influence spending rates, analysts may be unaware of the form of that influence or of the very existence of certain events. This problem is exacerbated in larger companies where the teams responsible for implementing marketing campaigns or managing products may be distinct from the analytics team, and where information may not flow easily across different organizational silos.</p><p>To cope with such information asymmetries and with unpredictable spending dynamics, sophisticated managers often rely on aggregate data methods, including exploratory data analyses, statistical process control, time series models <ref type="bibr" target="#b9">(Hanssens et al. 2001)</ref>, and predictive data mining methods <ref type="bibr" target="#b16">(Neslin et al. 2006</ref>). These tools can forecast sales, model the impact of calendar time events, and provide metrics and visual depictions of dynamic patterns that are easy to grasp. Unfortunately, these methods typically ignore individual-level predictors of spending, such as those captured by customer base analysis models, which precludes their use in characterizing customer-level spending behaviors and in performing tasks relevant to customer relationship management (CRM). Furthermore, not including these individual-level effects means that these models cannot account for the latent activity level of customers, which may, in turn, lead to an inaccurate understanding of the true nature of calendar time events.</p><p>Building on the customer base analysis and aggregate data approaches, we use Bayesian nonparametric GP priors to fuse together latent functions that operate over calendar time and over more traditional individual-level inputs, such as interpurchase time, customer lifetime, and purchase number. In this way, we integrate calendar time insights into the customer base analysis framework. We use these latent functions in a discrete hazard specification to dynamically model customer purchase propensities, while controlling for unobserved heterogeneity. We term the resulting model the Gaussian Process Propensity Model (GPPM). While Bayesian nonparametrics have been successfully applied to marketing problems (e.g., <ref type="bibr" target="#b0">Ansari and Mela 2003</ref><ref type="bibr" target="#b25">, Wedel and Zhang 2004</ref><ref type="bibr" target="#b13">, Kim et al. 2007</ref><ref type="bibr" target="#b20">, Rossi 2014</ref><ref type="bibr" target="#b14">, Li and Ansari 2014</ref>, to our knowledge, our paper is the first in marketing to take advantage of the powerful GP methodology. Note that, although our paper applies GPs in the context of customer purchasing, GPs provide a general mechanism for estimating latent functions, and can be used in many other substantive contexts. We therefore also provide an accessible introduction to GPs in general, to encourage their wider adoption in marketing.</p><p>In our application, the GP nonparametric framework means that the shapes of the latent propensity functions that govern purchasing are automatically inferred from the data, thus providing the flexibility to robustly adapt to different settings, and to capture time-varying effects, even when all of the information about inputs may not be available. The inferred latent functions allow a visual representation of calendar time and individual-level patterns that characterize spend dynamics, something that is not possible in standard probability models, where the output is often a set of possibly unintuitive parameters. We refer to the collection of these plots as the model-based dashboard, as it gives a visual summary of the spending patterns in a particular customer base, and serves as a tool for analyzing the spending dynamics in and across customer bases. Note that these model-based dashboards are distinct from real-time dashboards that continuously stream various marketing metrics, such as those described in <ref type="bibr" target="#b17">Pauwels et al. (2009)</ref>. In this paper, we begin by describing what GP priors are (Section 2.1), and how they can be used to specify latent dynamics in a model for dynamic customer base analysis (Sections 2.2 and 2.3). We then apply our model to spending data from two mobile video games owned by a large American video game publisher. These games are quite distinct, spanning different content genres and target audiences. We show how the parameter estimates and accompanying model-based dashboards generated from our approach can facilitate <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 2, pp. 216-235, © 2018</ref> managerial understanding of the key dynamics in each customer base in the aggregate and at the individual level (Sections 3.1 and 3.2). We compare the GPPM to benchmark probability models, including different buy-till-you-die (BYTD) variants such as the betageometric/negative binomial distribution (BG/NBD) <ref type="bibr" target="#b4">(Fader et al. 2005</ref>) and the Pareto-NBD <ref type="bibr" target="#b21">(Schmittlein et al. 1987)</ref>, hazard models with and without timevarying covariates (e.g., <ref type="bibr">Gupta 1991, Seetharaman and</ref><ref type="bibr" target="#b23">Chintagunta 2003)</ref>, and variants of the discrete hazard approach, including a sophisticated state-space specification, and show that the GPPM significantly outperforms these existing benchmarks in fit and forecasting tasks (Section 3.3). We conclude by summarizing the benefits of our framework, citing its limitations, and identifying areas of future research.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Modeling Framework</head><p>In our framework for dynamic customer base analysis, we focus on flexibly modeling individual-level purchase propensity. We model this latent propensity in terms of the natural variability in purchase incidence data along four dimensions, i.e., calendar time, interpurchase time (recency), customer lifetime, and number of past purchases. Our focus on modeling purchase incidence is consistent with the majority of the literature on customer base analysis, and also fits nicely with our application area, where we focus on the purchasing of a single product, and where there is minimal variability in spending amount. <ref type="bibr">1</ref> We use a discrete-time hazard framework to specify the purchase propensity, as most customer-level data are available at a discrete level of aggregation. This is also the case in our application, where daily data are available.</p><p>The observations in our data consist of a binary indicator y i j that specifies whether customer i made a purchase at observation j, and a corresponding tuple (t i j , r i j , l i j , q i j ) containing the calendar time, recency, customer lifetime, and number of past purchases, respectively. Recency refers to interpurchase time, or the time since the customer's previous purchase, while customer lifetime refers to the time since the customer's first purchase. Depending on the context, a vector z i of demographics or other time invariant variables, such as the customer acquisition channel or acquisition date, may also be available. The probability of customer i purchasing is modeled as</p><formula xml:id="formula_0">Pr(y i j 1) logit −1 [α(t i j , r i j , l i j , q i j ) + z i γ + δ i ], (1)</formula><p>where, logit −1 (x) 1/(1 + exp(−x)). We see in Equation (1) that the purchasing rate is driven by a timevarying component α( • ) and two time invariant effects, z i γ and δ i , which capture the observed and unobserved sources of heterogeneity in base spending rates, respectively. This setup models spending dynamics via aggregate trajectories, i.e., all customers are assumed to follow the same dynamic pattern, while maintaining individual heterogeneity in the spending process via the random effect δ i and using other observed individual-specific variables, z i , when available. In our application, we will focus exclusively on unobserved heterogeneity. Note that while calendar time is an aggregate time scale, the recency, lifetime, and purchase number dimensions are individual-level time scales. That is, customers may, at any given point in calendar time t, be at different positions in the (r i j , l i j , q i j ) subspace; therefore, the aggregate sales at any given calendar time t are the amalgam of the activities of customers who differ widely in their expected purchase behaviors.</p><p>The heart of our framework involves specification of the purchase propensity, α(t i j , r i j , l i j , q i j ). We treat α( • ) as a latent function and model it nonparametrically using GP priors <ref type="bibr" target="#b18">(Rasmussen and</ref><ref type="bibr">Williams 2006, Roberts et al. 2013)</ref>. The nonparametric approach flexibly models random functions and allows us to automatically accommodate different patterns of spending dynamics that may underlie a given customer base. These dynamics operate along all four of our dimensions. Furthermore, these dynamics may operate at different time scales in a single dimension, including smooth long-run trends and short-term patterns, as well as cyclic variations, which are inferred from the data. To allow such rich structure, we use an additive combination of unidimensional GPs to specify and estimate the multivariate function α(t i j , r i j , l i j , q i j ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Gaussian Process Priors</head><p>We begin by describing GPs and highlight how they can nonparametrically capture rich, dynamic patterns in a Bayesian probability model. A GP is a stochastic process { f (τ): τ ∈ } indexed by input elements τ such that, for any finite set of input values, τ {τ 1 , τ 2 , . . . , τ M }, the corresponding set of function outputs, f (τ) { f (τ 1 ), f (τ 2 ), . . . , f (τ M )}, follows a multivariate Gaussian distribution. The characteristics of the stochastic process are defined by a mean function and a covariance function, also called a kernel. For a fixed set of inputs, a GP reduces to the familiar multivariate Gaussian distribution, with a mean vector determined by the GP's mean function, and a covariance matrix determined by its kernel. However, unlike a standard multivariate normal distribution that is defined over vectors of fixed length, a GP defines a distribution over outputs for any possible set of inputs. From a Bayesian perspective, this provides a natural mechanism for probabilistically specifying uncertainty over functions. Because the estimated function values are the parameters of a GP, the number of parameters grows with the number of unique inputs, making the model nonparametric.</p><p>While GPs are often defined over multidimensional inputs, for simplicity of exposition, we begin by assuming a unidimensional input, τ ∈ (e.g., time). To fix notation, suppose f is a function that depends on that input. Let τ be a vector of M input points, and let f (τ) be the corresponding vector of output function values. As described above, a GP prior over f is completely specified by a mean function, m(τ) E[ f (τ)], and a kernel, k(τ, τ ) Cov[ f (τ), f (τ )], that defines a positive semidefinite covariance matrix</p><formula xml:id="formula_1">K(τ, τ) k(τ 1 , τ 1 ) k(τ 1 , τ 2 ) . . . k(τ 1 , τ M ) k(τ 2 , τ 1 ) k(τ 2 , τ 2 ) . . . k(τ 2 , τ M ) . . . . . . . . . . . . k(τ M , τ 1 ) k(τ M , τ 2 ) . . . k(τ M , τ M ) ,<label>(2)</label></formula><p>over all of the outputs. We discuss specific forms of the mean function and kernel in Sections 2.1.1 and 2.1.2. Generally, these functions are governed by a small set of hyperparameters that embody certain traits of the GP. For instance, the squared exponential (SE) kernel, which we discuss in detail in Section 2.1.2, is given by k SE (τ i , τ j ) η 2 exp{−(τ i − τ j ) 2 /(2ρ 2 )}. This form encodes the idea that nearby inputs should have related outputs through two hyperparameters, i.e., an amplitude, η, and a smoothness, ρ. Intuitively, these two hyperparameters determine the traits of the function space being modeled by a GP with this kernel. Given a fixed vector of inputs τ, letting f (τ) ∼ (m(τ), k(τ, τ )) is equivalent to modeling the vector of function outputs via a marginal multivariate Gaussian f (τ) ∼ (m(τ), K(τ, τ)). The mean m(τ) and covariance matrix K(τ, τ) of the above multivariate normal marginal distribution are parsimoniously determined through the small set of hyperparameters underlying the mean function and kernel of the GP. The fact that the marginal of a GP is a multivariate normal distribution makes it easy to comprehend how function interpolation and extrapolation work in this framework. Conditioned on an estimate for the function values at the observed inputs, and on the mean function and kernel hyperparameters, the output values for the latent function f for some new input points τ * can be predicted using the conditional distribution of a multivariate normal. Specifically, the joint distribution of the old and new function values is given by</p><formula xml:id="formula_2">f (τ) f (τ * ) ∼ m(τ) m(τ * ) , K(τ, τ) K(τ, τ * ) K(τ * , τ) K(τ * , τ * ) .<label>(3)</label></formula><p>Hence, the conditional distribution of the new outputs can be written as In this paper, we use a constant mean function or a parametric monotonic power mean function, given by m(τ) λ 1 (τ − 1) λ 2 , λ 2 &gt; 0. This specification captures expected monotonic behavior, while allowing for a decreasing marginal effect over the input. <ref type="bibr">3</ref> We use τ − 1 and restrict λ 2 &gt; 0, to be consistent with our identification restrictions that we describe in Section 2.2.4. We emphasize that the mean function sets an expectation over function values, but does not significantly restrict them. The GP structure allows functions to nonparametrically deviate from the mean function, resulting in function estimates that differ from the mean's parametric form. This is obvious in all panels of Figure <ref type="figure" target="#fig_0">1</ref>, where we plot random draws from GPs with different mean functions and kernels. Across the panels of Figure <ref type="figure" target="#fig_0">1</ref>, we see shapes that are sometimes dramatically different from the respective constant and power mean functions that generated them. The main role of the mean function is in extrapolating far from the range of the observed inputs, where it determines expected function behavior in the absence of data. While we use only these two mean functions as a simple way of capturing our prior expectations, any parametric form could be used as a mean function. Given the capacity of the GP to capture deviations from parametric forms, it is generally considered best practice to use simple mean functions, and let the GP capture any complexities.</p><formula xml:id="formula_3">f (τ * ) ∼ (m(τ * ) + K(τ * , τ)K(τ, τ) −1 [ f (τ) − m(τ)], K(τ * , τ * ) − K(τ * , τ)K(τ, τ) −1 K(τ, τ * )). (<label>4</label></formula><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">Science, , vol. 37, no. 2, pp. 216-235, © 2018</ref>  </p><note type="other">INFORMS</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Input Output</head><p>Note. Top-left, Zero mean function and SE kernel with ρ 2 50 and η 2 ∈ {0.1, 1, 5, 20}; Top-right, zero mean function and SE kernel with ρ 2 ∈ {1, 10, 100, 1,000}; Bottom-left, power mean function m(τ) ±2(τ − 1) 0.3 and SE kernel with ρ 2 100 and η 2 ∈ {0.1, 5}; Bottom-right, periodic kernels with η 2 10, ρ 2 ∈ {2, 100}, and ω ∈ {7, 30}.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.2.">Kernels.</head><p>The kernel defines much of the fundamental structure of a GP, and combined with the mean function, determines the latent function space of a GP prior. As such, kernels are the primary source of model specification when working with GP priors. Any function over two inputs that results in a positive semidefinite gram matrix can be used as a kernel, and many different kernel forms have been explored in the GP literature <ref type="bibr">(Rasmussen and Williams 2006, Chapter 4)</ref>. Kernels encode the structure of functions via a small number of hyperparameters, leading to a highly flexible yet parsimonious model specification. In this paper, we use two simple kernels that are suitable building blocks for describing functions in our context. The first kernel is the SE defined as</p><formula xml:id="formula_4">k SE (τ j , τ k ; η, ρ) η 2 exp − (τ j − τ k ) 2 2ρ 2 ,<label>(5)</label></formula><p>where the hyperparameter η &gt; 0 is the amplitude, and ρ &gt; 0 is the characteristic length-scale or "smoothness."</p><p>The amplitude can be best explained by considering the case when τ j τ k ≡ τ. In this case, k(τ, τ) η 2 , which is the variance of the normal distribution at the fixed input value τ. More generally, η 2 captures variance around the mean function. If η → 0, the GP will largely mirror its mean function. We illustrate this using the constant and power mean functions in the left column of Figure <ref type="figure" target="#fig_0">1</ref>, where we randomly draw GPs with a fixed ρ and varying η values. From these two panels, we can see that small values of η, as in the light-colored solid (green) and long-dash (yellow) curves, yield functions that stay closer to their mean functions, relative to the dark-colored dot-dash (red)</p><p>and short-dash (blue) curves with higher η values. The characteristic length-scale ρ intuitively indicates how far apart two input points must be for the corresponding outputs to be uncorrelated. Hence, a high value of ρ corresponds to very smooth functions, while a small value of ρ yields jagged, unpredictable functions. This is illustrated in the top-right panel of Figure <ref type="figure" target="#fig_0">1</ref>, where we fix the amplitude η and vary the length-scale ρ. We can see a clear contrast between the highly jagged solid (green) curve with ρ 2 1, and the increasingly smooth dashed curves, with ρ 2 ∈ {10, 100, 1,000}.</p><p>The second kernel we use is the periodic kernel, defined by</p><formula xml:id="formula_5">k Per (τ j , τ k ; ω, η, ρ) η 2 exp − 2 sin 2 (π(τ j − τ k )/ω) ρ 2 .</formula><p>(6) This kernel allows for periodic functions with period ω that are defined by an amplitude η and a length-scale ρ. Note that this type of variability could also be captured by the SE kernel; the benefit of using the periodic kernel is that forecasts based on this kernel will always precisely mirror the estimated pattern. Hence, any predictable cyclic variability in the data would be captured in and out-of-sample. In the bottom-right panel of Figure 1, we plot four draws from different periodic kernels. There, we show different cycle lengths (30 days and 7 days), together with differing smoothness and amplitude parameters.</p><p>Other Possible Kernels. In addition to the above described kernels, many other types have been proposed in the GP literature. In this paper, we use the simplest kernels that exemplify a given trait (stationary variability with the SE and cyclicality with the periodic).</p><p>These are by far the most commonly used kernels, the SE especially serving as the workhorse kernel for the bulk of the GP literature. Additional kernels include the rational quadratic, which can be derived as an infinite mixture of SE kernels, and the large class of Matern kernels, which can capture different levels of differentiability in function draws.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.3.">Additivity.</head><p>Just as the sum of Gaussian variates is distributed Gaussian, the sum of GPs is also a GP, with a mean function equal to the sum of the mean functions of the component GPs, and its kernel is equal to the sum of the constituent kernels. This is called the additivity property of GPs, which allows us to define a rich structure even along a single dimensional input. Specifically, the additivity property allows us to model the latent function f as a sum of subfunctions on the same input space,</p><formula xml:id="formula_6">f (τ) f 1 (τ)+ f 2 (τ)+ • • • + f J (τ),</formula><p>where each of these subfunctions can have its own mean function, m j (τ), and kernel, k j (τ, τ ). The mean function and kernel of the function f are then given by m(τ) J j 1 m j (τ) and k(τ, τ ) J j 1 k j (τ, τ ), respectively. This allows us to flexibly represent complex patterns of dynamics even when using simple kernels such as the SE. We can, for example, allow the subfunctions to have different SE kernels that capture variability along different length-scales, or add a periodic kernel to isolate predictable cyclic variability of a given cycle length. It is through this additive mechanism that we represent long-run and short-run variability in a given dimension, for instance, or isolate predictable periodic effects from unpredictable noise, as discussed in Section 2.2. <ref type="bibr">4</ref> Up to now, we have focused on illustrating GPs in unidimensional contexts. We now show how additivity can be leveraged to construct GPs for multidimensional functions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.4.">Multidimensional GPs.</head><p>In practice, we are often interested in estimating a multidimensional function, such as the α( • ) function in Equation (1). Let h( • ) be a generic multidimensional function from D to . The inputs to such a function are vectors of the form τ m ≡ (τ</p><formula xml:id="formula_7">(1) m , τ (2) m , . . . , τ (D) m ) ∈ D , for m 1, . . . , M,</formula><p>such that the set of all inputs is an M × D matrix. Just as in the unidimensional case, h( • ) can also be modeled via a GP prior. While there are many ways in which multi-input functions can be modeled via GPs, a simple yet powerful approach is to consider h( • ) as a sum of single input functions, h 1 ( • ), h 2 ( • ), . . . , h D ( • ), and to model each of these unidimensional functions as a unidimensional GP with its own mean function and kernel structure <ref type="bibr" target="#b3">(Duvenaud et al. 2013)</ref>. The additivity property implies that additively combining a set of unidimensional GPs over each dimension of the function is equivalent to using a particular sum kernel GP on the whole, multidimensional function. We use such an additive structure to model α(t i j , r i j , l i j , q i j ) in the GPPM.</p><p>Additively separable GPs offer many benefits: First, they allow us to easily understand patterns along a given dimension, and they facilitate visualization, as the subfunctions are unidimensional. Second, the additivity property implies that the combined stochastic process is also a GP. Finally, the separable structure reduces computational complexity. Estimating a GP involves inverting its kernel matrix. This inversion requires O(M 3 ) computational time and O(M 2 ) storage demands for M inputs. In our case, as the inputs (t i j , r i j , l i j , q i j ) can only exist on a grid of fixed values, we will have L &lt; M inputs, where L corresponds to all unique observed (t i j , r i j , l i j , q i j ) combinations. Despite the reduction, this is a very large number of inputs, and would result in considerable computational complexity without the separable structure. The additive specification reduces this computational burden to that of inverting multiple (in our case, six) T × T matrices, where T M is the number of time periods observed in the data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.5.">GPs vs. Other Function Estimation Methods.</head><p>As GP priors are new to marketing, it is worthwhile to briefly summarize the rationale for using them, instead of other flexible methods for modeling latent functions such as simple fixed effects, splines or state space models. Foremost, GPs facilitate a structured decomposition of a single process into several subprocesses via the additivity property. This additive formulation facilitates a rich representation of a dynamic process via a series of kernels that capture patterns of different forms (e.g., periodic versus nonperiodic) and operate at different time scales. Yet, as the sum of GPs is a GP, the specification remains identified, with a particular mean and covariance kernel. Achieving a similar representation with other methods is infeasible or more difficult. <ref type="bibr">5</ref> Moreover, GPs are relatively parsimonious, and when estimated in a Bayesian framework, tend to avoid overfitting. Bayesian estimation of GPs involves jointly estimating the function values and hyperparameters, thus determining the traits of the function and the function values themselves. As the flexibility of the latent functions is controlled via a small number of hyperparameters, we retain parsimony. Moreover, the structure of the marginal likelihood of GPs, obtained by integrating out the function values, clearly shows how the model makes an implicit fit versus complexity trade-off whereby function flexibility, as captured by the hyperparameters, is balanced by a penalty that results in the regularization of the fit (for details, see Rasmussen and Williams 2006, Section 5.4.1).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Full Model Specification</head><p>The flexibility afforded by GP priors makes them especially appropriate for modeling our latent, time- <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 2, pp. 216-235, © 2018</ref> varying function, α(t i j , r i j , l i j , q i j ). Recall that the basic form of the GPPM is</p><formula xml:id="formula_8">Pr(y i j 1) logit −1 [α(t i j , r i j , l i j , q i j ) + z i γ + δ i ]. (7)</formula><p>For ease of exposition, we subsequently omit the i j subscripts. For simplicity and to reduce computational complexity, we assume an additive structure</p><formula xml:id="formula_9">α(t, r, l, q) α T (t) + α R (r) + α L (l) + α Q (q),<label>(8)</label></formula><p>and model each of these functions using separate GP priors. This structure and the nonlinear nature of the model implies an interaction between the effects: For example, if the recency effect is very negative, calendar time events can do little to alter the spend probability. While additivity is a simplifying assumption, in our application, this compensatory structure seems to explain the data well.</p><p>To specify each of these additive components, we return to the mean functions and kernels outlined in Sections 2.1.1 and 2.1.2, and to the additivity property of GPs from Section 2.1.3. Recall that the mean function encodes the expected functional behavior: With the constant mean function, we impose no expectations; with the power mean function, we encode expected monotonicity. The kernel choice endows the GP with additional properties: A single SE kernel allows flexible variation with one characteristic length-scale, while the periodic kernel allows the GP to exhibit predictable cyclic behavior of a given periodicity. Additivity allows us to combine these kernel properties, to achieve variation along more than one length-scale or to isolate predictable cyclic behavior in a given dimension. We can use these general traits of mean function and kernel combinations to specify our model based on the expected nature of the variation along a given dimension. Below, we explain the specification used in our application. The GPPM framework is highly flexible: Throughout the following sections, we also explain how this specification can be modified to handle more general settings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.1.">Calendar Time.</head><p>In calendar time, we expect two effects to operate, i.e., long-run trends and short-run disturbances. These short run events could include promotions, holidays or other shocks to the purchasing process. Furthermore, we expect cyclicality such that purchasing could be higher on weekends than on weekdays, or in particular months or seasons. As we describe in Section 3, in our application, given the span of our data, we expect only one periodic day of the week (DoW) effect. Together, this description of spending dynamics implies a decomposition of α T into three subcomponents</p><formula xml:id="formula_10">α T (t) α Long T (t) + α Short T (t) + α DoW T (t), (<label>9</label></formula><formula xml:id="formula_11">)</formula><p>where we model each component such that,</p><formula xml:id="formula_12">α Long T (t) ∼ (µ, k SE (t, t ; η TL , ρ TL )), α Short T (t) ∼ (0, k SE (t, t ; η TS , ρ TS )), α DoW T (t) ∼</formula><p>(0, k Per (t, t ; ω 7, η TW , ρ TW )).</p><p>Without loss of generality, we impose ρ TL &gt; ρ TS , to ensure that the long-run component captures a smoother variation than the short-run component. We use constant mean functions here because, a priori, we do not wish to impose any assumptions about calendar time behavior. The constant mean µ in the longrun component captures the base spending rate in the model. Far from the range of the data, this specification implies that the posterior mean of these effects will revert to this base spending rate, reflecting our lack of a priori knowledge about these effects. This specification is very general, and has shown good performance in our application, where we illustrate the kinds of trends and disturbances that can be captured across these two components. <ref type="bibr">6</ref> Furthermore, the modularity of the additive GP specification allows easy modifications to accommodate different settings. Longer spans of data may contain variability in spending along different length-scales, which may require additional SE components. There may also be several periodicities requiring additional periodic components. These can be easily included additively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.2.">Individual-Level Effects.</head><p>The remaining effects, i.e., recency, lifetime, and purchase number, operate at the customer level. In most applications, we do not expect short-run shocks along these inputs. We do, however, expect monotonicity. For instance, intuitively, we expect spending probability to be generally decreasing in interpurchase time. Similarly, we expect spending probability to be generally increasing in purchase number, 7 and to be generally decreasing in customer lifetime. Furthermore, while we expect monotonicity, we also expect a decreasing marginal effect. For example, we expect a priori that the difference between having spent 5 versus 10 days ago is quite different than the difference between having spent 95 versus 100 days ago. Together, these expected traits justify using our power mean function</p><formula xml:id="formula_13">α R (r) ∼ (λ R1 (r − 1) λ R2 , k SE (r, r ; η R , ρ R )), α L (l) ∼ (λ L1 (r − 1) λ L2 , k SE (l, l ; η L , ρ L )), α Q (q) ∼ (λ Q1 (r − 1) λ Q2 , k SE (r, r ; η Q , ρ Q )).</formula><p>This specification allows for long-run monotonic behavior, even out-of-sample, as captured by the mean function, and for nonparametric deviations from this expected functional form, as captured by the SE kernel. We believe that this specification is very general and widely applicable. In some cases, however, more nuance may be required in specifying these effects to accommodate company actions that occur on these time scales. If, for instance, the company offers promotions based on loyalty, these effects will operate along the lifetime dimension. In that case, the lifetime component can be modeled similar to the calendar time component, with an additive SE component to capture these short-run deviations from the long-run, decreasing trend embodied in the above specification. See Online Appendix B for an example of this modification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.3.">Heterogeneity, Random Effects, and Priors.</head><p>We accommodate unobserved heterogeneity by assuming that the random effect δ i comes from a normal population distribution, i.e., δ i ∼ (0, σ 2 ). In our application, we found no significant time-invariant effects z i ; hence, we omit z i γ from our model going forward. We estimate the model in a fully Bayesian fashion, and therefore specify priors over all unknowns, including the GP hyperparameters. We use the fact that meaningful variation in the inverse logit function occurs for inputs between −6 and 6; hence, meaningful differences in the inputs to the GPPM will also occur between −6 and 6 to select proper weakly informative Normal and Half-Normal prior distributions that give weight to variations in this range. Specifically, we let the population variance σ 2 ∼ Half-Normal(0, 2.5) and the base spending rate µ ∼ (0, 5). For the SE hyperparameters, we specify η 2 ∼ Half-Normal(0, 5) and ρ 2 ∼ Half-Normal(T/2, T). For the mean function, we let λ 1 ∼ (0, 5), and let λ 2 ∼ Half-Normal(0, 5). Significantly, the fully Bayesian approach, whereby the GP function values and their associated hyperparameters are estimated from the data, allows us to automatically infer the nature of the latent functions that drive spending propensity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.4.">Identification.</head><p>We need to impose identification restrictions because of the additive structure of our model. Sums of two latent functions, such as</p><formula xml:id="formula_14">α 1 (t) + α 2 (t), are indistinguishable from α * 1 (t) + α * 2 (t)</formula><p>, where α * 1 (t) α 1 (t) + c, and α * 2 (t) α 2 (t) − c for some c ∈ , as both sums imply the same purchase probabilities. To address this indeterminacy, we set the initial function value (corresponding to input τ 1) to zero for all of the latent functions, except for α Long T (t). In this sense, α Long T (t), with its constant mean function µ, captures the base spending rate for new customers, and the other components capture deviations from that, as time progresses. Whenever we implement a sum of SE kernels, as in the calendar time component, we also constrain the length-scale parameters to be ordered to prevent label switching. All of these constraints are easily incorporated in our estimation algorithm, described below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Estimation</head><p>We use a fully Bayesian approach for inference. For concision, let α i j ≡ α(t i j , r i j , l i j , q i j ), which in our specification, is equivalent to α i j α</p><formula xml:id="formula_15">Long T (t i j ) + α Short T (t i j ) + α DoW T (t i j ) + α R (r i j ) + α L (l i j ) + α Q (q i j ).</formula><p>To further simplify notation, we let the independent components of the sum be indexed by k, with generic inputs τ k , such that this GP sum can be written as α i j K k 1 α k (τ k i j ). Each of these components is governed by a set of hyperparameters, as outlined in Section 2.2, denoted here as φ k , with the collection of all hyperparameters denoted as φ. Finally, for each component, we let the vector of function values over all possible inputs along that dimension be denoted as α k . With this simplified notation, the joint density of the data and the model unknowns is</p><formula xml:id="formula_16">p(y, {α k }, δ, φ, σ 2 ) I i 1 M i j 1 p(y i j | α i j , δ i )p(δ i | σ 2 ) • K k 1 p(α k | φ k ) p(σ 2 )p(φ). (10)</formula><p>As the full posterior distribution p({α k }, δ, φ, σ 2 | y) is not available analytically, we use Markov Chain Monte Carlo (MCMC) methods to draw samples of the unknown function values, random effects, population parameters, and GP hyperparameters from the posterior.</p><p>As the function values and the hyperparameters do not have closed-form full conditionals, our setup is nonconjugate, and Gibbs sampling is not an option. Moreover, as the function values and the hyperparameters typically exhibit strong posterior dependence, ordinary Metropolis-Hastings procedures that explore the posterior via a random walk are not efficient. We therefore use the Hamiltonian Monte Carlo (HMC) algorithm that leverages the gradient of the posterior to direct the exploration of the Markov chain to avoid random-walk behavior. HMC methods are ideal for nonconjugate GP settings such as ours, as they can efficiently sample the latent function values as well as the hyperparameters <ref type="bibr" target="#b15">(Neal 1998)</ref>. In particular, we use the No U-Turn Sampling (NUTS) variant of HMC as implemented in the Stan probabilistic programming language <ref type="bibr">Gelman 2014, Carpenter et al. 2017)</ref>. See Online Appendix A for an overview of HMC.</p><p>Stan has recently gained traction as an efficient and easy-to-use probabilistic programming tool for Bayesian modeling. We use Stan as it is an efficient implementation of adaptive HMC. Stan programs are simple to write and modify, and therefore facilitate easy experimentation, without the need for extensive reprogramming. This is important for the wider adoption of this framework in practice. <ref type="bibr">8</ref> Finally, given the efficiency of HMC and Stan, convergence, as measured by theR statistic (Gelman and Rubin 1992), is achieved</p><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 2, pp. 216-235, © 2018</ref> in as few as 400 iterations, although in this paper all estimation is done with 4,000 iterations; the first 2,000 are used for burn-in.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Application</head><p>We apply our framework to understand the spending dynamics in two free-to-play mobile games from one of the world's largest video game companies. The data take the form of simple spend incidence logs, with user IDs and time stamps. <ref type="bibr">9</ref> In free-to-play (or "freemium") settings, users can install and play video games on their mobile devices for free, and are offered opportunities to purchase within the game. These spending opportunities typically involve purchasing in-game currency, such as coins, that may subsequently be used to progress more quickly through a game, obtain rare or limited edition items to use with their in-game characters or to otherwise gain a competitive edge over nonpaying players. Clearly, the nature of these purchases will depend on the game, which is why it is important for a model of spending behavior to be fully flexible in its specification of the regular, underlying drivers of purchasing. We cannot name the games here because of nondisclosure agreements. Instead, we use the general descriptors Life Simulator (LS) and City Builder (CB) to describe the games.</p><p>The games and ranges of data used were selected by our data provider to understand spending dynamics over specific periods of time. We use a random sample of 10,000 users for each of the two games. Each sample is drawn from users who installed the game in the first 30 days, and spent at least once during the training window. We used 8,000 users for estimation, and 2,000 for cross-validation. In the LS game, players create an avatar, and then live a digital life as that avatar. Purchases in this context can be rare or limited edition items to decorate or improve their avatar or its surroundings. Oftentimes, limited edition items are themed according to holidays such as Christmas or Halloween. Our data come from a 100 day span of time covering the 2014 Christmas and New Year season. In the CB game, players can create (or destroy) a city as they see fit. Customers make purchases to speed up the building process or to build unique or limited edition additions to their cities. Our data come from an 80-day period of time at the start of 2015, at the end of the Christmas and New Year holidays. The time series of spending for the two games are shown in Figure <ref type="figure" target="#fig_1">2</ref>. We have also marked specific time periods of interest to the company, which we will discuss in more detail in Section 3.2.1. From these figures, it is difficult to parse out what exactly is driving the aggregate pattern of purchases. The figure includes customers who installed the game any time in the first 30-day window. Typically, customers are most active when they start playing a game, so we expect to see more spending in the first 30-40 days simply because there are likely more people playing in that period, and new players are entering the pool of possible spenders. This rise and subsequent fall is, in essence, the joint impact of the recency, lifetime, and purchase number effects. We see, however, that even the general risefall pattern varies across the two games. This could be due to different patterns in these underlying drivers of spending, or it could be because of the influence of calendar time events. In essence, it is unclear what else underlies the aggregate spends.</p><p>We also see many peaks and valleys in spending over the entire time horizon, the significance of which cannot be diagnosed without deeper analysis. For example, it is difficult to discern which "bumps" in the plots are meaningful, and which represent random noise. If 5,000 players are active on any given day, then a jump of 50 spends may represent a random fluctuation. By contrast, if only 1,000 players are active, the same jump of 50 spends may be very meaningful. In other words, the significance of a particular increase in spending depends on how many customers are still actively spending at that time, which in turn depends on the individual-level recency, lifetime, and purchase number effects. An accurate accounting of the impact of calendar-time events cannot be made without considering these individual-level predictors of spending. Thus, it is important to develop a model-based understanding of the underlying spend dynamics, which is what we do via the GPPM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Model Output and Fit</head><p>The GPPM offers a visual and highly general system for customer base analysis driven by nonparametric latent spending propensity functions. These latent curves are the primary parameters of the model, and their posterior estimates are shown in Figure <ref type="figure" target="#fig_2">3</ref> for LS, and Figure <ref type="figure" target="#fig_3">4</ref> for CB. We call these figures the GPPM dashboards, as they visually represent latent spending dynamics. As we will see in Section 3.2, these dashboards can be used to accomplish many of the goals we have discussed throughout the previous sections, including forecasting spending, understanding purchasing at the individuallevel, assessing the influence of calendar time events, and comparing spending patterns across products.</p><p>These dashboards are underpinned by a set of hyperparameters, and estimated jointly with a random effects distribution capturing unobserved heterogeneity. Posterior medians of these parameters are shown in Table <ref type="table" target="#tab_1">1</ref>. While the hyperparameters summarize the traits of the estimated dashboard curves, as explained in Section 2.1, we can gain a greater understanding of the dynamics from an analysis of the estimated dashboard curves themselves, as we do in subsequent sections. The other parameters in Table <ref type="table" target="#tab_1">1</ref> are the base spending rate, µ, and the population variance of the random effects distribution, σ 2 , which reflects the level of heterogeneity in base spending rates estimated in each customer base.</p><p>3.1.1. Model Fit. First, to validate our model, we look at its fit to the observed daily spending data in the calibration sample of 8,000 customers and in the holdout sample of 2,000 customers. Because a closed-form expression is not available for the expected number of aggregate counts in the GPPM, we simulate spending from the posterior predictive distribution using the post-convergence HMC draws for each parameter, including the latent curves and random effects. The top row of Figure <ref type="figure" target="#fig_4">5</ref> shows the actual spending and the median simulated purchase counts (dashed line) for the two games, along with 95% posterior predictive intervals.</p><p>We see that the fit is exceptional, and almost perfectly tracks the actual purchases in both cases. This is not surprising, as we model short-run deviations in the probability of spending on a daily basis and therefore essentially capture the residuals from the smoother model components. That is, the short-run calendar time component captures any probability that is "left over" from the other components of the model, enabling us to fit in-sample data exceptionally well.</p><p>To test that the model does not overfit the in-sample day-to-day variability, we explore the simulated fit in the validation sample of 2,000 held-out customers. The bottom row of Figure <ref type="figure" target="#fig_4">5</ref> shows that the fit to this sample is still excellent, although not as perfect as in the top row. While the probabilistic residuals from the calibration data are not relevant for the new sample, much of the signal present in the calendar time trends and the individual-level effects continue to matter, thus contributing to the good fit. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.2.">Fit Decomposition.</head><p>To better understand how the latent curves in the dashboard contribute to the fits seen in Figure <ref type="figure" target="#fig_4">5</ref>, we now break down that fit along our latent dimensions, focusing on the LS game. Our main focus is assessing how much of the day-to-day spending is explained by the calendar time components of the model versus the typically smoother, individuallevel recency, lifetime, and purchase number components. To do that, we examine how the fit changes when different components of the model are muted. We mute a component by replacing it with a scalar that is equal to the average of its function values over all its inputs. Note that we do not reestimate a model when we mute a component; instead, muting allows us to see how much of the overall fit is driven by a given component.</p><p>The fit decomposition is shown in Figure <ref type="figure" target="#fig_5">6</ref>. Overlaid on the true spending time series, we have three muted fits: In the first, we mute the short-run calendar time component; in the second, we mute the shortand long-run calendar time components; in the third, we mute all calendar time components. From the continued good fit of the muted models, we can see that the majority of the full model fit is actually driven by the individual-level spending predictors, i.e., recency, lifetime, and purchase number. This finding is largely in keeping with the established literature on customer base analysis, which has robustly shown that models </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Calendar time</head><p>Notes. The data is in black (solid) while the red (dashed) is the median simulated fit. In the top row, we show the fit in the estimation data of 8,000 customers, where the two curves are nearly indistinguishable. In the bottom row, we show the fit in the validation sample of 2,000 held-out customers.</p><p>based on these components can do well at fitting and forecasting spending activity. However, we also find that calendar time plays a non-negligible role: While the short-run component generally captures the residuals, as explained previously, the long-run component plays an important role in capturing changes in base spending rates over time. Furthermore, the cyclic component, which is a highly predictable yet novel element of our model, plays an important role in explaining the day-to-day variability in spending.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Dashboard Insights</head><p>While fit validates the utility of the GPPM, one of the primary motivations of the model is to provide managers with a model-based decision support system that captures effects of interest, and facilitates a visual understanding of the drivers of spending behavior. Thus, the key output of our model is the GPPM dashboard (Figures <ref type="figure" target="#fig_2">3 and 4</ref>), which portrays the posterior estimates of the latent propensity functions. These latent spending propensity curves are readily interpretable, even by managers with minimal statistical training. Here we illustrate the insights that managers can obtain from these model-based visualizations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.1.">Calendar Time Effects.</head><p>Events that happen in calendar time are often of great importance for managers, but their impact is often omitted from customer</p><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">Science, , vol. 37, no. 2, pp. 216-235, © 2018</ref> INFORMS base analysis models. The GPPM includes these effects nonparametrically through the calendar time components of the model, such that the impact of calendar time events is captured flexibly and automatically. Calendar time effects are jointly estimated with the individual-level drivers of spending, recency, lifetime, and purchase number. This means the impact of calendar time on spending propensity is assessed only after controlling for these drivers of re-spend behavior, which account for the natural ebb and flow of spending, including dynamics in the numbers of active customers.</p><p>Significantly, capturing the impact of calendar time events requires no inputs from the marketing analyst, as would be required in a model where time-varying covariates are explicitly specified. This implies that their presence and significance must be evaluated ex post facto. This has many benefits: First, even in the face of information asymmetries or unpredictable shocks, the events will be captured by the GPPM. Second, the shape of the impact of these events is automatically inferred, rather than assumed. Finally, because the impact is captured by changes in the calendar time components of the propensity model, their impact can be visually assessed. We demonstrate the analysis of calendar time events using our two focal games. The top row of plots in each dashboard (Figures <ref type="figure" target="#fig_2">3 and 4</ref>, colored blue) represents the calendar time effects. From left to right, we have the long-run trends, short-run shocks, and periodic day of the week effects. Beneath these curves, we have placed bars indicating time periods of interest to the company. Life Simulator Events. Two events of note occurred in the span of the data. The first marked time period, t ∈ [17, 30], corresponds to a period in which the company made a game update, introduced a new game theme involving a color change, and donated all proceeds from the purchases to a charitable organization. The second marked period, around t ∈ [37, 49], corresponds to another game update that added a Christmas-themed quest to the game, with Christmas itself falling at t 48, right before the end of the holiday quest.</p><p>From the dashboard in Figure <ref type="figure" target="#fig_2">3</ref>, we learn several things: First, there is a prominent spike in short-run spending the day before Christmas. This Christmas Eve effect illustrates that events do not have to be anticipated to be detected in the model; below we illustrate how the GPPM parses out the impact of short-run events, using this effect as the example. In the longrun curve, we see a decrease in spending coinciding with the charity update, an increase in spending coinciding with the holiday event, and then a significant drop-off subsequent to the holiday season. Without a longer range of data, it is hard to assess the meaning of these trends. It does appear that the charity event lowered spending rates. The impact of the holidays is more unclear: It could be that the holiday game update elevated spending, and then as time went on, spending levels returned to normal. Alternatively, spending levels could be elevated simply due to the holiday season, with a post-holiday slump that is unrelated to the game updates. Although we cannot conclusively parse out these stories, we can tell that calendar time dynamics are at play, and appear linked to real world shocks and company actions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>City Builder Events.</head><p>The marked areas of the CB dashboard in Figure <ref type="figure" target="#fig_3">4</ref> correspond to events of interest. The start of the data window, t ∈ [1, 6], coincides with the tail end of the holiday season, from December 30 to January 4. Another event begins at t 63, when the company launched a permanent update to the game to encourage repeat spending. We mark five additional days after that update to signify a time period over which significant postupdate activity may occur. Finally, at t 72, there was a crash in the app store.</p><p>We see, as in the previous game, that the spending level during the holidays, t ∈ [1, 6], was quite high and subsequently fell dramatically. This lends some credence to a general story of elevated holiday season spending, as there was no game update in CB during this time. Spending over the rest of the time period was relatively stable. The update that was intended to promote repeat spending had an interesting effect: There was an initial drop in spending, most likely caused by reduced playtime on that day because of the need for players to update their game or because of an error in the initial launch of the update. After the update, an uptick in long-run spending is observable, but this was relatively short lived. Finally, we find no effect for the supposed app store crash, which in theory should have prevented players from purchasing for the duration of the crash. It is plausible that the crash was for a short duration or occurred at a time when players were not playing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Day of the Week Effects.</head><p>Across both games, we note the significance of the periodic day of the week effect. In both cases, spending propensity varies by day of the week by a magnitude of 0.3. For comparison, the longrun calendar time effect of LS has a range of 0.5, while that of CB has a range of 0.6. The magnitude of the periodic effect serves to re-emphasize a point already made in the fit decomposition: A large amount of the calendar time variability in spending can be attributed to simple predictable cyclic effects, something customer base models have previously ignored, but that can be powerful in forecasting future purchase behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.2.">Event Detection.</head><p>Often, calendar time events are unknown a priori, but can significantly affect consumers' spending rates in the short run. The short-run function can automatically detect and isolate these disturbances. That is, if something disrupts spending for a day, such as a crash in the payment processing system, or an in-game event, it will be reflected as a trough or a spike in the short-run function, as evident, for example, in the Christmas Eve effect in LS. In this section, we illustrate how this works in practice.</p><p>The GPPM estimation process decomposes the calendar time effect along subfunctions with differing length-scales. As such, when there is a disturbance, the GPPM must learn the relevant time scale for the deviation (here, short or long term) and then adjust accordingly. We illustrate this dynamically unfolding adjustment process for the LS Christmas Eve effect in Figure <ref type="figure" target="#fig_6">7</ref> by estimating the model using progressively more data from December 23, 2014 to December 25, 2014. The different columns show how the long-run (top row) and the short-run (bottom row) components vary when data from each successive day is integrated into the analysis. The second column shows the impact of adding the data from Christmas Eve. An uptick in spending is apparent, but the GPPM cannot yet detect whether this uptick will last longer or just fade away. The day after (third column), it becomes clear from looking at the long-run and short-run plots that the effect was only transient, which is clearly reflected in the short-run curve.</p><p>This example illustrates that the GPPM can capture effects of interest with no input from the analyst, and that the nature of this effect is visually apparent in the model-based dashboard within days of its occurrence. Note that, significantly, each column of Figure <ref type="figure" target="#fig_6">7</ref> represents a re-estimation of the GPPM, using the past day's data; event detection can only occur at the level of aggregation of the data (in this case, daily), upon reestimation of the model. Nonetheless, this capability can be immensely valuable to managers in multiproduct firms where information asymmetries abound. For example, in digital contexts, product changes can sometimes be rolled out without the knowledge of the marketing team. Similarly, disruptions in the distribution chain can occur with little information filtering back to marketing managers. The GPPM can quickly and automatically capture the impact of such events, isolate them from the more regular, predictable drivers of spending, and bring them to the attention of managers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.3.">Individual-Level Effects.</head><p>While the inclusion of calendar time effects is a key innovation in our model, the primary drivers of respend behavior are the individual-level recency, lifetime, and purchase number effects. We can see this through the fit decomposition, where much of the variability in spending is captured even when the calendar time effects are muted, and also by assessing the range of the effects in the dashboard. As mentioned in Section 2.2, the range of relevant inputs in an inverse logit framework is from −6 to 6. For propensity values α &lt; −6, the respend probability given by logit −1 (α) is approximately 0. Similarly, for propensity values α &gt; 6, the respend probability is approximately 1. This gives an interpretability to the curves in the dashboard, as their sum determines this propensity, and hence their range determines how much a given component of the model can alter expected respend probability. Relative to the calendar time effects, we can see in the dashboard that the ranges of the individual-level effects are significantly larger, implying that they explain much more of the dynamics in spending propensity than the calendar time components.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Recency and Lifetime.</head><p>In both of our applications, the recency and lifetime effects are smooth and decreasing as expected. For managers, this simply means that the longer someone goes without spending, and the longer someone has been a customer in these games, the less likely that person is to spend. The recency effect is consistent with earlier findings and intuitively indicates that if a customer has not spent in a while, she is probably no longer a customer. The lifetime effect is <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 2, pp. 216-235, © 2018</ref> also expected, especially in the present context, as customers are more likely to branch out to other games, with the passage of time. More interesting are the rates at which these decays occur, and how they vary across the games. These processes appear to be fundamentally different in the two games. In LS, the recency effect has a large impact, whereas the lifetime effect assumes a minimal role. By contrast, in CB, both appear equally important. These results may be a result of, for example, the design of the product (game), which encourages a certain pattern of purchasing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Purchase Number.</head><p>The purchase number effect also appears different across the games. In LS, the effect seems relatively insignificant: Although there is a slight rise initially, it quickly evens out, with a large confidence interval. In CB, the effect appears quite significant: It is generally increasing, but appears to flatten out toward the end. The effect in CB is more consistent with our expectations: Significant past purchasing should indicate a loyal customer, and a likely purchaser. A mild or neutral effect, as seen in LS, may indicate decreasing returns to spending in the game, or a limited number of new items that are available for purchase, such that the customer quickly runs out of worthwhile purchase opportunities.</p><p>Behavioral Implications. The shapes of these curves have implications for player behavior and for designing general CRM strategies. In LS, the recency effect is the primary predictor of churn: If a customer has not spent for a while, she is likely to no longer be a customer. On the other hand, the lifetime effect seems to operate only in the first few days of being a customer, and then levels out. This implies that customers are most likely to spend when they are new to the game, within roughly two weeks of their first purchase. By contrast, in CB, the effects are more equal in magnitude, and more gradual. The customers who are least likely to spend again are those that have been customers the longest, and have gone the longest without spending. We illustrate these differences via an individual-level analysis of respend probability. Specifically, we ask: Given an individual's recency and lifetime, what is the probability that she spends again in the next 100 days? To carry out this simulation, we fix the calendar time effect to its average value, and assume that the individual has already spent three times. The results of the simulation are shown in Figure <ref type="figure" target="#fig_7">8</ref>, and re-emphasize the point that recency explains much of the respend probability in LS, while lifetime and recency are both relevant in CB. This analysis also emphasizes the idea that, while the dynamic effects in the GPPM are the same for all customers, different positions in the individuallevel subspace (r i j , l i j , p i j ) are associated with very different expected future purchasing behavior.</p><p>In summary, we have seen that the GPPM weaves together the different model components in a discrete hazard framework, and offers a principled approach for explaining aggregate purchase patterns based on individual-level data. The model-based dashboard generated by the GPPM is not the result of ad hoc data smoothing, but arises from the structural decomposition of spending propensity via the different model components. The GPPM jointly accounts for the predictable individual-level determinants of respend probability, such as recency, lifetime, and purchase number, and calendar time events along multiple length-scales of variation. Therefore, it can flexibly represent the nature of customer respend probability, and accurately portray the existence and importance of calendar time events and trends.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Predictive Ability and Model Comparison</head><p>Apart from interest in understanding past spending dynamics, managers also need to forecast future purchasing activity. Although the primary strength of the GPPM is in uncovering latent dynamics, and intuitively conveying them through the model-based dashboard, the GPPM also does very well in predicting future spending. Just as in-sample fit was driven by the recency, lifetime, and purchase number components, predictive performance depends primarily on the ability to forecast these components for observations in the holdout data. While forms of recency, lifetime, and purchase number effects are incorporated in most customer base models, the isolation of these effects apart from transient calendar time variability, along with nonparametric characterization of these predictable components, and the inclusion of the cyclic component, allow the GPPM to significantly outperform benchmark customer base analysis models in predictive ability.</p><p>In this section, we focus on comparing model fit and future predictive performance, and therefore reestimate the GPPM by truncating our original calibration data of 8,000 customers along the calendar time dimension. In particular, we set aside the last 30 days of calendar time activity to test predictive validity. Forecasting with the GPPM involves forecasting the latent functions that comprise it. In forecasting these latent functions, we use the predictive mechanisms outlined in Section 2.1 (Equation ( <ref type="formula" target="#formula_3">4</ref>)). As the holdout data is constructed by splitting the original data set along the calendar time dimension, a substantial number of observations in the holdout data contain recency, lifetime, and purchase number values that are within the observable range of these variables in the calibration data set. This is especially true for observations belonging to newly acquired customers. However, for the oldest customers, the individual-level curves need to be forecast.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.1.">Benchmark Models.</head><p>We compare the predictive performance of the GPPM with that of a number of benchmark models. Many individual-level models have been developed to perform customer base analysis. At its core, the GPPM is a very general discrete hazard model and, as such, can be compared to other hazard models for interpurchase times <ref type="bibr">(Gupta 1991, Seetharaman and</ref><ref type="bibr" target="#b23">Chintagunta 2003)</ref>. Similarly, given its reliance on recency, lifetime, and purchase number dimensions of spending, the GPPM is closely related to traditional customer base analysis models for noncontractual settings in the BTYD vein <ref type="bibr" target="#b21">(Schmittlein et al. 1987;</ref><ref type="bibr" target="#b4">Fader et al. 2005</ref><ref type="bibr" target="#b5">Fader et al. , 2010</ref>. Finally, the discrete hazard approach could be modified with a different specification of the spend propensity.</p><p>Hazard Models. We consider two standard discretized hazard models, i.e., the Log-Logistic model and the Log-Logistic Cov model, which are standard log-logistic hazard models without and with time-varying covariates, respectively. We choose the log-logistic hazard as it can flexibly represent monotonic and nonmonotonic hazard functions. In the model with covariates, we use indicator variables over the time periods of interest as indicated at the start of Section 3. In estimating both of these models, we use the same Bayesian estimation strategy, using Stan, with the same random effect heterogeneity specification as in the GPPM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>BTYD.</head><p>We use the Pareto-NBD <ref type="bibr" target="#b21">(Schmittlein et al. 1987)</ref> and the BG/NBD <ref type="bibr" target="#b5">(Fader et al. 2010</ref>) as benchmarks in this class. While many variants of BTYD have been developed over the years, the Pareto-NBD has stood the test of time as the gold standard in forecasting power in noncontractual settings, often beating even more recent models (see, e.g., the PDO model in <ref type="bibr" target="#b11">Jerath et al. 2011</ref>). The BG/NBD is a more discrete analogue of the Pareto-NBD, where customer death can occur after each purchase, rather than continuously. 10 Propensity Models. In this case, we retain the discrete time hazard inverse logit framework, while altering the specification of the dynamics. In particular, we explore two specifications, i.e., the Linear Propensity Model (LPM) and the State Space Propensity Model (SSPM). To our knowledge, these models have not been explored elsewhere in the literature; we include them here to help understand the benefits of the GP approach to modeling dynamics.</p><p>In the LPM, we remove the nonparametric specification, and instead model all effects linearly, as Pr(y i j 1) logit −1 (µ + β 1 t i j + β 2 r i j + β 3 l i j + β 4 q i j + δ i ). This is the simplest discrete hazard model specification that includes all of our time scales and effects.</p><p>In the SSPM, we explore an alternate nonparametric specification for the dynamic effects. There are a number of competing nonparametric function estimation techniques, including dynamic linear models and various spline specifications, and there are technical links between many of these modeling approaches. Moreover, in each class of models, a range of specifications are possible, making the choice of a suitable benchmark difficult. We implement a state space specification roughly equivalent to the GP structure in our main model. Specifically, we decompose the propensity function α(t, r, l, q) into additive components along each dimension. For the calendar time dimension, just as in the GPPM, we make no assumptions about its behavior, and hence model it as a random walk</p><formula xml:id="formula_17">α T (t) α T (t − 1) + Tt , Tt ∼ (0, ζ 2 T ).<label>(11)</label></formula><p>For the other dimensions, we assume, as in the GPPM, that there will likely be monotonicity, and hence  Calendar time</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Spends</head><p>Notes. The data is in black (solid) with the median simulated GPPM fit in red (dashed) and 95% posterior predictive intervals. The holdout period is the last 30 days of data, demarcated by the dashed line.</p><p>include a trend component. This leads to a local level and trend specification</p><formula xml:id="formula_18">α d (τ) α d (τ − 1) + γ d (τ) + dτ , dτ ∼ (0, ζ 2 d ), (12) γ d (τ) γ d (τ − 1) + ξ dτ , ξ dτ ∼ (0, ψ 2 d ). (13)</formula><p>Interestingly, when used with a Gaussian observation model (meaning the data generating process is (α(τ), ν 2 ) instead of our latent propensity formulation), the local level and trend model have links to cubic spline smoothing <ref type="bibr" target="#b2">(Durbin and Koopman 2012)</ref>. In addition to the aforementioned components, we included a cyclic function of calendar time to mirror the GP periodic kernel component, as well as the random effects.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.2.">Forecasting Results.</head><p>The reestimated in-sample fit and the out-of-sample forecast of the GPPM for both games are shown in Figure <ref type="figure">9</ref>. The dashed lines represent medians, while the intervals represent 95% posterior predictive intervals. We see that the GPPM fits very well in-sample, but significantly also fits well in the holdout period. Out-of-sample, we see smooth decreasing trends in both games, together with the predictable day of the week effect. Referring back to Figure <ref type="figure" target="#fig_5">6</ref>, we see that the forecast fit is very similar to the fit decomposition with no short-and long-run components. This is because, far from the range of the data, components modeled with a stationary kernel will revert to their mean function, which for the calendar time effects is constant, effectively muting them far into the holdout period. How long it takes for this reversion to happen depends on the smoothness of the estimated function.</p><p>Table <ref type="table" target="#tab_3">2</ref> shows the predictive performance of the GPPM and all of our benchmark models. The table reports the mean absolute percentage error (MAPE) and the root mean squared error (RMSE) for the calibration and holdout data sets. Several of our benchmark fits are shown in Figure <ref type="figure" target="#fig_0">10</ref>. Crucially, the fit of the GPPM is almost always significantly better than the benchmarks, in-and out-of-sample. Next, we briefly analyze each of the benchmarks, and give intuition for why the GPPM outperforms them.</p><p>The log-logistic hazard models perform particularly poorly. In fact, the fit of the log-logistic models using the full range of the data is worse than the forecast fit of the GPPM; thus, we did not reestimate the loglogistic models in a separate forecasting task. Neither of these models captures the lifetime and purchase number drivers, which are typically highly predictive of spending. Furthermore, the Log-Logistic Covs model includes the covariates as indicator variables. While this is a common approach for specifying events of interest, as we saw in our analyses of calendar time events, the impacts of these events are unlikely to be constant over time, a fact that the GPPM implicitly incorporates in the calendar time effects.</p><p>Of primary interest here is the comparison with the customer base analysis models. We see that the fit statistics of the Pareto-NBD and BG/NBD are much better than that of the hazard models. In fact, the fit of the Pareto-NBD in Figure <ref type="figure" target="#fig_0">10</ref> is similar to the calendar time muted fit in Figure <ref type="figure" target="#fig_5">6</ref>. This supports our intuition that the GPPM in a sense generalizes these models, by accounting for interpurchase and lifetime effects (in a nonparametric way), while simultaneously allowing for variability in calendar time. Accounting for variability in calendar time is important as it lets the GPPM isolate predictable individual-level effects from the influence of calendar time events. In models that rely only on recency and frequency data, calendar time events are conflated with base purchasing rates, Notes. For each model, we report the mean absolute percentage error (first row), and the root mean squared error (second row) for both games in the forecasting task. We compute these measures over the entire range of data (Overall), the in-sample portion of the data (In-sample), and the 30-day holdout period (Holdout). Note that both of the log-logistic models were estimated over the full range of the data; given the poor fit using the full data, we did not estimate them separately using held out data. Notes. The data is in black. The holdout period is the last 30 days of data, demarcated by the dashed line. A web app where all benchmark fits can be viewed in isolation and in comparison with the GPPM is available at https://rdew.shinyapps.io/gppm_benchmarks/.</p><p>leading to erroneous predictions in the presence of calendar time dynamics. See Online Appendix B for a set of simulations. Finally, we see that while a linear specification of the dynamic effects is clearly not sufficiently rich, resulting in the poor fit of the LPM in both settings, a nonGP nonparametric specification as in the SSPM performs similarly to the GPPM. Specifically, we see that the SSPM performs as well as the GPPM in LS, although worse than the GPPM in CB. In some sense, this is not surprising: The SSPM is a complex and novel benchmark, constructed to be equivalent to the GPPM in terms of which effects it represents and how these are modeled. Both models capture the same set of predictable individual-level and periodic calendar time effects. Forecasting spending in the GPPM relies on forecasting these propensity functions, which the SSPM also appears to do well. <ref type="bibr">11</ref> Unlike the GPPM, however, the SSPM is more limited in its ability to separate out effects along a given time scale, which constrains its ability to perform the calendar time decompositions that are possible with GPs. This limits the SSPM's ability to provide equivalent dashboard-like representations of spending propensity along a given scale, which is one of the GPPM's core strengths.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Conclusion</head><p>In this paper, we developed a highly flexible modelbased approach for understanding and predicting spending dynamics. Our model, the GPPM, uses Bayesian nonparametric GP priors to decompose a latent spending propensity into components that vary <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 2, pp. 216-235, © 2018</ref> along calendar time, interpurchase time, customer lifetime, and purchase number dimensions. Our additive structure yields easily interpretable model outputs and fits customer spending data well.</p><p>We showed that the GPPM identifies the latent dynamic patterns in the data via a principled probabilistic framework that reliably separates signal from noise. It offers a number of outputs that are of considerable value to managers. First, the GPPM generates a dashboard of latent functions that characterize the spending process. These model-based visualizations are easy to comprehend, even by managers who may lack sophisticated statistical skills. Second, we demonstrated that the GPPM is capable of automatically capturing the effect of events that may be of interest to managers. In situations where certain events may escape the notice of managers, the GPPM automatically detects these events. More important, the nonparametric nature of the GPPM allows it to flexibly model the nature and duration of the impact of events (known or unknown, a priori), without the need to represent these explicitly via covariates. These advantages of the GPPM make it ideal for decision contexts involving multiple products and information asymmetries. The GPPM also flexibly captures the individual-level spending drivers that reliably explain and predict spending behavior, including recency, lifetime, and purchase number effects. These effects can be used to characterize spending patterns within distinct customer bases, analyze individual customer respend probabilities, and predict future spending activity. Furthermore, since these effects are jointly estimated with the calendar time events, as part of a unified propensity model, the predictable, fundamental individuallevel spending drivers are determined net of potentially unpredictable calendar time effects. Moreover, calendar time events can be analyzed net of the impact of expected individual-level spending activity, in a way not possible with mere aggregate data analysis.</p><p>We demonstrated these benefits of the GPPM on two data sets of purchasing activity within mobile games. We illustrated how the model-based dashboards generated from the GPPM yield easily interpretable insights about fundamental patterns in purchasing behavior. We also showed that the GPPM outperforms traditional customer base analysis models in terms of predictive performance, both in-sample and out-ofsample, including hazard models with time-varying covariates and the class of BTYD models. The predictive superiority of the GPPM stems from the fact that it captures the same predictable effects as traditional customer base analysis models, such as recency and lifetime, but does so in a flexible way, net of the influence of calendar time events.</p><p>While this paper showcases the many benefits of our framework, it is also important to acknowledge some limitations. First, the framework in its current form is computationally demanding, especially when compared with simpler probability models that can be estimated with maximum likelihood. It is also data intensive. In our application, we used complete individual-level event log data to estimate the model. Some of the benchmark models, in particular, the BG/NBD and the Pareto-NBD, use only two sufficient statistics per customer. Both of these limitations can perhaps be addressed in practice by data subsampling, or by developing faster inference algorithms. Finally, while we believe our model-based dashboard is useful, insofar as it provides a snapshot of the key drivers of spending dynamics, it does not work in real-time, as is the case for many dashboards of marketing metrics. A streaming data version of our model would be an interesting area for future work.</p><p>To conclude, we believe the GPPM addresses a fundamental need of modern marketing managers for a flexible system for dynamic customer base analysis. In providing a solution to this problem, this work introduces a new Bayesian nonparametric approach to the marketing literature. While we discuss GP priors in the context of dynamic customer base analysis, their potential applicability to other areas of marketing is much broader. GPs provide a general mechanism for flexibly modeling unknown functions, and for a Bayesian time series analysis. We see many potential applications for GPs in marketing, including modeling of the impact of marketing mix variables, such as advertising and promotions, and approximation of unknown functions in dynamic programming and other simulation contexts. Our work also makes a contribution to the largely unaddressed field of visual marketing analytics systems, or dashboards. Dashboards and marketing analytics systems are likely to become even more important in the future, given the increasing complexity of modern data-rich environments. As dashboards increase in relevance, we believe that managers will welcome further academic research in this domain.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. (Color online) Examples of Mean Function/Kernel Combinations ZM/SE; varying amplitude ZM/SE; varying length-scale</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. (Color online) Spend Incidence by Day (Calendar Time) in Each Game Life Simulator City Builder</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. (Color online) Posterior Dashboard for the Life Simulator Customer Base Calendar, long-run Calendar, short-run Calendar, weekly</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. (Color online) Posterior Dashboard for the City Builder Customer Base Calendar, long-run Calendar, short-run Calendar, weekly</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. (Color online) True and Simulated Spending by Day Under the GPPM with 95% Posterior Predictive Intervals Life Simulator</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. (Color online) Fit Decomposition on the LS Spending Data SR muted SR/LR muted All cal muted</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 7 .</head><label>7</label><figDesc>Figure 7. (Color online) Event Detection in the GPPM Data through 12/23 Data through 12/24 Data through 12/25</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 8 .</head><label>8</label><figDesc>Figure 8. (Color online) Respend Probability Heat Maps for a Customer with q 3 and δ i 1 Life Simulator City Builder</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure</head><label></label><figDesc>Figure 9. (Color online) GPPM Daily Spending Forecast Life Simulator City Builder</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 10 .</head><label>10</label><figDesc>Figure 10. (Color online) Daily Spending Forecasts for Several of Our Benchmark Models Life Simulator City Builder</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Posterior Median Parameter Estimates for Both Games</figDesc><table><row><cell>Component</cell><cell></cell><cell>LS</cell><cell>CB</cell><cell>Component</cell><cell></cell><cell>LS</cell><cell>CB</cell></row><row><cell>Cal, long</cell><cell cols="3">η TL 0.17 0.22</cell><cell>Lifetime</cell><cell>η L</cell><cell>0.06 0.23</cell></row><row><cell></cell><cell cols="3">ρ TL 11.75 10.32</cell><cell></cell><cell>ρ L</cell><cell>9.77 12.25</cell></row><row><cell>Cal, short</cell><cell cols="3">η TS 0.15 0.16</cell><cell></cell><cell cols="2">λ L1 −0.34 −0.75</cell></row><row><cell></cell><cell cols="3">ρ TS 1.11 1.29</cell><cell></cell><cell cols="2">λ L2 0.25 0.36</cell></row><row><cell>Cal, DoW</cell><cell cols="3">η TW 1.08 1.19</cell><cell>Purchase</cell><cell>η Q</cell><cell>0.10 0.20</cell></row><row><cell></cell><cell>ρ Q</cell><cell cols="2">9.17 9.59</cell><cell>number</cell><cell>ρ Q</cell><cell>4.93 5.36</cell></row><row><cell>Recency</cell><cell>η R</cell><cell cols="2">0.04 0.10</cell><cell></cell><cell cols="2">λ Q1 0.28 0.52</cell></row><row><cell></cell><cell cols="3">ρ R 10.23 11.05</cell><cell></cell><cell cols="2">λ Q2 0.15 0.30</cell></row><row><cell></cell><cell cols="3">λ R1 −0.59 −0.13</cell><cell>Base rate</cell><cell cols="2">µ −1.49 −1.92</cell></row><row><cell></cell><cell cols="3">λ R2 0.49 0.72</cell><cell cols="2">Heterogeneity σ 2</cell><cell>0.68 0.93</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2 .</head><label>2</label><figDesc>Fit Statistics</figDesc><table><row><cell></cell><cell></cell><cell>Life Simulator</cell><cell></cell><cell></cell><cell>City Builder</cell><cell></cell></row><row><cell></cell><cell>Overall</cell><cell>In-sample</cell><cell>Holdout</cell><cell>Overall</cell><cell>In-sample</cell><cell>Holdout</cell></row><row><cell>GPPM</cell><cell>0.09</cell><cell>0.03</cell><cell>0.24</cell><cell>0.15</cell><cell>0.05</cell><cell>0.32</cell></row><row><cell></cell><cell>13.25</cell><cell>5.74</cell><cell>22.54</cell><cell>15.00</cell><cell>9.79</cell><cell>20.97</cell></row><row><cell>Log-logistic</cell><cell>0.42</cell><cell>0.31</cell><cell>0.67</cell><cell>0.41</cell><cell>0.19</cell><cell>0.77</cell></row><row><cell></cell><cell>68.27</cell><cell>71.75</cell><cell>59.35</cell><cell>46.78</cell><cell>46.91</cell><cell>46.55</cell></row><row><cell>LL Covs</cell><cell>0.28</cell><cell>0.19</cell><cell>0.48</cell><cell>0.27</cell><cell>0.15</cell><cell>0.48</cell></row><row><cell></cell><cell>62.81</cell><cell>67.22</cell><cell>51.04</cell><cell>36.28</cell><cell>32.78</cell><cell>41.47</cell></row><row><cell>Pareto-NBD</cell><cell>0.24</cell><cell>0.20</cell><cell>0.33</cell><cell>0.27</cell><cell>0.16</cell><cell>0.45</cell></row><row><cell></cell><cell>45.10</cell><cell>49.64</cell><cell>32.10</cell><cell>33.54</cell><cell>36.56</cell><cell>27.80</cell></row><row><cell>BG/NBD</cell><cell>0.23</cell><cell>0.19</cell><cell>0.31</cell><cell>0.34</cell><cell>0.18</cell><cell>0.61</cell></row><row><cell></cell><cell>45.03</cell><cell>50.09</cell><cell>30.04</cell><cell>38.53</cell><cell>39.19</cell><cell>37.41</cell></row><row><cell>LPM</cell><cell>0.19</cell><cell>0.16</cell><cell>0.26</cell><cell>0.33</cell><cell>0.18</cell><cell>0.58</cell></row><row><cell></cell><cell>42.78</cell><cell>47.21</cell><cell>30.02</cell><cell>43.14</cell><cell>38.80</cell><cell>49.53</cell></row><row><cell>SSPM</cell><cell>0.07</cell><cell>0.03</cell><cell>0.17</cell><cell>0.17</cell><cell>0.05</cell><cell>0.38</cell></row><row><cell></cell><cell>12.57</cell><cell>6.63</cell><cell>20.59</cell><cell>18.25</cell><cell>9.50</cell><cell>27.16</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors thank the review team for their insightful comments and suggestions.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Endnotes <ref type="bibr">1</ref> Hereafter, we use the words purchasing and spending interchangeably to refer specifically to purchase incidence. 2 This behavior can be seen through Equation (4), in conjunction with, for example, the SE kernel, which has functional form k SE (τ i , τ j ) η 2 exp{−(τ i − τ j ) 2 /(2ρ 2 )}. As the distance between the observed inputs and the new input grows, the value of the kernel goes to zero, and we see that the mean in Equation (4) will revert to the mean function. This mean reverting property depends on the kernel being stationary, meaning that it depends only on the distance between inputs. See <ref type="bibr" target="#b18">Rasmussen and Williams (2006)</ref> for a comprehensive discussion of these issues.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Dew and Ansari: Bayesian Nonparametric Customer Base Analysis</head><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 2, pp. 216-235, © 2018</ref> We note that the properties of this specification are suitable for our specific application, but may not be suitable in other domains and substantive applications. <ref type="bibr">4</ref> In general, determining the number of additive components suitable for a given application requires substantive knowledge and expectations about the nature of the dynamics at work, and datadriven evidence from the estimated hyperparameter values. For instance, depending on the kernel, a small amplitude hyperparameter compared to the output scale could indicate that the component is relatively uninfluential in describing the results. Similarly, if the length-scale is estimated to be very large, this can indicate that minimal dynamics are being uncovered by that component. Both of these phenomena can indicate redundancy in the specification. Kernel specification is a rich topic in the GP literature; see <ref type="bibr" target="#b18">Rasmussen and Williams (2006)</ref>, Chapter 5 for a detailed discussion. 5 While we emphasize the relative benefits of GP priors here, we also note that there are many links between these methods, including between GP methods and smoothing splines <ref type="bibr" target="#b12">(Kalyanam and</ref><ref type="bibr" target="#b12">Shively 1998 and</ref><ref type="bibr" target="#b24">Shively et al. 2000)</ref>, and between GP methods and state space models. We include a sophisticated state space analog of our model in our benchmarks. Our state space formulation is also closely related to cubic spline specifications (see Durbin and Koopman 2012 for details). As we describe in Section 3.3.2, although this method produces fits that are roughly on par with the GP approach, we cannot easily obtain the decompositions that are natural in the GP setting. 6 See Online Appendix B for simulated data examples of these effects, where we know the effects true forms, and can show that the GPPM is capable of accurately recovering them. <ref type="bibr">7</ref> We may not expect this in our application area, freemium video games, where there can be decreasing returns to repeat purchasing. 8 See Online Appendix C for our Stan code. <ref type="bibr">9</ref> There is no personally identifiable information in our data; player information is masked such that none of the data we use or the results we report can be traced back to the actual individuals. We also mask the identification of the company as per their request. <ref type="bibr">10</ref> We estimate these models using the BTYD package in the R programming language. 11 In fact, recent research has established deep links between GPs and state space models, such that some GP models can be approximated by state-space specifications <ref type="bibr" target="#b7">(Gilboa et al. 2015)</ref>. This may also explain their similar performance.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">E-customization</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ansari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Mela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="131" to="145" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Stan: A probabilistic programming language</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Carpenter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hoffman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Goodrich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Betancourt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Brubaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Riddell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Statist. Software</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="1" to="37" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Durbin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sjs</forename><surname>Koopman</surname></persName>
+		</author>
+		<title level="m">Time Series Analysis by State Space Methods</title>
+				<meeting><address><addrLine>Oxford, UK</addrLine></address></meeting>
+		<imprint>
+			<publisher>Oxford University Press</publisher>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Structure discovery in nonparametric regression through compositional kernel search</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Duvenaud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lloyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Grosse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tenenbaum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zoubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 30th Internat. Conf. Machine Learn</title>
+				<editor>
+			<persName><forename type="first">S</forename><surname>Dasgupta</surname></persName>
+			<persName><forename type="first">D</forename><surname>Mcallester</surname></persName>
+		</editor>
+		<meeting>30th Internat. Conf. Machine Learn</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="1166" to="1174" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Counting your customers the easy way: An alternative to the Pareto/NBD model</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hardie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">L</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="275" to="284" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Customer-base analysis in a discrete-time noncontractual setting</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hardie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1086" to="1108" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Inference from iterative simulation using multiple sequences</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Sci</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="457" to="511" />
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Scaling multidimensional inference for structured Gaussian processes</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Gilboa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Saatci</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Cunningham</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Machine Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="424" to="436" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Stochastic models of interpurchase time with timedependent covariates</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="1991" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Hanssens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Parsons</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Schultz</surname></persName>
+		</author>
+		<title level="m">Market Response Models: Econometric and Time Series Analysis</title>
+				<meeting><address><addrLine>Norwell, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Kluwer Academic Publishers</publisher>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The no-U-turn sampler: Adaptively setting path lengths in Hamiltonian Monte Carlo</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hoffman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1351" to="1381" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">New perspectives on customer death using a generalization of the Pareto/NBD model</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jerath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">G</forename><surname>Hardie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="866" to="880" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Estimating irregular pricing effects: A stochastic spline regression approach estimating irregular pricing effects: A stochastic spline regression approach</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kalyanam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Shively</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="16" to="29" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Capturing flexible heterogeneous utility curves: A Bayesian spline approach</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Menzefricke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Feinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="340" to="354" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A Bayesian semiparametric approach for endogeneity and heterogeneity in choice models</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ansari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1161" to="1179" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Regression and classification using Gaussian process priors</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Neal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bayesian Statistics</title>
+		<editor>Bernardo JM</editor>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="475" to="501" />
+			<date type="published" when="1998" />
+			<publisher>Oxford University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Defection detection: Measuring and understanding the predictive accuracy of customer churn models</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Neslin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kamakura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Mason</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="204" to="211" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Dashboards as a service: Why, what, how, and what research is needed?</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Pauwels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ambler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">H</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lapointe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Reibstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Skiera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wierenga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wiesel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Service Res</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="175" to="189" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<author>
+			<persName><forename type="first">E</forename><surname>Rasmussen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">I</forename><surname>Williams</surname></persName>
+		</author>
+		<title level="m">Gaussian Processes for Machine Learning</title>
+				<meeting><address><addrLine>Cambridge, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Gaussian processes for time-series modelling</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Roberts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Osborne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ebden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Reece</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gibson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Aigrain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Philos. Trans. Ser. A, Math., Phys., Engrg. Sci</title>
+		<imprint>
+			<biblScope unit="volume">371</biblScope>
+			<biblScope unit="page">20110550</biblScope>
+			<date type="published" when="1984" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Econom. Tinbergen Institutes Lectures</title>
+		<title level="s">Bayesian Non-and Semi-Parametric Methods and Applications</title>
+		<meeting><address><addrLine>Princeton, NJ</addrLine></address></meeting>
+		<imprint>
+			<publisher>Princeton University Press</publisher>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Counting your customers: Who-are they and what will they do next?</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Schmittlein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Morrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Colombo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="24" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Incorporating direct marketing activity into latent attrition models</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Schweidel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Knox</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="471" to="487" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">The proportional hazard model for purchase timing: A comparison of alternative specifications</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">B</forename><surname>Seetharaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Chintagunta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Bus. Econom. Statist</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="368" to="382" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">A nonparametric approach to identifying latent relationships in hierarchical models</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Shively</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kohn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="149" to="162" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Analyzing brand competition across subcategories</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="448" to="456" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

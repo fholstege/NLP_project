@@ -24,3 +24,13 @@ df = df.loc[df['Type'].isna(), 'DOI']
 
 # save scraped DOIs
 df.to_csv('../data/raw/marketingscience_scraped_DOI.csv')
+
+
+
+df = pd.read_parquet('../data/clean/all_journals_BERT_merged.gzip')
+
+df = df[['DOI', 'year', 'title', 'abstract', 'journal', 'keywords']]
+
+df.reset_index(drop = True, inplace = True)
+
+df.to_parquet('../data/clean/abstracts.gzip', compression='gzip')

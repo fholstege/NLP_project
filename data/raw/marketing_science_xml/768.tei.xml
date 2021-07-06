@@ -1,0 +1,1828 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">A Hidden Markov Model of Customer Relationship Dynamics</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2005-07-13">July 13, 2005</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Oded</forename><surname>Netzer</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Graduate School of Business</orgName>
+								<orgName type="institution">Columbia University</orgName>
+								<address>
+									<postCode>10027</postCode>
+									<settlement>New York</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">James</forename><forename type="middle">M</forename><surname>Lattin</surname></persName>
+							<email>jlattin@stanford.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Graduate School of Business</orgName>
+								<orgName type="institution">Stanford University</orgName>
+								<address>
+									<postCode>94305</postCode>
+									<settlement>Stanford</settlement>
+									<region>California</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">V</forename><surname>Srinivasan</surname></persName>
+							<email>srinivasan_seenu@gsb.stanford.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Graduate School of Business</orgName>
+								<orgName type="institution">Stanford University</orgName>
+								<address>
+									<postCode>94305</postCode>
+									<settlement>Stanford</settlement>
+									<region>California</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">A Hidden Markov Model of Customer Relationship Dynamics</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 e 1526-548X 08 2702 0185</idno>
+						<imprint>
+							<date type="published" when="2005-07-13">July 13, 2005</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.1070.0294</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>customer relationship management</term>
+					<term>hidden Markov models</term>
+					<term>dynamic choice models</term>
+					<term>segmentation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>T his research models the dynamics of customer relationships using typical transaction data. Our proposed model permits not only capturing the dynamics of customer relationships, but also incorporating the effect of the sequence of customer-firm encounters on the dynamics of customer relationships and the subsequent buying behavior. Our approach to modeling relationship dynamics is structurally different from existing approaches. Specifically, we construct and estimate a nonhomogeneous hidden Markov model to model the transitions among latent relationship states and effects on buying behavior. In the proposed model, the transitions between the states are a function of time-varying covariates such as customer-firm encounters that could have an enduring impact by shifting the customer to a different (unobservable) relationship state. The proposed model enables marketers to dynamically segment their customer base and to examine methods by which the firm can alter long-term buying behavior. We use a hierarchical Bayes approach to capture the unobserved heterogeneity across customers. We calibrate the model in the context of alumni relations using a longitudinal gift-giving data set. Using the proposed model, we probabilistically classify the alumni base into three relationship states and estimate the effect of alumni-university interactions, such as reunions, on the movement of alumni between these states. Additionally, we demonstrate improved prediction ability on a hold-out sample.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>"In order to implement CRM, a company must have an integrated database available at every customer 'touch point' and analyze that data well.</p><p>CRM allows companies to automate the way they interact with their customers, and to communicate with relevant, timely messages." (Source: Peter Heffring-president of <ref type="bibr">Teradata's CRM division, 2002)</ref>.</p><p>Customer relationship management (CRM) has been a prominent aspect of business marketing for the past decade. Given the wide adoption of CRM in the business world, we aim to develop a model that could help businesses analyze transaction data to assess customer relationships and put forward a support system for marketing decisions. Recently, marketing scientists have started to develop models that relate customer relationships and database marketing through measures like customer duration and customer lifetime value (e.g., <ref type="bibr" target="#b61">Reinartz and Kumar 2003)</ref>. However, far less attention has been given to modeling the dynamics of customer relationships and the effect of encounters between the customer and the firm on customer-firm relationships and the customer's choice behavior.</p><p>Marketers often engage in activities that are aimed at creating an enduring impact on the relationship between the customers and the firm, 1 such as loyalty programs and university reunions. These interactions between the customer and the firm are designed to move the customer into a different state with different behavioral propensities (e.g., where the customer is less likely to switch to a competitor or to exhibit price sensitivity). Once the customer is engaged in a certain behavior, this behavior is likely to affect subsequent relationship with the firm.</p><p>The objective of this research is to capture the dynamics of customer relationships. We suggest a modeling framework for estimating and understanding the relationship dynamics which is formed by a series of customer-firm interactions. The proposed model allows one to probabilistically identify the customer's state of relationship at any given time and enables comparing the impact of alternative customer-firm encounters on moving the customer to a higher state of relationship.</p><p>We propose a hidden Markov model (HMM) in which the states are a finite set of relationship states. The transitions between the states are determined by a set of time-varying covariates such as customerfirm interactions, leading to a nonhomogenous HMM. The relationship-state dependence is defined by the dependency between the relationship state and the likelihood of the customer's purchase behavior. The number of states is determined by the complexity of the relationship and its dynamics over time. To distinguish between relationship-state dependence and zero-order heterogeneity <ref type="bibr" target="#b18">(Fader and Lattin 1993)</ref>, unobserved heterogeneity is captured through a set of random-effect coefficients. The HMM is estimated using a Markov chain Monte Carlo (MCMC) hierarchical Bayes procedure.</p><p>We apply the model to a university-alumni customer relationship data set. This empirical application stresses the value of the model for CRM marketers. We identify three states, which correspond to dormant, occasional, and active (very frequent) donors. The states are relatively "sticky" (large diagonal elements in the transition matrix). Attending a reunion seems to have a strong impact on moving alumni from the dormant to the occasional donation state and from the occasional to the active state. In contrast to the commonly used highest customer lifetime value approach, using the HMM we find only a small effect of reunion attendance on alumni in the frequent donation state. Volunteering to university roles, on the other hand, seems to have its primary impact on alumni in the dormant and active states, but not on alumni in the occasional state. In our empirical application, we also find superior predictive validity of the HMM relative to a heterogeneous, yet static, latent class model and a dynamic and heterogeneous recency-frequency model.</p><p>The remainder of this paper is organized as follows. Section 2 relates the current work to the relationship marketing and dynamic choice modeling literature. Section 3 develops the HMM for capturing the dynamics of customer relationships and describes the hierarchical Bayes estimation procedure. In §4 we describe the application of the proposed model in the context of alumni relations using longitudinal giftgiving data from the alumni association of a major private university. Section 5 concludes this paper with a discussion of the theoretical and practical contributions of this research, as well as an outline of directions for future research.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Relationship Marketing and</head><p>Dynamics in Buying Behavior</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Relationship Marketing Dynamics</head><p>Research in the area of relationship marketing has been emerging in the past decade both from the consumer behavior perspective (e.g., <ref type="bibr" target="#b21">Fournier 1998)</ref> and from the empirical modeling perspective (e.g., <ref type="bibr" target="#b9">Bolton 1998</ref><ref type="bibr" target="#b74">, Thomas 2001</ref>.</p><p>Theoretical models (e.g., <ref type="bibr" target="#b16">Dwyer et al. 1987)</ref> suggest that relationships evolve (not always monotonically) through several discrete levels. In particular, it is suggested that relationships develop as a consequence of changes in the relationship's environment and interactions between the relationship's partners <ref type="bibr" target="#b0">(Aaker et al. 2004</ref><ref type="bibr" target="#b21">, Fournier 1998</ref><ref type="bibr" target="#b30">, Hinde 1979</ref>). Furthermore, <ref type="bibr" target="#b54">Oliver (1997)</ref> suggests that a discrete shift in the relationship occurs if the aggregate satisfaction from a sequence of critical incidents is strong enough to move the customer to a different "conceptual plane" of loyalty. Thus, transitions between relationship stages might be triggered by discrete encounters between relationship parties. For example, offering an airline traveler an upgrade to business class could serve as a critical incident <ref type="bibr" target="#b20">(Flanagan 1954)</ref>. If the act of upgrade and the experiences of the traveler during the business class flight pass the customer's satisfaction threshold, this critical incident could have a long-term impact on the traveler's relationship with the airline and the traveler's subsequent choice of flights. A sequence of discrete encounters between the customer and the firm constructs a relationship. Such encounters include transactions, service encounters, customer initiated interactions, or exposure and response to marketing actions initiated by the firm. We use the notion that relationships are built from a series of customer-firm encounters as the building block of our model.</p><p>Recently, with the increase in popularity of CRM software applications in the business world, more academic research has been focused on building relationship models using marketing databases. This includes models of customer lifetime duration (e.g., <ref type="bibr" target="#b2">Allenby et al. 1999</ref><ref type="bibr" target="#b9">, Bolton 1998</ref><ref type="bibr" target="#b61">, Reinartz and Kumar 2003</ref><ref type="bibr" target="#b65">, Schmittlein and Peterson 1994</ref> and customer lifetime value (e.g., <ref type="bibr" target="#b42">Libai et al. 2002</ref><ref type="bibr" target="#b64">, Rust et al. 2004</ref>. With the exception of <ref type="bibr" target="#b61">Reinartz and Kumar (2003)</ref>, these models do not take into consideration the dynamics in the relationship that result from changes in the customer's environment, which is the main focus of the current study. Indeed, in a review of service and relationship marketing models, <ref type="bibr" target="#b63">Rust and Chung (2006)</ref> suggest that future research should model the dynamics in customers' preferences as a function of the dynamic interactions between the customers and the firm. In a review of customer lifetime value models, <ref type="bibr" target="#b32">Jain and Singh (2002)</ref> suggest incorporating factors that drive consumer purchase over time and the stochasticity in the buying behavior in the customer relationship model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Dynamics in Buying Behavior and</head><p>Hidden Markov Models Methodologically, the model we developed is more similar to the literature on marketing dynamics. Many marketing settings involve dynamics in consumer behavior. These situations include both individuallevel and market aggregate dynamics. The difficulty with capturing such dynamics is that in most marketing data sets the number of observations or time periods observed is relatively small, and the nature and structure of dynamics is often latent. To capture the latent structure of dynamics in a relatively parsimonious way, researchers developed various approaches that could be generally divided into discrete or continuous state space structures.</p><p>If the dynamics are assumed gradual or smooth, one could use a continuous state structure to capture the dynamics. For example, time series autoregressive error models are used to capture the dynamics in sales and the long-term effect of marketing activities such as advertising (see <ref type="bibr" target="#b12">Hanssens 2000 and</ref><ref type="bibr" target="#b55">Pauwels et al. 2004</ref> for a review). <ref type="bibr" target="#b50">Naik et al. (1998)</ref> and <ref type="bibr" target="#b78">Xie et al. (1997)</ref> use Kalman filtering to capture the dynamics in advertising scheduling and new product introduction, respectively. In the choice modeling literature, a smooth dynamic effect is often captured by a state-dependent term in the utility function using an exponentially smoothed sum <ref type="bibr" target="#b25">(Guadagni and</ref><ref type="bibr">Little 1983, Srinivasan and</ref><ref type="bibr" target="#b71">Kesavan 1976)</ref> or a simple running average <ref type="bibr" target="#b10">(Bucklin and Lattin 1991)</ref> of past purchases.</p><p>However, the continuous state space is inadequate to capture dynamics that are postulated to develop in a discrete manner such as an instantaneous regime shift in the market conditions or consumer preferences (e.g., due to an inclusion or a drop of a brand from the consumer's consideration set). One could model such dynamics, by allowing consumers (or markets) to transition over time between a set of discrete states. Probably the simplest demonstration of such discrete states in the choice modeling literature is the state-dependent model <ref type="bibr" target="#b29">(Heckman 1981)</ref>. In this model, the observed previous choice of the customer (captured by a lagged dependent variable) constitutes the customer state in the current choice occasion. Choice modelers include state dependence in their econometric models to capture heterogeneity across individuals as well as the serial correlation in purchases over time <ref type="bibr" target="#b45">(McAlister et al. 1991)</ref>. Using scanner panel data, <ref type="bibr" target="#b38">Keane (1997)</ref> and <ref type="bibr" target="#b17">Erdem and Sun (2001)</ref> find positive and significant state dependence effects across product categories even after controlling for heterogeneity; other studies find mixed results (e.g., <ref type="bibr" target="#b33">Jeuland et al. 1980</ref>). In the context of CRM, <ref type="bibr" target="#b56">Pfeifer and Carraway (2000)</ref> use a Markov model between the observed purchase recency states to capture dynamics in customer lifetime value. <ref type="bibr" target="#b49">Morrison et al. (1982)</ref> modified the brand switching Markov model to classify Merrill Lynch's customers into "prime" and "not prime" states using managerial judgment. In the context of alumni donations, <ref type="bibr" target="#b69">Soukup (1983)</ref> used an ad-hoc dichotomization of past donations (donor and noncontributor) to define the customer's state of donation behavior.</p><p>A limitation of the observed states models is their restrictive account for buyer behavior dynamics, whereby an ad-hoc specification of state dependence is added to an otherwise static model. A second shortcoming of these models is that they often ignore other important sources of dynamics in buying behavior, such as the enduring effects of marketing stimuli. Indeed, for exogenous variables that are correlated over time, and are not controlled for, previous behavior might be a determinant of current behavior simply because it captures the effect of the omitted variables <ref type="bibr" target="#b17">(Erdem and Sun 2001)</ref>. This problem is likely to be more severe in the context of relationship marketing because marketing actions such as loyalty programs <ref type="bibr" target="#b41">(Lewis 2004</ref>) and customer initiated interactions such as service encounters <ref type="bibr" target="#b9">(Bolton 1998</ref>) might alter the customer's relationship with the firm, and therefore might have an enduring effect on the customer's buying behavior. Finally, often the researcher or marketer does not observe the consumer or market states that govern the dynamics.</p><p>To overcome the problem of unobserved states one could describe a set of latent states and transitions between these states and translate these latent states to the observed behavior through a stochastic model. This process can be described as an HMM. MacDonald and Zucchini (1997, Chapter 4) describe several applications of HMMs in areas ranging from biology, geology, and climatology to finance and criminology. The most common application of HMMs is in the area of speech recognition <ref type="bibr" target="#b58">(Rabiner 1989, Rabiner and</ref><ref type="bibr" target="#b59">Juang 1993)</ref>. In econometrics, <ref type="bibr" target="#b27">Hamilton (1989)</ref> proposed an HMM to estimate the impact of discrete regime shifts on the growth rates of the real gross national product.</p><p>Within the marketing literature, HMMs are closely related to the family of latent class models <ref type="bibr" target="#b37">(Kamakura and Russell 1989)</ref>. Like most latent class models, HMMs classify individuals into a set of states or segments based on their buying behavior. However, unlike the latent class models, in HMMs the membership in the latent states is dynamic and follows Marketing Science 27(2), pp. 185-204, © 2008 INFORMS a Markov process. A handful of attempts have been made to model dynamic change in the latent segment membership in marketing applications (e.g., <ref type="bibr" target="#b57">Poulsen 1990</ref><ref type="bibr" target="#b60">, Ramaswamy 1997</ref>. <ref type="bibr">Wedel and Kamakura (2000, chapter 10</ref>) and <ref type="bibr" target="#b13">Dillon et al. (1994)</ref> survey these studies as well as alternative forms of dynamics in segmentations (e.g., <ref type="bibr" target="#b7">Dillon 2000, Böckenholt and</ref><ref type="bibr" target="#b8">Langeheine 1996)</ref>. Wedel and Kamakura conclude that the issue of nonstationarity in marketing segmentation should be further investigated. More recently, <ref type="bibr" target="#b68">Smith et al. (2006)</ref> develop a Markov switching criterion for HMMs and empirically tested it in the context of dynamic effectiveness of advertising on brand sales. <ref type="bibr" target="#b46">Montgomery et al. (2004)</ref> used a time-continuous HMM, which combines discrete states and continuous transition times to study web-path analysis. <ref type="bibr" target="#b19">Fader et al. (2004)</ref> proposed a changepoint model to predict new product sales. <ref type="bibr" target="#b43">Liechty et al. (2003)</ref> applies an HMM to identify visual attention mode in advertising viewing. <ref type="bibr" target="#b15">Du and Kamakura (2006)</ref> use an HMM to identify latent states in American families' life cycles. <ref type="bibr" target="#b47">Moon et al. (2007)</ref> use a random-effect HMM to augment unobserved competitors' promotions in a pharmaceutical context.</p><p>Our HMM of customer relationships pushes forward the marketing literature related to dynamic latent class models in several aspects. First, relationships are constructed from a series of interactions between the customer and firm. Because we are interested in understanding the effect of these interactions on dynamics, we relax the assumption made in all the marketing HMM applications mentioned above of stationary transitions between the latent states. We use a nonhomogeneous HMM <ref type="bibr" target="#b31">(Hughes and Guttorp 1994)</ref> in which the Markovian transitions are a function of time-varying covariates. To our knowledge, this is the first paper to do so in the marketing literature. Allowing for time-varying covariates in the transitions is important if one wishes to understand the drivers of the dynamics rather than merely build a model that fits the dynamics in the data. Second, CRM data sets are often collected at the individual level. When modeling dynamics using individuallevel data it is crucial to account for heterogeneity in order to distinguish cross-individual heterogeneity from dynamics. Most HMM applications estimate the model at the aggregate level or using aggregate data (see <ref type="bibr" target="#b43">Liechty et al. 2003</ref><ref type="bibr" target="#b46">, Montgomery et al. 2004</ref><ref type="bibr" target="#b47">, and Moon et al. 2007</ref> for exceptions). Finally, from a substantive point of view, our application of the HMM to the area of customer relationships brings an advanced methodological modeling approach to help address an emerging managerial need to manage customer relationships over time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Model Development</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">The Hidden Markov Model 2</head><p>The model described in this section is an individuallevel model of buying behavior. We consider a set of customers, each of whom is involved in repeated interactions with a brand, firm, service provider, or institution. The marketer observes the choice history for each individual and the marketing environment at every time period. These data are similar to typical transaction data commonly used in choice models.</p><p>We define a relationship encounter as an interaction between the customer and the firm. Such interactions might include purchase transactions, exposure to relationship marketing activities, or other nonpurchase related exposure to firm. Relationships are made of a longitudinal sequence of relationship encounters. We further define a set of hidden (latent or unobserved) relationship states, which differ with respect to the strength of the relationship between the customer and the firm and the conditional likelihood of choice given the relationship state. The transitions between the states are probabilistically determined and are affected by relationship encounters. This structure of latent states and observed behavior can be modeled by an HMM.</p><p>An HMM is a model of stochastic process that is not directly observable but can be observed only through another set of stochastic processes that produces a set of observations. In the proposed HMM, the transition between the relationship states is characterized by a Markov process. This stochastic process is then transformed into the observed buyer behavior through the stochastic process of choice. Specifically, we develop an HMM of repeated binary choices that relates the transitions between the latent relationship states to the observed buying behavior (see Figure <ref type="figure" target="#fig_0">1</ref> for a graphical representation of the proposed HMM).</p><p>The proposed HMM consists of three main components:</p><p>(1) The initial state distribution-the probability that customer i is in state s at time 1 is P S i1 = s = is .</p><p>(2) The transitions-a sequence of Markovian transitions (Q i t−1→t that express, in a probabilistic manner, the likelihood that the series of customer-firm interactions in the previous time period were strong enough to transition the customer to another state. The probability that a customer transitions from state s t−1 at time t − 1 to state s t at time t is P S it = s S it−1 = s = q itss .  (3) The state dependent choice-the probability that the customer will choose the product at time t conditioned on her state is</p><formula xml:id="formula_0">P Y it = 1 S it = s = m it s</formula><p>3 where S it is the state of customer i at time t in a Markov process with NS states, and Y it is the choice made by customer i at time t.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">The Model's Components</head><p>3.2.1. The Markov Chain Transition Matrix. We model the transitions between states as a Markov process. The transition matrix is defined as</p><formula xml:id="formula_1">Q i t−1→t = State at t State at t − 1 1 2 3 • • • NS − 1 NS 1 q it11 q it12 q it13 • • • q it1NS−1 q it1NS 2 q it21 q it22 q it23 • • • q it1NS−1 q it2NS NS q itNS1 q itNS2 q itNS3 • • • q itNSNS−1 q itNSNS (<label>1</label></formula><formula xml:id="formula_2">)</formula><p>where q itss = P S it = s S it−1 = s is the conditional probability that individual i moves from state s at time t − 1 to state s at time t, and where 0 ≤ q itss ≤ 1 ∀ s s , and s q itss = 1. In applying our model in the context of alumni-university relationships (see §4), we put a structure on the general transition matrix in Equation ( <ref type="formula" target="#formula_1">1</ref>). Specifically, we define the transition matrix as a random walk with a "sudden death," whereas from each state the customer/alumni could move to an adjacent state or drop immediately to dormancy. This assumption was made primarily for model parsimony. Nevertheless, in the context of alumni donations used in our empirical application, we found this assumption to be both behaviorally and empirically grounded. Each one of the matrix elements in Equation ( <ref type="formula" target="#formula_1">1</ref>) represents a probability of transition. We assume that the customer's propensity for transition is affected by his/her relationship encounters with the firm. We model the transitions between the states as a threshold model, where a discrete transition occurs if the propensity for transition passes a threshold level. As mentioned previously, the idea that a movement to a discrete level of relationship occurs when the aggregate measure of satisfaction or dissatisfaction from relationship encounters passes a threshold has roots in the relationship and service marketing literature <ref type="bibr" target="#b54">(Oliver 1997)</ref>.</p><p>The norm theory of <ref type="bibr" target="#b36">Kahneman and Miller (1986)</ref> postulates that past experiences create a norm, against which current experiences are judged. Thus, it might be reasonable to expect that current relationship encounters be judged relative to the status quo. If the cumulative experience from the encounters between the customer and the firm is highly negative (e.g., service failure), it is likely to shift the propensity for transition below the threshold needed for a transition to a lower state. On the other hand, if the encounter is highly positive (e.g., an important product benefit learned from an advertisement campaign), it is likely to shift the propensity for transition above the threshold needed for a transition to a higher state. If the relationship encounters in the previous period did not have a strong impact on the customer, the customer is likely to stay in her current state.</p><p>Putting this process in mathematical terms, and assuming that the unobserved part of the propensity for transition is independently and identically distributed (IID) of the extreme value type, we can model the nonhomogeneous transition probabilities following the ordered logit model <ref type="bibr" target="#b24">(Greene 1997)</ref>.</p><p>Marketing Science 27(2), pp. 185-204, © 2008 INFORMS Specifically, the terms q itss in the transition matrix in Equation ( <ref type="formula" target="#formula_1">1</ref>) could be written as</p><formula xml:id="formula_3">q its1 = Pr transition from s to state 1 = exp 1 is − a it is 1 + exp 1 is − a it is (2) q itss = Pr transition from s to s = exp s is − a it is 1 + exp s is − a it is − exp s − 1 is − a it is 1 + exp s − 1 is − a it is (3) q itsNS = Pr transition from s to NS = 1 − exp NS − 1 is − a it is 1 + exp NS − 1 is − a it is (4) for s ∈ 1 NS and s ∈ 2 NS − 1 , where</formula><p>is is a vector of parameters capturing the effect of relationship encounters of individual i on the propensity for transition from state s, a it is a vector of time-varying covariates for individual i between time t − 1 and time t, and s is is the s ordered logit threshold for individual i in state s, where s ∈ 1 NS − 1 .</p><p>Note that the marginal effects of the time-varying covariates in the transition matrix are state specific, thus allowing for different impacts of the timevarying covariates depending on the customer's state.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.2.">The Initial State Distribution.</head><p>For an HMM with time homogeneous transition matrix, the initial state distribution is commonly defined as the stationary distribution of the transition matrix (MacDonald and Zucchini 1997). However, because our transition matrix is a function of time-varying covariates, we calculate the stationary distribution of the transition matrix by solving the equation</p><formula xml:id="formula_4">i = i Q i , under the constraint NS s=1 is = 1,</formula><p>where Q i is the transition matrix with the parameter estimates following §3.2.1 and all covariates are set to their mean value across individuals and time periods. <ref type="bibr">4</ref> Generally, the stationarity conditions above do not guarantee existence or uniqueness of a stationary distribution. In our empirical application, all the estimated individual transition probabilities were strictly positive confirming that the transition matrices are aperiodic and irreducible, thus guaranteeing an existence and uniqueness of the stationary distribution.</p><p>3.2.3. The State-Dependent Choice. Given the customer's state, the customer choices are assumed to be conditionally independent. Thus, given relationship state s, we model the probability of a dichotomous choice following the well-known binary logit model, 5</p><formula xml:id="formula_5">m it s = exp ˜ 0s + x it s 1 + exp ˜ 0s + x it s s = 1 NS (5)</formula><p>wherẽ 0s is the state-specific coefficient for state s, x it is a vector of time-varying covariates associated with the choice of individual i at time t, and s is a vector of state-specific response coefficients.</p><p>The full vector of conditional choice probabilities is m it = m it 1 m it 2 m it NS . The difference between the vectors of covariates a it to be included in the transition matrix and in the vector of covariates in state-dependent choice x it is noteworthy. The conceptual distinction is between those variables that have an enduring impact on the attitude of the customer toward the product or service and those that affect only the short-term choice behavior. For example, advertising is often assumed to have a long-term impact on attitude while a price promotion affects only the short-term choice behavior. In the transition matrix, one should include covariates that are hypothesized to have an enduring impact on the customer's buying behavior (e.g., advertisement, service encounters, or relationship-based marketing activities). On the other hand, the covariates in the state-dependent choice vector are assumed to primarily have an immediate effect on the customer (e.g., price and display promotions). <ref type="bibr">6</ref> The researcher could also test empirically (e.g., using fit measures) the appropriate location for each covariate in the model.</p><p>To ensure identification of the states, we restrict the choice probabilities to be nondecreasing in the relationship states. Because both the intercepts and the response parameters are state-specific, we impose this restriction at the mean of the vector of covariates, x it . Thus, the vector x it is mean-centered and the restric-</p><formula xml:id="formula_6">tion˜ 01 ≤˜ 02 ≤ • • • ≤˜ 0NS is imposed bỹ 0s = 01 + s s =2 exp 0s s = 2 NS (6)</formula><p>3.2.4. Accounting for Heterogeneity. Because our model is dynamic, one must ensure that the zeroorder heterogeneity is fully accounted for to distinguish it from time dynamics. <ref type="bibr" target="#b29">Heckman (1981)</ref> suggests that ignoring heterogeneity might lead to a strong spurious state dependence, even when the actual choices are not correlated over time. Similarly, a model that accounts for heterogeneity but ignores state dependence may overestimate the degree of heterogeneity <ref type="bibr" target="#b38">(Keane 1997)</ref>. Our proposed HMM addresses the second problem by offering a flexible specification of state dependence. To distinguish between heterogeneity and dynamics, we define random-effect parameters in the transition matrix Q i t−1→t . We incorporate heterogeneity by allowing the threshold parameters ( s is in Equations ( <ref type="formula">2</ref>)-( <ref type="formula">4</ref>) to vary across individuals. <ref type="bibr">7</ref> This specification allows for heterogeneity in the "stickiness" to different states, since the distance between the low and high thresholds could vary across individuals. Heterogeneity in the transition matrix also implies heterogeneity in the initial state distribution. An alternative heterogeneity specification would be to allow the state-dependent choice to vary across individuals. However, from a managerial point of view, such heterogeneity specification implies individual-specific state interpretation, thus losing the ability to classify the customers into a common set of states.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">The Likelihood of an Observed</head><p>Sequence of Choices Due to the Markovian structure of the model, the individual choice probabilities are correlated through the common underlying path of the hidden states. Accordingly, the joint likelihood of a sequence of choices is given by the sum over all possible routes the individual could take over time between the underlying states:</p><formula xml:id="formula_7">P i Y i1 = y i1 Y iT = y iT = NS s 1 =1 NS s 2 =1 • • • NS s T =1 P S i1 = s 1 T =2 P S i = s S i −1 = s −1 • T =1 P Y i = y i S i = s (7)</formula><p>7 To keep the model parsimonious we avoid a full random-effect specification of the transition matrix Q i t−1→t .</p><p>Using our notations for the three components of the HMM in Equations ( <ref type="formula" target="#formula_1">1</ref>)-( <ref type="formula">5</ref>), we can rewrite Equation ( <ref type="formula">7</ref>) as</p><formula xml:id="formula_8">P i Y i1 = y i1 Y iT = y iT = NS s 1 =1 NS s 2 =1 • • • NS s T =1 is 1 T =2 q is s −1 • T =1 m y i i s 1 − m i s 1−y i (7a)</formula><p>A problem with Equation ( <ref type="formula">7a</ref>) is that it has NS T elements and is therefore computationally intractable for even modest values of T . Following MacDonald and Zucchini (1997), we can rewrite Equation (7a) in a matrix products form that simplifies computation:</p><formula xml:id="formula_9">L iT = P Y i1 = y i1 Y iT = y iT = i m i1 Q i 1→2 m i2 Q i T −1→T m iT 1 (8)</formula><p>where</p><formula xml:id="formula_10">m it s = m y it it s 1 − m it s 1−y it</formula><p>and m it is a NS × NS diagonal matrix with the elements of m it s on the diagonal, and 1 is a NS × 1 vector of ones. To avoid underflow of the likelihood function in Equation ( <ref type="formula">8</ref>) we divide the joint state likelihood after every time period by L it /NS, accumulate the logarithms of these scale factors, and add it to the logarithm of the likelihood function (for details see <ref type="bibr">MacDonald and Zucchini 1997, p. 79</ref>). The scaled log-likelihood function across individuals is simply the sum of the individual scaled log-likelihood over i ∈ 1 N .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.">Estimation Procedure</head><p>In this section, we describe the procedure used to estimate our model. In choosing the estimation procedure, we focus on properly accounting for observed and unobserved heterogeneity. We estimate the HMM parameters: the transition matrix parameters and the state-dependent choice parameters described in Equations ( <ref type="formula">2</ref>)-( <ref type="formula">6</ref>) using the joint likelihood function in Equations ( <ref type="formula">7</ref>)-( <ref type="formula">8</ref>). We estimate our HMM using a standard hierarchical Bayes estimation procedure <ref type="bibr" target="#b62">(Rossi and Allenby 2003)</ref> using two sets of parameters: random-effect parameters i and parameters that are common across individuals . We</p><formula xml:id="formula_11">define i = s is1 s iNS−1 s ∈ 1 NS and = 1 2 NS 01 02 0NS 1 2 NS .</formula><p>Heterogeneity is introduced into the model for the random-effect parameters by defining uninformative priors i ∼ MVN ¯</p><p>. We also estimate a model in which the observed individual characteristics, such as demographics, are introduced into the model in a hierarchical manner (e.g., <ref type="bibr" target="#b1">Allenby and Ginter 1995)</ref>. We complete the specification by assuming appropriate and . We sequentially draw from the set of conditional posterior distributions. <ref type="bibr">8</ref> The conditional posterior distributions of i and do not have a closed form. Thus, we use the Metropolis-Hasting algorithm to draw from these posterior distributions. To reduce the degree of autocorrelation between draws of the Metropolis-Hasting algorithm and to improve the mixing of the MCMC we use an adaptive Metropolis adjusted Langevin algorithm <ref type="bibr" target="#b5">(Atchadé 2006)</ref>. We found this recent approach to be very useful in our HMM application.</p><p>It should be noted that unlike the HMM Bayesian estimation methods that augment the latent state memberships (Djuric and Chun 2002, <ref type="bibr" target="#b39">Kim and Nelson 1999</ref><ref type="bibr" target="#b47">, Moon et al. 2007</ref><ref type="bibr" target="#b67">, Scott 2002</ref>, we use a Bayesian approach to estimate directly the likelihood function in Equation ( <ref type="formula">8</ref>) with random-effect parameters.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5.">Recovering the State Membership</head><p>Distribution An attractive feature of the HMM is the ability to use it to probabilistically recover the individual's state at any given time period. This measure could be directly derived from the likelihood function in Equation (8). Two approaches have been suggested for recovering the state membership distribution: "filtering" and "smoothing" (see <ref type="bibr" target="#b27">Hamilton 1989</ref> for a discussion). Filtering uses only the information known up to time t to recover the individual's state at time t, whereas smoothing uses the full information available in the data. The filtering approach is more appealing for marketing applications, where decisions are made based only on the history of the observed behavior. The filtering probability that individual i is in state s at time t conditioned on the individual's history of choices is given by</p><formula xml:id="formula_12">P S it = s Y i1 Y i2 Y it = i m i1 Q i 1→2 m i2 Q i t−1→t s m it s /L it (9)</formula><p>where Q i t−1→t s is the sth column of the transition matrix Q i t−1→t , and L it is the likelihood of the observed sequence of choices up to time t from Equation (8).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Empirical Application</head><p>In this section, we describe the empirical application of the proposed HMM in the context of the relationship between alumni and their alma mater. We describe, in order, the data set, the alternative models estimated, the estimation results, the comparison of the alternative models in terms of their prediction ability on a hold-out sample, and a survey-based analysis of the behavioral dimensions underlying the alumni-university relationship states.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Application to Alumni Relations</head><p>To empirically illustrate the ability of the proposed model to capture the dynamics in customer relationships and choice behavior, we apply the proposed HMM in the context of university-alumni relations and gift-giving (i.e., donation) behavior. The objective of the empirical application is to show how one can use observed alumni gift-giving data to (1) dynamically classify the alumni into relationship strength states, (2) understand the factors that influence the dynamics in gift-giving behavior, (i.e., assess what alumni-university interactions are likely to move alumni to a higher relationship state), and</p><p>(3) predict future gift-giving behavior.</p><p>There are several reasons for choosing the alumni gift-giving data as an empirical application for our model. First, we believe that the dynamics in the gift-giving behavior, due to the strong relationship underlying its construct, is stronger than the dynamics found in typical scanner panel data. Second, this data set contains most of the components suggested for a good CRM data set. Specifically, it includes four out of the five elements suggested by <ref type="bibr" target="#b77">Winer (2001)</ref>: transaction data, customer contacts, descriptive information about the customers, and longitudinal data. As discussed further below, this data set is somewhat limited in terms of tracking exposure and response to marketing activities. As a result, we use other timevarying covariates that may affect the alumni state such as reunion attendance. Finally, in the sagging economy, private and public schools face severe financial problems. Charitable contributions to universities dropped in 2002 for the first time in 15 years <ref type="bibr">(New York Times 2003)</ref>. Therefore, addressing the problem of managing the $24 billion market of U.S. alumni fundraising is of significant financial consequence.</p><p>Previous research on alumni gift-giving behavior is limited. The few articles that have been published in this area investigated the effect on alumni gift giving of (1) institutional characteristics <ref type="bibr" target="#b6">(Baade and</ref><ref type="bibr">Sundberg 1996, Harrison et al. 1995)</ref>, (2) reunions <ref type="bibr" target="#b76">(Willemain et al. 1994)</ref>, and (3) individual characteristics such as demographics, financial aid, and participation in college athletics <ref type="bibr" target="#b52">(Okunade 1993</ref><ref type="bibr" target="#b53">, Okunade and Berl 1997</ref><ref type="bibr" target="#b73">, Taylor and Martin 1995</ref>. Recently, in the marketing literature, <ref type="bibr" target="#b4">Arnett et al. (2003)</ref> related alumni-university relations to the behavioral identity salience model. To our knowledge, no study has previously investigated and modeled the dynamics of gift-giving behavior and the factors that can alter this dynamic behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Data Description</head><p>The data used to calibrate and validate the model are sampled from the database provided by the alumni association of a large west coast university. Our data set consists of over 17,000 randomly sampled alumni. This represents 10% of the total university alumni base (see Appendix B in Netzer 2004 for a detailed description of the data set). From this data set, we use in our analysis 1,256 alumni who graduated with an undergraduate degree 9 between 1966 and 1988 and donated at least once in the first 10 years following graduation (see Table <ref type="table" target="#tab_3">1</ref> for descriptive statistics of the sample).</p><p>For each alumna/alumnus the data provide cumulative information on total gift giving since the time of graduation, as well as detailed disaggregate data about his/her gift giving since 1976 (or time of graduation, whichever is more recent). The data set also contains disaggregate information about different alumni-university interactions for the years 1976-2001, including participation in university events and volunteering for alumni roles. We use the observations in the years 1976-1998 to calibrate the model, and the last three years of possible gift giving for each alumna/alumnus <ref type="bibr">(1999)</ref><ref type="bibr">(2000)</ref><ref type="bibr">(2001)</ref> for validation.</p><p>A necessary condition for the identification of the proposed HMM is dynamics in donation behavior over time. To examine whether such dynamics exist in our data we used the Run Test <ref type="bibr" target="#b22">(Frank 1962)</ref>. The Run Test strongly supports the existence of individuallevel dynamics in the donation behavior, in particular it suggest that alumni go through periods of donation and nondonation (for the full description of the Run Test results see Netzer 2004).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Variables Description</head><p>The variables of this data set can be divided into three categories:</p><p>1. Alumni-university interactions-This set of variables defines the interactions between the alumni and the university in the vector a it in Equations ( <ref type="formula">2</ref>)-(4). These are recorded over time post graduation. In this study, we consider two types of interactions (besides donations): reunion attendance and volunteering for a university role. It should be noted that our modeling approach assumes that these alumni-university interactions occur, and are observed, prior to donation. This assumption seems to be valid for these two variables, because donations generally occur post the reunion attendance and volunteering decisions.</p><p>2. Influence attempts-These alumni-university interactions are postulated to have mainly short-term effects. These covariates determine the vector x it in Equation ( <ref type="formula">5</ref>). In the scanner data context, price promotion and display are examples of activities with shortterm influence. In the current application, we use reunion year (any multiple of five years since graduation) as such a covariate. We consider a reunion year as a short-term influence to donate due to increased salience of the university during that year, which might raise the likelihood of giving in the specific year but not in subsequent years. However, it is actual participation in a reunion that might lead to a change in the strength of relationship between the alumna/alumnus and the university and to a long-term impact on subsequent donation behavior. Accordingly, reunion year is included in the statedependent choice (the vector x it , and participation in a reunion in the transition matrix (the vector a it . 3. Choice behavior-Gift-giving behavior. This is the dependent variable, which is captured by the incidence of donation (0 or 1). If one is interested in merely predicting donations, this variable could be replaced by the actual amount donated using an ordered logit or a Tobit model. However, in the context of relationship dynamics model, the alumni association considers the actual act of giving as a stronger determinant of relationship than the amount given.</p><p>According to the alumni association, we aggregated gift-giving and events data by calendar year. To account for time dynamics that are not related to the Marketing Science 27(2), pp. 185-204, © 2008 INFORMS relational marketing encounters, a linear time trend, representing the number of years since graduation, is included in the state-dependent vector. Additionally, the data set contains alumni characteristics such as year and major of graduation, gender, marriage to a university alumna/alumnus, and membership in the alumni association.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.">Estimated Models</head><p>We estimated the HMM of customer relationship dynamics described in §3, using the MCMC hierarchical Bayes estimation described above. Additionally, we estimated a restricted version of this model, with no heterogeneity, as well as a nondynamic benchmark model and the state dependent recency-frequency model commonly used in relationship marketing.</p><p>Model 1-This is the full HMM. 10 Model 2-HMM with no heterogeneity. This model is similar to Model 1, but with common parameter across individuals. A limitation of this model is that this model cannot distinguish between heterogeneity and dynamics in the gift-giving behavior.</p><p>Model 3-Nondynamic model. This is the latent class model <ref type="bibr" target="#b37">(Kamakura and Russell 1989)</ref> with the same number of latent states as in Model 1. This model does not allow individuals to move between the states over time.</p><p>Model 4-Recency-frequency model. This model is frequently used in relationship management applications (e.g., <ref type="bibr" target="#b11">Bult and Wansbeek 1995)</ref>. In this model, the recency since the last donation and frequency of donations up to time t enter as covariates in the model. <ref type="bibr">11</ref> In the recency-frequency model, the probability of choice follows the binary logit formulation:</p><formula xml:id="formula_13">P Y it = 1 = exp x it i 1 + exp x it i (<label>10</label></formula><formula xml:id="formula_14">)</formula><p>where i is a vector of random-effect parameters, and x it is a vector of time-varying covariates. The vector x it includes all the covariates used in the HMM (reunion years, reunion participation, volunteering to university roles and years since graduation) as well as recency since last donation and donation frequency. We incorporate heterogeneity in this model by estimating a random-effect intercept and the recency-frequency parameters using hierarchical Bayes estimation.</p><p>The distinction between the HMMs and the recency-frequency model is noteworthy. The recencyfrequency model accounts for dynamics in an ad-hoc fashion in which the structure of the effect of past choices on the current choice is defined a priori through the recency and frequency terms. The HMM offers a more behaviorally structured approach for state dependence through a Markovian transition between a set of relationship states. Furthermore, although some structure is imposed on the transitions between the states, the choice of the number of states allows us to determine the structure of dynamics based on the complexity of the dynamics of the data at hand.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5.">Estimation Results</head><p>Models 2 and 3 were estimated using the maximum likelihood procedure MAXLIK in the GAUSS statistical software. Models 1 and 4 were estimated using a MCMC hierarchical Bayes procedure, using the Gibbs sampler and the Metropolis-Hastings algorithm coded in GAUSS. In the hierarchical Bayes estimation, the first 90,000 iterations were used as a "burnin" period, and the last 10,000 iterations were used to estimate the conditional posterior distributions and moments. To asses convergence of the MCMC we adopt the method proposed by <ref type="bibr" target="#b23">Gelman and Rubin (1992)</ref>, which compares the within to between variance for each parameter estimated across multiple chains. Across three parallel chains, the scale reduction estimate for all the parameters estimated is lower than 1.2, suggesting that convergence has been achieved.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5.1.">Selecting the Number of States.</head><p>The first stage in estimating the HMM is selecting the number of states. Model selection measures can be used to choose the number of states. Due to the sensitivity of some Bayesian model selection criteria, such as the marginal log-likelihood and Bayes factor, to the specified priors <ref type="bibr" target="#b62">(Rossi and Allenby 2003)</ref>, we compare alternative model selection criteria. Specifically, we contrast the Bayes factor with the log-marginal density, 12 the marginal validation log-likelihood measure <ref type="bibr" target="#b3">(Andrews and Currim 2003)</ref>, the deviance information criterion (DIC) proposed by <ref type="bibr" target="#b70">Spiegelhalter et al. (2002)</ref>, and the Markov switching criterion (MSC), recently developed for HMMs' states and variables selection by <ref type="bibr">Smith et al. (2005)</ref>. <ref type="bibr">13</ref> The validation loglikelihood is calculated following Equation (8), using Based on all measures, the best-fitting model is the model with three states. This model minimizes the −2 log-marginal density, validation −2 log-likelihood, DIC and MSC, and shows a favorable Bayes factor 14 (see Table <ref type="table" target="#tab_4">2</ref>). <ref type="table" target="#tab_5">3</ref> reports the posterior means and posterior standard deviations (parameter estimates and standard errors for Model 2) of the two variants of the HMM based on the calibration sample. In the heterogeneous HMM, the parameters that capture the effect of reunion attendance, reunion participation and volunteering are all positive as expected. With the exception of state 1, likelihood of donation is increasing with years since graduation. To get a better understanding of the magnitude of the parameter estimates in Table <ref type="table" target="#tab_5">3</ref> we plug these parameters into Equations ( <ref type="formula">2</ref>)-( <ref type="formula">6</ref>) to get the state dependent choice and transition probabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5.2.">HMM Estimates. Table</head><p>The interpretation of the three states is primarily determined by the state-specific intrinsic propensity to donate (the parameters 01 , 02 , and 03 . At the mean of the covariates "years since graduation" and "reunion year," the conditional probability of donation given state 1 is 6%, given state 2 it is 46%, and given state 3 it is 100%. Accordingly, we label these three states as "dormant," "occasional," and "active" states, respectively.</p><p>An interesting feature of our model is the ability to investigate the effects of time-varying covariates on the transitions between the states. Specifically, we compare the effect of reunion attendance and volunteering to university roles. The middle and right matrices in Table <ref type="table" target="#tab_7">4</ref> demonstrate the average effect (across alumni) of reunion attendance and volunteering on the state transitions. Attending a reunion increases the likelihood that an alumna/alumnus in the dormant state moves to the occasional state from 10% to 68%. Reunion attendance also has a strong impact on moving alumni from the occasional to the active state; it increases this likelihood from 28% to 53%. More importantly, reunion attendance decreases the likelihood of dropping from the occasional state to the "sticky" dormant state from 14% to only 5%. In contrast, the effect of reunion participation on keeping alumni in the active state is moderate (i.e., from 68% to 82%). Volunteering to university roles, on the other hand, has its primary impact on alumni in the dormant and active states, whereas the effect on alumni in the occasional state is minimal. While targeting the most active customers is consistent with the customer lifetime value approach and with the practice of rewarding "loyal" customers, the result that reunion attendance has the highest impact on alumni in the dormant and occasional state is consistent with the theory of intermittent reinforcement. Due to the probabilistic nature of the transitions, active alumni are likely to transition into the occasional state once in  </p><formula xml:id="formula_15">[89%-90%] [10%-11%] [---] [17%-48%] [52%-82%] [---] [49%-74%] [25%-51%] [---] Occasional 14% 58% 28% 5% 42% 53% 13% 57% 30% [14%-15%] [56%-59%] [27%-30%] [1%-12%] [17%-56%] [31%-80%] [7%-21%] [47%-60%] [20%-45%] Active 3% 29% 68% 1% 17% 82% 1% 14% 85% [3%-3%] [28%-31%] [66%-69%] [0%-4%] [2%-35%] [61%-97%] [0%-2%] [9%-21%] [77%-90%] * 95% confidence interval in parenthesis.</formula><p>several time periods and therefore should be affected by reunion attendance.</p><p>It is important to note that the results presented in Table <ref type="table" target="#tab_7">4</ref> are the mean of the posterior distribution across individuals. Inference from our estimation could and should be derived at the individual level in a similar manner.</p><p>The time-varying covariates reunion attendance and volunteering are endogenous to the alumna/alumnus, thus one should be careful about treating these as decision variables in the context of our data set. Nevertheless, given the observed behavior, one could still use these alumni-university interactions to dynamically segment alumni to the relationship states. Table <ref type="table" target="#tab_7">4</ref> demonstrates the value of adding timevarying covariates such as customer initiated interaction or marketing interventions. Future research could explore the application of our model to data sets in which the time-varying covariates are also decision variables.</p><p>The transition probabilities in Table <ref type="table" target="#tab_7">4</ref> suggest that reunion attendance might have an enduring impact on the donation behavior of alumni in the occasional </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Years Probability of donation (%)</head><p>Reunion attendance Volunteering Reunion attendance + volunteering Baseline state, by moving them away from the "sticky" dormant state and by increasing the likelihood of a transition to the relatively "sticky" active state. We use the posterior mean of the transition matrix parameters to gain better understanding of the long-term effect of the time-varying covariates in the transition matrix. Specifically, we calculate the effect of reunion attendance and volunteering over the course of 20 years for an alumna/alumnus with an average initial state distribution at time 0 (average donation rate of 41%) and attended a reunion and/or volunteered to a university role at year 1.</p><p>As is evident from Figure <ref type="figure">2</ref>, both time-varying covariates have a long-term impact on the propensity to donate. The immediate as well as long-term effects of reunion attendance are stronger than the effects of volunteering to a university role. Five years after the reunion attendance or volunteering year, approximately 50% of the effect of these events still carries over.</p><p>One interesting product of the transition matrices in Table <ref type="table" target="#tab_7">4</ref> is the stationary distribution of the transition matrix at the mean of the covariates, which is also our initial state distribution. The stationary distribution of the alumni in the three states is 46%, 29%, and 25% in the dormant, occasional, and active states, respectively.</p><p>In the HMM, following each choice, the model updates the state membership distribution. This allows estimating the effect of a donation at time t on the probability of being in state s at time t and therefore on the probability of donation at time t + 1 (see Table <ref type="table" target="#tab_9">5</ref>). Using Equation ( <ref type="formula" target="#formula_16">11</ref>) we calculated the state membership probability at time t following a donation at time t.</p><formula xml:id="formula_16">P S it = s Y it = 1 S it−1 = Pr S it−1 Q i t−1→t s m it s / Pr S it−1 Q i t−1→t m it 1<label>(11)</label></formula><p>where</p><formula xml:id="formula_17">Pr S it−1 is individual i's state membership distri- bution at time t − 1, Q i t−1→t s</formula><p>is the sth column of the transition matrix Q i t−1→t , and m it is a NS × NS diagonal matrix with the elements of m it s on the diagonal.</p><p>As expected, donations have a very strong impact on the transition probabilities.</p><p>The transition matrices in Tables <ref type="table" target="#tab_7">4 and 5</ref> present the mean of the posterior distribution across alumni. Next, we describe the heterogeneity in these matrices across alumni. 4.5.3. Posterior Distributions and Observed Heterogeneity. In our HMM, alumni can differ with respect to their propensity to switch between states due to the random-effect transition threshold parameters. Figure <ref type="figure">3</ref> depicts the distribution of the alumni's posterior propensity to stay in each one of the states given in that state in the previous period (the diagonal elements of the first transition matrix in Table <ref type="table" target="#tab_7">4</ref>).   </p><formula xml:id="formula_18">Dormant 53% 47% 0% [47%-58%] [42%-53%] [-] Occasional 1% 48% 51% [1%-2%] [43%-51%] [47%-55%] Active 0% 16% 84% [0%-0%] [14%-18%] [71%-86%]</formula><p>Not only is the dormant state the most "sticky" on average, as suggested by Table <ref type="table" target="#tab_7">4</ref>, but also alumni in this state are most homogeneous in terms of their likelihood of staying in this state. On the other hand, alumni in the occasional and active states are relatively heterogeneous in terms of their propensity to stay in these states.</p><p>We relate the random-effect parameters to observed heterogeneity using a hierarchical Bayes structure (see Appendix A for details). Table <ref type="table" target="#tab_11">6</ref> presents the parameter estimates of the observed heterogeneity covariates.</p><p>Several individual characteristics are significantly related the propensity for transition between the states. Specifically, membership in the alumni association increases the likelihood of transitioning up from the dormant and occasional states. Females and alumni families in which both household members are alumni tend to avoid falling into dormancy from the occasional state, but given in an active state tend either to stay active or drop to dormancy. Furthermore, graduates of the earth sciences, humanities and engineering schools are less likely to transition to the active state relative to the othermajors.   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.6.">Predictive Ability</head><p>We use the hold-out data to assess the prediction ability of the HMM and compare it to the four benchmark models. <ref type="bibr">15</ref> The parameters estimated based on the calibration period are used to predict the 1,256 (alumni) × 3 (years) = 3 768 observations of possible gift giving in the validation period. We compare the prediction ability of the alternative models using the hit rate measures 16 (overall hit rates as well as hits and misses of donation and nondonation periods), the root-mean-square prediction error (RMSPE) between the predicted choice probabilities and the actual choices across alumni and time periods, and the validation log-likelihood (see Table <ref type="table" target="#tab_12">7</ref>).</p><p>The RMSPE of each model is compared to the RMSPE of a random choice rule. The random choice rule's RMSPE was calculated based on the aggregate donation probability in the calibration period (43.0%). The random choice rule's RMSPE is 0.495. The prediction ability of all models is significantly better than that of a random choice rule, based on the RMSPE.</p><p>The HMM predicts the hold-out choices significantly better than the nondynamic latent class model (z = 9 5; p-value &lt; 0 001) and the dynamic, observed states, recency-frequency model (z = 5 1; p-value &lt; 0 001). The improvement in prediction ability of the HMM relative to the alternative models is consistent across all prediction measures used. The recencyfrequency model seriously under-predicts donation years, which are arguably more important to predict than nondonation years.</p><p>While the fit of the HMM with heterogeneity (Model 1) is better than that of the HMM with no heterogeneity (Model 2), the prediction ability of the parsimonious HMM with no heterogeneity is similar to that of the full HMM. This is not surprising because in Model 2 heterogeneity in the hold-out period is elicited from the history of choices in the calibration period even when the model's parameters do not vary across individuals. Consequently, in Model 2 one cannot distinguish between the effect of time dynamics and cross-individual heterogeneity.</p><p>One of the major advantages of the HMM in the context of customer relationships is the ability to dynamically segment the firm's customer base. An alternative, static segmentation approach is the latent class model (Model 3). In Table <ref type="table" target="#tab_12">7</ref>, the HMM segmentation provides better donation predictive validity and fit relative to the latent class model. To investigate further the difference between the dynamic and the static segmentation models, we analyzed the predictive ability of the two models for alumni for whom the two segmentation methods coincide and alumni for whom they diverge. Specifically, for the HMM we classified each alumnus to the state with the highest state membership probability in the last year of  the calibration sample. The latent class solution suggested three segments that are similar to the three HMM states in terms of donation propensity (dormant 14%, occasional 45%, active 80%). We classified alumni into these three latent class states based on the highest probability rule. Table <ref type="table" target="#tab_13">8</ref> compares the predictive ability of the HMM and the latent class models to predict the hold-out donation years of alumni that were classified to the same state/segment by the two methods and alumni for which the segmentation of the two methods departed. The predictive ability of the latent class model is similar to that of the HMM for the alumni that were classified to the dormant or active segment/state by both models. However, for alumni that were classified by the latent class model into a different segment than the one suggested by the HMM, the predictive ability of the latent class model was poor. Additionally, the HMM outpredicted the latent class model for alumni in the more transient occasional state. This analysis might suggest that the HMM segmentation matches the "true" alumni segmentation better than the static latent class model.</p><p>In summary, the previous sections demonstrated the insights one could gain from including timevarying covariates in the states' transitions. The hold-out sample analysis suggests that an additional advantage of the relationship HMM is in improving the ability to predict future choices over the static and observed state models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.7.">Behavioral and Attitudinal Dimensions</head><p>To broaden the applicability of the HMM to most common CRM data sets, the model uses only observed behavioral measures (such as choice) to elicit the relationship states. This could raise concerns that the relationship states in the HMM represent merely differences in the likelihood of choice rather than true differences in relationship reflected by attitude. It has been suggested that repeated transactions could be transformed into "true" relational behavior through attitudinal bonds such as commitment, identity salience, self-connection, and satisfaction (e.g., <ref type="bibr" target="#b4">Arnett et al. 2003</ref><ref type="bibr" target="#b21">, Fournier 1998</ref><ref type="bibr" target="#b48">, Morgan and Hunt 1994</ref>. To explore the underlying attitudinal dimensions of the three relationship states, we complement the observed behavior data with surveybased data. This approach is consistent with the call of <ref type="bibr" target="#b26">Gupta and Zeithaml (2006)</ref> for incorporating attitudinal and perceptual constructs with behavioral outcome models.</p><p>In the <ref type="bibr">years 1998, 2000, and 2002</ref>, the alumni association conducted a survey that measured alumni engagement and attitude towards the university. Over 1,600 randomly sampled alumni were surveyed. The vast majority of these alumni were surveyed only in one of the three years. The questionnaire included questions about the relationship between alumni and the university in dimensions such as satisfaction, emotional connection, pride and others. Of the total survey sample, 128 surveys matched our original data set of 17,000 alumni. For this subset of 128 alumni, we calibrated the HMM (Model 1) and calculated, using Equation ( <ref type="formula">9</ref>), the alumni probability of membership in each of the three relationship states in the year of the survey. <ref type="bibr">17</ref> We then assigned each alumna/alumnus to the relationship state with the highest probability. Table <ref type="table" target="#tab_15">9</ref> compares the mean responses to the relationship questions across alumni in the three relationship states.</p><p>On all relationship measures, except affinity to the graduating class, the average ratings toward the university are increasing in the states from dormant to occasional to active. The last column in Table <ref type="table" target="#tab_15">9</ref> presents the ANCOVA of the different relationship measures on the states' membership with lagged donation as a covariate. Controlling for the lagged choice provides a more conservative estimate of the difference in the relationship measures between the states over and beyond the impact of an immediate donation.</p><p>This analysis revealed that even after controlling for the effect of typical state dependence, alumni in the active and occasional states had stronger feelings toward the university than those in the dormant state. Specifically, the difference was significant in terms of the emotional connection to the university, affinity with the graduating class, the feeling of responsibility toward the university, the perception of being valued by the university, and the likelihood of recommending the university to others. Indeed, it has been suggested in the relationship marketing literature that these dimensions of commitment, responsibility, and self-connection <ref type="bibr" target="#b21">(Fournier 1998</ref>  Sample size (N) 6 4 2 9 3 5 1 2 8 * Bold numbers reflect significant differences (at the 5% level) between the three relationship states.</p><p>and Hunt 1994) are important factors of customerfirm relational behavior. These attitudinal measures give behavioral support to the projection from observed donation behavior to latent states of relationship. Furthermore, the high ratings for positive word-of-mouth among alumni in the active and occasional states suggest that alumni in these states do not only have a higher propensity to donate, but are also more likely to be active on other dimensions. Indeed, <ref type="bibr" target="#b4">Arnett et al. (2003)</ref> used actual donation and word-of-mouth to measure relationship marketing success in the context of alumni-university relationships.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">General Discussion</head><p>In this paper, we use data on alumni gift-giving behavior to estimate a hidden Markov model of relationship dynamics. The HMM, which was estimated using a hierarchical Bayes MCMC procedure to account for observed and unobserved heterogeneity, offers several insights into the drivers of these dynamics.</p><p>The main contribution of this research is in suggesting a behaviorally grounded model that helps marketers to infer the underlying structure of relationship states. Using the model, the researcher can dynamically classify customers into the relationship states and assess the dynamic effect of alternative timevarying covariates on the transition between the relationship states and consequent buying behavior.</p><p>The empirical application to the problem of university-alumni relationships demonstrates the use of the model to a dynamic relationship problem. Examining the time-varying covariates in the transition matrix, we find that the impact of reunion attendance is the strongest for alumni in the dormant and the transitory, occasional state, while the effect of volunteering is stronger on alumni in the "sticky" dormant and active states. Both of these covariates have a long-term impact on the donation behavior. In terms of prediction ability, we demonstrate that, for our empirical application, the proposed model predicts future donations significantly better than the static latent class model and the dynamic, observed states, recency and frequency model. Additionally, we use the hold-out sample to demonstrate that HMM dynamic segmentation provides superior segmentation to the static latent class segmentation. More generally, the empirical application demonstrates the value of the proposed model for CRM marketers. The HMM enables marketers to use buyer behavior data to dynamically segment their customers into relationship states and estimate the evolution of customer relationships over time.</p><p>The proposed model extends the marketing literature by suggesting a Markovian framework for estimating the dynamics in customer relationships. Using the nonhomogeneous HMM, one can estimate the long-term impact of customer-firm interactions on customer relationships, an issue that has been largely neglected in the customer relationship literature. Methodologically, the proposed model extends the observed states models, such as the state-dependence and recency-frequency models by offering a latent specification of state dependence, which incorporates the effect of time-varying covariates into the statedependence structure. The ability to determine the number of states based on the data at hand relaxes the ad-hoc specification of dynamics in the observed state models. The proposed model also extends the family of HMMs. To our knowledge, this is the first nonhomogeneous HMM in the marketing literature that investigates the impact of time-varying covariates, such as customer-firm interactions, on the transition between the latent states. Indeed, <ref type="bibr">Wedel and Kamakura (2000, p. 176</ref>) point out that the issue of nonstationarity in marketing segmentation in general, and specifically nonstationarity that could be related to time-varying covariates, has received limited attention.</p><p>The ability to incorporate time-varying covariates in the transition matrix opens the opportunity to investigate which marketing activities are most effective in building customer-firm relationships and driving actionable behavior, and to determine the optimal targeting of such marketing activities. Future research could investigate this issue using a data set that incorporates both exposure to marketing activities and observed buying behavior.</p><p>It is worthwhile to distinguish between the proposed nonhomogeneous HMM, which incorporates time-varying covariates in the transition matrix, and a nonstationary HMM <ref type="bibr" target="#b14">(Djurić and Chun 2002)</ref>, which models the transition probabilities as a function of the state duration. Because our main interest is in investigating the effect of customer-firm interactions on HMM dynamics, we adopt the first approach. However, future research could investigate the value of the additional flexibility offered by nonstationary HMMs in marketing applications.</p><p>To broaden the applicability of the proposed model to most common CRM data sets, we used only observed buying behavior to elicit the relationship states. Using survey data, we show that the relationship states, which were estimated based on observed buying behavior, are also different in terms of behavioral dimensions of relationship, such as satisfaction, emotional connection, and responsibility. Future research could use longitudinal survey data to estimate the relationship states. Estimating the dynamics in relationship states directly from attitudinal variables would be helpful in providing insight into the mediating factors of the connection between observed buying behavior and the relationship states.</p><p>To increase the external validity of the model, it would be constructive to investigate the application of this model in relationship marketing contexts other than university-alumni relationships. Some possible applications are other institutional gift giving; continuous service provider relationships, which face high churn rates such as banks and telephone carriers <ref type="bibr" target="#b9">(Bolton 1998)</ref>; institutional memberships <ref type="bibr" target="#b74">(Thomas 2001)</ref>; direct selling efforts; and dynamic brand choice problems. The HMM framework could also be extended to study alternative measures of customer relationships. For example, one could explore the connection between alternative relationship measures such as service encounters, satisfaction, and actionable behavior <ref type="bibr" target="#b9">(Bolton 1998)</ref>. Future research could also investigate an HMM with multivariate outcomes such as donation amounts, donation incidence and participation in university events, as multiple modes of behavior that determine the customer relationship state.</p><p>To summarize, we believe that from the modeling perspective, we have provided CRM practitioners with an implementable model for evaluating customer relationships, their evolution over time, and the effect of customer-firm interactions on altering this evolution. These factors are necessary to transform a CRM system from an information system into a decision support system. This research takes a fundamental step in that direction.</p><p>the model fit component of the deviance information criterion (DIC). We calculate the deviance as the expectation over the estimates at each iteration of the MCMC simulation. Thus,</p><formula xml:id="formula_19">−2 log f Y ˆ i = J j=1 N i=1 −2 log f Y i ˆ j i j (B2)</formula><p>where J is the number of MCMC iterations used to obtain the posterior distributions after the burn-in period, N is the number of individuals, j i is the vector of parameter estimates for individual i in iteration j, and f Y i ˆ j i j is the likelihood of observing a sequence of choices following Equation ( <ref type="formula">8</ref>).</p><p>The term T s in (B1) captures the effective sample size at state s. Accordingly, we define</p><formula xml:id="formula_20">T s = N i=1 T i t=1 P S it = s</formula><p>where P S it = s is the probability that individual i is in state s at time T . Thus, the only difference between our formulation of T s and that of SNT is the summation over individuals in our model.</p><p>Finally, we need to count the number of additional parameters in each state K. Unlike SNT, we include covariates both in the transition matrix and in the state-dependent vector. Accordingly, in our application, K is the number of covariates for each state in both the transition matrix and in the state-dependent vector. Note that because the parameters that capture the effect of the covariates are common across individuals we can simply "count" the number of parameters. If one estimates a full random-effect model using hierarchical Bayesian approach, we recommend using the effective number of parameters, pD of <ref type="bibr" target="#b70">Spiegelhalter et al. (2002)</ref>, divided by the number of states as a measure for K.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 A</head><label>1</label><figDesc>Figure 1A Hidden Markov Model of Customer Relationships</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Figure 2The Long-Term Effects of the Time-Varying Covariates</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>Figure 3Posterior Distribution of the Propensity to Stay in the Three States</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>from the university * The 90% confidence interval does not include zero. * * The 95% confidence interval does not include zero.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Netzer, Lattin, and Srinivasan: A Hidden Markov Model of Customer Relationship Dynamics 186 Marketing Science 27(2), pp. 185-204, © 2008 INFORMS</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>Netzer, Lattin, and Srinivasan: A Hidden Markov Model of Customer Relationship Dynamics</figDesc><table><row><cell>192</cell><cell>Marketing Science 27(2), pp. 185-204, © 2008 INFORMS</cell></row><row><cell>and diffuse priors on</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 1</head><label>1</label><figDesc></figDesc><table><row><cell cols="2">Descriptive Statistics of the Calibration and</cell></row><row><cell>Hold-Out Sample</cell><cell></cell></row><row><cell>Key characteristics</cell><cell>Percentage/Average</cell></row><row><cell>Overall observations (gift opportunities)</cell><cell>27,526</cell></row><row><cell>Overall number of alumni</cell><cell>1,256</cell></row><row><cell>Mean observations per individual</cell><cell>21.9</cell></row><row><cell>Proportion of donation years</cell><cell>43%</cell></row><row><cell>Mean donation</cell><cell>$478</cell></row><row><cell>Q25 yearly donation</cell><cell>$30</cell></row><row><cell>Median yearly donation</cell><cell>$100</cell></row><row><cell>Q75 yearly donation</cell><cell>$200</cell></row><row><cell>Gender</cell><cell></cell></row><row><cell>Female</cell><cell>40%</cell></row><row><cell>Male</cell><cell>60%</cell></row><row><cell>School</cell><cell></cell></row><row><cell>Earth</cell><cell>3%</cell></row><row><cell>Humanities</cell><cell>79%</cell></row><row><cell>Engineering</cell><cell>15%</cell></row><row><cell>Other (e.g., Undeclared)</cell><cell>3%</cell></row><row><cell>Degree</cell><cell></cell></row><row><cell>Undergraduate</cell><cell>73%</cell></row><row><cell>Undergraduate + Graduate</cell><cell>27%</cell></row><row><cell>Spouse is university alumna/alumnus</cell><cell></cell></row><row><cell>Yes</cell><cell>56%</cell></row><row><cell>No</cell><cell>44%</cell></row><row><cell>Alumni association membership</cell><cell></cell></row><row><cell>Member</cell><cell>69%</cell></row><row><cell>Not member</cell><cell>31%</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 2</head><label>2</label><figDesc>Choosing the Number of States</figDesc><table><row><cell cols="3">Number −2 Marginal Log Bayes</cell><cell></cell><cell></cell><cell>Validation</cell></row><row><cell cols="2">of states log-density</cell><cell>factor</cell><cell>DIC</cell><cell>MSC</cell><cell>−2 log-likelihood</cell></row><row><cell>1</cell><cell>26 708 5</cell><cell>-</cell><cell cols="2">2 6 493 0 50 476 5</cell><cell>4 768 5</cell></row><row><cell>2</cell><cell>2 5 557 1</cell><cell cols="3">575 7 25 378 8 48 806 6</cell><cell>3 689 1</cell></row><row><cell>3</cell><cell>25 397 1</cell><cell cols="3">8 0 0 25 176 3 48 332 8</cell><cell>3 583 6</cell></row><row><cell>4</cell><cell>2 5 689 1</cell><cell cols="3">−146 2 25 658 2 48 639 5</cell><cell>3 717 5</cell></row><row><cell cols="6">the hold-out sample (the years 1999-2001 in the data</cell></row><row><cell cols="6">set). The log marginal density and Bayes Factor are</cell></row><row><cell cols="6">calculated using a harmonic mean of the individ-</cell></row><row><cell cols="6">ual likelihoods across iterations (Newton and Raftery</cell></row><row><cell cols="6">1994) from the output of the Metropolis-Hasting</cell></row><row><cell>sampler.</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 3</head><label>3</label><figDesc>Estimation Results for the Hidden Markov Models Numbers in parentheses are posterior standard deviations for Model 1 and standard errors for Model 2.</figDesc><table><row><cell>Model 1</cell><cell>Model 2</cell></row><row><cell>HMM with</cell><cell>HMM no</cell></row></table><note>* * * V refers to the posterior standard deviation across individuals.</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head>Table 4</head><label>4</label><figDesc>The Mean Posterior Transition Matrices *</figDesc><table><row><cell></cell><cell></cell><cell>No interactions</cell><cell></cell><cell></cell><cell>Reunion attendance</cell><cell></cell><cell></cell><cell>Volunteering</cell><cell></cell></row><row><cell></cell><cell></cell><cell>t</cell><cell></cell><cell></cell><cell>t</cell><cell></cell><cell></cell><cell>t</cell><cell></cell></row><row><cell>t − 1</cell><cell>Dormant</cell><cell>Occasional</cell><cell>Active</cell><cell>Dormant</cell><cell>Occasional</cell><cell>Active</cell><cell>Dormant</cell><cell>Occasional</cell><cell>Active</cell></row><row><cell>Dormant</cell><cell>90%</cell><cell>10%</cell><cell>0%</cell><cell>32%</cell><cell>68%</cell><cell>0%</cell><cell>64%</cell><cell>36%</cell><cell>0%</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9"><head>Table 5</head><label>5</label><figDesc></figDesc><table><row><cell></cell><cell cols="3">Mean Posterior Transition Following a Donation at</cell></row><row><cell></cell><cell>Time t</cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="2">Donation at t</cell><cell></cell></row><row><cell></cell><cell></cell><cell>t</cell><cell></cell></row><row><cell>t − 1</cell><cell>Dormant</cell><cell>Occasional</cell><cell>Active</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_11"><head>Table 6</head><label>6</label><figDesc>Mean Posteriors for Observed Heterogeneity Parameters</figDesc><table><row><cell></cell><cell>hi 1</cell><cell>lo 2</cell><cell>hi 2</cell><cell>0 3</cell><cell>lo 3</cell></row><row><cell></cell><cell>high threshold</cell><cell>low threshold</cell><cell>high threshold</cell><cell>drop to dormant</cell><cell>low threshold</cell></row><row><cell>Variable</cell><cell>dormant</cell><cell>occasional</cell><cell>occasional</cell><cell>threshold active</cell><cell>active</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_12"><head>Table 7</head><label>7</label><figDesc></figDesc><table><row><cell cols="3">Fit and Predictive Ability Measures</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>Model</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell>Model 4</cell></row><row><cell></cell><cell>Model 1</cell><cell>Model 2</cell><cell>Model 3</cell><cell>recency-</cell></row><row><cell></cell><cell>HMM with</cell><cell>HMM no</cell><cell cols="2">nondynamic frequency</cell></row><row><cell>Measure</cell><cell cols="3">heterogeneity heterogeneity latent class</cell><cell>model</cell></row><row><cell>Calibration: −2 log</cell><cell>25,397.1</cell><cell>25,565.8</cell><cell>27,399.8</cell><cell>26,045.1</cell></row><row><cell>marginal density/</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>−2 log likelihood</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Overall hit rate (%)</cell><cell>77.6</cell><cell>77.3</cell><cell>67.9</cell><cell>72.5</cell></row><row><cell>Donation hit rate (%)</cell><cell>78.8</cell><cell>78.0</cell><cell>67.2</cell><cell>67.7</cell></row><row><cell>Non donation</cell><cell>76.5</cell><cell>76.6</cell><cell>68.5</cell><cell>76.9</cell></row><row><cell>hit rate (%)</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>RMSPE</cell><cell>0.392</cell><cell>0.393</cell><cell>0.448</cell><cell>0.426</cell></row><row><cell>Improvement over the</cell><cell>20.7</cell><cell>20.6</cell><cell>9.4</cell><cell>14.0</cell></row><row><cell>random RMSPE (%)</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Validation −2 log</cell><cell>3,583.6</cell><cell>3,597.0</cell><cell>4,484.2</cell><cell>4,148.6</cell></row><row><cell>likelihood</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_13"><head>Table 8</head><label>8</label><figDesc></figDesc><table><row><cell cols="3">Predictive Ability by Segmentation Method</cell><cell></cell></row><row><cell></cell><cell></cell><cell>Latent class</cell><cell>HMM hit</cell></row><row><cell>Segment allocation</cell><cell>N</cell><cell>hit rates (%)</cell><cell>rates (%)</cell></row><row><cell>Dormant in HMM but</cell><cell>142</cell><cell>42 0</cell><cell>7 7 2</cell></row><row><cell>not in latent class</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Dormant in both</cell><cell>393</cell><cell>82 4</cell><cell>8 1 9</cell></row><row><cell>Occasional in HMM but</cell><cell>123</cell><cell>55 0</cell><cell>6 2 9</cell></row><row><cell>not latent class</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Occasional in both</cell><cell>154</cell><cell>52 6</cell><cell>6 8 2</cell></row><row><cell>Active in HMM but not</cell><cell>216</cell><cell>58 6</cell><cell>7 6 7</cell></row><row><cell>in latent class</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Active in both</cell><cell>228</cell><cell>85 2</cell><cell>8 5 4</cell></row><row><cell>Total</cell><cell>1 256</cell><cell>67 9</cell><cell>7 7 6</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_15"><head>Table 9</head><label>9</label><figDesc>Behavioral Dimensions of Relationship in the Three States</figDesc><table><row><cell>ANCOVA</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1">Because the model proposed in this paper applies to the customer's relationship with firms, brands, services, or nonprofit and for-profit organizations, we use the term "firm" to represent the business partner for the relationship with the customer.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2">To keep this manuscript in a manageable length, we provide only a brief description of HMMs. The interested reader is referred to<ref type="bibr" target="#b58">Rabiner (1989)</ref> and<ref type="bibr" target="#b44">MacDonald and Zucchini (1997)</ref> for a detailed treatment of the topic.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3">In what follows, we assume no information is available about the competition. We take this approach because this is generally the case in CRM transaction data sets, where the firm does not observe transactions with the competition. Nevertheless, if information about the competition exists, one could extend the model to incorporate competitive information.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4">An alternative approach would be to take the stationary distribution of the transition matrix with the covariates set to zero. For the empirical application in §4, the two approaches yielded very similar results. In general, one should use the stationary distribution of the transition matrix with the covariates set to zero if the data set is not left truncated (i.e., we observe the initial interaction between the customer and the firm), and the stationary distribution of the transition matrix at the mean of the covariates otherwise.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="5">In the context of alumni university donations, we model the statedependent and dichotomous choices rather than donation amounts because we believe that the act of choice is a stronger determinant of relationship strength than quantity measures. Nevertheless, the model could be extended to capture quantity or amount outcomes using Poisson or Tobit models.6  The covariate in the state-dependent choice vector could still have an indirect long-term effect through the longitudinal effect of the current choice on future buying behavior.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="8">The complete set of conditional distributions and the iteration sequence of the MCMC simulation appear in Appendix A.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">Netzer, Lattin, and Srinivasan: A Hidden Markov Model of Customer Relationship Dynamics   Marketing Science 27(2), pp. 185-204, © 2008 INFORMS   </note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="9">Following the alumni association's recommendation, we sampled only alumni who received their undergraduate degree (possibly followed by higher degrees) from the university.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="10">In addition to the full HMM, we also estimated a hierarchical HMM in which the random-effect coefficients are a function of individual characteristics (see Table6).11  We do not model the monetary donation amounts to be consistent with the proposed HMM. Moreover, adding the running average of donation amounts as a predictor did not significantly improve the model's fit or prediction for donation incidents.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="12">The Schwarz Bayesian information criterion(BIC;<ref type="bibr" target="#b66">Schwarz 1978</ref>) commonly used for model selection in classic statistical applications, asymptotically approximates the Bayesian posterior marginal density.13  The MSC was originally developed for a stationary, aggregate data HMM. We adapted this criterion to our random-effect nonstationary HMM. The details of the modified MSC appear in Appendix B.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="14">The log Bayes factor compares the model with NS states to the model with NS − 1 states. A log Bayes factor larger than five suggests strong evidence in favor of the model with NS states.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="15">The parameter estimates of the recency-frequency model, and the latent class model can be obtained from the authors.16  To estimate hit rates, we predicted a donation if the predicted probability of donation is larger than 50%.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="17">Because the gift-giving data ended at the end of 2001, the relationship state in 2001 was used for the survey of 2002.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors thank Amy Paulsen and the alumni association members for help with the data, and Michaela Draganska, Ricardo Montoya, Olivier Toubia, and participants in seminars at Carnegie Mellon University, Chicago Business School, Columbia University, Hebrew University at Jerusalem, Hong-Kong University of Science and Technology, London Business School, New York University, Northwestern University, Stanford University, The Interdisciplinary Center at Hertzelia, The Israeli Institute of Technology, University of Maryland, University of Texas at Austin, University of Texas at Dallas, and University of Toronto for helpful comments and suggestions. The authors are also grateful for the support of the Marketing Science Institute through the Alden G. Clayton Dissertation Competition.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix A. Hierarchical Bayes Estimation Algorithm</head><p>The parameters in our model could be divided into two groups: (1) parameters that vary across individuals (random-effect parameters) and (2) parameters that do not vary across individuals (fixed parameters). The set of parameters in each group is determined by the model's heterogeneity specification as described in § §3.2.4 and 3.4.</p><p>We denote by i the set of random-effect parameters and by the set of fixed parameters. For the HMM described in §3, the random-effect parameters includes:</p><p>NS . Observed individual characteristics, such as demographics, can be introduced into the model in a hierarchical manner <ref type="bibr" target="#b1">(Allenby and Ginter 1995)</ref>. Thus, the vector of heterogeneous parameters ( i ) can be written as a function of observed and unobserved individual characteristics</p><p>where Z i is a vector of individual characteristics for individual i, is a matrix of parameters, relating the individual characteristics to the random-effect parameters ( i ), and i ∼ N 0 . The MCMC procedure recursively generates draws from the conditional distribution of the model's parameters:</p><p>where Y i , X i , and a i are the vectors of donations, covariates in the state-dependent choice, and covariates in the transition matrix, respectively, as described in §4.3.</p><p>(</p><p>where L(Y i ) is the likelihood function from Equation ( <ref type="formula">8</ref>). Because (A2) does not have a closed form, the Metropolis-Hastings algorithm is used to draw from the conditional distribution of i . The Metropolis-Hastings algorithm proceeds as follows: Let's define k i as the accepted draw of i in iteration k and k+1 i as the draw in iteration k + 1. Then, the sequence of draws is given by</p><p>where is a draw from N 0 2 , and and are chosen adaptively to reduce the autocorrelation among the MCMC draws, with an acceptance rate of approximately 20%, following <ref type="bibr" target="#b5">Atchadé (2006)</ref>.</p><p>The probability of accepting</p><p>N is an N × n matrix which stacks i }, * = vec , V 0 and u 0 are prior hyperparameters, n = dim i , and nz = dim z i . We define diffuse priors be setting u 0 to a n •nz×1 vector of zeros, and V 0 = 100I n •nz .</p><p>(</p><p>where f 0 and G 0 are prior hyperparameters, f 0 is the degrees of freedom, and G 0 is the scale matrix of the inverse Wishart distribution. We define diffuse priors by setting f 0 = n + 5, and G 0 = I n .</p><p>(4) Generate Similar to (A2) the conditional distribution of can be defined by</p><p>where 0 and V 0 are diffused priors, and L Y is the likelihood function from Equation (8). Because (A5) does not have a closed form, the M-H algorithm is used to draw from the conditional distribution of . The acceptance probability at step k + 1 is defined by Pr acceptance</p><p>We define diffuse priors for the conditional distribution of by setting 0 to a n × 1 vector of zeros, and v 0 = 30I n , where n = dim .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix B. Adapting the Markov Switching Criterion to Our Estimation Algorithm</head><p>Recently, <ref type="bibr" target="#b68">Smith, Naik and Tsai (2006;</ref><ref type="bibr"></ref> hereafter SNT) developed the Markov switching criterion (MSC) for HMMs' states and variables selection. The MSC as described by SNT was developed for a HMM with a stationary transition matrix, estimated using aggregate data and common parameters across individuals. In contrast, our HMM is estimated using individual-level data, with some of the parameters varying across individuals. Additionally, we allow the transition matrix to be a function of time-varying covariates, thus relaxing the assumption of stationary transition matrix commonly assumed in HMMs. Therefore, to apply the MSC as a criterion for choosing the number of states, we need to adapt it to our specific application. Following Equation ( <ref type="formula">15</ref>) in SNT the MSC is given by</p><p>where −2 log f Y ˆ i is the maximized log-likelihood value, T s = trace W s , W s = diag P s , and P s = prob S 1 = s prob S T = s , s = NS; following SNT recommendation, where NS is the number of states, s = 1; following SNT recommendation, and K is the number of covariates in the state-dependent vector.</p><p>To adapt the MSC to our application we need to modify the different components in (B1).</p><p>The first term in Equation (B1), −2 log f Y ˆ i , captures the model's fit. Because our model is estimated using an MCMC hierarchical Bayes estimation procedure, one needs to define the procedure used to calculate the model's fit measure using the simulation output. We adopt the deviance measure suggested by <ref type="bibr" target="#b70">Spiegelhalter et al. (2002)</ref>  <ref type="table">as</ref> </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">When good brands do bad</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Aaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fournier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Brasel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2004-06" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Using extremes to design products and segment markets</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Ginter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="392" to="403" />
+			<date type="published" when="1995-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A dynamic model of purchase timing with application to direct marketing</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Leone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">93</biblScope>
+			<biblScope unit="issue">446</biblScope>
+			<biblScope unit="page" from="365" to="374" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A comparison of segment retention criteria for finite mixture models</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Andrews</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Currim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="235" to="243" />
+			<date type="published" when="2003-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The identity salience model of relationship marketing success: The case of nonprofit marketing</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Arnett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>German</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Hunt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="89" to="105" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">An adaptive version for the metropolis adjusted Langevin algorithm with a truncated drift</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">F</forename><surname>Atchadé</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Methodology and Comput. Appl. Probab</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="235" to="254" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">What determines alumni generosity?</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Baade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Sundberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Econom. Ed. Rev</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="75" to="81" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Inferring latent brand dependencies</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Böckenholt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">R</forename><surname>Dillon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="72" to="87" />
+			<date type="published" when="2000-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Latent change in recurrent choice data</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Böckenholt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Langeheine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="285" to="302" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A dynamic model of the duration of the customer&apos;s relationship with a continuous service provider: The role of satisfaction</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">N</forename><surname>Bolton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="45" to="65" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A two-state model of purchase incidence and brand choice</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Bucklin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Lattin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="24" to="39" />
+			<date type="published" when="1991" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Optmal selection for direct mail</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Bult</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wansbeek</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="378" to="394" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Time-series models in marketing: Past, present and future</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Dekimpe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Hanssens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. J. Res. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">2-3</biblScope>
+			<biblScope unit="page" from="183" to="193" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Issues in the estimation and application of latent structure models of choice</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">R</forename><surname>Dillon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Böckenholt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>De Borrero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bozdogan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Desarbo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kamakura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ramaswamy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zenor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Lett</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="323" to="334" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">An MCMC sampling approach to estimation of nonstationary hidden Markov models</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Djurić</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J.-H</forename><surname>Chun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Signal Processing</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1113" to="1123" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Household lifecycles and lifestyles in america</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">A</forename><surname>Kamakura</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="121" to="132" />
+			<date type="published" when="2006-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Developing buyer-seller relationships</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Dwyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Schurr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Oh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="11" to="27" />
+			<date type="published" when="1987-04" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Testing for choice dynamics in panel data</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Erdem</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Bus. Econom. Statist</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="142" to="152" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Accounting for heterogeneity and nonstationarity in a cross-sectional model of consumer purchase behavior</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Lattin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="304" to="317" />
+			<date type="published" when="1993" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A dynamic changepoint model for new product sales forecasting</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">G S</forename><surname>Hardie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-Y</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="50" to="65" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">The critical incident technique</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Flanagan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psych. Bull</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="327" to="359" />
+			<date type="published" when="1954" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Consumers and their brands: Developing relationship theory in consumer research</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fournier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="343" to="373" />
+			<date type="published" when="1998-03" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Brand choice as a probability process</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Frank</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Bus</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="43" to="56" />
+			<date type="published" when="1962-01" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Inference from iterative simulation using multiple sequences</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Sci</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="457" to="511" />
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">H</forename><surname>Greene</surname></persName>
+		</author>
+		<title level="m">Econometric Analysis</title>
+				<meeting><address><addrLine>Englewood Cliffs, NJ</addrLine></address></meeting>
+		<imprint>
+			<publisher>Prentice Hall</publisher>
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+	<note>3rd ed</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">A logit model of brand choice Calibrated on scanner data</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Guadagni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D C</forename><surname>Little</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="203" to="238" />
+			<date type="published" when="1983" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Customer metrics and their impact on financial performance</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">A</forename><surname>Zeithaml</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="718" to="739" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">A new approach to the economic analysis of nonstationary time series and the business cycle</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Hamilton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Econometrica</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="357" to="384" />
+			<date type="published" when="1989" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Alumni donations and colleges&apos; development expenditures: Does spending matter? Amer</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">B</forename><surname>Harrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Mitchell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">P</forename><surname>Peterson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Social</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="397" to="413" />
+			<date type="published" when="1995-10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Heterogeneity and state dependence</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Heckman</surname></persName>
+		</author>
+		<editor>S. Rosen</editor>
+		<imprint>
+			<date type="published" when="1981" />
+			<publisher>University of Chicago Press</publisher>
+			<biblScope unit="page" from="91" to="139" />
+			<pubPlace>Chicago</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Studies in Labor Markets</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Towards Understanding Relationships</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Hinde</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1979" />
+			<pubPlace>Academic, London</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">A class of stochastic models for relating synoptic atmospheric patterns to regional hydrologic phenomena</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Hughes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Guttorp</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Water Resources Res</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1535" to="1546" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Customer lifetime value research in marketing: A review and future direction</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Interactive Marketing</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="34" to="46" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">A multibrand stochastic model compounding heterogeneous Erlang timing and multinomial choice processes</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Jeuland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Bass</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Wright</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="255" to="277" />
+			<date type="published" when="1980" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title/>
+		<author>
+			<persName><forename type="first">Lattin</forename><surname>Netzer</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">A Hidden Markov Model of Customer Relationship Dynamics</title>
+		<imprint>
+			<biblScope unit="volume">204</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title/>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Science</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="185" to="204" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Norm theory: Comparing reality to its alternatives</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kahneman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Miller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psych. Rev</title>
+		<imprint>
+			<biblScope unit="volume">93</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="136" to="153" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">A probabilistic choice model for market segmentation and elasticity structure</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">A</forename><surname>Kamakura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Russell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="379" to="390" />
+			<date type="published" when="1989-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Modeling heterogeneity and state dependence in consumer choice behavior</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Keane</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Bus. Econom. Statist</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="310" to="327" />
+			<date type="published" when="1997-07" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<author>
+			<persName><forename type="first">C.-J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Nelson</surname></persName>
+		</author>
+		<title level="m">State-Space Models with Regime Switching: Classical and Gibbs Sampling Approaches with Applications</title>
+				<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I T</forename><surname>Press</surname></persName>
+		</author>
+		<imprint>
+			<pubPlace>Cambridge, MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">The influence of loyalty programs and short-term promotions on customer retention</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lewis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="281" to="292" />
+			<date type="published" when="2004-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Toward an individual customer profitability model: A segment-based approach</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Libai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Narayandas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Humby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Service Res</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="69" to="76" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">The representation of local and global scanpaths in eye movements through Bayesian hidden Markov models</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Liechty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pieters</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="519" to="541" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Hidden Markov and Other Models for Discrete-Valued Time Series</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">L</forename><surname>Macdonald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zucchini</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1997" />
+			<publisher>Chapman and Hall</publisher>
+			<pubPlace>London</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Incorporating choice dynamics in models of consumer behavior</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mcalister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Srivastava</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Horowitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kamakura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kulchitsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ratchford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Russell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Sultan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Weiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Winer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Lett</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="241" to="252" />
+			<date type="published" when="1991" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Predicting online purchase conversion using web path analysis</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Montgomery</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Srinivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Liechty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="579" to="595" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Estimating promotion response when competitive promotions are unobservable</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Moon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">A</forename><surname>Kamakura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ledolter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res. Forthcoming</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">The commitment-trust theory of relationship marketing</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Morgan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Hunt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="20" to="38" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Modeling retail customer behavior at merrill lynch</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Morrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L</forename><surname>Karpis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">E A</forename><surname>Britney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="123" to="141" />
+			<date type="published" when="1982" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Planning media schedules in the presence of dynamic advertising quality</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Naik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Mantrala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Sawyer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="214" to="235" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Approximate Bayesian inference by the weighted likelihood bootstrap</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Netzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">A</forename><surname>Stanford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Newton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Raftery</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Roy. Statist. Soc. B</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3" to="48" />
+			<date type="published" when="1994" />
+		</imprint>
+		<respStmt>
+			<orgName>Stanford University,</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Ph.D. dissertation</note>
+	<note>A hidden Markov model of customer relationship dynamics</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<monogr>
+		<title level="m" type="main">Logistic regression and probability of business school alumni donations: Micro-data evidence</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Okunade</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1993" />
+			<biblScope unit="page" from="243" to="258" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Determinants of charitable giving of business school alumni</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Okunade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Berl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Res. Higher Ed</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="201" to="214" />
+			<date type="published" when="1997-04" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<monogr>
+		<title level="m" type="main">Satisfaction: A Behavioral Perspective on the Consumer</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Oliver</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1997" />
+			<publisher>McGraw-Hill</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Modeling marketing dynamics by time series econometrics</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Pauwels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Currim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Dekimpe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ghysels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Hanssens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Mizik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Naik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Lett</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="167" to="183" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Modeling customer relationships using Markov chains</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Pfeifer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Carraway</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Interactive Marketing</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="43" to="55" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Mixed Markov and latent Markov modeling applied to brand choice behavior</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Poulsen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. J. Res. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="5" to="19" />
+			<date type="published" when="1990" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">A tutorial on hidden Markov models and selected applications in speech recognition</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">R</forename><surname>Rabiner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. IEEE</title>
+		<imprint>
+			<biblScope unit="volume">77</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="257" to="286" />
+			<date type="published" when="1989" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<monogr>
+		<title level="m" type="main">Fundamentals of Speech Recognition</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">R</forename><surname>Rabiner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B.-H</forename><surname>Juang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1993" />
+			<publisher>Prentice Hall</publisher>
+			<pubPlace>Englewood Cliffs, NJ</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Evolutionary preference segmentation with panel survey data: An application to new products</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ramaswamy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. J. Res. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="57" to="80" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">The impact of customer relationship characteristics on profitable lifetime duration</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Reinartz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kumar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="77" to="99" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Bayesian statistics and marketing</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="304" to="328" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Marketing models of service and relationships</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Rust</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Chung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="560" to="580" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Return on marketing: Using customer equity to focus marketing strategy</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Rust</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">N</forename><surname>Lemon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">A</forename><surname>Zeithaml</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="109" to="127" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Customer base analysis: An industrial purchase process application</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Schmittlein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Peterson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="41" to="67" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">Estimating the dimension of a model</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Schwarz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="461" to="464" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">Bayesian methods for hidden Markov models, recursive computing in the 21st century</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">S</forename><surname>Scott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="issue">475</biblScope>
+			<biblScope unit="page" from="337" to="351" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">Markov-switching model selection using Kullback-Leibler divergence</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Naik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-L</forename><surname>Tsai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econometrics</title>
+		<imprint>
+			<biblScope unit="volume">134</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="553" to="577" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">A Markov analysis of fund-raising alternatives</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Soukup</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="314" to="319" />
+			<date type="published" when="1983-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">Bayesian measures of model complexity and fit</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Spiegelhalter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">G</forename><surname>Best</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">P</forename><surname>Carlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Van Der Linde</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Roy. Statist. Soc. Ser. B</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="583" to="639" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<analytic>
+		<title level="a" type="main">An alternative interpretation of the linear learning model of brand choice</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Srinivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kesavan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="76" to="83" />
+			<date type="published" when="1976-09" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<analytic>
+		<title level="a" type="main">After years of cash flow, universities hit an ebb</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Storm</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">New York Times</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page">25</biblScope>
+			<date type="published" when="2003-03" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<analytic>
+		<title level="a" type="main">Characteristics of alumni donors at a research I public university</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Taylor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jr</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Res. Higher Ed</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="283" to="302" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<analytic>
+		<title level="a" type="main">The importance of linking customer acquisition to customer retention</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Thomas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="262" to="268" />
+			<date type="published" when="2001-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b75">
+	<monogr>
+		<title level="m" type="main">Market Segmentation: Conceptual and Methodological Foundations</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">A</forename><surname>Kamakura</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<pubPlace>Kluwer, Dordrecht, The Netherlands</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b76">
+	<analytic>
+		<title level="a" type="main">Alumni giving: The influences of reunion, class and year</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">R</forename><surname>Willemain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Deven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Res. Higher Ed</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="201" to="214" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b77">
+	<analytic>
+		<title level="a" type="main">A framework for customer relationship management</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Winer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">California Management Rev</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="89" to="105" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b78">
+	<analytic>
+		<title level="a" type="main">Kalman filter estimation of new product diffusion models</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">X</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sirbu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="378" to="393" />
+			<date type="published" when="1997-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,1196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">A Convex Optimization Approach to Modeling Consumer Heterogeneity in Conjoint Estimation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2006-08-01">August 1, 2006</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Theodoros</forename><surname>Evgeniou</surname></persName>
+							<email>theodoros.evgeniou@insead.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Technology Management and Decision Sciences</orgName>
+								<orgName type="institution" key="instit1">INSEAD</orgName>
+								<orgName type="institution" key="instit2">Bd de Constance</orgName>
+								<address>
+									<postCode>77300</postCode>
+									<settlement>Fontainebleau</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Massimiliano</forename><surname>Pontil</surname></persName>
+							<email>pontil@cs.ucl.ac.uk</email>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University College London</orgName>
+								<address>
+									<addrLine>Malet Place</addrLine>
+									<postCode>WC1E 6BT</postCode>
+									<settlement>London</settlement>
+									<country key="GB">United Kingdom</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Olivier</forename><surname>Toubia</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Columbia Business School</orgName>
+								<address>
+									<addrLine>Room 522</addrLine>
+									<postCode>3022, 10027</postCode>
+									<settlement>Broadway, New York</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">A Convex Optimization Approach to Modeling Consumer Heterogeneity in Conjoint Estimation</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 e 1526-548X 07 2606 0805</idno>
+						<imprint>
+							<date type="published" when="2006-08-01">August 1, 2006</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.1070.0291</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:31+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Bayesian analysis</term>
+					<term>data mining</term>
+					<term>econometric models</term>
+					<term>estimation and other statistical techniques</term>
+					<term>hierarchical Bayes analysis</term>
+					<term>marketing research</term>
+					<term>regression and other statistical techniques History: This article was received on</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>W e propose and test a new approach for modeling consumer heterogeneity in conjoint estimation based on convex optimization and statistical machine learning. We develop methods both for metric and choice data. Like hierarchical Bayes (HB), our methods shrink individual-level partworth estimates towards a population mean. However, while HB samples from a posterior distribution that is influenced by exogenous parameters (the parameters of the second-stage priors), we minimize a convex loss function that depends only on endogenous parameters. As a result, the amounts of shrinkage differ between the two approaches, leading to different estimation accuracies. In our comparisons, based on simulations as well as empirical data sets, the new approach overall outperforms standard HB (i.e., with relatively diffuse second-stage priors) both with metric and choice data.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>A number of optimization-based approaches to conjoint estimation have been proposed in the past. Examples include methods based on linear programming <ref type="bibr" target="#b41">(Srinivasan and</ref><ref type="bibr">Shocker 1973, Srinivasan 1998)</ref> or statistical machine learning <ref type="bibr" target="#b11">(Cui and</ref><ref type="bibr">Curry 2005, Evgeniou et al. 2005a)</ref>, and polyhedral methods <ref type="bibr" target="#b46">(Toubia et al. 2003</ref><ref type="bibr" target="#b45">, Toubia et al. 2004</ref>. While these optimization approaches have proved fruitful, they have been exclusively limited to individual level estimation and have not modeled heterogeneity. <ref type="bibr">1</ref> They have therefore underperformed relative to methods such as hierarchical Bayes (HB) <ref type="bibr" target="#b46">(Toubia et al. 2003</ref><ref type="bibr" target="#b45">, Toubia et al. 2004</ref><ref type="bibr">, Evgeniou et al. 2005a</ref>.</p><p>In this paper we propose and test a new approach to modeling consumer heterogeneity in both metric and <ref type="bibr">1</ref> The only exception of which we are aware is an ad-hoc heuristic briefly discussed by <ref type="bibr" target="#b45">Toubia et al. (2004)</ref>, which is impractical because it requires the use of out-of-sample data. In contrast, our goal is to develop a general theoretical framework for modeling heterogeneity.</p><p>choice-based conjoint estimation using convex optimization and statistical machine learning. We compare our approach with hierarchical Bayes (HB) both theoretically and empirically. Both our methods and HB shrink individual-level partworth estimates toward a population mean (in HB shrinkage is done toward the mean of the first-stage prior on the partworths). However, while HB samples from a posterior distribution that is influenced by a set of exogenous parameters (the parameters of the second stage priors), the proposed approach minimizes a convex loss function that is influenced by a parameter set endogenously (determined from the calibration data) using crossvalidation. As a result, the amounts of shrinkage differ between HB and our approach. Moreover, we show that the second-stage prior parameters in HB could in theory be set to give rise to HB estimates identical to our estimates, or possibly of higher performance. However, this would require a method for systematically and optimally selecting the second-stage prior parameters in HB. Such selection raises both theoretical and practical issues, which we discuss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>806</head><p>Marketing Science 26(6), pp. <ref type="bibr">805-818, © 2007 INFORMS</ref> We use simulations as well as two empirical data sets (one for ratings and one for choice) to compare the performance of our approach to that of a standard HB implementation with relatively diffuse secondstage priors <ref type="bibr" target="#b0">Rossi 1999, Rossi and</ref><ref type="bibr" target="#b38">Allenby 2003)</ref>. The proposed approach overall outperforms HB with both metric and choice data. We empirically show that the differences between our approach and HB may be linked to differences in the amounts of shrinkage, as suggested by our theoretical comparisons. Moreover, we provide evidence that selecting the parameters of the second-stage priors in HB endogenously (e.g., using cross-validation as in the proposed approach) has the potential to greatly improve the predictive performance of HB.</p><p>Our approach builds upon and combines ideas from four literatures: statistical learning theory and kernel methods, convex optimization theory, hierarchical Bayes estimation, and the "learning to learn" or "multitask learning" literature in machine learning. "Learning to learn" methods were initially developed mainly using neural networks <ref type="bibr" target="#b3">(Baxter 1997</ref><ref type="bibr" target="#b8">, Caruana 1997</ref><ref type="bibr" target="#b43">, Thrun and Pratt 1997</ref> and recently studied using kernel methods <ref type="bibr" target="#b25">(Jebara 2004</ref><ref type="bibr" target="#b1">, Ando and Zhang 2005</ref><ref type="bibr" target="#b14">, Evgeniou et al. 2005b</ref><ref type="bibr" target="#b33">, Micchelli and Pontil 2005</ref>. The central problem addressed by these methods is that of simultaneously estimating regression functions from many different but related data sets. Our work is novel first by its focus on conjoint estimation, second by the particular loss functions and the convex optimization method used to minimize them, and third by the theoretical and empirical comparison with HB.</p><p>The paper is organized as follows. We present our approach for metric as well as choice-based conjoint analysis in §2. In §3, we discuss the theoretical similarities and differences between our approach and HB. We then empirically compare the accuracy and predictive performance of our methods with HB using simulations in §4 and two (one for ratings and one for choice) field data sets in §5. In §6 we illustrate empirically the theoretical differences between our approach and HB outlined in §3, and we conclude in §7.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Presentation of the Approach</head><p>For ease of exposition, we describe the metric version of our approach first and the choice version second.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Metric Conjoint Estimation Method</head><p>2.1.1. Setup and Notation. We assume I consumers (indexed by i ∈ 1 2 I ) each rating J profiles (with J possibly different across respondents), represented by row vectors x ij , j ∈ 1 2 J . We assume that the number of partworths is p, i.e., each vector x ij has p columns. We note with X i the J × p design matrix for respondent i (each row of this matrix corresponds to one profile); with w i the p × 1 column vector of the partworths for respondent i; and with Y i the J × 1 column vector containing the ratings given by respondent i. For simplicity we make the standard assumption of additive utility functions: the utility of the profile x ij for respondent i is U i x ij = x ij w i + ij . It is important to note that the proposed method can be extended to include large numbers of interactions between attributes, using, for example, the kernel approach <ref type="bibr" target="#b48">(Wahba 1990</ref><ref type="bibr" target="#b47">, Vapnik 1998</ref> introduced to marketing by <ref type="bibr" target="#b11">Cui and Curry (2005)</ref> and <ref type="bibr">Evgeniou et al. (2005a)</ref>. We discuss this in detail in the online technical appendix. In agreement with previous research on individual-level conjoint estimation <ref type="bibr" target="#b11">(Cui and</ref><ref type="bibr">Curry 2005, Evgeniou et al. 2005a</ref>), the presence of interactions in the model specification enhances the relative performance of our methods compared to HB.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.2.">Individual-Level Partworth Estimation</head><p>Using Statistical Machine Learning: A Brief Review. We build upon a particular individual-level statistical estimation method known as ridge regression (RR), or Regularization Networks. This individual-level method (and various extensions, for example to the estimation of general nonlinear functions) has been extensively studied in the statistics and machine learning literatures (see, for example, <ref type="bibr" target="#b44">Tikhonov and Arsenin 1977</ref><ref type="bibr" target="#b48">, Wahba 1990</ref><ref type="bibr" target="#b20">, Girosi et al. 1995</ref><ref type="bibr" target="#b47">, Vapnik 1998</ref><ref type="bibr" target="#b21">, Hastie et al. 2003</ref>, and references therein) and more recently in the theoretical mathematics literature (see for example <ref type="bibr" target="#b10">Cucker and Smale 2002)</ref>.</p><p>RR estimates individual-level partworths for respondent i by minimizing a convex loss function with respect to w i . This loss function is parameterized by a positive weight that is typically set using crossvalidation.</p><formula xml:id="formula_0">Problem 1. min w i 1 J j=1 y ij − x ij w i 2 + w i 2 (1) set by cross-validation (2)</formula><p>The loss function 1/</p><formula xml:id="formula_1">J j=1 y ij − x ij w i 2 + w i 2 is</formula><p>composed of two parts. The first, J j=1 y ij − x ij w i 2 , measures the fit between the estimated utilities and the observed ratings. For a fixed , this may be interpreted as the log of the likelihood corresponding to a normal error term with mean 0 and variance (see, for example, <ref type="bibr" target="#b21">Hastie et al. 2003)</ref>. The second part, w i w i = w i 2 , controls the shrinkage (or complexity) of the partworth solution w i <ref type="bibr" target="#b47">(Vapnik 1998</ref><ref type="bibr" target="#b10">, Cucker and Smale 2002</ref><ref type="bibr" target="#b21">, Hastie et al. 2003</ref>. The term "shrinkage" <ref type="bibr" target="#b21">(Hastie et al. 2003</ref>) comes from the fact that we effectively "shrink" the partworths toward zero by penalizing deviations from zero ( w i 2 may be viewed as the distance between w i and 0). The term "complexity control" <ref type="bibr" target="#b47">(Vapnik 1998</ref>) comes from the fact that this essentially limits the set of possible estimates, making this set less complex (i.e., smaller). The positive parameter defines the trade-off between fit and shrinkage and is typically set using cross-validation <ref type="bibr" target="#b48">(Wahba 1990</ref><ref type="bibr" target="#b12">, Efron and Tibshirani 1993</ref><ref type="bibr" target="#b40">, Shao 1993</ref><ref type="bibr" target="#b47">, Vapnik 1998</ref><ref type="bibr" target="#b21">, Hastie et al. 2003</ref>). We will provide a detailed description of cross-validation below, but let us already stress that cross-validation does not use any out-of-sample data.</p><p>We note that the RR loss function (1) can be generalized by replacing the square error y ij − x ij w i 2 with other error functions, hence retrieving other individual-based estimation methods-the loss function remains convex as long as the error function is convex. For example, for choice data we will use below the logistic error − log e x ijq * w i / Q q=1 e x ijq w i (where x ijq * represents the profile chosen by respondent i in choice j, which consists of Q alternatives x ijq , q ∈ 1 Q ). Using the hinge loss y ij − x ij w i y ij − x ij w i (where x = 1 if x &gt; 0, and 0 otherwise) leads to the widely used method of Support Vector Machines <ref type="bibr" target="#b47">(Vapnik 1998)</ref>, introduced to marketing by <ref type="bibr" target="#b11">Cui and Curry (2005)</ref> and <ref type="bibr">Evgeniou et al. (2005a)</ref>. Finally, note that the solution when → 0 (hence removing the complexity control w i 2 ) converges to the OLS solution w i = X i X i −1 X T i Y i , where the pseudo-inverse is used instead of the inverse when X i X i is not invertible <ref type="bibr" target="#b21">(Hastie et al. 2003)</ref>.</p><p>2.1.3. Modeling Heterogeneity: Formulation of the Loss Function. We now extend the RR loss function to model consumer heterogeneity. Individuallevel RR estimation does not pool information across respondents and involves minimizing a separate loss function for each respondent. Inspired by HB <ref type="bibr" target="#b29">(Lenk et al. 1996</ref><ref type="bibr" target="#b0">, Allenby and Rossi 1999</ref><ref type="bibr" target="#b38">, Rossi and Allenby 2003</ref><ref type="bibr" target="#b39">, Rossi et al. 2005</ref>, we propose modeling heterogeneity and pooling information across respondents by shrinking the individual partworths toward the population mean.</p><p>In particular, we consider the following convex optimization problem (if D is not invertible, we replace D −1 with the pseudo-inverse of D-see Appendix A for details): min</p><formula xml:id="formula_2">w i w 0 D 1 I i=1 J j=1 y ij − x ij w i 2 + I i=1 w i − w 0 D −1 w i − w 0</formula><p>subject to D is a positive semidefinite matrix scaled to have trace 1.</p><p>(</p><formula xml:id="formula_3">)<label>3</label></formula><p>Let us note that this is not the complete method proposed, which includes the estimation of the positive weight endogenously and is summarized in §2.1.5, Problem 2. Like the RR loss function (1), this loss function consists of two parts. The first part reflects fit and the second part shrinkage (complexity control).</p><p>Unlike the individual-level RR loss function (1), the loss function (2) involves solving a single convex optimization problem and estimating all the partworths jointly. Moreover, instead of shrinking the partworths toward 0 as in individual-level RR, it shrinks them toward a vector w 0 (as will be seen below, the value of w 0 that minimizes the loss function is the the population mean) through w i − w 0 D −1 w i − w 0 . Matrix D is related to the covariance matrix of the partworths (see Appendix A for details on the estimation of D based on calibration data), such that the shrinkage penalty is greater for partworths that are distant from the mean w 0 along directions in which there is less variation across respondents. The parameter operates the same function as in individual-level RR, namely, achieving a proper trade-off between fit and shrinkage. Higher values of result in more homogenous estimates (i.e., more shrinkage). Notice that we scale D by fixing its trace, keeping the problem convex-otherwise, the optimal solution would be to simply set the elements of D to and to maximize only fit.</p><p>We consider next the minimization of the loss function (2) given , and in §2.1.5 the selection of using cross-validation. The complete method proposed is summarized in §2.1.5, Problem 2.</p><p>2.1.4. Modeling Heterogeneity: Minimization of the Loss Function Given . For a fixed , the loss function (2) is jointly convex with respect to the w i s, w 0 , and matrix D. 2 Hence one can use any convex optimization method (see, for example, <ref type="bibr" target="#b4">Boyd and Vandenberghe 2004)</ref> to minimize it.</p><p>We choose to solve the first-order conditions directly, which reveals some similarities with HB that will be discussed in §3. For a given value of we use the following iterative method to find the global optimal solution, initializing D to a random positive definite matrix:</p><p>(1) Solve the first-order conditions for w i and w 0 given and D.</p><p>(2) Solve the first-order conditions for D given w i , w 0 , and . In our empirical applications, convergence to a set of parameters ( w i , w 0 , D) that minimizes the loss function (2) (i.e., solves the entire system of first-order conditions) for a given was always achieved in fewer than 20 iterations.</p><p>We show in Appendix A how to solve the above two steps in closed form. We show that the individual Marketing Science 26(6), pp. 805-818, © 2007 INFORMS partworths in Step 1 (for fixed and D -replacing inverses with pseudo-inverses if D is not invertible, as described in Appendix A) can be written as</p><formula xml:id="formula_4">w i = X i X i + D −1 −1 X i Y i + X i X i + D −1 −1 D −1 w 0</formula><p>(4) where the optimal w 0 is shown to be the population mean of the partworths, that is, w 0 = 1/I i w i . We will see in §3 how this relates to the mean of the conditional posterior in HB.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.5.">Modeling Heterogeneity: Setting</head><p>Using Cross-Validation. We now describe the estimation of the trade-off parameter . Selecting this parameter by minimizing the loss function (2) would be inappropriate because it would lead to = and all other parameters equal to 0. Instead, we select this parameter like in individual-level RR, by minimizing the cross-validation error. This standard technique has been empirically validated, and its theoretical properties have been extensively studied (see, for example, <ref type="bibr" target="#b48">Wahba 1990</ref><ref type="bibr" target="#b12">, Efron and Tibshirani 1993</ref><ref type="bibr" target="#b40">, Shao 1993</ref><ref type="bibr" target="#b47">, Vapnik 1998</ref><ref type="bibr" target="#b21">, Hastie et al. 2003</ref>. It is important to stress that cross-validation does not require any data beyond the calibration data. In particular, we measure the cross-validation error corresponding to a given parameter as follows:</p><p>(1) Set cross-validation = 0. (2) For k = 1 to J :</p><p>(a) Consider the subset of the calibration data</p><formula xml:id="formula_5">Z −k = I i=1 x i1 x i k−1 x i k+1 x iJ</formula><p>That is, consider the subset of the calibration data that consists of all questions except the kth one for each of the I respondents. 3 (b) Using only this subset of the calibration data</p><formula xml:id="formula_6">Z −k , estimate the individual partworths w −k i , pop- ulation mean w −k 0</formula><p>, and matrix D −k for the given using the method described in the previous section.</p><p>(c) Using the estimated partworths w</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>−k i</head><p>, compute the ratings on the I questions (one per respondent) left out from the calibration data x 1k x 2k x Ik , and let CV k be the sum of squared differences between the estimated and observed ratings for these I calibration questions. (Note that any other performance metric may be used.)</p><formula xml:id="formula_7">(d) Set cross-validation = cross-validation + CV k .</formula><p>We simply select the parameter that minimizes the cross-validation error by using a line search.</p><p>The cross-validation error is, effectively, a "simulation" of the out-of-sample error without using any out-of-sample data. We refer the reader to the above references for details regarding its theoretical properties, such as its consistency for parameter selection. <ref type="bibr">4</ref> We will later confirm empirically that selecting using cross-validation leads to values very close to optimal (i.e., maximizing estimation accuracy).</p><p>To summarize, the proposed method, which we label as RR-Het, is as follows: <ref type="formula">5</ref>Problem 2. * = arg min cross-validation</p><formula xml:id="formula_8">w * i w * 0 D * = arg min w i w 0 D 1 * I i=1 J j=1 y ij − x ij w i 2 + I i=1 w i − w 0 D −1 w i − w 0</formula><p>subject to D is a positive semidefinite matrix scaled to have trace 1.</p><p>It is important to note that if were set exogenously, RR-Het would be equivalent to maximum likelihood estimation (MLE), with the likelihood function proportional to the inverse of the exponential of the loss function (2)-multiplied by an indicator function that would enforce the constraints on D. However, because is set using cross-validation and the overall estimation method is given by Problem 2 and not by the minimization of the loss function 2 , the comparison of RR-Het with MLE is not straightforward.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Choice-Based Conjoint Estimation Method</head><p>We now show how our approach can be used with choice data. Choice-based conjoint analysis has become very popular, both among practitioners and among academics <ref type="bibr" target="#b7">(Carson et al. 1994</ref><ref type="bibr" target="#b32">, Louviere et al. 2000</ref><ref type="bibr" target="#b22">, Hauser and Toubia 2005</ref>. As discussed above, our choice-based method is developed by replacing the square-error loss in RR-Het with the logistic error, hence we call the proposed method LOG-Het. In particular, with choice data, the optimization problem solved to estimate the partworths becomes:</p><formula xml:id="formula_9">Problem 3. * = arg min cross-validation w * i w * 0 D * = arg min w i w 0 D − 1 * I i=1 J j=1 log e x ijq * w i Q q=1 e x ijq w i + I i=1 w i − w 0 D −1 w i − w 0</formula><p>subject to D is a positive semidefinite matrix scaled to have trace 1</p><p>where x ijq is the qth alternative presented to respondent i in question j, and x ijq * is the chosen alternative. (Question j for respondent i consists of choosing among the Q profiles x ijq q=1 Q .) The parameter J represents the number of choice questions and Q the number of alternatives per question (they do not need to be constant across respondents or questions). Cross-validation for estimating parameter is implemented as for RR-Het, with the difference that the cross-validation performance in Step ( <ref type="formula">2c</ref>) is now measured by the logistic error − log e x ijq * w i / Q q=1 e x ijq w i on the left out questions. The other major difference from RR-Het is that the minimization of the loss function given and D may no longer be performed by solving the first order conditions directly. Instead, we use Newton's method (see Appendix B for details and references to other possible estimation methods). As a result, unlike RR-Het, we do not have closed-form solutions for the conditional partworth estimates for LOG-Het.</p><p>In the previous section, we presented an approach for modeling consumer heterogeneity in conjoint estimation and showed how this approach can be used with both metric and choice data. In the following section, we highlight some theoretical similarities and differences between our approach and hierarchical Bayes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Theoretical Similarities and Differences with HB</head><p>We consider the following hierarchical Bayes model for metric data (we assume a standard diffuse prior on w 0 , symbolically equivalent to w 0 ∼ N 0 V −1 with V = 0): We consider the following HB model for choice data (again assuming a standard diffuse prior on w 0 ):</p><formula xml:id="formula_10">Likelihood: y ij = x ij w i + ij ij ∼ N 0 2 First-stage prior: w i ∼ N w 0 D Second-stage priors: 2 ∼ IG r 0 /2 s 0 /2 D −1 ∼ W 0 0 × 0</formula><formula xml:id="formula_11">Likelihood: Prob x ijq * is chosen = e x ijq * w i Q q=1 e x ijq w i First-stage prior: w i ∼ N w 0 D Second-stage prior: D −1 ∼ W 0 0 × 0</formula><p>Our standard HB implementations, throughout the rest of the paper, follow the literature and use fairly diffuse second-stage priors (see, for example, <ref type="bibr" target="#b0">Rossi 1999, Rossi and</ref><ref type="bibr" target="#b38">Allenby 2003)</ref>: 0 = p + 3, 0 = I for metric and choice HB, and r 0 = s 0 = 1 for metric HB.</p><p>Table <ref type="table" target="#tab_0">1</ref> summarizes some key characteristics of HB and the proposed approach.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Similarities</head><p>The main similarity between the proposed approach and HB is that they both shrink individual estimates toward a population mean. With metric data, the existence of closed-form expressions enables us to clearly identify the individual-specific estimates, the population means toward which these estimates are shrunk, and the shrinkage weights. Such explicit comparisons are not readily available with choice data.</p><p>In particular, the mean of the conditional posterior distribution of w i in metric HB is (see <ref type="bibr" target="#b29">Lenk et al. 1996</ref> for details):</p><formula xml:id="formula_12">6 E w i w 0 D data = X i X i + 2 D −1 −1 X i Y i + X i X i + 2 D −1 −1 2 D −1 w 0</formula><p>Compare this expression to the minimizers of the RR-Het loss function (2) given and D (see Equation (3)):</p><formula xml:id="formula_13">w i = X i X i + D −1 −1 X i Y i + X i X i + D −1 −1 D −1 w 0</formula><p>Marketing Science 26(6), pp. 805-818, © 2007 INFORMS These expressions can also be written as follows (if the matrix X i is not full rank, for the sake of this argument use the pseudo-inverse instead of the inverse):</p><p>HB: E w i w 0 D data</p><formula xml:id="formula_14">= X i X i + 2 D −1 −1 X i X i X i X i −1 X i Y i + X i X i + 2 D −1 −1 2 D −1 w 0 = i HB X i X i −1 X i Y i + I − i HB w 0 RR-Het: w i = X i X i + D −1 −1 X i X i X i X i −1 X i Y i + X i X i + D −1 −1 D −1 w 0 = i RR X i X i −1 X i Y i + I − i RR w 0 where i HB = X i X i + 2 D −1 −1 X i X i and i RR = X i X i + D −1 −1 X i X i .</formula><p>These expressions show clearly that the mean of the conditional posterior in HB and the point estimate in RR-Het are both weighted averages between the individual-level OLS estimate X i X i −1 X i Y i and a population mean (in RR-Het, w 0 is equal to the population mean; in HB w 0 is the mean of the first-stage prior on the partworths; and if we assume a diffuse prior on w 0 , then the mean of the conditional posterior distribution on w 0 is the population mean). The individual-specific weights (i.e., amounts of shrinkage) are a function of 2 D −1 in HB and of D −1 in RR-Het. The mean of the full posterior distribution of w i in HB is also a weighted average between the OLS estimate and a population mean, the weights being given by integrating i HB over the posterior distributions of and D.</p><p>Note that if the parameters 0 , 0 , r 0 , and s 0 in HB were selected to yield a strong prior on 2 and D around the values of and D obtained by RR-Het estimation, the posterior means provided by HB would converge to the point estimates provided by RR-Het ( i HB → i RR ). Hence, in theory the set of point estimates achievable by RR-Het is a subset of those achievable by HB by varying the parameters of the second-stage priors. Therefore, the maximum potential performance achievable by HB is at least that achievable by RR-Het. However this does not guarantee higher performance in practice. In particular, any poorer performance observed for HB can be attributed to a suboptimal selection of the second-stage prior parameters. We will suggest later that endogenizing the selection of these parameters, although it raises a number of issues that we will discuss, has the potential to improve performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Differences</head><p>Two important differences emerge from Table <ref type="table" target="#tab_0">1</ref>. First, HB samples from a posterior distribution while RR-Het and LOG-Het minimize a loss function and hence only produce point estimates. Confidence intervals and hypothesis testing are also possible with RR-Het and LOG-Het using, for example, bootstrapping <ref type="bibr">(Efron and Tibshirani 1993 and references therein)</ref>. See the online technical appendix for a brief review and an example.</p><p>Second, while the posterior in HB is a function of a set of exogenous parameters (the parameters of the second-stage priors, 0 , 0 , r 0 , s 0 in the case of metric data and 0 and 0 in the case of choice data), the loss functions in RR-Het and LOG-Het are a function of an endogenous parameter (determined from the calibration data using cross-validation). The difference between the way the second-stage priors are set in HB and is set in RR-Het and LOG-Het translates into differences in the way the amount of shrinkage is determined, as will be confirmed empirically in §6. For example, in the case of metric data, shrinkage is a function of 2 D −1 in HB and D −1 in RR-Het. In HB, the posterior distributions on and D are influenced both by the data and by the second-stage priors 2 ∼ IG r 0 /2 s 0 /2 and D −1 ∼ W 0 0 × 0 . The exogenous parameters 0 , 0 , r 0 , and s 0 are often selected to induce fairly diffuse and uninformative second-stage priors. Other values could yield different second-stage priors, resulting in different amounts of shrinkage. For example, strong priors around the "true" values of and D would clearly lead to maximal estimation accuracy. While such an extreme case can be studied hypothetically using simulations, in field settings where the truth is unknown, one typically has to revert to fairly diffuse second-stage priors. On the other hand, in RR-Het (respectively LOG-Het), the amount of shrinkage is a function of endogeneous parameters determined by the minimization of the loss function and by cross-validation: D and are obtained by solving Problem 2 (respectively, Problem 3).</p><p>It is important to note that this second difference is not intrinsic, and that the second-stage prior parameters in HB could be set in practice endogenously-for example, using cross-validation as well. The systematic incorporation of cross-validation in a Bayesian framework raises several issues and is beyond the scope of this paper. We discuss these issues briefly in the next section and demonstrate the potential of this approach empirically in §4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Using Cross-Validation to Select the</head><p>Parameters of the Second-Stage Priors in HB Our empirical comparisons will suggest that our approach usually significantly outperforms a standard HB implementation (with fairly diffuse secondstage priors). However, such a comparison might be perceived as unfair because the posterior in HB is a function of exogenous parameters, while the loss function in our approach is a function of an endogenous parameter set using cross-validation. <ref type="bibr">7</ref> It seems reasonable to hypothesize that selecting the parameters of the second-stage priors in HB using cross-validation could yield a performance level comparable to RR-Het and LOG-Het. For example, we have shown above that the set of point estimates achievable by RR-Het by changing is a subset of those achievable by HB by changing 0 , 0 , r 0 , and s 0 . However, let us first note that the fact that the set of point estimates achievable by RR-Het is a subset of those achievable by HB does not guarantee that endogenously selecting the second-stage priors will improve performance relative to RR-Het. For example, because the number of parameters of the second-stage priors in HB is much larger than the number of parameters set using crossvalidation in RR-Het or LOG-Het (p 2 + 3 versus 1 in the metric case and p 2 + 1 versus 1 in the choice case), there is a risk of overfitting.</p><p>Moreover, at least three potential issues arise regarding the use of cross-validation to select the parameters of the second-stage priors in HB.</p><p>First, Bayesian analysis obeys the likelihood principle <ref type="bibr" target="#b17">(Fisher 1922</ref><ref type="bibr" target="#b38">, Rossi and Allenby 2003</ref><ref type="bibr" target="#b31">, Liu et al. 2007</ref>, which states that all the information relevant for inference is contained in the likelihood function. It is not clear whether cross-validation satisfies this principle, as it appears that the data are used both to set some parameters and to make some inference based on these parameters. It might be possible to construct an alternative HB specification that would include cross-validation, i.e., cross-validation and estimation would be part of the same comprehensive model and the likelihood principle would be satisfied (to the best of our knowledge, this is an open problem). At this point we are agnostic on whether crossvalidation can be justified in a Bayesian framework. Our goal in this paper is only to explore whether it has the potential to improve the predictive performance of HB and not to justify its use theoretically, which we leave for future research.</p><p>Second, a practical issue arises due to the number of parameters of the second-stage priors in HB. Indeed, in the case of metric data the number of parameters is p 2 + 3, and in the case of choice data it is p 2 + 1. Setting the values of all these parameters directly using crossvalidation in a hierarchical Bayes framework would be intractable in most practical applications given the set of candidate values.</p><p>Third, another practical issue arises from the fact that the computation of the cross-validation error associated with each set of values of the second-stage prior parameters usually requires sampling from the corresponding posterior distribution to obtain point estimates. This is, again, a computational issue given the set of candidate parameter values.</p><p>We hope that future research will address these two practical issues. In this paper we are able to assess the potential of using cross-validation in Bayesian estimation by considering a simpler, nonhierarchical, metric model with only one hyperparameter (therefore avoiding the first practical issue) and by taking advantage of the existence of closed form expressions for the posterior means in the metric case (therefore avoiding the second practical issue).</p><p>In particular, we first run metric HB with standard second-stage priors to obtain initial point estimates for w 0 and D, and we then consider the following simple (nonhierarchical) model:</p><formula xml:id="formula_15">Likelihood: y ij = x ij w i + ij ij ∼ N 0 2 0 First-stage prior: w i ∼ N w 0 D</formula><p>where 0 is a parameter set using cross-validation. This specification is a special case of the metric HB specification in which 0 = D, 0 → , s 0 = r 0 × 0 , and r 0 → . The full posterior mean of w i has the same expression as the conditional mean in the general model:</p><formula xml:id="formula_16">E w i data = X i X i + 2 0 D −1 −1 X i Y i + X i X i + 2 0 D −1 −1 2 0 D −1</formula><p>w 0 Because the full posterior mean of w i is given in closed form, there is no need to sample from the posterior to obtain point estimates, and the cross-validation error associated with a given value of 0 can be estimated conveniently fast. Note that varying 0 directly varies the amount of shrinkage characterized by 2 0 D −1 . Note also that unlike in RR-Het, w 0 and D are fixed here. We label this model Metric Bayes-CV. <ref type="bibr">8</ref> Unfortunately, such closed-form expressions are available only for metric data and not for choice data. Hence, we are unable to test an equivalent model for choice (note that the second practical problem would remain even if we were able to address the first).</p><p>In the previous section, we showed that although both our approach and hierarchical Bayes shrink individual-level estimates toward a population mean, the amount of shrinkage is partly exogenous in HB while it is completely endogenous in our approach. Endogenizing the amount of shrinkage in HB (by endogenizing the selection of the second-stage prior Marketing Science 26(6), pp. 805-818, © 2007 INFORMS parameters) raises some theoretical and practical issues. Despite these issues, we explore the potential of such modification with a simple, nonhierarchical, metric Bayesian model. In the following two sections, we compare the estimation accuracy and predictive performance of our approach to that of hierarchical Bayes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Simulation Experiments</head><p>We first compare our approach with HB both for metric and choice data using simulations. We compare the methods using two field data sets (one for ratings and one for choice) in §5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Metric-Based Simulations</head><p>We compare RR-Het to the following methods:</p><p>(1) A standard HB implementation using typical values for the parameters of the second-stage priors (resulting in fairly diffuse second-stage priors):</p><formula xml:id="formula_17">0 = p + 3, 0 = I, r 0 = s 0 = 1.</formula><p>(2) The Metric Bayes-CV method described above. We used a 2 (low versus high heterogeneity) × 2 (low versus high response error) × 2 (low versus high number of questions) simulation design. We simulated ratings-based conjoint questionnaires with 10 binary features (plus an intercept). The true partworths were drawn from w i ∼ N w 0 w × I where w 0 = 5 5 5 and w = 2 in the low-heterogeneity case and w = 4 in the high-heterogeneity case. The profiles were obtained from an orthogonal and balanced design with 16 profiles, and the ratings were equal to y ij = x ij w i + ij where ij ∼ N 0 e with e = 2 in the low-response error case and e = 4 in the high-response error case. In the low-number-ofquestions conditions, 8 profiles were drawn randomly without replacement from the orthogonal design for each simulated respondent. In the high-number-ofquestions conditions, all 16 profiles were rated by each simulated respondent. We simulated 5 sets of 100 respondents in each condition, estimation being performed separately for each set. Our performance metric was the root mean square error (RMSE) between the estimated and true partworths.</p><p>We note that the model used to generate the data follows the distributional assumptions of HB. If strong second-stage priors around the true values of and D were used, then we would clearly expect HB to perform best. We focus on a more realistic and practical setting in which no prior information on the values of and D is available to either method.</p><p>Table <ref type="table" target="#tab_1">2</ref> reports the average RMSE across respondents in each magnitude × heterogeneity × number of questions cell.</p><p>We see the following:</p><p>(1) RR-Het performs significantly better than standard HB in 7 out of 8 conditions. Overall, it is best or nonsignificantly different from best (at p &lt; 0 05) in 7 out of 8 conditions. Notes. Bold numbers in each row indicate best or not significantly different from best at the p &lt; 0 05 level. The proposed method, RR-Het, is significantly better than standard HB in 7 out of 8 conditions. It is overall best or nonsignificantly different from best (at p &lt; 0 05) in 7 out of 8 conditions.</p><p>(2) Metric Bayes-CV performs significantly better than standard HB in all 8 conditions (these significance tests are not reported in the table). This suggests that selecting the parameters of the second-stage priors in HB using cross-validation has the potential to greatly improve predictive ability.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Choice-Based Simulations</head><p>We extended the simulation setup above to compare choice HB to LOG-Het. As discussed in §3, we were unable to test a choice version of the Metric Bayes-CV method. We used again a 2 (low versus high heterogeneity) × 2 (low versus high response error) × 2 (low versus high number of questions) design, assumed 10 binary features, and used 8 and 16 as our low and high numbers of questions. We assumed two profiles per choice set and derived our orthogonal design by applying the shifting method of <ref type="bibr" target="#b6">Bunch et al. (1994)</ref> (see also <ref type="bibr">Zwerina 1996, Arora and</ref><ref type="bibr" target="#b2">Huber 2001)</ref> to the orthogonal design used for the metric simulations (if X i is the ith row of the effects-coded orthogonal design, then choice i is between X i and 1 − X i ). Following the tradition of choice-based conjoint simulations <ref type="bibr" target="#b2">(Arora and Huber 2001</ref><ref type="bibr">, Evgeniou et al. 2005a</ref><ref type="bibr" target="#b45">, Toubia et al. 2004</ref>, we drew the true partworths from normal distributions with mean mag mag mag and variance 2 = het × mag where the parameter mag controls the amount of response error and the paramater het the amount of heterogeneity. We set the parameters mag and het to capture the range of response error and heterogeneity used in the previous simulations in the aforementioned studies. In particular, we set mag = 1 2 and 0.2, respectively in the low and high response error conditions, <ref type="bibr">9</ref> and het = 1 and 3, respectively, in the low and high heterogeneity conditions. We used logistic probabilities to simulate the answers to the choice questions. We measure performance using the RMSE between the true and estimated partworths, normalized to have a norm of 1.</p><p>The results of the simulations (based on 5 sets of 100 respondents) are summarized in Table <ref type="table" target="#tab_2">3</ref>. We see that the proposed method LOG-Het performs significantly better than standard HB in 6 out of 8 conditions. 10 HB outperforms LOG-Het only in the case of low response error and low heterogeneity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Comparisons Based on Field Data</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Comparison of the Metric-Based Methods</head><p>Using Field Data We compared RR-Het, HB, and Metric Bayes-CV on a field data set used in a previously published paper <ref type="bibr" target="#b29">(Lenk et al. 1996)</ref>. <ref type="bibr">11</ref> The data come from a ratingsbased conjoint study on computers, with 180 consumers rating 20 profiles each. The first 16 profiles form an orthogonal and balanced design and are used for calibration; the last 4 are holdouts used for validation. The independent variables are 13 binary attributes and an intercept (see Table <ref type="table" target="#tab_1">2</ref> in <ref type="bibr" target="#b29">Lenk et al. 1996</ref> for a description). The dependent variable is a rating on an 11-point scale (0 to 10). We measured performance using the root mean square error (RMSE) between the observed and predicted holdout ratings. We estimated the partworths using 8 (randomly selected) and 16 questions.</p><p>We report the results in Table <ref type="table" target="#tab_3">4</ref>. Both RR-Het and Metric Bayes-CV perform significantly better than simulation design, we divide the values of typical mag parameters used in previously published simulations (0.5 and 3) by 2.5 to make the overall utilities, and hence the level of response error, comparable. Notes. Bold numbers in each row indicate best or not significantly different from best at the p &lt; 0 05 level. Both RR-Het and metric Bayes-CV perform significantly better than standard HB with both 8 and 16 questions. RR-Het performs overall best or nonsignificantly different from best with both 8 and 16 questions.</p><p>standard HB with both 8 and 16 questions. RR-Het performs overall best or nonsignificantly different from best with both 8 and 16 questions. This further confirms the potential of RR-Het, as well as the potential of using cross-validation in Bayesian estimation. Note that our numbers are comparable but not equal to the ones reported by <ref type="bibr">Lenk et al.</ref> for the following reasons. First, to perform significance tests, we compute the RMSE for each respondent and report the averages across respondents, as opposed to computing an aggregate metric as in Lenk et al. Second, we assume homoskedasticity (same for all respondents). Third, we do not use demographic variables in the model. We show in the online technical appendix how RR-Het can be extended to include such covariates, and compare the performance of this extension to that of HB with covariates and Metric Bayes-CV with covariates. The same conclusions apply.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Comparison of the Choice-Based Methods</head><p>Using Field Data We compared LOG-Het to HB on an empirical conjoint data set kindly made available to us by Research International. 12 Note that we were not involved in the design of the conjoint study that led to this data set.</p><p>The product in this study was carbonated soft drinks. Three attributes were included: brand (6 levels), size (7 levels), and price (7 levels), for a total of 20 partworths per respondent. A pseudo-orthogonal design was first generated with 76 choice tasks, each involving 8 alternatives. This design was divided into 4 subsets of 18 questions plus 4 additional questions. There were 192 respondents subjected to 1 of the 4 22-question sets (presented in a randomized order). We used 8 (randomly selected from the first 16) or 16 questions to estimate the models, and the last 6 as holdouts.</p><p>We compare performance in  that, as each question involved 8 products, a random model would achieve a hit rate of 12.5%).</p><p>The empirical comparisons reported in the previous two sections indicate that our approach, overall, outperforms standard hierarchical Bayes (with relatively diffuse second-stage priors) and show that endogenizing the selection of the second-stage prior parameters in hierarchical Bayes has the potential to greatly improve estimation accuracy and predictive performance. In the following section, we further explore the relation between the amount of shrinkage and performance, and we assess the validity of using cross-validation for parameter selection.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">The Relation Between Shrinkage and Estimation Accuracy</head><p>We have argued in §3 that RR-Het and LOG-Het differ from HB in the approach used to determine the parameters on which the posterior distribution (respectively, the loss function) depend (parameters of the second-stage priors exogenous in HB versus endogenously estimated using cross-validation in RR-Het and LOG-Het), and that these differences translate into differences in the amounts of shrinkage performed by the estimators. We have also argued, based on past literature, that cross-validation is an effective way of selecting the parameter on which the RR-Het and LOG-Het loss functions depend, and hypothesized that it could be an effective way of selecting the second-stage prior parameters on which the HB posterior distribution depends. This raises the following two sets of questions, which we address empirically:</p><p>1. What is the relation between the amount of shrinkage and performance? Are differences in performance between methods systematically coupled with differences in the amount of shrinkage? 2. Does cross-validation in RR-Het, LOG-Het, and Metric Bayes-CV yield parameter values ( and 0 respectively) close to the ones that maximize estimation accuracy?</p><p>We addressed these questions both with metric and choice data. We report the case of metric data here because of the availability of Metric Bayes-CV. The conclusions with choice data are identical-details and graphs are available from the authors.</p><p>To explore the relation between shrinkage and performance, we manually varied the parameters and 0 in RR-Het and Metric Bayes-CV and assessed the corresponding performance. See Figure <ref type="figure">1</ref> for the simulations and Figure <ref type="figure">2</ref> for the field data (we report only the graphs based on 16 questions. The graphs based on 8 questions yield similar results and are available from the authors). The parameters and 0 are not on the same scale; however, there is a one-to-one mapping between each of these parameters and the amount of shrinkage. Hence, we report the realized amount of shrinkage on the x-axis, measured by I i=1 w i − w 0 2 /I. Performance, measured by the RMSE of the true versus estimated partworths for the simulations and by the holdout RMSE for the field data (as in Tables <ref type="table" target="#tab_1">2 and 4</ref>), is reported on the y-axis. The solid and dotted curves represent the amount of shrinkage and the corresponding performance achieved respectively by Metric Bayes-CV and RR-Het as 0 (respectively ) is varied. The labels "RR-Het" and "Bayes-CV" correspond to the amount of shrinkage and corresponding performance achieved by the two methods when and 0 are selected using cross-validation (i.e., they correspond to the numbers reported in Tables <ref type="table" target="#tab_1">2 and 4</ref>). <ref type="bibr">13</ref> We also report the amount of shrinkage and performance achieved by standard HB.</p><p>Figures <ref type="figure">1 and 2</ref> illustrate the existence of a U-shaped relationship between the amount of shrinkage and performance. Moreover, they confirm that differences in performance between the different methods are systematically coupled with differences in the amount of shrinkage: the smaller the difference in the amount of shrinkage, the smaller the difference in performance. This confirms that the approach used to determine the amount of shrinkage can be viewed as a key difference between our approach and HB.</p><p>Finally, Figures 1 and 2 also suggest that the amount of shrinkage and performance achieved by RR-Het and Metric Bayes-CV when selecting parameters using cross-validation is close to the bottom of the corresponding curves, i.e., it is close to what would be achieved if the true partworths (or holdout ratings) were used to calibrate the parameters and 0 . In particular, for the simulations (respectively ratings field data) the RMSE achieved by RR-Het or Metric Bayes-CV when or 0 is selected using cross-validation is on average only 0 59% (respectively, 0 38%) Notes. Estimates are based on 16 questions. The amount of shrinkage is measured by I i=1 w i − w 0 2 /I. The solid lines represent the amount of shrinkage and corresponding RMSE (estimated versus actual partworths) performance achieved by metric Bayes-CV as 0 is varied, and the labels "Bayes-CV" represent the amount of shrinkage and performance achieved when 0 is selected using cross-validation. The dotted lines represent the amount of shrinkage and performance achieved by RR-Het as is varied, and the labels "RR-Het" represent the amount of shrinkage and performance achieved when is selected using cross-validation. "Standard HB" corresponds to HB with standard second-stage priors, as in Table <ref type="table" target="#tab_1">2</ref>.</p><p>higher than the minimum achievable if the true partworths (respectively, holdout ratings) were used to select and 0 . This confirms that cross-validation is an effective method for parameter selection, both for RR-Het and Metric Bayes-CV, and hence potentially for all the second-stage prior parameters in HB.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Conclusions and Future Research</head><p>Our main results can be summarized as follows.</p><p>• We have proposed a novel approach for handling consumer heterogeneity in conjoint estimation based on convex optimization and machine learning, and we applied it to both metric and choice data ( §2).</p><p>• This approach shares some similarities with hierarchical Bayes. However, one of the major differences is that while the amount of shrinkage is influenced by a set of exogenous parameters in HB (the parameters of the second-stage priors), it is completely endogenous in our approach ( §3).</p><p>• Simulations, as well as two empirical data sets, suggest that the approach overall outperforms a standard HB implementation (with relatively diffuse second-stage priors) ( § §4 and 5).</p><p>• Selecting the second-stage prior parameters in HB endogenously, like in our approach, raises some practical and theoretical issues. However, we show the potential of this modification with a simple, metric, nonhierarchical model ( § §3, 4, and 5).</p><p>• There exists a U-shaped relation between amount of shrinkage and performance, and differences in performance can be traced to differences in the amounts of shrinkage. Selecting some of the shrinkage parameters using cross-validation gives rise to an amount of shrinkage that is close to optimal ( §6).</p><p>The experimental results suggest that an important and challenging area for future research is to develop systematic and computationally efficient ways of selecting the parameters of the second-stage priors in HB more optimally. A second area for future Notes. Estimates are based on 16 questions. The amount of shrinkage is measured by I i=1 w i − w 0 2 /I. The solid line represents the amount of shrinkage and corresponding performance (holdout RMSE) achieved by metric Bayes-CV as 0 is varied, and the label "Bayes-CV" represents the amount of shrinkage and performance achieved when 0 is selected using crossvalidation. The dotted line represents the amount of shrinkage and performance achieved by RR-Het as is varied, and the label "RR-Het" represents the amount of shrinkage and performance achieved when is selected using cross-validation. "Standard HB" corresponds to HB with standard secondstage priors, as in Table <ref type="table" target="#tab_3">4</ref>.</p><p>research would be to explore the use of population based complexity/shrinkage control in other individual level optimization based methods (e.g., <ref type="bibr" target="#b42">Srinivasan and Shocker 1973</ref><ref type="bibr" target="#b41">, Srinivasan 1998</ref><ref type="bibr" target="#b46">, Toubia et al. 2003</ref><ref type="bibr" target="#b45">, Toubia et al. 2004</ref>, for estimation and possibly as well for adaptive questionnaire design. Third, in this paper we have focused on unimodal representations of heterogeneity. Future research could introduce and model segments of consumers. This could be achieved by modifying the form of the complexity control in loss function (2) to reflect, for example, the existence of multiple clusters of respondents. Finally, optimization and statistical learning methods could be used to capture and model other phenomena beyond consumer heterogeneity. For example, our methods could be extended to capture recently researched learning phenomena in conjoint analysis <ref type="bibr" target="#b30">(Liechty et al. 2005</ref><ref type="bibr" target="#b5">, Bradlow et al. 2004</ref>. Another potential area of application is modeling the formation of consideration sets <ref type="bibr">Allenby 2004, 2006;</ref><ref type="bibr" target="#b27">Jedidi and Kohli 2005;</ref><ref type="bibr">Hauser et al. 2006)</ref> and then get the final solution as w i = D 1/2 w i . Notice that for a fixed w 0 , problem (B.1) is decomposable into I separate subproblems, one for each respondent, each of them being a standard (widely studied) regularized kernel logistic regression problem <ref type="bibr" target="#b26">(Jaakkola and Haussler 1999</ref><ref type="bibr" target="#b21">, Hastie et al. 2003</ref><ref type="bibr" target="#b28">, Keerthi et al. 2005</ref><ref type="bibr" target="#b36">, Minka 2003</ref><ref type="bibr" target="#b49">, Zhu and Hastie 2005</ref>. We can solve (B.1) for w i using various standard methods used for logistic regression (e.g., see <ref type="bibr" target="#b36">Minka 2003)</ref>. We use here a standard Newton's method implemented based on the matlab code of <ref type="bibr" target="#b36">Minka (2003)</ref> available at http://research.microsoft.com/∼minka/papers/logreg/. For this purpose we need only the gradient and Hessian of the loss function (B.1). These are given as </p><note type="other">.</note><formula xml:id="formula_18">i = w old i − H −1 G.</formula></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Figure 2Performance as a Function of the Amount of Shrinkage-Field Metric Data</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>w</head><label></label><figDesc>i − w 0 w i − w 0 (B.1)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1</head><label>1</label><figDesc>Some Characteristics of HB vs. RR-Het and LOG-Het</figDesc><table><row><cell>HB</cell><cell>R-Het and LOG-Het</cell></row><row><cell>Shrinks toward the mean of the</cell><cell>Shrink toward the population</cell></row><row><cell>first-stage prior</cell><cell>mean</cell></row><row><cell>Samples from posterior distribution</cell><cell>Minimize a convex loss function</cell></row><row><cell>Posterior distribution is a function of</cell><cell>Loss function is a function of</cell></row><row><cell>parameters of the second-stage</cell><cell>the trade-off parameter</cell></row><row><cell>priors</cell><cell></cell></row><row><cell>The parameters of the second-stage</cell><cell>is determined endogenously</cell></row><row><cell>priors are set exogenously</cell><cell>using cross-validation</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2</head><label>2</label><figDesc>RMSE (Lower Numbers Indicate Higher Performance) of Estimated vs. True Partworths for the Metric-Based Simulations</figDesc><table><row><cell></cell><cell>Response</cell><cell></cell><cell></cell><cell>Metric</cell><cell></cell></row><row><cell>Heterogeneity</cell><cell>error</cell><cell cols="4">Questions Standard HB Bayes-CV RR-Het</cell></row><row><cell>Low</cell><cell>Low</cell><cell>8</cell><cell>1.502</cell><cell>1.453</cell><cell>1.459</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>0.989</cell><cell>0.941</cell><cell>0.920</cell></row><row><cell>Low</cell><cell>High</cell><cell>8</cell><cell>1.751</cell><cell>1.736</cell><cell>1.861</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>1.485</cell><cell>1.414</cell><cell>1.417</cell></row><row><cell>High</cell><cell>Low</cell><cell>8</cell><cell>3.189</cell><cell>2.479</cell><cell>2.358</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>1.026</cell><cell>1.005</cell><cell>0.993</cell></row><row><cell>High</cell><cell>High</cell><cell>8</cell><cell>3.363</cell><cell>2.909</cell><cell>2.839</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>2.465</cell><cell>1.898</cell><cell>1.834</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3</head><label>3</label><figDesc>RMSE (Lower Numbers Indicate Higher Performance) of Estimated vs. True Partworths for the Choice Simulations</figDesc><table><row><cell>Het</cell><cell>Response error</cell><cell>Quest</cell><cell>HB</cell><cell>LOG-Het</cell></row><row><cell>Low</cell><cell>Low</cell><cell>8</cell><cell>0.5933</cell><cell>0.6235</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>0.4486</cell><cell>0.4600</cell></row><row><cell>Low</cell><cell>High</cell><cell>8</cell><cell>0.9740</cell><cell>0.9609</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>0.8050</cell><cell>0.7946</cell></row><row><cell>High</cell><cell>Low</cell><cell>8</cell><cell>0.7389</cell><cell>0.7289</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>0.4970</cell><cell>0.4827</cell></row><row><cell>High</cell><cell>High</cell><cell>8</cell><cell>0.9152</cell><cell>0.9013</cell></row><row><cell></cell><cell></cell><cell>16</cell><cell>0.6935</cell><cell>0.6878</cell></row><row><cell cols="5">Notes. LOG-Het is the proposed method, HB is hierarchical Bayes. Bold num-</cell></row><row><cell cols="5">bers in each row indicate best or not significantly different from best at the</cell></row><row><cell cols="5">p &lt; 0 05 level. LOG-Het performs significantly better than HB in 6 out of 8</cell></row><row><cell>conditions.</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4</head><label>4</label><figDesc>RMSE for Holdout Questions from the Metric Field Data ofLenk et al. (1996) (Lower Numbers Indicate Higher  Performance)    </figDesc><table><row><cell>Questions</cell><cell>Standard HB</cell><cell>Metric Bayes-CV</cell><cell>RR-Het</cell></row><row><cell>8</cell><cell>1.905</cell><cell>1.851</cell><cell>1.794</cell></row><row><cell>16</cell><cell>1.667</cell><cell>1.610</cell><cell>1.608</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 5</head><label>5</label><figDesc></figDesc><table><row><cell>. LOG-Het is</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 5</head><label>5</label><figDesc>Holdout Hit Rates (Higher Numbers Indicate Higher Performance) from the Choice Field Data Set</figDesc><table><row><cell>Questions</cell><cell>Standard HB (%)</cell><cell>LOG-Het (%)</cell></row><row><cell>8</cell><cell>48.37</cell><cell>47.76</cell></row><row><cell>16</cell><cell>51.04</cell><cell>52.34</cell></row><row><cell cols="3">Notes. LOG-Het is the proposed method, HB is hierarchical Bayes. Bold num-</cell></row><row><cell cols="3">bers in each row indicate best or not significantly different from best at the</cell></row><row><cell cols="3">p &lt; 0 05 level. LOG-Het performs overall best or nonsignificantly different</cell></row><row><cell cols="3">from best in both cases, and significantly better than HB with 16 questions.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head></head><label></label><figDesc>Figure 1Performance as a Function of the Amount of Shrinkage-Metric Simulated Data</figDesc><table><row><cell></cell><cell></cell><cell cols="6">Simulated data -16 questions, low heterogeneity, low noise</cell><cell></cell><cell></cell><cell cols="9">Simulated data -16 questions, low heterogeneity, high noise</cell></row><row><cell></cell><cell>1.20</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>1.75</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="5">Performance achievable by RR-Het by varying gamma</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.15</cell><cell></cell><cell cols="5">Performance achievable by Bayes-CV by varying sigma 0</cell><cell></cell><cell>1.70</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.10</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>1.65</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>1.60</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>RMSE</cell><cell>1.00 1.05</cell><cell></cell><cell></cell><cell>Standard HB</cell><cell></cell><cell></cell><cell></cell><cell>RMSE</cell><cell>1.50 1.55</cell><cell cols="2">Standard HB</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>0.95</cell><cell></cell><cell></cell><cell></cell><cell>Bayes-CV RR-Het</cell><cell></cell><cell></cell><cell></cell><cell>1.45</cell><cell cols="2">Bayes-CV</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>0.90</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>1.40</cell><cell cols="2">RR-Het</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>15 0.85</cell><cell>20</cell><cell>25</cell><cell>30</cell><cell>35</cell><cell>40</cell><cell>45</cell><cell>50</cell><cell>10 1.35</cell><cell>15</cell><cell>20</cell><cell>25</cell><cell>30</cell><cell>35</cell><cell>40</cell><cell>45</cell><cell>50</cell><cell>55</cell><cell>60</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">Amount of shrinkage</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="3">Amount of shrinkage</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.30</cell><cell cols="6">Simulated data -16 questions, high heterogeneity, low noise</cell><cell></cell><cell>2.7</cell><cell cols="9">Simulated data -16 questions, high heterogeneity, high noise</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>2.6</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.25</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>2.5</cell><cell cols="2">Standard HB</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.20</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>2.4</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>RMSE</cell><cell>1.10 1.15</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>RMSE</cell><cell>2.1 2.2 2.3</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.05</cell><cell></cell><cell></cell><cell></cell><cell>Standard HB</cell><cell></cell><cell></cell><cell></cell><cell>2.0</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.00</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Bayes-CV</cell><cell></cell><cell>1.9</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">RR-Het Bayes-CV</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>RR-Het</cell><cell></cell><cell>1.8</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>110 0.95</cell><cell>120</cell><cell>130</cell><cell>140</cell><cell>150</cell><cell>160</cell><cell>170</cell><cell>180</cell><cell>40 1.7</cell><cell>60</cell><cell>80</cell><cell></cell><cell>100</cell><cell>120</cell><cell>140</cell><cell>160</cell><cell></cell><cell>180</cell><cell>200</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">Amount of shrinkage</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="3">Amount of shrinkage</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head></head><label></label><figDesc>for the Hessian. At each Newton step the new w i (for each respondent i independently) is given by w new</figDesc><table><row><cell cols="2">G =</cell><cell cols="2">J j=1</cell><cell cols="2">x ijq  *  −</cell><cell>Q q=1 e˜x ijq w ix Q q=1 e˜x ijq w i ijq</cell><cell>+ w i − w 0</cell></row><row><cell cols="6">for the gradient and</cell></row><row><cell>H =</cell><cell cols="2">J j=1</cell><cell>Q q=1</cell><cell>−</cell><cell>e˜x ijq w ix ijqxijq Q q =1 e˜x ijq w i</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>+</cell><cell>e˜x ijq w ix ijq</cell><cell>Q q =1 e˜x ijq w ix ijq q =1 e˜x ijq w i 2 Q</cell><cell>+ I p</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2">This can be seen, for example, from the Hessian, which is positive semidefinite.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3">Variations exist. For example, one can remove only one question in total from all I respondents and iterate I × J times instead of J -leading to the so-called leave-one-out cross-validation error-or more than one question per respondent. Our particular choice was driven by computational simplicity.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4">We say that parameter selection is consistent if the probability of selecting the parameter with optimal out-of-sample performance converges to 1 as the amount of calibration data increases.5  A matlab version of the code, for the metric and choice formats, is available from the authors.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="6">In Bayesian decision theory, the optimal point estimate corresponding to a quadratic loss function (or to the loss function used to compute RMSE) is the mean of the posterior<ref type="bibr" target="#b9">(Chaloner and</ref>  Verdinelli 1995, Rossi and<ref type="bibr" target="#b38">Allenby 2003)</ref>.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="7">Note, however, that our approach does not use any additional data compared to HB: all methods only use the calibration data and use the same calibration data.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="8">This model is in the spirit of the empirical Bayes approach of<ref type="bibr" target="#b37">Rossi and Allenby (1993)</ref>, to the extent that w 0 and D are based on a preliminary analysis of the data. However, Rossi and Allenby do not use cross-validation.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="9">Because our number of features (10) is 2.5 times the number (4) used by previously published simulations using the sameEvgeniou, Pontil, and Toubia: A Convex Optimization Approach to Modeling Consumer Heterogeneity in Conjoint Estimation Marketing Science 26(6), pp. 805-818, © 2007 INFORMS</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="10">Note that the numbers from Tables2 and 3are not comparable because they are not on the same scale.11  We thank Peter Lenk for kindly sharing this data set with us.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="12">The data are proprietary but are available from the authors and Research International upon request.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="13">For each set of simulated respondents, the labels "Bayes-CV" and "RR-Het" lie exactly on the corresponding curves. However, this does not necessarily hold for our graphs because they are based on averages across the five sets of simulated respondents. Note also that the differences between the two curves are due to differences in D and w 0 .</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors are indebted to Andreas Argyriou, Eric Bradlow, Fred Feinberg, John Hauser, John Liechty, and Oded Netzer for their helpful comments and suggestions. They also thank Peter Lenk and Philip Cartwright at Research International for sharing their data. The work of the second author was supported by EPSRC Grant EP/D071542/1 and by the IST Programme of the European Community, under the PASCAL Network of Excellence IST-2002-506778. The authors are listed alphabetically.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Appendix A. Minimization of the RR-Het Loss Function (2) Given A.1. Estimating w i and w 0 Given D We first transform the data asx ij = x ij D 1/2 and define w i = D −1/2 w i and w 0 = D −1/2 w 0 (see the case of a noninvertible D below). Note that with this transformation we can estimate first the w i 's and w 0 using the transformed datax ij and the modified cost function min</p><p>and then get the final solution as w i = D 1/2 w i and</p><p>With this transformation we never compute the inverse of matrix D. Note that (A.1) is jointly convex with respect to the pair of variables w i and w 0 . Taking the derivative with respect to w 0 we see that</p><p>Taking the derivative with respect to w i we have that</p><p>where I p is the p-dimensional identity matrix, X i is the matrix with rowsx ij , w i = X i X i + I p −1 X i Y i and Z i = X i X i + I p −1 . Finally, substituting w i into the equation for w 0 we get</p><p>If the matrix I p − 1/I p i Z i is not invertible, we follow the individual RR literature and take its pseudo-inverse. It can be shown, like in the individual-level RR case discussed in §2.1.2, that using the pseudo-inverse is equivalent to adding to the loss function (2) an extra term w 0 D −1 w 0 with → 0.</p><p>Having estimated w i and w 0 we then get w i = D 1/2 w i and w 0 = D 1/2 w 0 . Finally, to get (4)-which we no not need to compute in practice-we just have to replace X i with X i D 1/2 in (A.2) and use the fact that</p><p>If D is not invertible, we replace D −1/2 with the square root of the pseudo-inverse of D and follow the exact same computations above-note that we never have to compute D −1 . In this case, the projections on D 1/2 (computed using only the nonzero eigenvalues of D) above also ensure that w i and w 0 are in the range of D -otherwise notice that the complexity control can be set to 0 by simply considering w i and w 0 in the null space of D. We can also get (4)-which we do not need to compute in practice againwith all inverses being pseudo-inverses by replacing again X i with X i D 1/2 in (A.2) and use the fact that w i = D 1/2 w i .</p><p>Note that we have closed-form solutions for both w i and w 0 . Moreover, the estimation of the partworths w i is decomposed across the individuals and requires only 2I inversions of p-dimensional (small) matrices.</p><p>A.2. Estimating D Given w i and w 0 We assume for simplicity that the covariance of the w i s, and hence the matrix I i=1 w i − w 0 w i − w 0 , has full rank (which is typically the case in practice when we have many respondents). If the covariance matrix is not full rank, we replace the inverse of the solution D below with the pseudo-inverse. It can be shown as in the individual-level RR case discussed in §2.1.2, that using the pseudo-inverse is equivalent to adding to the loss function (2) the term Trace D −1 with → 0, keeping the loss function convex. Given w i and w 0 we solve</p><p>subject to D is a positive semidefinite matrix scaled to have trace 1</p><p>Using a Lagrange multiplier for the trace constraint and taking the derivative with respect to D we have that</p><p>which is positive definite; is simply selected so that D has trace 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix B. Newton's Method for LOG-Het</head><p>Notice that for given w i and D, assuming D is invertible (otherwise, as for RR-Het, use the pseudo-inverse of D) we get as before that w 0 = 1/I i w i . Similarly, given w i and w 0 we can solve for D like for RR-Het above-because D appears only in the complexity control. Hence, we need only to show how to solve for w i given D and w 0 , and then iterate among the conditional estimations like for RR-Het (in all our experiments, fewer than 20 iterations were required for convergence). As for RR-Het above, to avoid computing the inverse of D, we first transform the data as x ijq = x ijq D 1/2 and define w i = D −1/2 w i and w 0 = D −1/2 w 0 . Note that with this transformation we can estimate first w i minimizing the modified cost function</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Marketing models of consumer heterogeneity</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econometrics</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="page" from="57" to="78" />
+			<date type="published" when="1999-03" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A framework for learning predictive structures from multiple tasks and unlabeled data</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">K</forename><surname>Ando</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="1817" to="1853" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Improving parameter estimates and model prediction by aggregate customization in choice experiments</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<date type="published" when="2001-09" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A Bayesian/information theoretic model of learning to learn via multiple task sampling</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Baxter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learn</title>
+				<imprint>
+			<date type="published" when="1997" />
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="7" to="39" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Convex Optimization</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Boyd</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Vandenberghe</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<publisher>Cambridge University Press</publisher>
+			<pubPlace>Oxford, UK</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A learning-based model for imputing missing levels in partial conjoint profiles</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Bradlow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T.-H</forename><surname>Ho</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="369" to="381" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">A comparison of experimental design strategies for multinominal logit models: The case of generic attributes. Working paper, Graduate School of Management</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Bunch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Louviere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Anderson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994" />
+		</imprint>
+		<respStmt>
+			<orgName>University of California at Davis</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Experimental analysis of choice</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Carson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Louviere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Arabie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Bunch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Hensher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">F</forename><surname>Kuhfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Steinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Swait</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Timmermans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Wiley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Lett</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="351" to="367" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Multi-task learning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Caruana</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learn</title>
+				<imprint>
+			<date type="published" when="1997" />
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="41" to="75" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Bayesian experimental design: A review</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chaloner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Verdinelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statistical Sci</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="273" to="304" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">On the mathematical foundations of learning</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Cucker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Smale</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bull. Amer. Math. Soc</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="49" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Prediction in marketing using the support vector machine</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Curry</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="595" to="615" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">An Introduction to the Bootstrap. Chapman and Hall</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Efron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tibshirani</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1993" />
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Generalized robust conjoint estimation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Evgeniou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Boussios</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zacharia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="415" to="429" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Learning multiple tasks with kernel methods</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Evgeniou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Micchelli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pontil</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="615" to="637" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">A Convex Optimization Approach to Modeling Consumer Heterogeneity in Conjoint Estimation 818</title>
+		<author>
+			<persName><forename type="first">Pontil</forename><surname>Evgeniou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Toubia</forename></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title/>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Science</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="805" to="818" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">On the mathematical foundations of theoretical statistics</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Fisher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phil. Trans. Roy. Soc., Ser. A</title>
+		<imprint>
+			<biblScope unit="page" from="222" to="326" />
+			<date type="published" when="1922" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A choice model with conjunctive, disjunctive, and compensatory screening rules</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gilbride</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="391" to="406" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Estimating heterogenous EBA and economic screening rule choice models</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gilbride</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="494" to="509" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Regularization theory and neural networks architectures</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Girosi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Poggio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="219" to="269" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">The Elements of Statistical Learning</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hastie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tibshirani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Friedman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="s">Springer Series in Statistics</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">The impact of utility balance and endogeneity in conjoint analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Toubia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="498" to="507" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Research on innovation: A review and agenda for marketing science</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Tellis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Griffin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="687" to="717" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The importance of utility balance in efficient choice designs</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zwerina</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="308" to="317" />
+			<date type="published" when="1996-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Multi-task feature and kernel selection for SVMs</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Jebara</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Twenty-First Internat. Conf. Machine Learning</title>
+				<meeting>Twenty-First Internat. Conf. Machine Learning<address><addrLine>Banff, Alberta, Canada</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="55" to="63" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Probabilistic kernel regression models</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Jaakkola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Haussler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Seventh Internat. Workshop on Artificial Intelligence and Statist</title>
+		<imprint>
+			<date type="published" when="1999" />
+			<publisher>Morgan Kaufmann</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Probabilistic subset-conjunctive models for heterogenous consumers</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jedidi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kohli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="483" to="494" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">A fast dual algorithm for kernel logistic regression</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Keerthi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Duan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shevade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Poo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Machine Learn</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">1-3</biblScope>
+			<biblScope unit="page" from="151" to="165" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Hierarchical Bayes conjoint analysis: Recovery of partworth heterogeneity from reduced experimental designs</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Lenk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">S</forename><surname>Desarbo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Green</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Young</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="173" to="191" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Dynamic models incorporating individual heterogeneity: Utility evolution in conjoint analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Liechty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">K H</forename><surname>Fong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">S</forename><surname>Desarbo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="285" to="293" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Investigating endogeneity bias in marketing</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Otter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="642" to="650" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Louviere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Hensher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Swait</surname></persName>
+		</author>
+		<title level="m">Stated Choice Methods: Analysis and Applications</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">On learning vector-valued functions</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Micchelli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pontil</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="177" to="204" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Kernel PCA and de-noising in feature spaces</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mika</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schölkopf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Smola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K.-R</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Scholz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Rätsch</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+				<editor>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Kearns</surname></persName>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Solla</surname></persName>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Cohn</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cambridge, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="536" to="542" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">A comparison of numerical optimizers for logistic regression</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Minka</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Microsoft research tech report</title>
+				<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">A Bayesian approach to estimating household parameters</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="171" to="182" />
+			<date type="published" when="1993" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Bayesian statistics and marketing</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="304" to="328" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">Bayesian Statistics and Marketing</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mcculloch</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<publisher>John Wiley and Sons</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Linear model selection via cross-validation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">88</biblScope>
+			<biblScope unit="issue">422</biblScope>
+			<biblScope unit="page" from="486" to="494" />
+			<date type="published" when="1993" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">A strict paired comparison linear programming approach to nonmetric conjoint analysis</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Operations Research: Methods, Models and Applications. Quorum Books</title>
+				<editor>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Aronson</surname></persName>
+			<persName><forename type="first">S</forename><surname>Zionts</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Westport, CT</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1998" />
+			<biblScope unit="page" from="97" to="111" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Linear programming techniques for multidimensional analysis of preferences</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Srinivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Shocker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrica</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="337" to="369" />
+			<date type="published" when="1973" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<title level="m" type="main">Learning to Learn</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Thrun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pratt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1997" />
+			<publisher>Kluwer Academic Publishers</publisher>
+			<pubPlace>Dordrecht, The Netherlands</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Solutions of Ill-Posed Problems</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Tikhonov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">Y</forename><surname>Arsenin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1977" />
+			<publisher>W. H. Winston</publisher>
+			<pubPlace>Washington, D.C</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Polyhedral methods for adaptive choice-based conjoint analysis</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Toubia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Simester</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page" from="116" to="131" />
+			<date type="published" when="2004-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Fast polyhedral adaptive conjoint estimation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Toubia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">I</forename><surname>Simester</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Dahan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="273" to="303" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vapnik</surname></persName>
+		</author>
+		<title level="m">Statistical Learning Theory</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Wiley</publisher>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Splines Models for Observational Data</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wahba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="s">Series in Applied Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<date type="published" when="1990" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Kernel logistic regression and the import vector machine</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hastie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Computational Graphical Statist</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="185" to="205" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
