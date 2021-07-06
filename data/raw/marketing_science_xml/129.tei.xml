@@ -1,0 +1,1594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">A Semantic Approach for Estimating Consumer Content Preferences from Online Search Queries</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2018-10-16">October 16, 2018</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Jia</forename><surname>Liu</surname></persName>
+							<email>jialiu@ust.hk</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Hong Kong University of Science and Technology</orgName>
+								<address>
+									<addrLine>Clear Water Bay</addrLine>
+									<settlement>Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Olivier</forename><surname>Toubia</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Columbia Business School</orgName>
+								<orgName type="institution">Columbia University</orgName>
+								<address>
+									<postCode>10025</postCode>
+									<settlement>New York</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">A Semantic Approach for Estimating Consumer Content Preferences from Online Search Queries</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2018-10-16">October 16, 2018</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2018.1112</idno>
+					<note type="submission">Received: December 15, 2015 Revised: February 28, 2017; February 6, 2018; April 23, 2018 Accepted: May 1, 2018</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:29+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>search engine optimization</term>
+					<term>search engine marketing</term>
+					<term>search queries</term>
+					<term>content preferences</term>
+					<term>semantic relationships</term>
+					<term>topic modeling</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>We extend latent Dirichlet allocation by introducing a topic model, hierarchically dual latent Dirichlet allocation (HDLDA), for contexts in which one type of document (e.g., search queries) are semantically related to another type of document (e.g., search results). In the context of online search engines, HDLDA identifies not only topics in short search queries and web pages, but also how the topics in search queries relate to the topics in the corresponding top search results. The output of HDLDA provides a basis for estimating consumers' content preferences on the fly from their search queries given a set of assumptions on how consumers translate their content preferences into search queries. We apply HDLDA and explore its use in the estimation of content preferences in two studies. The first is a lab experiment in which we manipulate participants' content preferences and observe the queries they formulate and their browsing behavior across different product categories. The second is a field study, which allows us to explore whether the content preferences estimated based on HDLDA may be used to explain and predict click-through rates in online search advertising.</p><p>History: K. Sudhir served as the editor-in-chief and Michel Wedel served as associate editor for this article.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Over the last decade, search engines, such as Google, have become one of the primary tools consumers use when searching for products, services, or information. This trend has given rise to two major industries, search engine optimization (SEO), whose related spending is expected to reach $80 billion by 2020 in the United States alone <ref type="bibr" target="#b12">(Borrell 2016)</ref>, and search engine marketing (SEM), whose related spending was estimated at $92 billion for 2017 <ref type="bibr" target="#b51">(Statista 2017)</ref>. SEO refers to the process of tailoring a website's content to optimize its organic ranking for a given set of keywords or queries to improve traffic and lead generation <ref type="bibr" target="#b2">(Amerland 2013)</ref>. SEM usually refers to paid advertising on search engines. Success in both of these industries hinges on firms' ability to infer the content preferences underlying consumers' search queries. For example, a firm engaging in SEM should bid more on keywords/queries that reflect preferences that are better aligned with its content. In addition, it should be able to identify search ad copies that optimally promote this content. Similarly, a firm engaging in SEO should promote its content, that is, attempt to have its content appear as a top organic search result to consumers for whom this content is more relevant. Hence, firms engaging in SEO should be able to assess which queries reflect content preferences that are best aligned with their content.</p><p>Despite the importance of being able to infer consumers' content preferences from their queries, very little research has been done in this area. Some research (which is reviewed in Section 2.2) has developed taxonomies of search queries and search intent. However, that research does not enable firms to infer content preferences in a quantified, nuanced, and detailed manner. Another stream of research in marketing (which is reviewed in Section 2.3) has quantified consumer preferences from their search behavior. However, that research has primarily focused on consumer search behavior that manifests itself via discrete choices (e.g., purchasing, clicking). Text-based search behavior (e.g., entering a search query), despite being a major way in which consumers search today, has not received as much attention in that literature.</p><p>Because of the nature of textual data, inferring content preferences from search queries presents several challenges. A first challenge is that search terms tend to be ambiguous; that is, consumers might use the same term in different ways. This implies that content preferences should be estimated taking into account the entire content of search queries. A second challenge is the curse of dimensionality: the number of possible keywords or queries available to consumers is very large. A third challenge is the sparsity of search query: most search queries contain only up to five words <ref type="bibr" target="#b58">(Wang et al. 2003</ref><ref type="bibr" target="#b35">, Kamvar and Baluja 2006</ref><ref type="bibr" target="#b28">, Jansen et al. 2009</ref>. Fourth, there exist some potentially complex semantic relationships between the content in a search query and the content in the corresponding search results. Previous research (also reviewed in Section 2.3) has suggested that consumers have the ability to leverage these semantic relationships when formulating queries. That is, consumers may not necessarily formulate queries that exactly and directly reflect their content preferences but rather formulate queries that are more likely to retrieve the type of content they are looking for.</p><p>The first two challenges may be addressed by simply describing content as a set of topics rather than individual words, following the literature in information retrieval <ref type="bibr" target="#b40">(Manning et al. 2008)</ref>. That is, content in queries and web pages may be described using a small number of topics, defined as probabilistic combinations of words. In this paper, we define a consumer's preferences as an ideal distribution across these topics, which reflects the content that the consumer wants to consume online. Such definition is analogous to the ideal-point model of preferences in which a product is preferred if it is closer to the consumer's ideal product profile <ref type="bibr" target="#b24">(Green and Srinivasan 1978)</ref>. <ref type="bibr">1</ref> However, addressing the third and fourth challenges calls for a different type of topic model that (1) is able to combine information from multiple sparse search queries and their associated search results and (2) explicitly quantifies the mapping between queries and results. We develop such a probabilistic topic model in this paper: hierarchically dual latent Dirichlet allocation (HDLDA). HDLDA is built upon latent Dirichlet allocation (LDA) , an unsupervised Bayesian learning algorithm that extracts "topics" from text based on occurrence. HDLDA is specifically designed for contexts in which one type of document (in our context, search queries) is semantically related to another type of document (in our context, web pages). The model is dual because the two types of document (search queries and web pages) share the same topic-word distributions. The model is hierarchical because the topic intensities of a web page are modeled as a function of the topic intensities of the search query(ies) that retrieve this page. Such structure alleviates the sparsity of search queries by allowing the topic intensities in a search query to be influenced by the information contained in the web pages that it retrieves as well as the other search queries that retrieve the same pages. Such structure also explicitly quantifies the mapping from search queries to search results. HDLDA can be estimated on any primary or secondary data set that contains the text of a set of queries and their results on a search engine.</p><p>HDLDA provides a basis for estimating consumers' content preferences from their queries. HDLDA models the topics in the web pages retrieved by a search engine in response to a search query; the model itself is agnostic as to how consumers translate their content preferences into search queries. Therefore, the exact manner in which content preferences are estimated based on HDLDA depends on the assumption the analyst is willing to make on how consumers translate their content preferences into search queries. If consumers are assumed to be strategic and formulate queries that will reach an ideal topic distribution among the results, their preferences may be estimated as the expected topic intensities of the results given their search queries. On the other hand, if consumers are assumed to be naive and formulate queries that directly express their content preferences, then their preferences may be estimated as the topic intensities of their search queries. In both cases, estimation may be made on the fly, making it useful for firms interested in customizing content (e.g., display or search advertising) based on a consumer's query.</p><p>We apply HDLDA and explore its use in the estimation of content preferences in two studies. We start by running a lab experiment that allows us to exogenously manipulate consumers' preferred content, which we can compare with estimates of content preferences. In particular, we provided participants with search tasks in various categories (e.g., finding a ski resort with specific features to recommend to someone) and asked them to perform a series of searches to find a suitable URL for each task description. To track user behavior on the search engine, we built our own search engine, Hoogle, which technically serves as a filter between Google and the user. Specifically, Hoogle runs all queries for all users through the Google application program interface (API), showing only the organic Google search results with no user history being captured (unlike with regular Google searches). In practice, marketers/advertisers may use a search engine's API to collect data on queries that are relevant for their search marketing strategies and use these data as input to HDLDA without running any experiment and without using a customized search tool, such as Hoogle. This is the approach we adopt in our second study. We illustrate the practical relevance of our research using field data collected by a large online travel company that heavily advertises on Google. We show field evidence that HDLDA may be used to explain and predict consumer click-through rate in online search advertising based on the degree of alignment between the search ad copy shown on the search engine results page and the content preferences estimated using HDLDA.</p><p>Liu and Toubia: Estimating Consumer Preferences from Online Search Queries <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 930-952, © 2018</ref> Our research has both methodological and managerial contributions. Methodologically, HDLDA has a structure that is different from current extensions of LDA in the marketing and topic-modeling literature. Managerially, HDLDA can help firms to organize and understand the meaning of different search queries and web pages and to estimate consumers' content preferences based on their queries. In general, by empowering marketers/advertisers to infer consumers' content preferences from queries, our work can help them create more relevant content and promote that content more effectively. In the context of SEM, our research can inform advertisers' bidding strategies by determining how well their content matches different queries. Our research can also help advertisers identify more relevant ad copy for a given search query, especially when there is not enough data on the click-through rate of each potential ad copy for that query or when advertisers have to manage thousands of possible ad copies and/or target queries (as is the case of the company with which we collaborated on our field study). In the context of SEO, our work can help firms prioritize their efforts by determining the queries on which it is more essential to improve organic search rankings, that is, the queries that reflect content preferences best aligned with the content they are trying to promote.</p><p>The rest of the paper is organized as follows. In Section 2, we review the related literature. In Section 3, we introduce the topic model HDLDA. In Section 4, we describe our experimental design and data. We present the results from our lab study in Section 5 and our field application in Section 6. We conclude in Section 7.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Relevant Literature</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Natural Language Processing</head><p>There has been a stream of recent research in marketing that applies natural language processing (NLP) to analyze online user-generated content <ref type="bibr" target="#b5">(Archak et al. 2011</ref><ref type="bibr" target="#b38">, Lee and Bradlow 2011</ref><ref type="bibr" target="#b22">, Ghose et al. 2012</ref><ref type="bibr" target="#b43">, Netzer et al. 2012</ref>. Our research builds upon the literature on topic modeling within NLP or the so-called LDA . LDA is an unsupervised Bayesian learning algorithm that extracts "topics" from text based on occurrence. By examining a set of documents, LDA represents each topic by a probability distribution over words and each document by a probability distribution over topics (to which we refer as topic intensities). Applications of LDA in the marketing literature include <ref type="bibr" target="#b52">Tirunillai and Tellis (2014)</ref>, who apply LDA to identify dimensions of quality and valence expressed in online reviews; <ref type="bibr" target="#b0">Abhishek et al. (2018)</ref>, who use LDA to measure the contextual ambiguity of a search keyword; and <ref type="bibr" target="#b14">Büschken and Allenby (2017)</ref>, who propose an extension of LDA in which words within the same sentence of an online review are constrained to pertain to the same topic.</p><p>Our proposed topic model, HDLDA, has a structure that differs from other extensions of LDA. We highlight three extensions related to ours: the correlated topic model <ref type="bibr" target="#b9">(Blei and Lafferty 2007)</ref>, the hierarchical topic model , and the relational topic model . The correlated topic model allows correlation between documents in the occurrence of topics. In contrast, HDLDA focuses on the correlation between different types of document, for example, web pages and queries. The hierarchical topic model aims to learn a hierarchy of topics, that is, which topics are more general versus specific. In contrast, HDLDA defines hierarchy over documents; for example, topics in web pages are related to the topics in queries. The relational topic model studies document networks (e.g., whether two research papers tend to be cited by the same authors), whereas HDLDA leverages the observed hierarchy between different types of documents to infer their topics and semantic relationships.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Online Search Queries</head><p>Our topic model, HDLDA, captures the mapping between search queries submitted by users and search results provided by a search engine. This topic model allows researchers and practitioners to specify assumptions on how users translate their content preferences into search queries and develop methods for inferring content preferences from search queries given these assumptions and the mapping from search queries to search results provided by HDLDA. Hence, our work is relevant to the literature on understanding users' intent behind their search queries from the computer science and information systems literature. This research has primarily focused on classifying consumers' search intent into some discrete categories <ref type="bibr" target="#b13">(Broder 2002</ref><ref type="bibr" target="#b29">, Jansen et al. 2007</ref><ref type="bibr" target="#b46">, Sanasam et al. 2008</ref><ref type="bibr" target="#b47">, Shen et al. 2011</ref>. The first and most popular categorization was proposed by <ref type="bibr" target="#b13">Broder (2002)</ref>, who defined three very broad classes: informational, navigational, and transactional. Informational search involves looking for a specific fact or topic, navigational search seeks to locate a specific website, and transactional search usually involves looking for information related to a particular product or service. <ref type="bibr" target="#b30">Jansen et al. (2008)</ref> showed that about 80% of queries are informational, about 10% are navigational, and less than 10% are transactional.</p><p>Such empirical study of search logs provides valuable insights into what people search for and how they search for content. However, these types of analysis do not quantify users' content preferences, which HDLDA enables. This is managerially important to help website owners or advertisers improve the fit between their content and consumers' preferences.</p><p>search behavior, such as which links or products consumers decide to view/click. This was done either using static models or dynamic models in which users search sequentially and stop searching when the marginal cost of search exceeds the marginal gains <ref type="bibr" target="#b32">(Jeziorski and Segal 2010</ref><ref type="bibr" target="#b37">, Kim et al. 2010</ref><ref type="bibr" target="#b18">, Dzyabura 2013</ref><ref type="bibr" target="#b23">, Ghose et al. 2013</ref><ref type="bibr" target="#b48">, Shi and Trusov 2013</ref><ref type="bibr" target="#b61">, Yang et al. 2015</ref>.</p><p>However, text-based search behavior, such as entering a search query, has been largely ignored. Entering a query is a first-order user behavior on most search platforms, and queries contain valuable information about user preferences <ref type="bibr" target="#b45">(Pirolli 2007</ref>). Yet the field is lacking tools to leverage query data and in particular to extend search models based on utility maximization to the context of online search queries. Such extension requires specifying assumptions on how consumers formulate search queries given their content preferences. One such assumption was formulated by <ref type="bibr" target="#b39">Liu and Toubia (2018)</ref>, who argue that a query is not a direct representation of users' content preferences, but rather a tool to retrieve content that matches their preferences. These authors give the example of a consumer entering the following query: "affordable sedan made in America." It is possible that the most important attributes for this consumer are in fact safety, comfort, and made in America and that affordability is of lesser importance. This consumer might have decided to use this query because the consumer believes that cars made in America are generally safe and comfortable but not necessarily affordable. In that case, the consumer anticipated finding relevant search results efficiently (i.e., with short queries) by only including "made in America" and "affordable" in the queries but not "safe" or "comfortable" although these are important attributes. In other words, the consumer may have strategically leveraged the semantic relationships between queries and results when formulating the query. <ref type="bibr" target="#b39">Liu and Toubia (2018)</ref> illustrate using field data that consumers stand to benefit from being strategic in query formation, and they present the results of an incentivealigned lab experiment that suggests consumers have at least some ability to be strategic in query formation. Assuming that consumers are strategic in query formation leads to one particular way in which content preferences may be estimated from search queries, using the output of HDLDA. In this paper, we are agnostic ex ante as to how consumers translate content preferences into search queries. We empirically compare content preferences estimated using a strategic assumption to preferences estimated using a naive assumption that consumers formulate search queries that directly reflect their content preferences.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">The Model</head><p>In this section, we first describe our proposed topic model, HDLDA, followed by its inference algorithm.</p><p>Then, we show how the output from HDLDA can be used to estimate consumer content preferences based on search queries. We also present some benchmark approaches, which we compare with HDLDA in our empirical studies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">HDLDA</head><p>HDLDA is a model for bag-of-word data with which one type of document-in our case, search queries-is semantically related to a different type of documentin our case, web pages. We assume that there is one LDA process for each type of document. The two processes share the same topic-word distributions, and they are hierarchical in the sense that the topic intensities in each web page are related to the topic intensities in the query(ies) that retrieve the page. HDLDA can be applied to any corpus that has such hierarchically dual structure. We focus here on an application to search engines and set the notations within this context.</p><p>Suppose there is a collection of Q different queries for a particular search domain, and these queries retrieve a collection of P different web pages on a search engine. Let l pq ∈ {0, 1} indicate whether web page p is retrieved by query q; that is, it appears in the top search results for query q. Let J denote the total number of different words in the vocabulary, and words are indexed by j ∈ {1, 2, . . ., J}. Let w qj denote the jth word in query q and w q denote the vector of J q words associated with that query, where J q is the number of words in the query. Similarly, let w pi denote the ith word in web page p and w p denote the vector of J p words associated with that web page, where J p is the number of words in the page. The set of relationships between the data and the model parameters is described by the graphical model in Figure <ref type="figure" target="#fig_0">1</ref>. Note that we treat the labels {l pq } as exogenously given by the search engine; that is, we do not model their generating process.</p><p>Topics. We let K denote the number of different topics in the domain. Search queries and web pages in the collection are assumed to share the same set of topics, but each document exhibits these topics with different intensities. These topic intensities are reflected by the words present in the documents. Similarly to an LDA, we model each topic k ∈ {1, 2, . . ., K} as a vector φ k , which follows a Dirichlet distribution over the J words in the vocabulary:</p><formula xml:id="formula_0">φ k~D irichlet J (η).</formula><p>(1)</p><p>The hyper-parameter η is a scalar that we estimate, which controls the sparsity of the word distribution.</p><p>Queries. To model the observed jth word w qj in each query q, we need to model the query's topic intensities,  <ref type="bibr">, , vol. 37, no. 6, pp. 930-952, © 2018</ref> captured by the vector θ q and the latent topic assignment z qj ∈ {1, 2, . . ., K} for that word. Following LDA, we assume for q 1, 2, . . ., Q and j 1, 2, .., J q θ q~D irichlet K (α), z qj~C ategory(θ q ), w qj~C ategory(φ z qj ).</p><p>(2)</p><p>The hyper-parameter α is a scalar that controls the prior on the topic intensities in the queries, which we set to a fixed value in this paper.</p><p>Web Pages. Web pages are semantically related with the set of queries that can retrieve them. HDLDA captures such a relationship by incorporating a hierarchical structure. Specifically, we model the prior on the topic intensities for web page p, θ p , as a function of the topic intensities of the queries that retrieve this web page. The mapping between queries and results is specified at the topic level, using a K × K matrix R.</p><p>In this matrix, each element r kk ′ indicates the effect of topic k in the retrieving queries on topic k ′ in the corresponding search results. As multiple queries may retrieve the same web page, we use the average topic intensities across these queries, which is denoted as θ q ( p) q θ q l pq q l pq in the following equation. <ref type="bibr">2</ref> Following the Dirichlet-multinomial regression topic model <ref type="bibr" target="#b41">(Mimno and McCallum 2008)</ref>, we assume that</p><formula xml:id="formula_1">θ p~D irichlet K (exp(R T 1 θ q ( p)), . . ., exp(R T K θ q ( p))). (<label>3</label></formula><formula xml:id="formula_2">)</formula><p>The exponential of the product between the kth column of R and θ q ( p) is proportional to the expected intensity of topic k in the search results. That is, the intensity of each topic in each document is related to the intensities of all topics in the labeling query(ies). Given θ p , the observed jth word in web page p is then modeled in a standard manner z pj~C ategory(θ p ), w pj~C ategory(φ z pj )</p><p>for p 1, 2, . . ., P and j 1, 2, .., J p .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Inference Algorithm</head><p>Given the content of all queries and web pages and the labeling of web pages by queries, our goal is to estimate Θ {{φ k }, {z p }, {z q }, {θ p }, {θ q }, R}. We use a combination of Markov chain Monte Carlo (MCMC) and optimization, that is, a stochastic expectation maximization (EM) sampling scheme <ref type="bibr" target="#b17">(Diebolt and Ip 1995</ref><ref type="bibr" target="#b44">, Nielsen 2000</ref><ref type="bibr" target="#b41">, Mimno and McCallum 2008</ref>. Specifically, we apply a Gibbs sampler to draw {φ k }, {z p }, {z q }, {θ p } from their posterior distributions, which are all conjugate; we use the Metropolis-Hastings algorithm to sample {θ q }, which are not conjugate; and we estimate R by maximizing its likelihood function given {θ q } and {θ p }. Therefore, over the MCMC iterations, we alternate between sampling {{φ k }, {z p }, {z q }, {θ p }, {θ q }} and numerically optimizing R given the other parameters. <ref type="bibr">3</ref> The details of our inference algorithm are presented in Appendix A. In Appendix B, we report a simulation study that explores the performance of this algorithm.</p><p>Hyper-Parameters. The extant literature suggests that optimizing the hyper-parameters may improve the performance of a topic model <ref type="bibr">(Wallach et al. 2009a, b)</ref>. We tried to estimate both α and η using the previously stated algorithm by optimizing their likelihood functions, respectively. However, we found consistently across multiple corpora that these two hyper-parameters cannot be jointly estimated in this application, which we find is due to the sparsity of search queries. Therefore, we set α 0.1, and we estimate η by maximizing its likelihood function given {φ}. We treat η as a scalar (giving rise to a symmetric prior) as <ref type="bibr">Wallach et al. (2009a, b)</ref> find that an asymmetric prior over the topic-word distributions provides no real benefit. 4</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Estimating Content Preferences Based on Queries</head><p>HDLDA is a topic model that relates the content in search queries to the content in the web pages retrieved by a search engine in response to these queries. This model in itself is agnostic as to how consumers translate their content preferences into search queries. Nevertheless, HDLDA allows practitioners and researchers to specify an assumption on how users translate their content preferences into search queries and then use the model to infer or reverse engineer content preferences from search queries. In this paper, we consider two alternative assumptions on how users translate their content preferences into search queries, which give rise to two alternative estimation approaches.</p><p>The first assumption (consistent with Liu and Toubia 2018) is that consumers anticipate the types of results that will be retrieved by their query and that they formulate queries that will retrieve results that match their preferred content in expectation. We label this assumption "strategic" because it assumes that users strategically leverage semantic relationships in query formation. Under this assumption, a consumer's preferences may be estimated as the expected topic intensities in the search results given their query.</p><p>The alternative assumption we consider is that users do not leverage the semantic relationship between queries and results when formulating their queries. That is, users formulate queries that directly reflect their content preferences rather than formulating queries that will retrieve results that reflect these preferences. We label this assumption "naive" because it assumes consumers ignore the mapping between queries and results. Under this assumption, a consumer's preferences may be estimated directly as the topic intensities in the search queries. We note that these two assumptions constitute the two ends of a continuum of possible assumptions that would allow users to have only approximate beliefs on the relevant semantic relationships and/or an imperfect ability to leverage these relationships. We leave the testing of such assumptions to future research.</p><p>We define consumer i's content preferences as an ideal distribution over topics on web pages. This distribution is captured by a vector of weights across K topics, denoted as β i . Suppose we observe query q from consumer i. Given the topics {φ} already estimated from HDLDA, we run an LDA to obtain an estimate of the topic intensities of query q, denoted as θ q . According to HDLDA, the search engine will retrieve web pages whose topic intensities are drawn from the following distribution: θ p~D irichlet K (exp(R T 1 θ q ), . . ., exp(R T K θ q )). Accordingly, under the strategic assumption, β i may be estimated as the mean of the expected topic intensities in search results: 5</p><formula xml:id="formula_4">β i HDLDA strategic E(θ p | θ q ) ≜ exp(R T 1 θ q ) k exp(R T k θ q ) , exp(R T 2 θ q ) k exp(R T k θ q ) , ..., exp(R T K θ q ) k exp(R T k θ q ) ⎛ ⎜ ⎜ ⎜ ⎜ ⎜ ⎜ ⎜ ⎝ ⎞ ⎟ ⎟ ⎟ ⎟ ⎟ ⎟ ⎟ ⎠ . (5)</formula><p>In contrast, under the naive assumption, β i may be estimated as the topic intensities of the search query itself:</p><formula xml:id="formula_5">β HDLDA naive i θ q . (<label>6</label></formula><formula xml:id="formula_6">)</formula><p>Benchmark. We compare the estimation of content preferences using the output of HDLDA to a benchmark in which content preferences are estimated based on LDA, which treats queries and web pages as independent documents. We ensure that the comparisons of LDA to HDLDA not be driven by HDLDA having a flexible prior distribution on θ p . Specifically, we allow LDA to also have a flexible prior, θ p~D irichlet K (α page ), and we estimate the 1 × K vector of asymmetric hyper-parameters α page . Similarly to HDLDA, we set θ q~D irichlet K (α) as the prior on the topic intensities in queries, where α 0.1, and φD irichlet J (η) as the prior on the topic distributions, where η is a scalar that we estimate. In this case, as semantic relationships are not captured, content preferences are estimated as the estimated topic intensities of the query:</p><formula xml:id="formula_7">β LDA i θ q . (<label>7</label></formula><formula xml:id="formula_8">)</formula><p>This benchmark is nested within HDLDA in which we assume all the topics in a query have the same effect on each topic in the results; that is, R (r 1 l K , r 2 l K , . . ., r K l K ), where l K denotes a K-dimensional vector of ones and {r k } k 1,. . . ,K are all scalars. This reduces the mean of the Dirichlet distribution in Equation ( <ref type="formula" target="#formula_1">3</ref>) to α page (exp(r 1 ), exp(r 2 ), . . ., exp(r K )). Similarly to HDLDA, we estimate this benchmark with a stochastic EM algorithm in which we alternate between sampling {{φ k }, {z p }, {z q }, {θ p }, {θ q }} from the Gibbs sampler and numerically optimizing the prior parameters α page and η given the other parameters.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Lab Experiment</head><p>Researchers and practitioners may run HDLDA on any primary or secondary data set that contains the text of a set of queries and their corresponding search results</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Liu and Toubia: Estimating Consumer Preferences from Online Search Queries</head><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 930-952, © 2018</ref> from a search engine. However, in this paper, our objective is not only to show how HDLDA may be applied, but also to test the model's usefulness as a basis for inferring consumers' content preferences from their search queries. Accordingly, our first data set was collected experimentally, which enabled us to manipulate the content preferences underlying users' search behavior and measure (albeit imperfectly) the users' "true" content preferences, which we then compared with various estimates. To track user behavior on the search engine, we built our own search engine, Hoogle, which technically serves as a filter between Google and the user. Hoogle has the additional benefit of removing the influence of advertising and customization on user search behavior, therefore providing clean comparisons between benchmarks. In this section, we describe this data set in detail.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Experimental Design</head><p>We conducted a lab experiment in which N 197 participants performed a series of online search tasks using our custom-built search engine Hoogle, which we introduce in Section 4.2. The participants' objective was to make purchase recommendations. Our search tasks were designed based on five product categories about which consumers commonly acquire information on the internet before purchase: ski resorts, printers, cars, laptops, and cameras. <ref type="bibr">6</ref> We manipulated content preferences exogenously by giving participants specific search tasks, that is, descriptions of what they should search for. Each participant was asked to submit one URL of their chosen web page that they believed best matched the given task description. To ensure that participants' preferences were aligned with the task descriptions and their corresponding chosen web pages, our study was incentive-aligned. Participants were told that all submitted links would be evaluated by the researchers based on relevance and usefulness. In addition to a $7 participation fee, we gave a $100 cash bonus to the participant whose chosen web page best matched with the corresponding task description. Participants were informed of this incentive before the experiment, and we notified the winner within two weeks of the experiment.</p><p>We introduced some heterogeneity in content preferences by designing two task descriptions reflecting different preferences within each category as displayed in Table <ref type="table" target="#tab_1">1</ref>. For example, task 1 asked participants to search for a family-friendly ski resort, and task 2 asked them to search for an exclusive ski resort. <ref type="bibr">7</ref> We used a between-subjects design in which each participant was randomly assigned to one version of the two tasks in each category. The order of the categories was randomized for each participant. We find participants spent, on average, 20 minutes to finish all the tasks, which suggests that our incentives worked well.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Data Collection</head><p>As mentioned previously, in addition to applying HDLDA in various domains, our objective with the present experiment is also to explore its use for inferring a user's preferences based on their search queries. To track user behavior on the search engine while ensuring that our comparison of various benchmarks not be influenced by unobserved factors, such as the user's browsing history or the customization of content by the search engine, we built our own search engine called Hoogle and used it to collect search queries from consumers. Hoogle retrieves all the organic search results for each search query with no user history being captured, using the Google customer engine API. That is, for any search query, Hoogle retrieves a similar set of search results as Google with the only differences that search results are not personalized based on past search history and there is no sponsored search result. A screenshot from the Hoogle interface is presented in Figure <ref type="figure" target="#fig_1">2</ref>. Each result page shows 10 links with their titles and snippets. The font, color, and size are the same as Google.</p><p>The search logs from Hoogle include the following information for each participant and for each task: the query(ies) submitted by the participant, the search results seen by the participant on each page, and the links clicked by the participants. Immediately after we finished collecting data in the lab experiment, we also used Python scripts to automatically download all the content of the web pages in the participants' search results (i.e., the actual content of the web pages corresponding to all the links in the result pages viewed by participants).</p><p>We note again that Hoogle is not necessary to run HDLDA. In practice, most firms have a set of keywords/ queries that they think are most relevant and valuable for their SEO/SEM strategies. For example, in our field application, the set of consumer queries was collected based on a subset of the keywords on which the firm frequently advertises. We also note that Hoogle is based on the Google API; that is, the organic results associated with each search query come directly and only from Google even though the set of queries comes from the interaction of consumers with Hoogle.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Descriptive Statistics</head><p>Table <ref type="table" target="#tab_2">2</ref> reports descriptive statistics on the search data collected from this lab experiment for each category, including the number of unique queries, the number of different words among all the queries, the variation across users' queries, users' query usage, the number of words per query, and the average proportion of the words in a query that come from the task description. First of all, there exists some heterogeneity across users' queries. Such variation is measured by the edit distance <ref type="bibr" target="#b33">(Jurafsky and Martin 2000)</ref>, which is a way to quantify how dissimilar two strings are to one another. <ref type="bibr">8</ref> We compute the edit distance between all possible pairs of queries from users in the same task and report the sample average and standard deviation. In addition, users' query usage varies across categories, but on average, they tend to form few queries in a session and use few words in a query, which is consistent with the existing empirical studies on search queries <ref type="bibr" target="#b31">(Jansen et al. 2000</ref><ref type="bibr" target="#b35">, Kamvar and Baluja 2006</ref><ref type="bibr" target="#b59">, Wu et al. 2014</ref>. Finally, the average proportion of words in users' search queries that are from the task description ranges from 0.40 to 0.75. Hence, users form queries that combine words in the task description with other words.</p><p>We now turn to descriptive statistics related to position effects. Previous research has shown that position could affect behavioral outcomes, such as consumer click-through, conversion rate, and sales <ref type="bibr" target="#b36">(Kihlstrom and Riordan 1984</ref><ref type="bibr" target="#b27">, Hotchkiss et al. 2005</ref><ref type="bibr" target="#b54">, Varian 2007</ref>). In our data, we find that the majority of users limit their browsing to the links on the first page of results (i.e., the top 10 organic links retrieved by Google). Therefore, we treat every page of results as starting from the first position. We plot the click-through rate (CTR) against the top 10 positions in Figure <ref type="figure">3</ref>. The CTR at each position is calculated as the percentage of clicks at this position across all the clicks from the 10 positions, and hence, the CTR sums to one across positions. Consistent with previous research, we see a quasi-exponential decrease in CTR as a function of position <ref type="bibr" target="#b42">(Narayanan and</ref><ref type="bibr">Kalyanam 2015, Abhishek et al. 2018)</ref>.</p><p>Finally, we study whether there exists some agreement on the best web page among users assigned to the A family is planing to take a vacation at a ski resort in Vermont. They are looking for a small resort that is suitable for family and children. The resort should have plenty of trails for beginner skiers and also a ski school for kids. There should be lesson package deals including all-day lift tickets, ski rental, lessons, and so on. At the minimum, the resort should have an on-site ski rental shop and offer some kind of discounts. 2 David, a banker, is planning to take a vacation at a ski resort in Vermont. He is looking for an exclusive resort that could offer a variety of terrains for intermediate and advanced skiers. Specifically, the mountain should be large, and the slopes should be somewhat difficult. In addition, the resort should offer other activities, such as snow tubing, and amenities, such as a lounge and spa treatments. Printer 3 Jessica, a college student, wants to purchase a budget printer for school work. The printer should be able to print, copy, and scan. Double-sided printing would also be attractive to her. Color printing is not required as she will mostly print black and white. In addition, the printer should print fast with low noise and the running cost should be low. 4</p><p>A family wants to purchase a small printer designed for home users who want lab-quality photos. They want to be able to connect the printer to wi-fi and smart phones, and it should also be able to print photos without the topic of a computer. As the printer will be used very frequently, the family is willing to pay slightly more for a printer that is cheaper to run in the long term. Car 5 A family wants to buy a new car that could provide more generous space for seating and cargo than their old compact sedan. The family's budget is $25,000. They want the new car to be safe, reliable, economic, and fuel efficient. It should have a fourcylinder engine and a high EPA mileage. The car should also handle snow and ice well. 6</p><p>Catherine wants to buy a small car to save money on gas, insurance, and maintenance. She also wants to be able to park more easily in a big city. Her price range is between $10,000 and $14,000. She wants the car to be attractive, stylish, fun, and practical. Despite its small size, the car should still be safe and should offer a comfortable ride. Laptop 7 Mike, a college student, wants to buy a new laptop. In addition to school work, the laptop should provide good performance for playing games. It should have at least an Intel Core i5 CPU, 8 GB of RAM, a good graphics card, and a larger screen. Mike prefers windows and Linus systems because of their flexibility and wide options for programs. Mike's price range is between $800 and $1,000. 8</p><p>Mike, a consultant, wants to buy a laptop for work and traveling. Mike's budget is $600. He will mostly use the laptop for internet, Word, PowerPoint, and email. He needs a laptop with enough speed, good display, very long battery life, small size, and light weight. Also the laptop should be durable enough to handle pressure or dropping that may often happen during traveling. Camera 9 A couple wants to buy a camera for their nine-year-old son. The camera should be simple to use and easy to carry anywhere.</p><p>The camera should have a large viewing screen or touchscreen. Its picture quality should be very good. More importantly, the camera should be sturdy and be able to withstand falls. And it should also be waterproof, so that it can be used underwater. The couple prefers a camera in the price range of $100-$200. 10 Kevin, a beginner photographer, wants to buy his first digital SLR camera. Kevin is looking for a model in the midprice range or alternatively a package kit that includes the body, lenses, and tripod. The camera should be able to shoot both jpeg and raw files. And it should also come with a wi-fi adapter, which makes it easier to quickly share images through a laptop or phone.</p><p>Liu and Toubia: Estimating Consumer Preferences from Online Search Queries</p><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 930-952, © 2018</ref> same task. For each task and for each URL that was chosen at least once, we define the agreement level as the proportion of users who picked that URL as their chosen link for that task. Overall, the distribution of the agreement level is long-tailed; that is, the majority of users tend to choose different URLs. We report in Figure <ref type="figure" target="#fig_2">4</ref> the agreement levels for the top five most chosen links for each task. We see that a few links show some level of consensus among users, and there exists heterogeneity across tasks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.">Data Preprocessing</head><p>Given that most advertisers or firms do business in certain domains and design web page content and keyword lists within that, we run HDLDA separately for each product category. Accordingly, we combine all the queries and web pages from the two search tasks in the same category as one corpus. We preprocess the text in each corpus based on standard practice in text mining. We remove any delimiting character, including hyphens; we eliminate punctuation, non-English characters, and a standard list of English stop words; no stemming is performed. We form the vocabulary for each corpus using the standard term frequency-inverse document frequency metric <ref type="bibr" target="#b34">(Jurafsky and Martin 2009</ref>). 9</p><p>The descriptive statistics of the resulting corpora are summarized in Table <ref type="table" target="#tab_4">3</ref>. The first row is the number of words that are selected as the vocabulary for each corpus. The number of words in each query or web page is calculated based on the selected vocabulary rather than the original content. Hence, one may notice that these numbers are smaller than those in Table <ref type="table" target="#tab_2">2</ref>. On average, each query contains about four words, and each web page contains 250-600 words. The last part of the table concerns the observed labels between queries and web pages. On average, each query retrieves about 10 web pages. 10 Web pages can be retrieved by very different numbers of queries.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Lab Experiment Results</head><p>In this section, we first describe model estimation. Next, we present the results of the posterior estimates from HDLDA. Finally, we proceed to the individuallevel estimation of content preferences as described in Section 3.3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Model Estimation</head><p>One key decision in topic modeling is choosing the number of topics for a corpus if this parameter is not specified a priori <ref type="bibr" target="#b10">(Blei and Lafferty 2009)</ref>. Depending on the goals and available means, a researcher may apply a variety of performance metrics <ref type="bibr" target="#b25">(Griffiths and Steyvers 2004;</ref><ref type="bibr">Wallach et al. 2009a, b)</ref>. In our case, we initially intended to use the number of topics determined by evaluation on holdout documents for the benchmark model LDA described in Section 3.3 as the number of topics for HDLDA. However, we found that LDA prefers very large K. <ref type="bibr">11</ref> This issue has been documented in other empirical applications in marketing <ref type="bibr" target="#b53">(Trusov et al. 2016</ref><ref type="bibr" target="#b62">, Zhang et al. 2017</ref>. Moreover,  found that topic models that perform better on held out likelihood (e.g., measured by perplexity) may infer less semantically meaningful topics. Therefore, we set K ∈ {2, 3, 4} for each corpus based on interpretability. We also estimate all the benchmark models for K ∈ {2, 3, 4} to evaluate the robustness of our results to different choices of K. <ref type="bibr">12</ref> We hope that future research will propose more effective, objective, and systematic methods for determining the optimal number of topics in HDLDA and other topic models. We compare the model fit of HDLDA and LDA based on the deviance information criterion (DIC) <ref type="bibr" target="#b50">(Spiegelhalter et al. 2002)</ref>. The results are reported in Table <ref type="table" target="#tab_5">4</ref>. We find consistently, across all the categories and K, that HDLDA achieves a much lower DIC compared with LDA. This suggests that it is reasonable to explicitly model the mapping between search queries and search results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Posterior Estimates</head><p>We now interpret the topics generated by HDLDA in each corpus. To ease interpretation, we focus on the most relevant words in each topic. The relevance of word w to topic k is measured as follows <ref type="bibr">(Bischof and Airoldi 2012, Sievert and</ref>  <ref type="table" target="#tab_1">Shirley 2014</ref> Notes. We report the sample average with the standard deviation in parentheses. The edit distance is the minimum number of operations required to transform one query into the other. Larger values indicate lower similarity. We compute the edit distance between all pairs of queries (queries are pooled together across users) for the same task. The last column reports the proportion of words in a user's query that appear in the task description.</p><formula xml:id="formula_9">): r(w, k | λ) λ log (φ kw ) + (1 − λ)log φ kw p w ,<label>(8)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Figure 3. CTR as a Function of Position</head><p>Note. CTR is normalized to sum to one across positions. where φ kw is the posterior estimate of the probability of seeing word w given topic k, p w is the empirical distribution of word w in the corpus, and λ determines the weight given to the probability of word w under topic k relative to its lift φ kw p w , both measured on the log scale. Setting λ 1 results in the familiar ranking of words in decreasing order of their topic-specific probabilities, and setting λ 0 ranks words solely based on lift. We set λ 0.6, following the empirical studies conducted by <ref type="bibr" target="#b49">Sievert and Shirley (2014)</ref>.</p><p>For ease of interpretation, we simulate the content of each topic using the exponential of relevance. That is, we generate sets of words for each topic, in which the probability of occurrence of each word is proportional to the exponential of its relevance. We use word clouds to visualize the simulated sets of words. As an example, in Figure <ref type="figure" target="#fig_3">5</ref>, we report the word clouds for the four topics extracted from the laptop category when setting K 4. Words with larger font size have higher relevance. Based on the word clouds in Figure <ref type="figure" target="#fig_3">5</ref>, one may label topic 1 as "shopping for laptops," topic 2 as "Lenovo related," topic 3 as "performance," and topic 4 as "configuration."</p><p>After examining all the extracted topics, we set K 2 for ski and camera, K 3 for printer and car, and K 4 for laptop. Table <ref type="table" target="#tab_6">5</ref> displays some of the most relevant words for each topic in each category along with examples of queries and web pages with very high Note. For each URL, its agreement level is defined as the proportion of users who picked that URL as their chosen link for the same task. Note. We report the average across all participants with standard deviations in parentheses.</p><p>Liu and Toubia: Estimating Consumer Preferences from Online Search Queries weights on each topic. Although we only present five sample words per topic for space reasons, as one may see in Figure <ref type="figure" target="#fig_3">5</ref>, this is not enough to define or capture a topic completely. We observe that the recovered topic intensities of web pages in general seem to be consistent with their actual content. Table <ref type="table" target="#tab_7">6</ref> reports the average of the posterior estimates of the topic intensities of all queries and web pages in each category. We see that the average θ q may not necessarily be similar to the average θ p .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Content Preference Estimation</head><p>Measures of "True" Content Preferences. One of the appeals of our experimental design is that we can manipulate content preferences exogenously by explicitly instructing participants to search for certain content. We do not claim to be able to measure with certainty how participants interpreted the task and, therefore, what their true underlying content preferences were during the experiment. Nevertheless, our experimental design provides us with some (imperfect) measures of participants' true content preferences, which we may then compare with the content preferences estimated from participants' queries based on various approaches. Our first measure of "truth" is the set of topic intensities of the actual web page chosen by the participant. <ref type="bibr">13</ref> This measure has the benefit of reflecting the actual behavior of participants. However, one limitation of this measure is that a particular page is more likely to be chosen if it is one of the top search results, and HDLDA precisely models the expected distribution of topics across top search results given a query. That is, the chosen web page is not only influenced by content preferences (i.e., the demand side), but also by the options presented by the search engine (i.e., the supply side), and hence, this measure partly reflects how well the various models capture the supply side. So we complement this with a second measure of true preferences: the set of topic intensities of the task description given to the participant. This measure offers the benefit of being unaffected by the options presented to the participants by the search engine. However, one possible drawback of this measure is that there might be variations in how participants interpret the task description. Note that the data used to train HDLDA contains neither the text of the task descriptions nor the knowledge of which web page was selected by each participant. Therefore, both our truth measures may be viewed as external validations.</p><p>Before comparing performance across benchmarks, we provide some additional statistics on our truth measures. The estimated topic intensities of all the task descriptions are presented in Table <ref type="table" target="#tab_8">7</ref>. <ref type="bibr">14</ref> We see that each task description may have large intensities on multiple topics. However, when comparing the intensities of the same topic across the two task descriptions in the same category, the topic with the relatively larger intensity is consistent with our expectation. For example, in the ski resort category, task 1 (respectively, task 2) was designed to correspond to a family-friendly resort (respectively, a luxury resort). Consistent with this, we find that task 1 has a larger intensity on topic 1 compared with task 2, and the opposite is true for topic 2. Note however that the intensities on topic 1 are larger overall compared with the intensities on topic 2, reflecting the fact that family-friendliness is a more common/popular theme in this category compared with luxury.</p><p>Finally, for each subject in each task, we compare the topic intensities of the web page chosen by the subject with the topic intensities of the links that the subject clicked on but did not choose and of all links displayed on the search engine result page for that subject. The similarity of two sets of topic intensities is measured using cosine similarity (i.e., inner product between two vectors), <ref type="bibr">15</ref> which is commonly used in topic modeling to understand the similarity between documents. In our case, it ranges from zero, indicating complete orthogonality, to one, meaning perfect alignment. We report the results across all K and product categories separately for different topic models in Appendix C. We see that the similarity between the content that participants end up choosing and the content on which they tend to click is greater than the similarity between the content they end up choosing and the content on any search engine result page.</p><p>Performance Metric. As a performance metric, we compute the perplexity score of the true description of each participant's content preferences (i.e., task description or chosen web page) given the estimated content preferences. Perplexity is monotonically decreasing in the likelihood of the data and is equivalent to the inverse of the geometric mean of the per-word likelihood . A lower perplexity score indicates better model performance. Let L i denote the content (i.e., set of words) of the true description of user i's preferences and |L i | denote its length. The perplexity score of L i given a vector of estimated content preferences β i is calculated as</p><formula xml:id="formula_10">perplexity(L i | β i ) exp − w∈L i log ( k φ kw β ik ) |L i | , (<label>9</label></formula><formula xml:id="formula_11">)</formula><p>where φ is the estimated topic-word distribution from the topic model under consideration.</p><p>Results. We compare the various benchmarks based on both truth measures, using perplexity score. For each benchmark, we compute the performance of the estimates based on each query from each participant in each category separately. We then compute the average performance over the queries submitted by each participant in each category. We report the average performance across all participants in Table <ref type="table" target="#tab_9">8</ref>, Liu and Toubia: Estimating Consumer Preferences from Online Search Queries where K for each category is set to be the same as that in Section 5.2 (i.e., the most interpretable set of topics).</p><p>For robustness, we replicate Table <ref type="table" target="#tab_9">8</ref> while setting K to be the same across product categories for K ∈ {2, 3, 4} in Appendix D. <ref type="bibr">16</ref> Taking the average performance across categories gives us an average performance for each participant. In the last column of Table <ref type="table" target="#tab_9">8</ref>, we report the average performance across participants. We compare all the benchmarks using paired two-sample t-tests. We first consider the results when the truth measure is based on the chosen web page. We can see that HDLDA (strategic), which leverages the output of HDLDA and assumes that users leverage semantic relationships when forming queries, provides significantly better perplexity than the other benchmarks that assume users do not leverage these relationships. Both naive benchmarks, HDLDA (naive) and LDA, perform similarly to one another overall. When the truth measure is based on the task description, the comparisons are, in general, consistent with those using the other truth metric with the exception of the camera category. The average pattern also holds when setting different values of K (see Appendix D).</p><p>In conclusion, our results suggest that the output of HDLDA may be used as a basis for estimating content preferences from queries and that the assumption that users strategically leverage semantic relationships when formulating queries leads to estimates that are more accurate than those reached under the assumption that users naively formulate queries that directly reflect their content preferences.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Field Application</head><p>Our lab experiment provided us with some (imperfect) measure of consumers' actual content preferences. In this section, we illustrate the use of HDLDA in practice, using field data from a company that heavily relies on search advertising on Google. In particular, we explore whether the content preferences estimated from HDLDA may be used to explain and predict consumer click-through behavior. A sponsored search ad usually contains a heading, a link, and ad copy (a short description/preview of the landing page, shown to the user on the search engine results page). Figure <ref type="figure" target="#fig_4">6</ref> shows four examples of search ads that may appear on Google when searching for "vacation package Florida." One can see that the search ads shown in response to a given search query may contain very different headings and descriptions. One key performance metric of a search   <ref type="bibr" target="#b36">(Kihlstrom and Riordan 1984</ref><ref type="bibr" target="#b27">, Hotchkiss et al. 2005</ref><ref type="bibr" target="#b54">, Varian 2007</ref><ref type="bibr" target="#b1">, Agarwal et al. 2011</ref>). However, there has been very little academic research investigating the impact of the copy of an online ad on CTR.</p><p>All else equal, CTR should be higher for a sponsored search ad whose copy is better aligned with the content preferences of consumers who type the corresponding query. If this is the case, the degree of alignment between content preferences estimated based on HDLDA and the copy of the ad should be predictive of CTR. We test whether this is the case, using sponsored search data from an advertiser on Google. First, we estimate HDLDA from a subset of the queries on which the firm advertises on Google and the corresponding organic search results. Then, following the procedure given in Section 3.3, we use the output from HDLDA to estimate content preferences underlying each search query on which the firm advertises and the topic intensities of each ad copy used by the firm. Finally, we test whether the CTR for a (search query, ad copy) pair is linked to the degree to which the topic intensities of the ad copy shown on the search engine results page match with the content preferences estimated based on the query, controlling for various factors, such as quality score and position.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">Data</head><p>Our data came from a large global online portal, on which consumers can book airline tickets, hotel rooms, and rental cars. We only consider search queries that were matched based on either "exact" or "phrase" keyword match. <ref type="bibr">17</ref> We focus on queries that are more relevant for the advertiser by only including queries that received at least eight impressions over the entire time window. Each observation in our data set concerns a combination of one search query and one ad copy. For each observation, we have access to the following information based on the firm's campaigns running from 2013 to 2016: total number of impressions, total number of clicks, text of the ad copy shown on the search engine results page, average position of the ad, and the quality score assigned by Google. <ref type="bibr">18</ref> Our final data set consists of 13,069 (search query, ad copy) pairs with 12,856 unique search queries and 633 unique ad copies. We find that 98.65% of queries are matched to only one ad copy, and on average, each ad copy is matched to 20.65 queries with a standard deviation of 147.49. Table <ref type="table" target="#tab_10">9</ref> provides summary statistics of all the variables.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.">HDLDA</head><p>To explore the ability of content preferences estimated based on HDLDA to predict CTR out of sample, we randomly select 3,000 unique queries from our data as training queries for HDLDA and set the others aside for out-of-sample validation. We again use Google customer search API to collect the top 10 organic search results for these queries in the training data and use a Python script to download the web page content of all the associated organic search results. This results in 6,578 unique URLs. We process all the textual  Notes. We compute the perplexity score of the "true" description of each participant's content preferences (i.e., task description or chosen web page) given the estimated content preferences. Smaller perplexity indicates better performance. The last column is the average of the average performance for each participant across all the tasks. *Model is best or tied for best at p &lt; 0.05.</p><p>Liu and Toubia: Estimating Consumer Preferences from Online Search Queries information in the search queries and the web page content, following the procedure described in Section 4.4.</p><p>The vocabulary consists of 11,421 unique terms. Given that the vocabulary is much larger in this field study compared with the lab experiment, the number of topics required for HDLDA is also higher. We select the number of topics K based on trading off fit, interpretability, and computational considerations and set K 20. Because all the sampling is independent across web pages and across queries, we use parallel computing to speed up the estimation. 19</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3.">Regression Analysis</head><p>Given the estimated topics φ from HDLDA, we then estimate the topic intensities of all the search queries (including the out-of-sample queries) and ad copies. Next, we estimate content preferences for each query based on HDLDA (strategic), HDLDA (naive), and LDA, using the approach described in Section 3.3. Finally, we compute the similarity between the estimated topic intensities of a given ad copy a, θ a , and the estimated consumer content preferences behind query q, β q , using cosine similarity: cos( θ a , β q ). This variable measures the extent to which a given ad copy matches with the estimate of content preferences based on the corresponding query.</p><p>We use a logit function to link CTR for the (search query, ad copy) pair (q, a) to the independent variables:</p><formula xml:id="formula_12">CTR qa exp(U qa ) 1 + exp(U qa ) ,<label>(10)</label></formula><p>where</p><formula xml:id="formula_13">U qa δ a + µ 1 Cos( θ a , β q ) + µ 2 Position qa + µ 3 AdQuality qa + µ 4 Length q + µ 5 Length a (11)</formula><p>and δ a denotes random effects for ad copy. That is, we study whether the similarity between the estimated content preferences and the topic intensities of the ad copy shown on the search engine results page predicts CTR, controlling for position effects, ad quality score, the lengths of the query and the ad copy, and ad copy random effects. Only cosine similarity differs across benchmarks.</p><p>We estimate this regression model with the cosine similarity computed from each of the three approaches, using maximum likelihood. We also estimate this model without cosine similarity, which we label as "No Content." Table <ref type="table" target="#tab_1">10</ref> reports the results. We find that the cosine similarity between the content of the ad copy and the content preferences estimated based on the query using HDLDA (strategic) is significantly positively related to CTR (p &lt; 0.05) even when controlling for ad copy random effects, quality score, position, and other covariates. In contrast, when content preferences are estimated based on HDLDA (naive) or LDA, cosine similarity is not significant. The effect of the other variables is as expected with CTR significantly decreasing with position and increasing with quality score.</p><p>To test predictive validity, we reestimate these regression models only based on the 3,000 queries that were used to train HDLDA and use the regression  Notes. The unit of observation is a (search query, ad copy) pair. Our data set contains 13,069 such observations with 12,856 unique search queries and 633 unique ad copies. The length of a query or an ad copy is computed based on the original number of terms, not the words in the vocabulary.</p><p>Liu and Toubia: Estimating Consumer Preferences from Online Search Queries</p><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 930-952, © 2018</ref> estimates to predict consumer CTR on the remaining queries, which were not used to train HDLDA or the regression model. We report the mean absolute error (MAE) as our metric for prediction accuracy in Table <ref type="table" target="#tab_1">10</ref>.</p><p>For in-sample prediction accuracy, we find that the absolute error from HDLDA (strategic) is significantly lower than that of the other three models (p &lt; 0.05). For out-of-sample prediction, HDLDA (strategic) is significantly better than any of the other three models (p &lt; 0.01). Although the improvement in prediction is relatively modest, given that online search advertising is a $90 billion industry <ref type="bibr" target="#b51">(Statista 2017)</ref>, it still has the potential to have significant financial impact.</p><p>To sum up, the field study illustrated one potential practical application of HDLDA. We find that content preferences estimated based on HDLDA may be used by firms to improve their predictions of CTR for sponsored ads even after controlling for traditional predictors, such as position and quality score. Such predictive ability is critical to improve the effectiveness of SEM campaigns. For instance, the cosine similarity computed from HDLDA could be useful in identifying more relevant ad copy for a given search query without spending time and resources testing experimentally each potential (ad copy, search query) pair. The firm with which we collaborated on this study is currently exploring using our approach to improve the selection of ad copies from thousands of available designs for thousands of their target queries.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Discussion and Conclusion</head><p>In this paper, we develop a new topic model, HDLDA, that jointly estimates the topic intensities in queries and web pages as well as the mapping between queries and their results. In our domain of application, HDLDA captures the facts that a web page is retrieved by certain queries and that topics in queries are semantically related to topics in search results. More generally, HDLDA is a model for bag-of-word data that can be applied to any context in which one type of documents are semantically related to another type of documents. HDLDA has a new structure within the broad literature of topic modeling, and our paper provides a methodological contribution to the probabilistic topic-modeling literature.</p><p>Using the output of HDLDA, it is possible to estimate a consumer's content preferences on the fly based on each query. For example, if we make the assumption that consumers strategically formulate queries that will retrieve content that matches their preferences in expectation, we can estimate a consumer's content preferences as the expected topic intensities in the search results given the topic intensities in the search query. Alternatively, if we make the assumption that consumers naively formulate search queries that directly reflect their preferences, content preferences may be estimated as the expected topic intensities in the search query itself. Our data suggest that content preferences estimated based on HDLDA and assuming that consumers are strategic are more accurate than content preferences estimated under the naive assumption based on either HDLDA or a standard LDA model.</p><p>From a managerial perspective, HDLDA can automatically extract, understand, and organize the meaning of queries and web pages within a search domain without human intervention. We illustrate one practical managerial application of HDLDA to the prediction of CTR in sponsored search advertising. As another illustration, consider a tech product review website, such as CNET.com, which produces content related to laptops, one of the categories featured in our lab experiment. The website could use HDLDA to estimate the content preferences associated with any query and then compute the fit (measured by the cosine similarity) between these preferences and different web pages. For example, suppose CNET.com wanted to promote a web page about getting a Lenovo Y50 touch gaming laptop. 20 The firm would be able to infer, for instance, that the query "student personal laptops" is more relevant to this web page compared with the query "durable lightweight laptop" (cosine similarity of 0.96 versus 0.52 based on the estimates from our lab study and the actual content of the web page). In the context of SEO, such information could help the website decide that it should attempt to improve the organic search ranking of this web page for the more relevant query. In the context of SEM, this information would help the firm decide to have that web page appear as a sponsored ad for the more relevant query. More generally, the output of HDLDA can guide firms' SEO and SEM strategies by helping them quantify how well their content (web page or ad copy) matches the content preferences captured by various queries and focus their efforts on promoting their content for those queries with better fit in an efficient and interpretable manner. We close by highlighting additional areas for future research. First, to validate our approach for estimating content preferences, we developed our own search engine. By allowing the removal of variations in organic and sponsored search results from customization, this tool offers opportunities to shed new light on important research questions in consumer search and search advertising, such as position effects and advertising effects. Indeed, although we did not do this in the current paper, this tool allows varying the order of organic and sponsored search results, moving organic results to the sponsored section, etc. Second, future research might explore alternative assumptions on the way consumers translate their preferences into search queries and on their beliefs and knowledge of the semantic relationships between queries and results. Finally, future research may combine information on queries with information on clickstream behavior to provide a more extensive set of observations based on which content preferences may be estimated. Recent developments in collaborative topic modeling <ref type="bibr" target="#b57">(Wang and Blei 2011</ref>) might provide the foundation for models that would formulate both query formation and clicking behavior as functions of content preferences.</p><p>Here, we apply an adaptive proposal distribution (with vanishing adaptation) for a random walk Metropolis-Hastings algorithm to sample each θ q <ref type="bibr" target="#b4">(Andrieu and Thoms 2008)</ref>. The proposal distribution is Dirichlet, θ <ref type="bibr">(t)</ref> q~D ir(σ q,t θ (t−1) q ). We adaptively choose σ q,t for each θ q to attain a target acceptance rate while preserving the convergence of the Markov chain by the Robbin-Monro algorithm: σ q,t σ q,t−1 exp ((a * − a q,t−1 )/t δ ), where a q,t−1 is the acceptance rate at iteration t − 1 for θ q ; a * is the optimal acceptance rate, which usually is set to 0.23 for large problems <ref type="bibr" target="#b20">(Gelman and Meng 1996)</ref>; and δ ∈ (0, 1] controls the decay rate of the adaption. Basically, the precision will increase if the current acceptance rate is below the target rate. Note that, because the proposal distribution is asymmetric, the acceptance ratio for θ q at each iteration t should be obtained as</p><formula xml:id="formula_14">r qt min L(θ (t) q ) f (θ (t−1) q | σ q,t θ (t) q ) L(θ (t−1) q ) f (θ (t) q | σ q,t θ (t−1) q ) , 1 ,</formula><p>where f (x|y) denotes the density of the Dirichlet distribution Dir(y) at x. Based on our empirical study, we find that, for a small corpus, even a random walk Metropolis-Hastings (without adaptation) algorithm converges quite well for sampling θ q .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Maximizing R from a Dirichlet-Multinomial Regression Model</head><p>The parameter R controls the relationship between θ q and θ p , which is captured by a Dirichlet-multinomial regression model in Equation (3). We estimate R by optimizing the full loglikelihood of the model <ref type="bibr" target="#b41">(Mimno and McCallum 2008)</ref>:</p><formula xml:id="formula_15">l(R) P p 1 logΓ k exp(R T k θ q (p)) − k [logΓ(exp(R T k θ q (p))) − (exp(R T k θ q (p)) − 1)log(θ pk )] .</formula><p>The derivative of this log-likelihood with respect to r tk is</p><formula xml:id="formula_16">∂l(R) ∂r tk P p 1 θ qt (p) exp(R T k θ q ( p)) Ψ j exp(R T j θ q (p)) − Ψ exp(R T k θ q (p)) + log(θ pk ) ,</formula><p>where Ψ(•) denotes the digamma function that is defined as the logarithmic derivative of the gamma function, Ψ(x) d dx logΓ(x). The optimization problem could be difficult if K is large. Our implementation is mainly based on the standard Broyden-Fletcher-Goldfarb-Shanno optimization because this method has been shown to be fast, robust, and reliable in practice.</p><p>(Optional) Maximizing η from Its Likelihood Function The symmetric prior parameter η controls the prior of φ. Similar to before, we estimate η by optimizing the joint-likelihood of φ v~D irichlet K (η) for v 1, 2, . . ., J.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix B. Simulation Study</head><p>This appendix presents a synthetic data analysis of HDLDA. We first describe the data-generation process of the model and the parameterization of our simulation study. Then we summarize the estimation results based on the inference algorithm presented in Appendix A.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data Generation</head><p>For a given set of parameters {K, Q, P, J, {J q } q , {J p } p , {l pq } p,q , η, α, R}, the following procedure describes the data-generative process for HDLDA: 1. For each topic k 1, 2, . . ., K, draw a distribution over words: φ k | η~Dirichlet J (η) 2. For each query q 1, 2, . . ., Q, We simulate a data set with a structure similar to real search data that we collected from the experimental study described in Section 4. Specifically, we set K 3, Q 800, P 4,000, and J 2,000. For q 1, 2, ...,Q, we draw the integer J q randomly (uniformly) from [2,20]; for p 1, 2, ...,P, we draw the integer J p randomly (uniformly) from <ref type="bibr">[300,</ref><ref type="bibr">600]</ref>. We draw {l pq } so that each query can retrieve 10 pages, and each page can be retrieved by at least one query (the mean is 2.00 with a standard deviation 1.02). For the mapping matrix R, we set all the diagonal elements to be 0.8 and set all the offdiagonal elements to be 0.4. We set α 1 and η 0.01. All other parameters are generated according to the process described previously.</p><p>We calibrate HDLDA on this simulated data set using the inference algorithm described in Appendix A. The model parameters include about 1.79 million latent word assignments z, 6,000 parameters in {φ k }, 12,000 parameters in {θ p }, 2,400 parameters in {θ q }, and nine parameters in R. We run 10,000 MCMC iterations and use the first 5,000 as burn-in.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Simulation Results</head><p>Before presenting the estimation results, we provide some background on the identification of topic models (especially LDA) in general. This is important in forming reasonable expectations on what and how much can be recovered in HDLDA. Although topic modeling is an approach that has proved successful in automatic comprehension and classification of data, only recent work has attempted to give provable guarantees for the problem of learning the model parameters <ref type="bibr" target="#b3">(Anandkumar et al. 2012</ref><ref type="bibr" target="#b6">, Arora et al. 2012</ref>. The problem of recovering nonnegative matrices φ (topics) and θ (topic intensities) with small inner-dimension K (number of topics), is NP hard <ref type="bibr" target="#b6">(Arora et al. 2012)</ref>. As a solution, recent work has relied on very strong assumptions about the corpus, for example, restricting one topic per document or assuming each topic has words that appear only in that topic. At best, φ could only be recovered up to permutations <ref type="bibr" target="#b3">(Anandkumar et al. 2012)</ref>. In addition, according to <ref type="bibr" target="#b6">Arora et al. (2012)</ref>, it is impossible to learn the topic intensities matrix θ to within arbitrary accuracy, and this is theoretically impossible even if we knew φ and the distribution from which θ is generated.</p><p>Given this background, empirically one should not expect all parameters in topic models to be recovered. As an example, we test the well-known Gibbs sampler algorithm on a basic LDA, using multiple simulated corpora that have similar size as the one described herein. We find that about 90% of the topics φ are covered by the 95% credible interval (CI), and about 80% of the topic proportions θ are covered by the 95% CI. Given the complexity of the inference algorithm for HDLDA, one should not expect its recovery to be better than the Gibbs sampler for a LDA.</p><p>As measures of recovery performance, we report the proportion of the parameters that are recovered by the posterior 95% CI and the mean square error (MSE) between the true and the estimated parameters. The details are given in Table <ref type="table" target="#tab_12">B</ref>.1 for {φ k }, {θ p }, and {θ q }, respectively. One can see that the recovery for both {φ k } and {θ p } is pretty good, and it is decent for {θ q }. Finally, we report the posterior estimates and the 95% CI for all the parameters in R, which are given in Table <ref type="table" target="#tab_12">B</ref>.2. Note that, because the maximum likelihood estimation (MLE) for the Dirichlet-multinomial regression has significant bias if the sample size is not large enough, <ref type="bibr">21</ref> we would not expect the estimators of R from the stochastic EM algorithm to do better than the MLE of R using the true data <ref type="bibr" target="#b44">(Nielsen 2000)</ref>. That is, the best that the inference algorithm can achieve in estimating R is recovering its MLE, denoted as R MLE , that is estimated using the true {θ p } and {θ q } and also reported in Table <ref type="table" target="#tab_12">B</ref>.2. We can see for the true R, six out of nine parameters are covered by the 95% CI. This is increased to eight in recovering R MLE .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix C. Lab Study-Statistics About Users'</head><p>Chosen Web Pages Table <ref type="table" target="#tab_13">C</ref>.1 provides the average cosine similarity in the topic intensities between the chosen web page and any clicked but nonchosen web page within each category and under each K for each benchmark. Similarly, Table <ref type="table" target="#tab_13">C</ref>.2 provides the average cosine similarity between the chosen web page and all search results shown by the search engine to the participant in response to that query.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix D. Lab Study-Model Evaluation for K ∈ {2, 3, 4}</head><p>We replicate the analysis in Table <ref type="table" target="#tab_9">8</ref> while setting K to be the same across all the product categories for K ∈ {2, 3, 4}. Smaller perplexity indicates better performance. The asterisk means that a model is best or tied for best at p &lt; 0.05. Results are presented in Tables D.1 (K = 2), D.2 (K = 3), and D.3 (K = 4).   We acknowledge that topic proportions only refer to the distribution of information within a document, not the absolute volume of information. Some pages might have a topic distribution that is further away from the consumer's "ideal point" and yet preferred because there is just more information overall on this page.</p><p>2 One may suggest to use the summation over all the θ q 's rather than their average in this regression model. However, this would artificially decrease the variance of the Dirichlet distribution for web pages that are retrieved by more queries.</p><p>3 Although one can also estimate these parameters using an additional Metropolis-Hastings step, <ref type="bibr" target="#b41">Mimno and McCallum (2008)</ref> have suggested that a stochastic EM sampling approach works very efficiently for topic models. Because the R matrix is estimated by maximization rather than simulation, we admit that this may underestimate the variance of the elements in R.</p><p>4 Another option would be to estimate a different symmetric parameter η k for each topic.</p><p>5 Note that in Equations ( <ref type="formula">5</ref>)-( <ref type="formula" target="#formula_7">7</ref>), β i is estimated without observing the actual search results corresponding to the query. 6 These were relevant categories for our participants who are mostly undergraduate and graduate students. We ran the lab experiment in the winter on the east coast of the United States, so ski resorts were also relevant.</p><p>7 Note that we designed these task descriptions before acquiring and analyzing any web page content; that is, our task descriptions were not designed to be aligned with or map onto the set of topics from HDLDA. Hence, we should expect each task description to have positive intensities on multiple topics.</p><p>8 In our case, the edit distance counts the minimum possible weighted number of character operations (including insertions, deletions, and substitutions) required to transform one query into the other. For example, the edit distance between "best school laptop" and "school laptop" is five (five characters need to be deleted: b, e, s, t, space). <ref type="bibr">9</ref> We first select words that appear at least n times in total (n is between 10 and 20 depending on the corpus based on inspection-the selection of n was finalized before running HDLDA). This helps eliminate a fair amount of meaningless words that cannot be removed in preprocessing. Then, we calculate the mean term frequency-inverse document frequency (t f -id f ) for the remaining words. The t f -id f is commonly used to select vocabulary in topic modeling and is computed as t f -id f (w) f w × log N nw , where f w is the average number of times word w occurs in each document in the corpus and n w is the number of documents containing word w. We keep words whose t f -id f is above the median, which allows omitting words that have low frequency as well as those occurring in too many documents <ref type="bibr">(Hornik and Grün 2011). 10</ref> In some cases, the total number of links could be smaller than 10 for a query if the query either cannot be understood by Google or has very few relevant results or if scripting the content of a web page is prohibited by the website. <ref type="bibr">11</ref> We also tried other potential evaluation metrics for Bayesian models, such as DIC and Watanabe-Akaike information criterion <ref type="bibr" target="#b19">(Gelman et al. 2014)</ref>. However, they all favor unreasonably large K.</p><p>12 For each corpus and a given K, we run 6,000 MCMC iterations using the fist 4,000 as burn-in, saving every fifth iteration. We evaluate the convergence of the MCMC sequence by plotting the time series and conducting Geweke convergence diagnostics <ref type="bibr" target="#b21">(Geweke 1991)</ref>. <ref type="bibr">13</ref> In the data, we find some participants did not follow the instructions correctly (e.g., participants submitted some random text without actually conducting the search on Hoogle or found their chosen link on other search engines). We drop these observations in our analysis. The proportion of observations dropped is 2% for the ski category, 2% for printer, 10% for car, 12% for laptop, and 6% for camera. As a result, there are 195 participants who submitted a valid chosen web page for at least one task. <ref type="bibr">14</ref> We estimate the topic intensities of the task descriptions using the same procedure as we use to estimate θ q based on the output of HDLDA. We report the posterior mean over 2,000 MCMC iterations. <ref type="bibr">15</ref> The cosine similarity between two vectors a and b is f (a, b)</p><formula xml:id="formula_18">a • b ||a||||b|| k ak bk k a 2 k √ k b 2 k √</formula><p>. <ref type="bibr">16</ref> We also replicate all the tables in Appendix D while fixing the hyperparameter for the topic distribution of queries α to be 0.01 or one (rather than 0.1). We find that the overall pattern of results is robust to these different values of α. Results are available from the authors.</p><p>17 An exact or a phrase match ensures that the actual search query typed by consumers contains the keywords in the same order. <ref type="bibr">18</ref> We only have the quality score at the time when the company pulled this data set for us, not its entire history. This should not reduce the predictive validity of quality score relative to cos( θ a , β q ) (described in Section 6.3) as the latter is also based on data collected around the same time.</p><p>19 The R matrix contains K 2 unknown parameters. It becomes computationally costly when K is more than 20 as the algorithm needs to solve an optimization problem with hundreds of parameters for every MCMC iteration. We used R programming language to run the estimation on a server with an Intel® Xeon® E7 processor using four physical cores. Each MCMC iteration takes around 60 seconds, depending on the choice of K. We run 5,000 iterations, using the first 3,000 as burn-in, and save every fifth iteration. <ref type="bibr">20</ref> The URL of this web page is http://www.cnet.com/news/get-a -lenovo-y50-touch-4k-gaming-laptop-for-999-99.   <ref type="bibr">, , vol. 37, no. 6, pp. 930-952, © 2018</ref> </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. The Graphical Model of HDLDA</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. (Color online) The Interface of Hoogle</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. (Color online) Agreement Level of the Top Five Most Chosen Links for Each Task</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. (Color online) Word Cloud of Four Topics in Laptop</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. (Color online) Search Ad Example</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>a) Draw topic intensities θ q | α~Dirichlet K (α) (b) For j 1, 2, . . ., J q , i. Draw topic assignment z qj | θ q~C ategory(θ q ) ii. Draw word w qj |(z qj , {φ k })~Category(φ zqj ) 3. For each web page p 1, 2, . . ., P, (a) Calculate the average topic intensities among its labeling queries: θ q (p) q θqlpq q lpq (b) Draw topic intensities θ p |(R, θ q (p))D irichlet K (exp(R T 1 θ q (p)), . . ., exp(R T K θ q (p))) (c) For i 1, 2, . . ., J p , i. Draw topic assignment z pi | θ p~C ategory(θ p ) ii. Draw word w pi | (z pi , {φ k })~Category(φ zpi )</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Liu and Toubia: Estimating Consumer Preferences from Online Search Queries</figDesc><table><row><cell>Marketing Science</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Search Tasks</figDesc><table><row><cell>Task number</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Descriptive Statistics of Users' Search Queries</figDesc><table><row><cell></cell><cell></cell><cell>Number</cell><cell>Number of</cell><cell>Number of</cell><cell>Edit</cell><cell>Number of queries</cell><cell>Number of words</cell><cell>Overlap with</cell></row><row><cell></cell><cell>Task</cell><cell>of users</cell><cell>unique queries</cell><cell>unique words</cell><cell>distance</cell><cell>per user</cell><cell>per query</cell><cell>description</cell></row><row><cell>Ski</cell><cell>1</cell><cell>99</cell><cell>173</cell><cell>111</cell><cell>31.41 (21.35)</cell><cell>2.13 (1.56)</cell><cell>5.36 (2.62)</cell><cell>0.76 (0.25)</cell></row><row><cell></cell><cell>2</cell><cell>97</cell><cell>187</cell><cell>118</cell><cell>33.26 (26.52)</cell><cell>2.54 (1.94)</cell><cell>5.22 (3.14)</cell><cell>0.75 (0.28)</cell></row><row><cell>Printer</cell><cell>3</cell><cell>97</cell><cell>295</cell><cell>183</cell><cell>32.56 (14.73)</cell><cell>3.47 (2.93)</cell><cell>5.93 (3.14)</cell><cell>0.57 (0.32)</cell></row><row><cell></cell><cell>4</cell><cell>97</cell><cell>204</cell><cell>162</cell><cell>30.82 (25.94)</cell><cell>2.51 (2.02)</cell><cell>4.67 (2.19)</cell><cell>0.53 (0.30)</cell></row><row><cell>Car</cell><cell>5</cell><cell>97</cell><cell>375</cell><cell>262</cell><cell>35.71 (20.61)</cell><cell>4.68 (2.93)</cell><cell>5.91 (3.31)</cell><cell>0.56 (0.36)</cell></row><row><cell></cell><cell>6</cell><cell>99</cell><cell>368</cell><cell>244</cell><cell>24.53 (16.86)</cell><cell>2.51 (2.02)</cell><cell>4.15 (1.88)</cell><cell>0.42 (0.36)</cell></row><row><cell>Laptop</cell><cell>7</cell><cell>98</cell><cell>338</cell><cell>243</cell><cell>32.12 (15.36)</cell><cell>4.06 (4.17)</cell><cell>6.43 (3.29)</cell><cell>0.58 (0.36)</cell></row><row><cell></cell><cell>8</cell><cell>95</cell><cell>292</cell><cell>250</cell><cell>30.54 (26.90)</cell><cell>3.67 (3.03)</cell><cell>4.34 (2.27)</cell><cell>0.43 (0.37)</cell></row><row><cell>Camera</cell><cell>9</cell><cell>98</cell><cell>243</cell><cell>214</cell><cell>31.13 (18.89)</cell><cell>2.95 (2.51)</cell><cell>4.71 (2.22)</cell><cell>0.44 (0.29)</cell></row><row><cell></cell><cell>10</cell><cell>95</cell><cell>271</cell><cell>141</cell><cell>28.65 (16.61)</cell><cell>3.66 (2.78)</cell><cell>5.28 (2.81)</cell><cell>0.68 (0.34)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc>Liu and Toubia: Estimating Consumer Preferences from Online Search QueriesMarketing Science, 2018, vol. 37, no. 6, pp. 930-952, © 2018 </figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 3 .</head><label>3</label><figDesc>Descriptive Statistics of the Corpora</figDesc><table><row><cell></cell><cell>Ski</cell><cell>Printer</cell><cell>Car</cell><cell>Laptop</cell><cell>Camera</cell></row><row><cell>Vocabulary size</cell><cell>1,709</cell><cell>3,258</cell><cell>3,128</cell><cell>3,321</cell><cell>3,309</cell></row><row><cell>Unique queries</cell><cell>351</cell><cell>495</cell><cell>749</cell><cell>631</cell><cell>515</cell></row><row><cell>Words per query</cell><cell>4.62 (2.31)</cell><cell>3.84 (2.01)</cell><cell>3.83 (2.14)</cell><cell>4.50 (2.87)</cell><cell>4.14 (2.03)</cell></row><row><cell>Unique web pages</cell><cell>1,167</cell><cell>1,984</cell><cell>4,253</cell><cell>3,042</cell><cell>2,238</cell></row><row><cell>Words per web page</cell><cell>258 (278)</cell><cell>366 (341)</cell><cell>559 (697)</cell><cell>736 (1862)</cell><cell>444 (525)</cell></row><row><cell>Query-page pairs</cell><cell>3,636</cell><cell>4,928</cell><cell>7,851</cell><cell>6,454</cell><cell>5,049</cell></row><row><cell>Web pages per query</cell><cell>10.36 (1.89)</cell><cell>9.96 (2.00)</cell><cell>10.48 (5.61)</cell><cell>10.23 (2.82)</cell><cell>9.80 (2.96)</cell></row><row><cell>Queries per web page</cell><cell>3.12 (6.51)</cell><cell>2.48 (4.41)</cell><cell>1.85 (2.72)</cell><cell>2.12 (4.22)</cell><cell>2.26 (3.84)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 4 .</head><label>4</label><figDesc>DIC    </figDesc><table><row><cell cols="4">Liu and Toubia: Estimating Consumer Preferences from Online Search Queries</cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">Marketing Science, 2018, vol. 37, no. 6, pp. 930-952, © 2018 INFORMS</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Model</cell><cell>K</cell><cell>Ski</cell><cell>Printer</cell><cell>Car</cell><cell>Laptop</cell><cell>Camera</cell></row><row><cell>HDLDA</cell><cell>2</cell><cell>3,122,672</cell><cell>8,236,674</cell><cell>27,683,535</cell><cell>25,298,079</cell><cell>11,261,204</cell></row><row><cell></cell><cell>3</cell><cell>2,973,582</cell><cell>7,893,707</cell><cell>26,529,830</cell><cell>24,384,996</cell><cell>10,855,606</cell></row><row><cell></cell><cell>4</cell><cell>2,849,094</cell><cell>7,650,230</cell><cell>25,744,413</cell><cell>23,963,219</cell><cell>10,456,815</cell></row><row><cell>LDA</cell><cell>2</cell><cell>3,165,124</cell><cell>8,352,227</cell><cell>28,017,795</cell><cell>25,825,592</cell><cell>11,375,783</cell></row><row><cell></cell><cell>3</cell><cell>3,031,919</cell><cell>8,081,503</cell><cell>27,298,308</cell><cell>25,080,194</cell><cell>11,084,656</cell></row><row><cell></cell><cell>4</cell><cell>2,924,902</cell><cell>7,867,257</cell><cell>26,704,227</cell><cell>24,665,402</cell><cell>10,792,368</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 5 .</head><label>5</label><figDesc>Topics Extracted from HDLDA</figDesc><table><row><cell>Topic</cell><cell>Examples of relevant words</cell><cell>Example of query</cell><cell>Example of web page</cell></row><row><cell>Ski</cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>Family, lesson, kids, rental, beginner</cell><cell>"Vermont family friendly</cell><cell>Home page of the ski resort Mad River Mountain</cell></row><row><cell></cell><cell></cell><cell>ski resort"</cell><cell></cell></row><row><cell>2</cell><cell>Hotel, spa, reviews, luxury, exclusive</cell><cell>"Ski Vermont spa"</cell><cell>Exclusive ski package from Killington on tripadvisor</cell></row><row><cell>Printer</cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>Wireless, buy, shipping, black, scan</cell><cell>"Cheap printer copier</cell><cell>Brother wireless all-in-one printer on Amazon</cell></row><row><cell></cell><cell></cell><cell>scanner"</cell><cell></cell></row><row><cell>2</cell><cell>Photo, ink, quality, pro, wifi</cell><cell cols="2">"Home lab quality printer" PIXMA iP4000R photo printer on U.S.A. Canon</cell></row><row><cell>3</cell><cell>Printing, student, campus, double, duration</cell><cell>"Student printer"</cell><cell>On-campus student printing service info</cell></row><row><cell>Car</cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>Miles, mpg, price, dealer, fuel</cell><cell>"Used car Prius"</cell><cell>A used Honda Accord on Cargurus.com</cell></row><row><cell>2</cell><cell>Honda, Toyota, Nissan, Volkswagen, safety</cell><cell>"Big fuel efficient cars"</cell><cell>A list of luxury crossover SUVs on USNews</cell></row><row><cell>3</cell><cell>Electric, play, insurance, small, home</cell><cell>"best small city car"</cell><cell>Blog on whether to lease or buy a new car</cell></row><row><cell>Laptop</cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell cols="2">Amazon, shipping, accessories, customer, buy "Buy Windows laptop"</cell><cell>Best laptops of 2015 on CNET.com</cell></row><row><cell>2</cell><cell>Business, play, Lenovo, thinkpad, ideapad</cell><cell>"Lenovo y50"</cell><cell>Laptop reviews on lenovo.com</cell></row><row><cell>3</cell><cell>Battery, gaming, performance, display, dell</cell><cell>"Laptop long battery life"</cell><cell>Gaming laptop guide on tomsguide.com</cell></row><row><cell>4</cell><cell>Intel, CPU, core, ram, mainboard</cell><cell>"Intel core i5 CPU"</cell><cell>Intel core and AMD comparison on cpuboss.com</cell></row><row><cell>Camera</cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>Waterproof, kids, screen, touch, tablet</cell><cell>"kid friendly waterproof</cell><cell>Polaroid waterproof digital camera on Kmart</cell></row><row><cell></cell><cell></cell><cell>camera"</cell><cell></cell></row><row><cell>2</cell><cell>Lens, DSLR, ISO, compact, shot</cell><cell>"Nikon d3200 bundle"</cell><cell>Nikon D5300 review on Camera Labs</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head>Table 6 .</head><label>6</label><figDesc>Mean and Standard Deviation of θ q and θ p Within Each Category Note. Standard deviations are in parentheses.Liu and Toubia: Estimating Consumer Preferences from Online Search Queries</figDesc><table><row><cell cols="3">Category Parameter Topic 1</cell><cell>Topic 2</cell><cell>Topic 3</cell><cell>Topic 4</cell></row><row><cell>Ski</cell><cell>θ q</cell><cell cols="2">0.55 (0.50) 0.45 (0.50)</cell></row><row><cell></cell><cell>θ p</cell><cell cols="2">0.62 (0.31) 0.38 (0.31)</cell></row><row><cell>Printer</cell><cell>θ q</cell><cell cols="3">0.46 (0.41) 0.35 (0.39) 0.18 (0.29)</cell></row><row><cell></cell><cell>θ p</cell><cell cols="3">0.33 (0.30) 0.41 (0.30) 0.26 (0.28)</cell></row><row><cell>Car</cell><cell>θ q</cell><cell cols="3">0.20 (0.31) 0.45 (0.40) 0.35 (0.39)</cell></row><row><cell></cell><cell>θ p</cell><cell cols="3">0.19 (0.19) 0.52 (0.28) 0.30 (0.29)</cell></row><row><cell>Laptop</cell><cell>θ q</cell><cell cols="3">0.21 (0.28) 0.17 (0.24) 0.36 (0.33) 0.25 (0.30)</cell></row><row><cell></cell><cell>θ p</cell><cell cols="3">0.30 (0.27) 0.19 (0.20) 0.43 (0.27) 0.08 (0.13)</cell></row><row><cell>Camera</cell><cell>θ q</cell><cell cols="2">0.43 (0.49) 0.57 (0.49)</cell></row><row><cell></cell><cell>θ p</cell><cell cols="2">0.49 (0.32) 0.51 (0.32)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8"><head>Table 7 .</head><label>7</label><figDesc>Posterior Estimates of the Topic Intensities of Task Descriptions</figDesc><table><row><cell></cell><cell>Task</cell><cell>Topic 1</cell><cell>Topic 2</cell><cell>Topic 3</cell><cell>Topic 4</cell></row><row><cell>Ski</cell><cell>1</cell><cell>0.85</cell><cell>0.14</cell><cell></cell><cell></cell></row><row><cell></cell><cell>2</cell><cell>0.69</cell><cell>0.31</cell><cell></cell><cell></cell></row><row><cell>Printer</cell><cell>3</cell><cell>0.14</cell><cell>0.66</cell><cell>0.20</cell><cell></cell></row><row><cell></cell><cell>4</cell><cell>0.01</cell><cell>0.98</cell><cell>0.01</cell><cell></cell></row><row><cell>Car</cell><cell>5</cell><cell>0.06</cell><cell>0.16</cell><cell>0.78</cell><cell></cell></row><row><cell></cell><cell>6</cell><cell>0.06</cell><cell>0.02</cell><cell>0.92</cell><cell></cell></row><row><cell>Laptop</cell><cell>7</cell><cell>0.02</cell><cell>0.03</cell><cell>0.90</cell><cell>0.05</cell></row><row><cell></cell><cell>8</cell><cell>0.01</cell><cell>0.30</cell><cell>0.68</cell><cell>0.01</cell></row><row><cell>Camera</cell><cell>9</cell><cell>0.99</cell><cell>0.01</cell><cell></cell><cell></cell></row><row><cell></cell><cell>10</cell><cell>0.22</cell><cell>0.78</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9"><head>Table 8 .</head><label>8</label><figDesc>Estimating Content Preferences from Queries</figDesc><table><row><cell></cell><cell>Ski</cell><cell>Printer</cell><cell>Car</cell><cell>Laptop</cell><cell>Camera</cell><cell></cell></row><row><cell></cell><cell>K 2</cell><cell>K 3</cell><cell>K 3</cell><cell>K 4</cell><cell>K 2</cell><cell>Average</cell></row><row><cell>Chosen web page HDLDA (strategic)</cell><cell>187  *</cell><cell>364</cell><cell>378  *</cell><cell>453  *</cell><cell>351  *</cell><cell>346  *</cell></row><row><cell>HDLDA (naive)</cell><cell>205</cell><cell>366</cell><cell>508</cell><cell>704</cell><cell>589</cell><cell>475</cell></row><row><cell>LDA</cell><cell>202</cell><cell>368</cell><cell>461</cell><cell>658</cell><cell>551</cell><cell>448</cell></row><row><cell>Task description HDLDA (strategic) HDLDA (naive) LDA</cell><cell>275  *  318 308</cell><cell>167 151  *  161</cell><cell>394  *  420 409</cell><cell>614  *  712 700</cell><cell>294 267  *  270  *</cell><cell>348  *  373 369</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10"><head>Table 9 .</head><label>9</label><figDesc>Summary Statistics of Field Data</figDesc><table><row><cell>Variable</cell><cell>Mean</cell><cell>Standard deviation</cell><cell>Minimum</cell><cell>Maximum</cell></row><row><cell>Number of impressions</cell><cell>454</cell><cell>10,621</cell><cell>8</cell><cell>726,943</cell></row><row><cell>Number of clicks</cell><cell>131</cell><cell>4999</cell><cell>1</cell><cell>500,190</cell></row><row><cell>CTR</cell><cell>0.365</cell><cell>0.214</cell><cell>0.002</cell><cell>1</cell></row><row><cell>Average position</cell><cell>1.824</cell><cell>0.824</cell><cell>1</cell><cell>12.200</cell></row><row><cell>Ad quality score</cell><cell>8.914</cell><cell>0.833</cell><cell>5</cell><cell>10</cell></row><row><cell>Length of query</cell><cell>3.927</cell><cell>1.389</cell><cell>1</cell><cell>22</cell></row><row><cell>Length of ad copy</cell><cell>13.584</cell><cell>0.621</cell><cell>12</cell><cell>16</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_11"><head>Table 10 .</head><label>10</label><figDesc>Field Study: Regression Results</figDesc><table><row><cell></cell><cell cols="4">Liu and Toubia: Estimating Consumer Preferences from Online Search Queries</cell></row><row><cell></cell><cell>HDLDA (strategic)</cell><cell>HDLDA (naive)</cell><cell>LDA</cell><cell>No content</cell></row><row><cell>Copy random effect</cell><cell>−0.642 (0.176)</cell><cell>0.104 (0.185)</cell><cell>0.096 (0.186)</cell><cell>0.113 (0.187)</cell></row><row><cell>Position</cell><cell>−0.500***</cell><cell>−0.499***</cell><cell>−0.498***</cell><cell>−0.500***</cell></row><row><cell>Ad quality score</cell><cell>0.082***</cell><cell>0.085***</cell><cell>0.085***</cell><cell>0.089***</cell></row><row><cell>Length of query</cell><cell>0.016</cell><cell>0.019</cell><cell>0.019</cell><cell>0.019</cell></row><row><cell>Length of ad copy</cell><cell>−0.032</cell><cell>−0.053</cell><cell>−0.053</cell><cell>−0.053</cell></row><row><cell>Cosine similarity</cell><cell>0.817**</cell><cell>0.069</cell><cell>0.070</cell><cell></cell></row><row><cell>Number of observations</cell><cell>13,069</cell><cell>13,069</cell><cell>13,069</cell><cell>13,069</cell></row><row><cell>AIC</cell><cell>2,314</cell><cell>2,319</cell><cell>2,319</cell><cell>2,319</cell></row><row><cell>MAE (in-sample)</cell><cell>0.141</cell><cell>0.143</cell><cell>0.145</cell><cell>0.143</cell></row><row><cell>MAE (out-of-sample)</cell><cell>0.155</cell><cell>0.157</cell><cell>0.159</cell><cell>0.158</cell></row><row><cell cols="5">Notes. For copy random effect, mean is reported with standard deviation in parentheses. Based on</cell></row><row><cell cols="5">paired two-sample t-tests, both the out-of-sample and in-sample MAE from HDLDA (strategic) are</cell></row><row><cell cols="3">significantly smaller than the other models (p &lt; 0.05).</cell><cell></cell><cell></cell></row><row><cell cols="3">***p &lt; 0.01; **p &lt; 0.05; *p &lt; 0.01 (for regression estimates).</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_12"><head>Table B .</head><label>B</label><figDesc>1. Simulation Results for {φ k , θ p , θ q }</figDesc><table><row><cell>Parameters</cell><cell></cell><cell cols="2">Coverage</cell><cell cols="2">Mean squared error</cell></row><row><cell>{φ k }</cell><cell></cell><cell cols="2">90.12%</cell><cell></cell><cell>1.06e-09</cell></row><row><cell>{θ p }</cell><cell></cell><cell cols="2">89.77%</cell><cell></cell><cell>0.0006</cell></row><row><cell>{θ q }</cell><cell></cell><cell cols="2">74.67%</cell><cell></cell><cell>0.0563</cell></row><row><cell cols="4">Table B.2. Simulation Results for R</cell><cell></cell></row><row><cell>Parameters</cell><cell>R</cell><cell>R MLE</cell><cell cols="2">Posterior estimate</cell><cell>95% CI</cell></row><row><cell>r 11</cell><cell>0.8</cell><cell>0.841</cell><cell>0.622</cell><cell></cell><cell>[0.547, 0.723]</cell></row><row><cell>r 21</cell><cell>0.4</cell><cell>0.337</cell><cell>0.410</cell><cell></cell><cell>[0.307, 0.487]</cell></row><row><cell>r 31</cell><cell>0.4</cell><cell>0.369</cell><cell>0.442</cell><cell></cell><cell>[0.349, 0.537]</cell></row><row><cell>r 12</cell><cell>0.4</cell><cell>0.439</cell><cell>0.403</cell><cell></cell><cell>[0.339, 0.463]</cell></row><row><cell>r 22</cell><cell>0.8</cell><cell>0.810</cell><cell>0.780</cell><cell></cell><cell>[0.685, 0.839]</cell></row><row><cell>r 32</cell><cell>0.4</cell><cell>0.338</cell><cell>0.351</cell><cell></cell><cell>[0.293, 0.426]</cell></row><row><cell>r 13</cell><cell>0.4</cell><cell>0.413</cell><cell>0.365</cell><cell></cell><cell>[0.262, 0.389]</cell></row><row><cell>r 23</cell><cell>0.4</cell><cell>0.429</cell><cell>0.583</cell><cell></cell><cell>[0.510, 0.672]</cell></row><row><cell>r 33</cell><cell>0.8</cell><cell>0.722</cell><cell>0.698</cell><cell></cell><cell>[0.584, 0.798]</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_13"><head>Table C</head><label>C</label><figDesc>Table C.2. Average Cosine Similarity in Topic Intensities Between Chosen Web Page and All Search Results</figDesc><table><row><cell></cell><cell cols="6">.1. Average Cosine Similarity in Topic Intensities</cell></row><row><cell cols="7">Between Chosen Web Page and Clicked (Nonchosen) Web</cell></row><row><cell>Pages</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>K 2</cell><cell></cell><cell>K 3</cell><cell></cell><cell>K 4</cell><cell></cell></row><row><cell></cell><cell cols="6">HDLDA LDA HDLDA LDA HDLDA LDA</cell></row><row><cell>Ski</cell><cell>0.899</cell><cell>0.859</cell><cell>0.877</cell><cell>0.870</cell><cell>0.771</cell><cell>0.766</cell></row><row><cell>Printer</cell><cell>0.842</cell><cell>0.812</cell><cell>0.732</cell><cell>0.745</cell><cell>0.666</cell><cell>0.592</cell></row><row><cell>Car</cell><cell>0.875</cell><cell>0.853</cell><cell>0.798</cell><cell>0.818</cell><cell>0.719</cell><cell>0.701</cell></row><row><cell>Laptop</cell><cell>0.955</cell><cell>0.962</cell><cell>0.802</cell><cell>0.735</cell><cell>0.705</cell><cell>0.631</cell></row><row><cell>Camera</cell><cell>0.827</cell><cell>0.778</cell><cell>0.745</cell><cell>0.689</cell><cell>0.608</cell><cell>0.517</cell></row><row><cell></cell><cell>K 2</cell><cell></cell><cell>K 3</cell><cell></cell><cell>K 4</cell><cell></cell></row><row><cell></cell><cell cols="6">HDLDA LDA HDLDA LDA HDLDA LDA</cell></row><row><cell>Ski</cell><cell>0.875</cell><cell>0.837</cell><cell>0.842</cell><cell>0.829</cell><cell>0.721</cell><cell>0.723</cell></row><row><cell>Printer</cell><cell>0.784</cell><cell>0.750</cell><cell>0.697</cell><cell>0.675</cell><cell>0.588</cell><cell>0.501</cell></row><row><cell>Car</cell><cell>0.823</cell><cell>0.789</cell><cell>0.744</cell><cell>0.750</cell><cell>0.651</cell><cell>0.638</cell></row><row><cell>Laptop</cell><cell>0.950</cell><cell>0.959</cell><cell>0.778</cell><cell>0.695</cell><cell>0.691</cell><cell>0.612</cell></row><row><cell>Camera</cell><cell>0.801</cell><cell>0.746</cell><cell>0.716</cell><cell>0.656</cell><cell>0.583</cell><cell>0.485</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_14"><head>Table D</head><label>D</label><figDesc>Liu and Toubia: Estimating Consumer Preferences from Online Search QueriesMarketing Science, 2018, vol. 37, no. 6, pp. 930-952, © 2018 INFORMS Endnotes</figDesc><table><row><cell>1</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="7">.1. Estimating Content Preferences from Queries:</cell></row><row><cell>K 2</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Model</cell><cell cols="6">Ski Printer Car Laptop Camera Average</cell></row><row><cell>Chosen web page HDLDA</cell><cell cols="4">187  *  362  *  382  *  448  *</cell><cell>351  *</cell><cell>346  *</cell></row><row><cell>(strategic)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">HDLDA (naive) 205</cell><cell>451</cell><cell>476</cell><cell>876</cell><cell>589</cell><cell>519</cell></row><row><cell>LDA</cell><cell>202</cell><cell>416</cell><cell>430</cell><cell>800</cell><cell>551</cell><cell>480</cell></row><row><cell>Task description HDLDA</cell><cell cols="4">275  *  212  *  387  *  627  *</cell><cell>294</cell><cell>359  *</cell></row><row><cell cols="2">(strategic) HDLDA (naive) 318 LDA 308</cell><cell>218 233</cell><cell>424 412</cell><cell>997 918</cell><cell>267  *  270  *</cell><cell>445 428</cell></row></table><note>*Model is best or tied for best at p &lt; 0.05.</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_15"><head></head><label></label><figDesc>Table D.2. Estimating Content Preferences from Queries: K 3</figDesc><table><row><cell>Model</cell><cell cols="6">Ski Printer Car Laptop Camera Average</cell></row><row><cell>Chosen web page HDLDA</cell><cell>193</cell><cell>364</cell><cell cols="2">378  *  449  *</cell><cell>357  *</cell><cell>348  *</cell></row><row><cell cols="3">(strategic) HDLDA (naive) 159  *  366 LDA 159  *  368</cell><cell>509 461</cell><cell>776 710</cell><cell>563 476</cell><cell>475 435</cell></row><row><cell>Task description HDLDA</cell><cell>112</cell><cell>168</cell><cell cols="2">394  *  620  *</cell><cell>299</cell><cell>318  *</cell></row><row><cell cols="4">(strategic) HDLDA (naive) 105  *  151  *  420 LDA 102  *  161 409</cell><cell>765 749</cell><cell>260 251  *</cell><cell>340 334</cell></row><row><cell cols="5">*Model is best or tied for best at p &lt; 0.05.</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_16"><head>Table D</head><label>D</label><figDesc>Model is best or tied for best at p &lt; 0.05.Liu and Toubia: Estimating Consumer Preferences from Online Search Queries 950</figDesc><table><row><cell>.3. Estimating Content Preferences from Queries: Ski Printer Car Laptop Camera Average Chosen web page K 4 Model HDLDA (strategic) 191 367  *  376  *  454  *  346  *  347  *  HDLDA (naive) 173 478 516 704 356 445 LDA 166  *  440 459 658 492 443 Task description HDLDA (strategic) 115  *  171 399  *  614  *  296 319  *  HDLDA (naive) 125 152  *  457 712 290  *  347 LDA 113  *  157 424 700 294  *  337 *Marketing Science</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">MarketingScience, 2018, vol. 37, no. 6, pp. 930-952, © 2018 </note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>This paper is based on the second chapter of Jia Liu's doctoral dissertation. 4,000 to 40,000, the MLE of R for the Dirichlet-multinomial regression model using the true {θ p } and {θ q } has much smaller bias. Specifically, the MSE is decreased from 0.0111 to 0.0006.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Appendix A. Inference Algorithm for HDLDA This appendix describes the inference algorithm for HDLDA. Across the collection of Q queries, let n k q, j be the number of word tokens in the qth query that are the jth word in the vocabulary and are assigned to the kth topic. Mathematically, n k q, j Jq i 1 I(z qi k ∧ w qi j). Hence, n k q, j is three-dimensional: query, word, and topic. By summing the counts across different words within a query, we get N k q , which denotes the number of words that are assigned to topic k in query q. By summing the counts across different queries, we get N k j , which denotes the number of queries that have the jth word in the vocabulary and are also assigned to the kth topic. Across the collection of P web pages, we defined m k p, j as the number of word tokens in the pth web page that are the jth word in the vocabulary and that are assigned to the kth topic; that is, m k p, j Jp i 1 I(z pi k ∧ w pi j). We similarly define the summation across words and web pages, respectively, which are denoted as M k p and M k j .</p><p>Gibbs Sampler for Assignments z p and z q Given the topic intensities θ q and the word distribution φ, the posterior distribution of each z q j is</p><p>Similarly, the posterior distribution of the assignment z pi depends on the data w pi and the latent distributions φ and θ p .</p><p>The posterior distribution of each z pi is</p><p>Gibbs Sampler for φ and θ p The posterior of the topic distribution φ in the collection is still a Dirichlet and only depends on the latent assignment and the data including both queries and web pages:</p><p>The posterior distribution of the topic intensities θ p for each web page p only depends on its latent assignment and its prior. This distribution is also given in closed form, conditional on the semantic relationship matrix R and {θ q }:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Metropolis-Hastings Algorithm for θ q</head><p>The posterior distribution of the topic intensities θ q for each query q is nonconjugate. Indeed, it depends not only on the latent assignment z q , but also on the topic intensities of the web pages that can be retrieved by query q. We use Metropoliswithin-Gibbs and apply the iteration sequentially to each q:   <ref type="bibr">, , vol. 37, no. 6, pp. 930-952, © 2018</ref> </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Examining the impact of contextual ambiguity on search advertising keyword performance: A topic model approach</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Abhishek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MIS Quart. Forthcoming</title>
+		<imprint>
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Location, location, location: An analysis of profitability of position in online advertising markets</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hosanagar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1057" to="1073" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Google Semantic Search: Search Engine Optimization (SEO) Techniques That Get Your Company More Traffic, Increase Brand Impact, and Amplify Your Online Presence</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Amerland</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<publisher>Que Publishing Company</publisher>
+			<pubPlace>Indianapolis, IN)</pubPlace>
+		</imprint>
+	</monogr>
+	<note>1st ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A spectral algorithm for latent Dirichlet allocation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Anandkumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Foster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Kakade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y-K</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 26th Annual Conf. Neural Information Processing Systems</title>
+				<editor>
+			<persName><forename type="first">F</forename><surname>Pereira</surname></persName>
+			<persName><forename type="first">Cjc</forename><surname>Burges</surname></persName>
+			<persName><forename type="first">L</forename><surname>Bottou</surname></persName>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</editor>
+		<meeting>26th Annual Conf. Neural Information essing Systems<address><addrLine>Red Hook, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>Curran Associates</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="917" to="925" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title/>
+		<author>
+			<persName><forename type="first">C</forename><surname>Andrieu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Thoms</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">A tutorial on adaptive MCMC. Statist. Comput</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="343" to="373" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Deriving the pricing power of product features by mining consumer reviews</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Archak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ghose</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Ipeirotis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1485" to="1509" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Learning topic models-Going beyond SVD</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Moitra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE 53rd Annual Sympos. Foundations of Computer Science</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="10" />
+			<date type="published" when="2012" />
+			<publisher>IEEE</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Summarizing topical content with word frequency and exclusivity</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">M</forename><surname>Airoldi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 29th Internat. Conf. Machine Learn</title>
+				<meeting>29th Internat. Conf. Machine Learn<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="201" to="208" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Hierarchical topic models and the nested Chinese restaurant process</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Griffiths</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Tenenbaum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 16th Annual Conf. Neural Information Processing Systems</title>
+				<editor>
+			<persName><forename type="first">S</forename><surname>Thrun</surname></persName>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Saul</surname></persName>
+			<persName><forename type="first">B</forename><surname>Scholkopf</surname></persName>
+		</editor>
+		<meeting>16th Annual Conf. Neural Information essing Systems<address><addrLine>Cambridge, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="17" to="24" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A correlated topic model of science</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Appl. Statist</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="17" to="35" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Topic models</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Text Mining: Classification, Clustering, and Applications</title>
+				<editor>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Srivastava</surname></persName>
+			<persName><forename type="first">M</forename><surname>Sahami</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Taylor &amp; Francis, London</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="71" to="93" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Latent Dirichlet allocation</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="993" to="1022" />
+			<date type="published" when="2003-01" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Forecast says SEO-related spending will be worth $80 billion by 2020</title>
+		<author>
+			<persName><surname>Borrell</surname></persName>
+		</author>
+		<ptr target="http://searchengineland.com/forecast-says-seo-related-spending-will-worth-80-billion-2020-247712" />
+		<imprint>
+			<date type="published" when="2016-08-04" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A taxonomy of web search</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Broder</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM SIGIR Forum</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="3" to="10" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Sentence-based text analysis for customer reviews</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Büschken</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="953" to="975" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Relational topic models for document networks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 12th Internat. Conf. Artificial Intelligence Statist., Proceedings of Machine Learning Research</title>
+				<editor>
+			<persName><forename type="first">D</forename><surname>Van Dyk</surname></persName>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting>12th Internat. Conf. Artificial Intelligence Statist., eedings of Machine Learning Research</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="81" to="88" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Reading tea leaves: How humans interpret topic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gerrish</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Boyd-Graber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 23rd Annual Conf. Neural Information Processing Systems</title>
+				<editor>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+			<persName><forename type="first">D</forename><surname>Schuurmans</surname></persName>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Lafferty</surname></persName>
+			<persName><forename type="first">Cki</forename><surname>Williams</surname></persName>
+			<persName><forename type="first">A</forename><surname>Culotta</surname></persName>
+		</editor>
+		<meeting>23rd Annual Conf. Neural Information essing Systems<address><addrLine>Red Hook, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>Curran Associates</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="288" to="296" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">A stochastic EM algorithm for approximating the maximum likelihood estimate</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Diebolt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">H</forename><surname>Ip</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1995" />
+			<pubPlace>Livermore, CA</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Sandia National Laboratories</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Technical report</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">The role of changing utility in product search. Working paper</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Dzyabura</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<pubPlace>New York</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>New York University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Understanding predictive information criteria for Bayesian models</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hwang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vehtari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Comput</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="997" to="1016" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Model checking and model improvement</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">L</forename><surname>Meng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Markov Chain Monte Carlo in Practice</title>
+				<editor>
+			<persName><forename type="first">W</forename><forename type="middle">R</forename><surname>Gilks</surname></persName>
+			<persName><forename type="first">S</forename><surname>Richardson</surname></persName>
+			<persName><forename type="first">D</forename><surname>Spiegelhalter</surname></persName>
+		</editor>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="1996" />
+			<biblScope unit="page" from="189" to="201" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Evaluating the Accuracy of Sampling-Based Approaches to the Calculation of Posterior Moments</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Geweke</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1991" />
+			<biblScope unit="volume">196</biblScope>
+			<pubPlace>Minneapolis, MN</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Federal Reserve Bank of Minneapolis, Research Department</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Designing ranking systems for hotels on travel search engines by mining user-generated and crowdsourced content</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ghose</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Ipeirotis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="493" to="520" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Surviving social media overload: Predicting consumer footprints on product search engines. Working paper</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ghose</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ipeirotis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<pubPlace>New York University; New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Conjoint analysis in consumer research: Issues and outlook</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Green</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="103" to="123" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Griffiths</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Steyvers</surname></persName>
+		</author>
+		<title level="m">Finding scientific topics. Proc. Natl. Acad. Sci. USA</title>
+				<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="5228" to="5235" />
+		</imprint>
+	</monogr>
+	<note>suppl</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Topicmodels: An R package for fitting topic models</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hornik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Grün</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Statist. Software</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">13</biblScope>
+			<biblScope unit="page" from="1" to="30" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Google Eye Tracking Report: How Searchers See and Click on Google Search Results (Enquiro Search Solutions)</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hotchkiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Alston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Edwards</surname></persName>
+		</author>
+		<ptr target="https://searchengineland.com/figz/wp-content/seloads/2007/09/hotchkiss-eye-tracking-2005.pdf" />
+		<imprint>
+			<date type="published" when="2005-08-04" />
+		</imprint>
+	</monogr>
+	<note>Accessed</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Using the taxonomy of cognitive learning to model online searching</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>Jansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Booth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Inform. Processing Management</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="643" to="663" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Determining the user intent of web search engine queries</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>Jansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Booth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Spink</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 16th Internat. Conf. World Wide Web</title>
+				<meeting>16th Internat. Conf. World Wide Web<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="1149" to="1150" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Determining the informational, navigational, and transactional intent of web queries</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>Jansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Booth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Spink</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Inform. Processing Management</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1251" to="1266" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Web query structure: Implications for IR system design</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>Jansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Spink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pfaff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 4th World Multiconference on Systemics, Cybernetics and Informatics (IIIS</title>
+				<meeting>4th World Multiconference on Systemics, Cybernetics and Informatics (IIIS<address><addrLine>Orlando, FL</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="169" to="176" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">What makes them click: Empirical analysis of consumer demand for search advertising. Working paper</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jeziorski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Segal</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<pubPlace>Baltimore, MD</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Johns Hopkins University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Speech and Language Processing: An Introduction to Natural Language Processing</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jurafsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Martin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computational Linguistics and Speech Recognition</title>
+				<meeting><address><addrLine>Upper Saddle River, NJ</addrLine></address></meeting>
+		<imprint>
+			<publisher>Prentice Hall</publisher>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+	<note>1st ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Speech and Language Processing: An Introduction to Natural Language Processing</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jurafsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Martin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computational Linguistics, and Speech Recognition</title>
+				<meeting><address><addrLine>Upper Saddle River, NJ</addrLine></address></meeting>
+		<imprint>
+			<publisher>Prentice-Hall</publisher>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">A large scale study of wireless search behavior: Google mobile search</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kamvar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Baluja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Grinter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Rodden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Aoki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Cutrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jeffries</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Olson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. SIGCHI Conf. Human Factors Comput. Systems</title>
+				<meeting>SIGCHI Conf. Human Factors Comput. Systems<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="701" to="709" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Advertising as a signal</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Kihlstrom</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Riordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Political Econom</title>
+		<imprint>
+			<biblScope unit="volume">92</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="427" to="450" />
+			<date type="published" when="1984" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Online demand under limited consumer search</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Albuquerque</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>Bronnenberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1001" to="1023" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Automated marketing research using online customer reviews</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Bradlow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="881" to="894" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">Search query formation by strategic consumers. Working paper</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Toubia</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018" />
+			<pubPlace>Hong Kong</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Hong Kong University of Science and Technology</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title/>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Raghavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Schütze</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Introduction to Information Retrieval</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<date type="published" when="2008" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Topic models conditioned on arbitrary features with Dirichlet-multinomial regression. McAllester D, Liu and Toubia: Estimating Consumer Preferences from</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mimno</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mccallum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">UAI&apos;08 Proc. 24th Conf. Uncertainty Artificial Intelligence</title>
+				<editor>
+			<persName><forename type="first">P</forename><surname>Myllymaki</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Arlington, VA</addrLine></address></meeting>
+		<imprint>
+			<publisher>AUAI Press</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="411" to="418" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Position effects in search advertising and their moderators: A regression discontinuity approach</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Narayanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kalyanam</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="388" to="407" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Mine your own business: Market-structure surveillance through text mining</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Netzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Feldman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Goldenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fresko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="521" to="543" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">The stochastic EM algorithm: Estimation and asymptotic results</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">F</forename><surname>Nielsen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bernoulli</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="457" to="489" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">L</forename><surname>Pirolli</surname></persName>
+		</author>
+		<title level="m">Information Foraging Theory: Adaptive Interaction with Information</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Oxford University Press</publisher>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Determining user&apos;s interest in real time</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Sanasam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">A</forename><surname>Murthy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">A</forename><surname>Gonsalves</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 17th Internat. Conf. World Wide Web</title>
+				<meeting>17th Internat. Conf. World Wide Web<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="1115" to="1116" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Sparse hidden-dynamics conditional random fields for user intent understanding</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ji</forename><forename type="middle">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 20th Internat. Conf. World Wide Web</title>
+				<meeting>20th Internat. Conf. World Wide Web<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="7" to="16" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<monogr>
+		<title level="m" type="main">The path to click: Are you on it? Working paper</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Trusov</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<pubPlace>Santa Clara, CA</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Santa Clara University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">LDAvis: A method for visualizing and interpreting topics</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sievert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">E</forename><surname>Shirley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Workshop on Interactive Language Learning, Visualization, and Interfaces (Association for Computational Linguistics</title>
+				<meeting>Workshop on Interactive Language Learning, Visualization, and Interfaces (Association for Computational Linguistics<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="63" to="70" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Bayesian measures of model complexity and fit</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Spiegelhalter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">G</forename><surname>Best</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">P</forename><surname>Carlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Van Der Linde</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Royal Statist. Soc. B</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="583" to="639" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Paid search advertising expenditure worldwide from</title>
+		<author>
+			<persName><surname>Statista</surname></persName>
+		</author>
+		<ptr target="https://www.statista.com/statistics/267056/paid-search-advertising-expenditure-worldwide/" />
+	</analytic>
+	<monogr>
+		<title level="j">Accessed August</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Mining marketing meaning from online chatter: Strategic brand analysis of big data using latent Dirichlet allocation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tirunillai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Tellis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="463" to="479" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Crumbs of the cookie: User profiling in customer-base analysis and behavioral targeting</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Trusov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Jamal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="405" to="426" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Position auctions</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Varian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. J. Indust. Organ</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1163" to="1178" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Rethinking LDA: Why priors matter</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">M</forename><surname>Wallach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Mimno</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mccallum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Schuurmans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Lafferty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cki</forename><surname>Williams</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 23rd Annual Conf. Neural Information Processing Systems</title>
+				<editor>
+			<persName><forename type="first">A</forename><surname>Culotta</surname></persName>
+		</editor>
+		<meeting>23rd Annual Conf. Neural Information essing Systems<address><addrLine>Red Hook, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>Curran Associates</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1973" to="1981" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Evaluation methods for topic models</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">M</forename><surname>Wallach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Murray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Salakhutdinov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mimno</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 26th Annual Internat. Conf. Machine Learn</title>
+				<meeting>26th Annual Internat. Conf. Machine Learn<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1105" to="1112" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Collaborative topic modeling for recommending scientific articles</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 17th ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining</title>
+				<editor>
+			<persName><forename type="first">C</forename><surname>Apte</surname></persName>
+			<persName><forename type="first">J</forename><surname>Ghosh</surname></persName>
+			<persName><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</editor>
+		<meeting>17th ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="448" to="456" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Mining longitudinal web queries: Trends and patterns</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Soc. Inform. Sci. Tech</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="743" to="758" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Using information scent and need for cognition to understand online search behavior</title>
+		<author>
+			<persName><forename type="first">W-C</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kelly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sud</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 37th</title>
+				<meeting>37th</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title/>
+		<author>
+			<persName><surname>Internat</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM SIGIR Conf. Res. Development Inform. Retrieval</title>
+		<imprint>
+			<biblScope unit="page" from="557" to="566" />
+			<publisher>ACM</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">A bounded rationality model of information search and choice in preference measurement</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Toubia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">De</forename><surname>Jong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="166" to="183" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Modeling the role of message content and influencers in social media rebroadcasting</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">W</forename><surname>Moe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Schweidel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. J. Res. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="100" to="119" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

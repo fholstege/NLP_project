@@ -1,0 +1,1500 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Customer Acquisition via Display Advertising Using Multi-Armed Bandit Experiments</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2017-04-20">April 20, 2017</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Eric</forename><forename type="middle">M</forename><surname>Schwartz</surname></persName>
+							<email>ericmsch@umich.edu</email>
+						</author>
+						<author>
+							<persName><roleName>Peter</roleName><forename type="first">Eric</forename><forename type="middle">T</forename><surname>Bradlow</surname></persName>
+							<email>ebradlow@wharton.upenn.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">The Wharton School</orgName>
+								<orgName type="institution">University of Pennsylvania</orgName>
+								<address>
+									<postCode>19104</postCode>
+									<settlement>Philadelphia</settlement>
+									<region>Pennsylvania</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Peter</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+							<email>faderp@wharton.upenn.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">The Wharton School</orgName>
+								<orgName type="institution">University of Pennsylvania</orgName>
+								<address>
+									<postCode>19104</postCode>
+									<settlement>Philadelphia</settlement>
+									<region>Pennsylvania</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Stephen</forename><forename type="middle">M</forename><surname>Ross</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">School of Business</orgName>
+								<orgName type="institution">University of Michigan</orgName>
+								<address>
+									<postCode>48109</postCode>
+									<settlement>Ann Arbor</settlement>
+									<region>Michigan</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Customer Acquisition via Display Advertising Using Multi-Armed Bandit Experiments</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2017-04-20">April 20, 2017</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2016.1023</idno>
+					<note type="submission">Received: December 16, 2013 Revised: December 23, 2015; March 28, 2016 Accepted: March 29, 2016</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:29+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>multi-armed bandit</term>
+					<term>online advertising</term>
+					<term>field experiments</term>
+					<term>A/B testing</term>
+					<term>adaptive experiments</term>
+					<term>sequential decision making</term>
+					<term>explore-exploit</term>
+					<term>earning-and-learning</term>
+					<term>reinforcement learning</term>
+					<term>hierarchical models</term>
+					<term>machine learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Please scroll down for article-it is on subsequent pages</head><p>With 12,500 members from nearly 90 countries, INFORMS is the largest international association of operations research (O.R.) and analytics professionals and students. INFORMS provides unique networking and learning opportunities for individual professionals, and organizations of all types and sizes, to better understand and use O.R. and analytics tools and methods to transform strategic visions and achieve better outcomes. For more information on INFORMS, its publications, membership, or meetings visit http://www.informs.org</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Business experiments have a long history in marketing. As digital environments facilitate randomization, controlled experiments, known as A/B tests, have become an increasingly popular part of a firm's analytics capabilities <ref type="bibr" target="#b3">(Anderson and Simester 2011</ref><ref type="bibr" target="#b20">, Davenport 2009</ref><ref type="bibr" target="#b21">, Donahoe 2011</ref>. As a result, many interactive marketing firms are continuously testing and learning in their market environments; however, they are bypassing a more profitable option: firms could be earning while learning.</p><p>One domain frequently using such testing is online advertising. Firms typically handle this earning versus learning (or explore-exploit) trade-off in two phases, test then rollout. They equally allocate impressions to each ad version (explore phase), and after stopping the test, they shift all future impressions to the best performing ad (exploit phase). Yet it is impossible to know the optimal test phase length in advance. Instead of a discrete switch from exploration (learning) to exploitation (earning), firms should simultaneous mix the two and change the mix with a smooth transition from one to the other (earning while learning). In practical terms, this problem is formulated as, how should a firm decide what percentage of impressions to allocate to each online ad on an ongoing basis to maximize earning while continuously learning?</p><p>We focus on solving this problem, but first we emphasize that it is not unique to online advertisers; it belongs to a much broader class of sequential allocation problems that marketers have faced for years across countless domains. Many other activitiessending emails or direct mail catalogs, providing customer service, designing websites-can be framed as sequential adaptive experiments. All of these problems are structured around the following questions: Which targeted marketing action should we take, when should we take them, and with which customers and in which contexts, should we test such actions? With limited funds, the firm faces the resource allocation Schwartz, Bradlow, and Fader: Customer Acquisition Using <ref type="bibr">Multi-Armed Bandits Marketing Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref> problem: how can they exploit data they have about their marketing actions and further explore those actions' effectiveness to reduce their uncertainty?</p><p>We frame this class of problems as multi-armed bandit (MAB) problems <ref type="bibr" target="#b50">(Robbins 1952</ref><ref type="bibr" target="#b56">, Thompson 1933</ref>). The MAB problem (formally defined in Section 3) is a classic adaptive experimentation and dynamic optimization problem. While various MAB methods have been developed, they fall short of addressing the richness of the online advertising problem we present here.</p><p>First, within online advertising, we focus on optimizing the advertiser's resource allocation over time across many ad creatives and websites by sequentially learning about ad performance. This allows us to maximize customer acquisition rates by testing many ads on many websites while learning which ad works best on each website. Our findings have immediate marketing implications, as they emphasize the importance of the interaction between context and ad creative in optimizing online advertising campaigns. This problem relates to other work at the intersection of online advertising, online content optimization, and MAB problems <ref type="bibr" target="#b0">(Agarwal et al. 2008</ref><ref type="bibr" target="#b54">, Scott 2010</ref>. Like those studies, we downplay what the firm learns about specific ad characteristics (e.g., which ad message or which format works best) in favor of learning purely as a means to earning as much as possible. <ref type="bibr">1</ref> We go beyond sequentially testing ad performance; we explicitly test the resulting MAB policy's effectiveness in a real-time and live randomized control trial. We randomly assign each observation (i.e., consumerad impression) to be treated by either our proposed MAB policy or a control policy (balanced experiment). Using the data collected, we run counterfactual policy simulations to understand how various MAB methods would have performed in this setting. By directly comparing distinct methodological approaches, this research provides a broader study of MAB policies in marketing. We also study how robust these methods are to changes in our problem setting.</p><p>Second, from a methodological perspective, we propose a method for a version of the MAB that is new to the literature: a hierarchical, attribute-based, batched MAB policy. The key novel component is incorporating unobserved heterogeneity by using a hierarchical, partially pooled model. While some recent work has incorporated attributes into actions and/or batched decisions <ref type="bibr" target="#b14">(Chapelle and Li 2011</ref><ref type="bibr" target="#b19">, Dani et al. 2008</ref><ref type="bibr" target="#b35">, Keller and Oldale 2003</ref><ref type="bibr" target="#b52">, Rusmevichientong and Tsitsiklis 2010</ref><ref type="bibr" target="#b54">, Scott 2010</ref>, no prior work has considered an MAB with action attributes and unobserved heterogeneity; yet the combination is central to the practical problem facing an online advertiser. By using hierarchical modeling with partial pooling in our MAB policy, we leverage information across all websites to allocate impressions across ads within any single website. We quantify the value of accounting for unobserved heterogeneity in responsiveness to ads and their attributes across websites.</p><p>We implement our proposed MAB policy in a largescale, adaptive field experiment in collaboration with a large retail bank focused on direct marketing to acquire customers. The field experiment generated data over two months in 2012, including more than 750 million ad impressions, which featured 12 unique banner ads that were described by two attributes (three different sizes and four creative concepts), yielding 532 unique units of observations (website-ad combinations).</p><p>We apply an approach featuring a principle called Thompson Sampling (TS) <ref type="bibr" target="#b56">(Thompson 1933</ref>) (also known as randomized probability matching, <ref type="bibr" target="#b14">Chapelle and Li 2011</ref><ref type="bibr" target="#b30">, Granmo 2010</ref><ref type="bibr" target="#b41">, May et al. 2011</ref><ref type="bibr" target="#b54">, Scott 2010</ref><ref type="bibr" target="#b53">, Russo and Van Roy 2014</ref>. The principle of TS is simply stated: the probability that an action is believed to be optimal determines the proportion of resources allocated to that action <ref type="bibr" target="#b56">(Thompson 1933)</ref>. We discuss its details and theoretical properties in Section 4.</p><p>While using TS with a heterogeneous response model is one approach, we also examine a range of alternative MAB policies (models and allocation rules) from the literature. We hope to expose the marketing and management science audience to a wider range of MAB methods than have previously been compared.</p><p>Our findings suggest that one policy does not fit all settings equally well. We find that the choice of model specification, in particular whether to use a pooled, an unpooled, or a partially pooled model, may matter more than the specific choice of the MAB algorithm. While we propose a partially pooled model with the TS allocation rule, we find that an unpooled modeling approach can yield even better results in our particular setting. For this unpooled approach, we also show how a set of alternative MAB allocation rules can achieve similar levels of performance. Nevertheless, we find there is usually lower risk (i.e., variance of optimized reward) when using the proposed partially pooled model with TS.</p><p>In addition to improving the advertiser's ability to solve their optimization problem, we contribute to our understanding of the growing industry of online display advertising. Previous research has examined and questioned the effectiveness of display advertising <ref type="bibr" target="#b29">(Goldfarb and Tucker 2011</ref><ref type="bibr" target="#b33">, Hoban and Bucklin 2015</ref><ref type="bibr" target="#b38">, Lambrecht and Tucker 2013</ref><ref type="bibr" target="#b40">, Manchanda et al. 2006</ref><ref type="bibr" target="#b49">, Reiley et al. 2011</ref>. Instead of focusing on that measurement question, we focus on the problem of running ad experiments more profitably.</p><p>The rest of the paper is structured as follows. The next section provides institutional details of the field experiment design. In Section 3, we formalize the advertiser's problem into an MAB, and in Section 4, we describe our <ref type="bibr">Marketing Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref> two-part approach to solving the full MAB problem: a heterogeneous generalized linear model and the TS allocation rule. The remaining sections cover the empirical performance in the live field experiment and a series of counterfactual simulations for alternative policies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Field Experiment Setup and Institutional Details</head><p>To design and implement our field experiment, we worked with a major U.S. financial services company running a marketing campaign for one of its consumer banking products. The campaign delivered over 750 million impressions over 62 days, from June 6, 2012 to August 6, 2012. The bank's creative agency and media buying agency had already decided on four ad concepts and formatted them for three standard ad sizes.</p><p>The ad buyer purchased media across the Internet at the level of media placements. These media placements, often called lines of media, are a combination of many factors. A media placement is first described by its publisher, either large ad networks/exchanges (e.g., Google and Yahoo), or specific websites (e.g., Time.com and Bankrate.com). Table <ref type="table" target="#tab_0">1</ref> lists all publishers involved in the campaign and field experiment. Second, a media placement can refer to a description of the audience defined broadly (e.g., all visitors to a publisher's site), to a targeted group (e.g., websites attracting visitors at least 45 years old), or even to a retargeted group (e.g., only cookies associated with individuals who visited the advertised financial product's website in the past 30 days but have not yet applied for an account). Third, the media placement also considers the size of the ad, such as one of the three industry standard formats, 300 × 250, 160 × 600, or 728 × 90 pixels. For exposition, we will refer to the size of the ad as an attribute of the ad rather than as an attribute of the paid media placement. The impressions already were purchased for specific media placements, so we will decide how many impressions each ad creative receives within each media placement. As a result, we will not affect the cost of the campaign, only the return on advertising expenditure.</p><p>The experiment yielded 532 units of observations (per period), which are unique combinations of website, ad size, and ad concept. Of these, 348 observations come from publishers with all three ad sizes available, 128 observations come from publishers with two ad sizes, and 56 observations come from publishers with only one ad size. Period refers to approximately one week, the time between the updates we made in the adaptive field experiment.</p><p>For each observation per period, we observed the total number of ad impressions delivered (impressions), whether the consumer clicked on that ad (clicks), and whether the consumer who viewed the ad impression was acquired (conversions). We use the terms conversion and acquisition interchangeably, and in this consumer banking context, it means that a customer applied for a savings account.</p><p>Table <ref type="table" target="#tab_1">2</ref> summarizes the media placements showing volume of impressions, clicks, and conversions by media category, which represents classes such as portal, contextual, and retargeting. For example, as a publisher, Google appears in many media placements across different categories. Other publishers have placements in a single category, such as the BBC or Time Inc., with placements appearing only in the news and information category.</p><p>While conversion and click-through rates differed by ad sizes and ad concepts, we find that the heterogeneity in conversion rates across media placements is greater than the differences across ads. This suggests that the context or customer segment may have more explanatory power in predicting conversion than the ads, whose differential effects we intended to learn. The  histogram (Figure <ref type="figure" target="#fig_0">1</ref>) shows the marginal distribution of these conversion rates over the 532 observations by the end of the experiment, and the scatter plot (Figure <ref type="figure" target="#fig_1">2</ref>) illustrates the joint distribution of conversions and total impression volume after the 62 days.</p><p>The heterogeneity of conversion rates across media placements is expected. Each media placement represents a slice of the Internet browsing population, i.e., customers likely sharing interests, behaviors, or demographics. Those different customer segments arise either indirectly because of the website's content, or directly based on the media placement's targeting methods. In addition to different consumer segments, media  placements will also vary in their effectiveness. Table <ref type="table" target="#tab_2">3</ref> reveals that across placements, the conversion rates move together, as seen by the relatively high correlations of conversion rates across the four ad concepts by media placement. However, the nature of heterogeneity is even more complicated than different levels of conversion rates would imply. Since context matters in advertising, it is reasonable to expect an interaction between ad concept (e.g., design, call to action, etc.) and the media placement (e.g., consumer segment). Indeed, these interactions do occur in the data collected (Table <ref type="table" target="#tab_2">3</ref>), and our methods will allow for us to capture these effects.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Formalizing Online Display Advertising as a Multi-Armed Bandit Problem</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Preliminaries</head><p>We translate the aforementioned advertiser's problem into MAB language, formally defining the MAB problem and proposing our approach to solving it. Compared to the basic MAB problem most commonly seen in the literature, our MAB problem differs along three key dimensions: attribute-based actions, batched decision making, and heterogeneity across contexts in expected reward and in attribute importance. The firm has ads, k 1, . . . , K, that it can serve on any or all of a set of websites, j 1, . . . , J. Let impressions be denoted by m jkt and conversions, by y jkt , from ad k on website j in period t. Each ad's unknown conversion rate, µ jk , is assumed to be stationary over time (discussed in Section 9), but is specific to each website-ad combination.</p><p>The ad conversion rates are not only unknown, but they may be correlated since they are functions of unknown common parameters denoted by θ, and a common set of d ad attributes. Hence, the MAB is attribute-based. Ad k's attributes x k may represent size, concept, message appeal, image, or other aesthetics. The d-dimensional vector x k corresponds to the kth row of <ref type="bibr">Marketing Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref> the whole attribute structure, X, which is the design matrix of size K × d. In our empirical example, the attributes are two nominal categorical variables: size (three levels) and concept (four levels), so we have K 12. Since we will consider all full-factorial two-way interactions, one could also interpret this as d 12. Despite the low-dimensional attribute structure in our empirical example, we maintain a more general notation here. To further emphasize the actions' dependence on those common parameters, we use the notation µ jk (θ), but we note that µ jk is really a function of both x k and a subset of parameters, the corresponding coefficients, in θ.</p><p>Since many observations are allocated simultaneously instead of one observation at a time, the problem is a batched MAB <ref type="bibr">Gans 2009, Perchet et al. 2016)</ref>. For each decision period and website, the firm has a budget of M jt K k 1 m jkt impressions. In the problem we address, this budget constraint is taken as given and exogenous because of previously arranged media contracts, but the firm is free to decide what proportion of those impressions will be allocated to each ad. This proportion is w jkt , where K k 1 w jkt 1. In each decision period, the firm has the opportunity to make different allocations of impressions of K ads across each of J different websites. This ad-within-website structure implies the problem is hierarchical. Since each ad may perform differently depending on which website it appears on, we allow an ad's conversion rate to vary by using websitespecific attribute importance parameters, β j . Then the impact of the ad attributes on the conversion rate can be described by a common generalized linear model (GLM), µ jk (θ) h −1 (x k β j ), where h is the link function (e.g., logit, probit).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Optimization Problem</head><p>The firm's objective is to maximize the expected total number of customers acquired by serving impressions. Like any dynamic optimization problem, the MAB problem requires the firm to select a policy. We define an MAB policy, π, to be a decision rule for sequentially setting allocations, w t+1 , each period based on all that is known and observed through periods 1, . . . , t, assuming f , h, K, X, J, T, and M are given and exogenous. Let Y jkt be the reward of customers acquired and attributed to ad k served on website j during period t. We aim to select a policy that corresponds to an allocation schedule, w, to maximize the cumulative sum of expected number of customers acquired, as follows:</p><formula xml:id="formula_0">max w E f T t 1 J j 1 K k 1 Y jkt subject to K k 1 w jkt 1, ∀ j, t,<label>(1)</label></formula><p>where E f [Y jkt ] w jkt M jt µ jk (θ).</p><p>Equation (1) lays out the undiscounted finite-time optimization problem, but we can also write the discounted infinite-time problem if we assume a geometric discount rate 0 &lt; γ &lt; 1, let T ∞, and maximize the expected value of the summations of γ t Y jkt . An alternative formulation of the optimization problem is a Bayesian decision-theoretic one, specifying the likelihood of the data p(Y | θ) and prior p(θ). However, we will continue on with the undiscounted finitetime optimization problem, except where otherwise mentioned.</p><p>The dynamic programming problem, however, suffers from the curse of dimensionality <ref type="bibr" target="#b48">(Powell 2011)</ref>. Because of the interconnections among the entries of θ and the large number of parameters, there would be a massive state space in the Markov decision process. Under some conditions the optimization problem can be solved with an indexable solution <ref type="bibr" target="#b27">(Gittins 1979</ref><ref type="bibr" target="#b35">, Keller and Oldale 2003</ref><ref type="bibr" target="#b61">, Whittle 1980</ref>.</p><p>These conditions can be restrictive, and are examined closely in this literature. The conditions for the Gittins index to be optimal require the following: the expected rewards for each arm are uncorrelated; learning about one arm's expected reward provides no information about all other arms; the expected rewards are stationary over time; the arms are played one at a time; and the goal is to maximize the infinite sum of rewards with geometric discounting. These conditions have been relaxed in part <ref type="bibr" target="#b35">(Keller and</ref><ref type="bibr">Oldale 2003, Whittle 1980</ref>), as we will discuss in Section 5. However, in our case, the assumptions that make these index solutions exactly optimal do not hold. Nevertheless, we utilize these index methods as approximate solutions in our numerical simulation experiments in Section 8.</p><p>TS provides an alternative MAB approach that is flexible across settings and is computationally feasible <ref type="bibr" target="#b54">(Scott 2010)</ref>. The theoretical analysis arguing that TS is a viable solution method to MAB problems is an active area of research <ref type="bibr" target="#b34">(Kaufmann et al. 2012</ref><ref type="bibr" target="#b44">, Ortega and Braun 2010</ref><ref type="bibr" target="#b53">, Russo and Van Roy 2014</ref>. While it may seem like a simple heuristic, TS has been shown to be an optimal policy with respect to minimizing finite-time regret <ref type="bibr" target="#b1">(Agrawal and</ref><ref type="bibr">Goyal 2012, Kaufmann et al. 2012)</ref>, minimizing relative entropy <ref type="bibr" target="#b45">(Ortega and Braun 2014)</ref>, and minimizing Bayes risk consistent with a decision-theoretic perspective <ref type="bibr" target="#b53">(Russo and Van Roy 2014)</ref>, and hence is a solution method we describe next. 2</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Thompson Sampling with a Hierarchical Generalized Linear Model</head><p>We conceptualize the advertising allocation problem as a hierarchical, attribute-based, batched MAB problem, and we propose the following MAB policy: a combination of a heterogeneous generalized linear model (HGLM; the model), and TS (the MAB allocation rule).</p><p>The particular model of customer acquisition is a logistic regression model with varying parameters across websites, which we also refer to as a heterogeneous or partially pooled hierarchical model. This assumes that all website visitors come from the same broader population, so one media placement reflects a sample of that population. Consequently, media placements are heterogeneous since they naturally have different mixtures of the underlying population.</p><p>The TS allocation rule encodes model uncertainty by drawing samples from the posterior. As a result, one draws actions randomly in proportion to the posterior probability that the given action is the optimal one, encoding policy uncertainty. Formally, in its most general form, TS uses the joint predictive distribution of expected rewards, p(µ 1 , . . . , µ K | D t ), where µ k E[Y kt ] for all t and rewards Y, and where D t represents all data collected through time t. Then the probability that action k is the optimal action is equal to Pr(µ k max{µ 1 , . . . , µ K } | D t ), the probability that it has the highest expected reward based on the data.</p><p>To begin describing how we take advantage of TS in our setting, we formalize the model of conversions (customer acquisition) as rewards, accounting for display ad attributes and unobserved heterogeneity across websites. The hierarchical logistic regression with varying slopes is as follows:</p><formula xml:id="formula_1">y jkt ∼ binomial(µ jk | m jkt ), µ jk 1/[1 + exp(−x k β j )], β j ∼ N(β, Σ),<label>(2)</label></formula><p>where x k (x k1 ,... , x kd ), {β j } J 1 {β 1 ,... , β J }, µ j (µ j1 (θ), ... , µ jK (θ)), and all parameters are contained in θ ({β j } J 1 ,β,Σ). After a model update at time t, we utilize the uncertainty around parameters β j to obtain the key distribution for our implementation of TS, the joint predictive distribution of ad conversion rates for each website, p(µ j | D t ). Note that we denote all data through t as, D t {X, y t , m t }, and we denote all conversions and impressions we have observed through time t as the set {y t , m t } { y jk1 , m jk1 , . . . , y jkt , m jkt : j 1, . . . , J; k 1, . . . , K}.</p><p>The principle of TS works with the HGLM as follows. The TS allocation rule maps the predictive distribution of conversion rates, p(µ j | D t ), into a recommended vector of allocation probabilities, w j, t+1 , for each website in the next period. For each website, j, we compute the probability that each of the K actions is optimal for that website and use those probabilities for allocating impressions. We obtain the distribution p(µ j | D t ), and we can carry through our subscript j and then follow the procedures from the TS literature <ref type="bibr" target="#b14">(Chapelle and Li 2011</ref><ref type="bibr" target="#b30">, Granmo 2010</ref><ref type="bibr" target="#b41">, May et al. 2011</ref><ref type="bibr" target="#b54">, Scott 2010</ref>. For each j, suppose the optimal action's mean is µ j * max{µ j1 , . . . , µ jK } (e.g., the highest true conversion rate for that website). Then we can define the set of allocation probabilities</p><formula xml:id="formula_2">w j, k, t+1 Pr(µ jk µ j * | D t ) ∫ µ j 1{µ jk µ j * | µ j }p(µ j | D t )dµ j ,<label>(3)</label></formula><p>where 1{µ jk µ j * | µ j } is the indicator function of which ad has the highest conversion rate for website j. The key to computing this probability is conditioning on µ j and integrating over our beliefs about µ j for all J websites, conditional on all information D t through time t.</p><p>Since our policy is based on the HGLM, we depart from other applications of TS because our resulting allocations are based on a partially pooled model. While our notation shows separate w jt and µ j for each j, those values are computed from the parameters β j , which are partially pooled. Thus, we are not obtaining the distribution of β j separately for each website; instead, we leverage data from all websites to obtain each website's parameters, as is common in Bayesian hierarchical models. As a result, websites with little data (or more within-website variability) are shrunk toward the population mean parameter vector,β, representing average ad attribute importance across all websites. This is the case for all hierarchical models with unobserved continuous parameter heterogeneity <ref type="bibr" target="#b26">(Gelman et al. 2004, Gelman and</ref><ref type="bibr" target="#b25">Hill 2007)</ref>. Given those parameters, we use the observed attributes, X, to determine the conversion rates' predictive distribution, p(µ j | D t ). For this particular model, the integral in Equation ( <ref type="formula" target="#formula_2">3</ref>) can be rewritten as</p><formula xml:id="formula_3">w j, k, t+1 ∫ Σ ∫β ∫ β 1 ,...,β J 1 β j x k max k β j x k | β j , X • p(β j |β, Σ, X, y t , m t ) • p(β, Σ | β 1 , . . . , β J )dβ 1 . . . dβ J dβ dΣ.<label>(4)</label></formula><p>However, it is much simpler to interpret the posterior probability, Pr(µ jk (θ) µ j * (θ) | D t ), as a direct function of the joint distribution of the means, µ j (θ).</p><p>It is natural to compute allocation probabilities via posterior sampling <ref type="bibr" target="#b54">(Scott 2010</ref>). In the case of the two-armed Bernoulli MAB problem, there is a closedform expression for the probability of one arm's mean being greater than the other's <ref type="bibr" target="#b7">(Berry 1972</ref><ref type="bibr" target="#b56">, Thompson 1933</ref>. More generally, however, no such expression exists for the integral, so we simulate g 1, . . . , G independent draws. Across the G draws, we approximate w j, k, t+1 by computing the fraction of simulated draws in which each ad, k, is predicted to have the highest conversion rate</p><formula xml:id="formula_4">w j, k, t+1 ≈ŵ j, k, t+1 1 G G g 1 1 µ (g) jk µ (g) j * | µ (g) j .<label>(5)</label></formula><p>Computed from the data through periods 1, . . . , t, the allocation weights,ŵ j, k, t+1 , combine with, M j, t+1 , Marketing <ref type="bibr">Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref> the total number of prepurchased impressions, to determine the number of ads delivered on website j across all K ads in period t + 1. Since the common automated mechanism (e.g., DoubleClick for Advertisers) delivering the display ads does so in a random rotation according to the allocation weights, (ŵ j, 1, t+1 , . . . ,ŵ j, K, t+1 ), the allocation of impressions is a multinomial random variable, (m j, k, t+1 , . . . , m j, K, t+1 ), with the budget constraint M j, t+1 . However, since the number of impressions in the budget is generally very large in online advertising, each observed m jkt ≈ M jtŵ jkt .</p><p>We could use a fully Bayesian approach with Markov Chain Monte Carlo simulation to obtain the joint posterior distribution of θ. However, for implementation in our large-scale real-time experiment, we rely on a restricted maximum likelihood estimation of the Laplace approximation to obtain posterior draws <ref type="bibr" target="#b5">(Bates and Watts 1988)</ref>, as is done in other TS applications (e.g., <ref type="bibr" target="#b14">Chapelle and Li 2011)</ref>. After obtaining estimates using restricted maximum likelihood, we perform model-based simulation by sampling parameters from the multivariate normal distribution implied by the mean estimates and estimated variance-covariance matrix of those estimates <ref type="bibr">(Bates et al. 2013, Gelman and</ref><ref type="bibr" target="#b25">Hill 2007)</ref>. Therefore, when we update the system, we reestimate the model using all available data. For alternative simpler models with closed-form posterior distributions (e.g., beta-binomial model), updates only involve adding pseudocounts to prior parameters.</p><p>One benefit of TS is that it is compatible with any model. Given a model's predictive distribution of each arm's expected rewards, it is possible to compute the probability of each arm having the highest expected reward. This means that we can examine a range of model specifications, just as we would ordinarily do when analyzing a data set, and we can apply the TS allocation rule to each of those models. We will test a variety of TS-based policies explicitly in our counterfactual analyses in Section 8. This research, therefore, extends the body of work studying TS empirically by showing how it can account for unobserved heterogeneity across J different units via a hierarchical (partially pooled) model and comparing it explicitly to unpooled and pooled models.</p><p>We will also consider a series of alternative MAB policies, including alternative models less complex than our HGLM and a set of alternative allocation rules instead of TS, including the Gittins index, upper confidence bound algorithms, and a variety of heuristics, which we describe next.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Alternative MAB Policies</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Gittins Index</head><p>The Gittins index has been applied recently but sparingly in marketing and management science <ref type="bibr" target="#b10">(Bertsimas and Mersereau 2007;</ref><ref type="bibr" target="#b35">Keller and Oldale 2003;</ref><ref type="bibr" target="#b32">Hauser et al. 2009</ref><ref type="bibr" target="#b31">Hauser et al. , 2014</ref><ref type="bibr" target="#b42">Meyer and Shi 1995;</ref><ref type="bibr" target="#b58">Urban et al. 2014)</ref>. We recognize that <ref type="bibr" target="#b27">Gittins (1979)</ref> optimally solved a classic sequential decision-making problem that had attracted a great deal of attention <ref type="bibr" target="#b7">(Berry 1972</ref><ref type="bibr" target="#b11">, Bradt et al. 1956</ref><ref type="bibr" target="#b50">, Robbins 1952</ref><ref type="bibr" target="#b56">, Thompson 1933</ref><ref type="bibr" target="#b59">, Wahrenberger et al. 1977</ref> and had been previously thought to be intractable <ref type="bibr" target="#b9">(Berry and Fristedt 1985</ref><ref type="bibr" target="#b28">, Gittins et al. 2011</ref><ref type="bibr" target="#b57">, Tsitsiklis 1986</ref><ref type="bibr" target="#b61">, Whittle 1980</ref>. For a more complete review, see recent books such as <ref type="bibr" target="#b28">Gittins et al. (2011)</ref> and <ref type="bibr" target="#b60">White (2012)</ref>.</p><p>The applications in marketing note that the Gittins index only solves a special case of the MAB problem with restrictive assumptions. Nevertheless, these applications have also extended the use of the Gittins index and Gittins-like indices. <ref type="bibr" target="#b32">Hauser et al. (2009)</ref> apply the Gittins index to "web morphing," i.e., adapting a website's content based on a visitor's inferred cognitive style. While the MAB policy used in that case assumes each morph (action) to be independent, it does account for unobserved heterogeneity via latent classes. Therefore, the application uses the expected Gittins index, a weighted average of the class-specific Gittins index over the class membership probabilities, which is an approximation shown in <ref type="bibr" target="#b36">Krishnamurthy and Wahlberg (2009)</ref>. The web-morphing work has been extended <ref type="bibr" target="#b31">(Hauser et al. 2014</ref>) and directly applied to morphing online advertisements instead of website design <ref type="bibr" target="#b58">(Urban et al. 2014)</ref>.</p><p>Other index policies have attracted attention in recent years in the management sciences. <ref type="bibr" target="#b39">Lin et al. (2015)</ref> characterize a consumer's dynamic discrete choice problem as a restless MAB problem. The restless MAB problem, initially solved by <ref type="bibr" target="#b61">Whittle (1980)</ref>, relaxes some of the Gittins assumptions as it permits the rewards to be nonstationary and allows each arm to provide information about others. Further development of index solutions illustrates an interest in relaxing other assumptions. For instance, <ref type="bibr" target="#b35">Keller and Oldale (2003)</ref> apply a Gittins-like index for cases where the attributes of the actions generate a correlation among the reward distributions.</p><p>Formally, if the K ads are independent (attribute matrix X is the identity matrix) so that their rewards are uncorrelated, then the Gittins index is the exactly optimal solution. This applies to the infinite-time discounted problem for rewards distributions from the exponential family. The Gittins index carries the interpretation as the certainty equivalent of each arm given the data for that arm. For a clear illustration of this for a Bernoulli model with beta prior, see <ref type="bibr">Hauser et al. (2009, Equation (1), p. 208</ref>).</p><p>We will test versions of the Gittins index in our counterfactual analyses after running the live field experiment. In particular, we will use the closed-form approximation of the Gittins index <ref type="bibr" target="#b13">(Brezzi and Lai 2002)</ref>. For a formal definition of this easy-to-compute approximation, see <ref type="bibr">Brezzi and Lai (2002, Equation (16)</ref>, p. 94), and subsequent analyses in the literature <ref type="bibr">Frazier 2012, Gittins et al. 2011)</ref>. Importantly, this approximation's structure is the posterior mean of the key parameter plus an increasing function of its posterior variance; this has the same structure of any posterior quantile above the mean, such as the upper bound of a confidence interval of the mean.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Upper Confidence Bound Policies</head><p>The upper confidence bound (UCB) policy comes from a different stream of work on MAB problems, originating with <ref type="bibr" target="#b37">Lai (1987)</ref>. The UCB has been studied both theoretically and via simulation in reinforcement learning, and it represents an intersection of statistical learning and machine learning. Reinforcement learning deals with optimization problems related to Markov decision processes, but this field takes a less parametric perspective compared to operations research or econometric solutions common in marketing.</p><p>Suppose we do not make distributional assumptions about the rewards, and we only know the upper and lower bounds of the rewards. Since we deal with binary rewards {0, 1}, the bounds are [0, 1]. Consider the case where the K arms are independent and we ignore differences across websites. Through time t, a total of M t impressions were served, and m kt impressions were served for just ad k, summed across all websites. Then we can define a value for each arm independently, following the UCB1 algorithm from <ref type="bibr" target="#b4">Auer (2002)</ref> as follows:</p><formula xml:id="formula_5">UCB1 kt μ kt + 2 log M t m kt . (<label>6</label></formula><formula xml:id="formula_6">)</formula><p>The policy allocates the impressions to the ad with the highest UCB1 value. This policy is optimal in the sense that it minimizes finite-time regret <ref type="bibr" target="#b1">(Agrawal 1995</ref><ref type="bibr" target="#b4">, Auer 2002</ref><ref type="bibr" target="#b37">, Lai 1987</ref>.</p><p>There is a variant that performs even better empirically by incorporating the variance of the outcome <ref type="bibr" target="#b4">(Auer 2002)</ref>. This is known as the UCB-tuned algorithm</p><formula xml:id="formula_7">UCB-tuned kt μ kt + log M t m kt min 1 4 , V kt , (7)</formula><p>where V kt σ 2 kt + 2(log M t )/m kt andσ 2 kt is the empirical sample variance of the conversion rate, so the algorithm takes the first and second moments into account.</p><p>Despite its popularity in reinforcement learning research, UCB policies hardly make an appearance in the management sciences with the notable exception of <ref type="bibr" target="#b10">Bertsimas and Mersereau (2007)</ref>. They show an approach called "Interval," an adaptation of the original UCB from <ref type="bibr" target="#b37">Lai (1987)</ref>, which performs as well as an explicit approximation to the underlying dynamic programming solution. Our implementation builds on this finding, but utilizes the commonly applied UCB1 and UCB-tuned algorithms <ref type="bibr" target="#b4">(Auer 2002)</ref>.</p><p>There are other UCB variants that apply to cases when the K actions are no longer independent and their rewards are correlated. The optimal policy for the infinite discounted version of the attribute-based problem is an extension of the Gittins index <ref type="bibr" target="#b35">(Keller and Oldale 2003)</ref>. The optimal policy for the finite-time version minimizing regret is an extension of the UCB policy combined with a linear model <ref type="bibr">(Dani et al. 2008, Rusmevichientong and</ref><ref type="bibr" target="#b52">Tsitsiklis 2010)</ref>. We refer to this as UCB-GLM, for a generalized linear regression model used to relate rewards to attributes <ref type="bibr" target="#b22">(Filippi et al. 2010)</ref>. This includes situations where the observed covariates describe the actions (sometimes called, "attributebased bandit" or "linear bandit") and situations where covariates describe the contexts in which actions are taken (commonly known as the "contextual bandit").</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Simpler Heuristics</head><p>We additionally evaluate some simple and less theoretically rich heuristics. One is a set of intuitive alternative policies with clear managerial interpretation, which we call test-rollout policies. For a fixed amount of time, the firm runs a balanced design, then identifies the best ad, and allocates all subsequent observations to the ad with the highest-predicted conversion rate. This reflects a complete switch from exploration (learning) to exploitation (earning), as opposed to a simultaneous mixture of the two or a smooth transition from one to the other (earning while learning). The test-rollout policy is also known as the "learn-then-earn" policy. At the extreme, when the test lasts all periods, the testrollout policy reduces to a static balanced design.</p><p>By contrast, a greedy policy allocates all observations to the ad with the largest cumulative observed mean at every decision period. The greedy policy is adaptive, myopic, and deterministic; it reflects pure exploitation without exploration. We considered two versions of greedy policies by level of aggregation: one for each website-size separately (unpooled) and one aggregating data across websites (pooled). While standard in academic literature <ref type="bibr" target="#b55">(Sutton and Barto 1998)</ref>, it is much less common in practice than a test-rollout policy because a greedy policy continuously adapts and changes which ad it allocates all observations to during each period, using an adaptive "winnertake-all" allocation. For the unpooled greedy policy, the allocation for website j is, w jk * j t 1, where k * j arg max k { t τ 1 y jkτ /m jkτ }. For the pooled greedy policy, the allocation for each website j is the same, where</p><formula xml:id="formula_8">k * arg max k { t τ 1 J j 1 y jkτ /m jkτ }.</formula><p>An epsilon-greedy policy is a randomized policy that mixes exploitation with a predetermined amount of exploration. For any ε ∈ [0, 1], the policy randomly allocates ε of the observations allocated uniformly across the K ads, and allocates 1 − ε of observations to the ad with the largest observed mean (as in the greedy policy). The allocations for any j and t across all K Marketing <ref type="bibr">Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref> are w j, k, t+1 ε/K for all k except for k * , which has w j, k, t+1 ε/K + (1 − ε). We employ this with the exploration parameter ε set to 10% and 20%. At the extremes, epsilon-greedy nests both a balanced design of equal allocation (ε 100%) and a greedy policy (ε 0%). This is also part of standard introductory texts to reinforcement learning <ref type="bibr" target="#b55">(Sutton and Barto 1998)</ref>, so we find it useful to include here.</p><p>All of the alternative policies described in this section as well as the policies using TS are summarized in Tables <ref type="table" target="#tab_3">4 and 5</ref>.   </p><formula xml:id="formula_9">{μ k } w kt              1 K , for t ≤ τ, 1, for k k t , t &gt; τ, 0, otherwise, t &gt; τ Test-rollout(τ) unpooled:k jt arg max k {μ jk } w jkt              1 K , for t ≤ τ, 1, for k k jt , t &gt; τ, 0, otherwise, t &gt; τ Greedy pooled:k t arg max k {μ k } w kt 1, for k k t , 0, otherwise Greedy unpooled:k jt arg max k {μ jk } w jkt 1, for k k jt , 0, otherwise Epsilon-greedy(ε) pooled:k t arg max k {μ k } w kt          (1 − ε) + ε K , for k k t , ε K , otherwise Epsilon-greedy(ε) unpooled:k jt arg max k {μ jk } w jkt          (1 − ε) + ε K , for k k jt , ε K , otherwise UCB1 pooled:k t arg max k μ kt + 2 log M t m kt w kt 1, for k k t , 0, otherwise UCB1 unpooled:k jt arg max k μ jkt + 2 log M jt m jkt w jkt 1, for k k jt , 0, otherwise UCB-tuned pooled:k t arg max k μ kt + log M t m kt min 1 4 , V kt w kt 1, for k k t ,</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Field Experiment</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">Implementation</head><p>We implemented a large-scale MAB field experiment by collaborating with the aforementioned bank and its online media-buying agency. They had already planned a test involving four creative concepts, three ad sizes, and a wide range of media placements (as discussed in Section 2). The goal of the test was to increase customer acquisition rates during the campaign. This involved learning which ad had the best acquisition rate for each media placement (e.g., website).  </p><formula xml:id="formula_10">∫ µ 1{µ k µ * | µ}p(µ | y t−1 , m t−1 ) dµ p(µ k | y t−1 , m t−1 ) beta(a kt , b kt ), for each k a kt a k0 + J j 1 t−1 s 1 y jks , and b kt b k0 + J j 1 t−1 s 1 (m jks − y jks ) TS-BB-unpooled: w jkt ∫ µ j 1{µ jk µ j * | µ j }p(µ j | y j, t−1 , m j, t−1 ) dµ j p(µ jk | y j, t−1 , m j, t−1 ) beta(a jkt , b jkt ) , for each j, k a jkt a jk0 + t−1 s 1 y jks , and b jkt b jk0 + t−1 s 1 (m jks − y jks )</formula><p>TS with a homogeneous generalized linear model (pooled)</p><formula xml:id="formula_11">TS-GLM: w kt ∫β 1 β x k max kβ x k |β, X p(β | y t , m t ) dβ y kt ∼ binomial(µ k | m kt ) µ k 1/[1 + exp(−x kβ )]</formula><p>TS with a latent-class generalized linear model TS-LCGLM:</p><formula xml:id="formula_12">w kt ∫ β 1 ∫ β 2 ∫ π ∫ z∈1, 2 1 β z j x k max k β z j x k | z, β z j , X p(β 1 , β 2 , π, z | y t , m t ) dz dπ dβ 1 dβ 2 y jkt | z j ∼ binomial(µ jk | m jkt ) µ jk | z j 1/[1 + exp(−x k β j )] z j | π ∼ multinomial(π 1 , π 2 ), π 1 + π 2 1, and β j ∈ {β 1 , β 2 }</formula><p>TS with a hierarchical generalized linear model (partial pooling) TS-HGLM:</p><formula xml:id="formula_13">w jkt ∫ Σ ∫β ∫ β 1 ,...,β J 1 β j x k max k β j x k | β j , X p(β j |β, Σ, X, y t , m t )p(β, Σ | β 1 , . . . , β J ) dβ 1 . . . dβ J dβ dΣ y jkt ∼ binomial(µ jk | m jkt ) µ jk 1/[1 + exp(−x k β j )] β j ∼ N(β, Σ)</formula><p>Recall that we ran the experiment for 62 days, for K 12 ads, J 59 websites (133 website-by-size combinations) involving 532 website-size-concept observations. We randomly assigned 80% of all impressions every time period to the treatment group for our proposed TS-HGLM policy. For the treatment group, we changed allocations approximately every week (T 10 periods). The other 20% of all impressions comprised the control group, and the impressions were always allocated equally and uniformly across each ad concept within each website-by-size combination. We refer to the control group as the balanced policy. The total number of impressions delivered per period is shown in Table <ref type="table" target="#tab_7">6</ref>. In all subsequent sections, we will use data at the daily level for counterfactual simulations.</p><p>Testing two policies at once reflects our desire as researchers to measure the impact of one treatment compared to a control policy in a real-time test. The field experiment can be viewed as two parallel and identical hierarchical attribute-based batched MAB problems, with one treatment and one control group, where their only difference was the policy used to solve  Notes. Impression volumes were predetermined per period and outside of our experimental control. We randomly split 80% and 20% of the impression counts shown here into the treatment and control groups, respectively. Each period the treatment policy involved changing ad allocation.</p><p>the same bandit problem. All differences in performance are due to how our policy allocated impressions between ads within any website for each time period after the initial period (in which both treatment and control groups received equal allocation). Throughout this empirical portion of this paper, all conversion rates reported are rescaled versions of the actual data from the bank (per the request of the firm to mask the exact customer acquisition data). We performed this scaling by a small factor, so it has no effect on the relative performance of the policies, and it is small enough so that all values of interest are within the same order of magnitude as their actual observed counterparts. In addition, we assign anonymous identities to media placements (j 101, 102, . . .), ad sizes (A, B, and C), and ad concepts (1, 2, 3, and 4).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.">Field Experiment Results</head><p>To compare the two groups, we examine how the overall acquisition rate changed over time, similar to a difference-in-differences design. While we expect the control group's aggregate acquisition rate to remain flat, on average, we expect the rate for the treatment group to increase, on average, and relative to the control over time as the MAB policy learns which ad is the best ad k * for each website j. Figure <ref type="figure" target="#fig_4">3</ref> provides evidence in support of those predictions. We examine the cumulative conversion rates at each period t, aggregated across all ads and websites, computed as aggregate conversions</p><formula xml:id="formula_14">t τ 1 J j 1 K k 1 y jkτ divided by aggregate impressions t τ 1 J j 1 K k 1 m jkτ .</formula><p>We report this cumulative conversion rate relative to the conversion rate during the initial period of equal allocation to show a percentage increase.</p><p>The key result is that the TS-HGLM policy (compared to the static balanced design) improves the overall acquisition rate by 8%. The economic impact of Notes. The field experiment results show the TS-HGLM (adaptive group, solid line) achieves a higher cumulative improvement than the balanced design (static group, dashed line), relative to the cumulative conversion rate after the initial period. For the adaptive policy, the circles indicate when reallocations occurred (every five to seven days). this treatment policy is meaningful: the firm acquired approximately 240 additional new customers beyond the 3,000 new customers acquired through the control policy, conversions that come at no additional cost because the total media spend did not increase.</p><p>The incremental new customers acquired are the direct result of adaptively reallocating already-purchased impressions across ads within each website. Therefore, the cost per acquisition (CPA) decreases (CPA equals total media spend divided by number of customers acquired), as we increased the denominator by 8%. Improving CPA is important because it provides guidance for future budget decisions, such as how much the firm should spend for each expected acquisition after considering postacquisition activities involved in customer lifetime value.</p><p>We summarize the cumulative conversion (and clickthrough rates) by ad concept and ad size in Table <ref type="table" target="#tab_8">7</ref>. Despite these relatively small differences between ad conversion rates and the rare incidence rates, in aggregate, we can illustrate how we learned the difference through our policy, at an even more disaggregate level. In the appendix we illustrate how our algorithm learned about the ad effectiveness and heterogeneity across media placements over time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Replicating the Field Experiment via Simulation</head><p>We replicate the field experiment via simulation to capture the uncertainty around the observed performance of the two implemented policies, TS-HGLM and balanced. In Section 8, we will address other MAB policies that could have been run, and via simulation, we examine their performance and properties. The replications result in simulated worlds that allow us to compute summaries of predictive distributions.</p><p>To run these counterfactual policy simulations, we have to specify the data-generating process. We use a nonparametric approach defining the "true" conversion rate, µ TRUE jk , for each ad on each website, to be the cumulative conversions divided by cumulative impressions for each combination of website and ad at the end of the experiment, using data from both the treatment and control groups. We assume a binomial model, so each website-ad combination has a stationary conversion rate over time. In addition, we assume that the conversion rate of any ad on a website is unaffected by the number of impressions of that ad, that website, or any other ad or website, (µ jk ⊥ m jkt ) known as the stable unit treatment value assumption <ref type="bibr" target="#b51">(Rubin 1990)</ref>. Therefore, while it may seem odd to mix data treatment and control groups, we do this only for defining the data-generating process since we assume they share the same µ jk . We assume the policies do not change the underlying mean conversion rates for ads; rather, they only change the mix of impressions m jkt across ads.</p><p>The simulated conversions are generated as binomial successes, y * jkt ∼ binom(m * jkt , µ TRUE jk ), where simulated impressions m * jkt w * jkt M jt come from the policies' recommended allocation weights as described earlier.</p><p>Note that we use the field experiment's observed number of impressions for each decision period for each website-size combination, M jt , summed across ad concepts, since this was predetermined by the firm's media schedule before the experiment.</p><p>Since we compute conversion rates separately for each ad-website combination, our data-generating process does not assume there is any particular structure in how important ad attributes are or how much websites differ from one another. Instead, we anticipate that our simulation may penalize any policy involving a particular model, including our proposed policy with partial pooling, and it may favor unpooled policies because the data-generating process is a collection of unpooled binomial models.</p><p>Our main measure of performance for each simulated replicate i is the aggregate conversion rate, CVR * (i) j k t y * (i) jkt / j t M jt . In addition to average overall performance across I replications, we examine the variability. We quantify variability in performance of any pair of policies (π, π ) using a posterior predictive p-value, ppp (1/I)</p><formula xml:id="formula_15">I i 1 CVR * (i) π &lt; CVR * (i)</formula><p>π , the probability (computed empirically) that one policy has performance greater than or equal to the performance of another.</p><p>We find that the observed TS-HGLM (treatment) policy that was actually implemented achieved observed levels of improvement that are outlying with respect to the predicted distribution of the simulated balanced design (control) policy. Furthermore, we compare the full distribution of the simulated balanced design to the full distribution of the simulated TS-HGLM policy. As expected, these results match the observed performance of the two methods: simulated TS-HGLM achieves an 8% higher mean performance than simulated balanced policy (4.717 versus 4.373 conversions per million). Despite each policy's variability in performance across worlds, the TS-HGLM Marketing Science, 2017, vol. 36, no. 4, pp. 500-522, © 2017 INFORMS policy outperforms the balanced policy in every sampled world (ppp = 1). This consistency gives validity to the counterfactuals to follow.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">Policy Counterfactual Simulations Based on Field Experiment Data</head><p>While commonly used, the balanced design is not a particularly strong benchmark for MAB policies, so we test a wide range of alternative MAB policies via simulation. We analyze what would have happened if we used other models and MAB allocation rules in the field experiment. As before, we assume that the different policies do not change the true stable conversion rates µ TRUE jk , just the allocations. We structure our analysis by first comparing various model specifications (including pooled homogeneous, partially pooled heterogeneous, latent-class, and unpooled websitespecific models), and then comparing alternative allocation rules to TS (including Gittins, UCB, greedy, epsilon-greedy, and test-rollout). For each policy, we follow the approach in the previous section, running 100 independent simulations to describe performance. Notes. The mean, standard deviation, and percentiles summarize the distribution of performance from the 100 simulated replicates of each policy. The relative mean is defined as a percentage better than the balanced experiment. The better performing policies appear in bold.</p><p>Table <ref type="table" target="#tab_9">8</ref> reports the summary of performance for all policies tested, including comparisons to the equalallocation policy (balanced) and the best possible policy (perfect information). The perfect information policy supposes a clairvoyant knew in advance which ad would perform best for each website and allocated all of the budget for that website to that ad for every period. An unpooled policy treats each website-size combination as a separate bandit problem; a pooled policy always uses the data aggregated across websites into a single bandit problem for the 12 ads. We analyze and visualize these policies in groups, and continue to refer back to this table.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.1.">Evaluating the Model Component of the MAB Policy</head><p>We begin examining a range of MAB policies using the TS allocation rule, differing from complex to simple models. We obtain each one from the HGLM by shutting off model components one at a time. In addition to the results for the heterogeneous regression (TS-HGLM; partially pooled), we include results for TS with different models: homogeneous regression (TS-GLM; pooled), latent-class regression (TS-LCGLM) where all parameters vary across the two latent classes, common binomial model with a single beta prior (TS-BBpooled), and separate binomial model each with a separate beta prior (TS-BB-unpooled).</p><p>To visualize these results for this group of policies, we create separate box plots of the performance distributions of CVR across replications. Figure <ref type="figure" target="#fig_5">4</ref> highlights the TS-based policies' performance showing each policy's distribution of total reward accumulated by the end of the experiment. The results for these TS-based policies suggest that partial pooling across websites is important. The TS with partial pooling performs better than the TS pooled policies involving homogeneity across websites in terms of mean improvement above balanced design-TS-HGLM, 8%; TS-GLM, 3%; and TS-BB-pooled, 3%. The TS-LCGLM policy falls between those, but only at 4%. While there is overlap among some of these policies' performance distributions, the pairwise ppp-values confirm that the TS-HGLM outperforms these benchmarks. For instance, in 96% of the simulations, the TS-HGLM partially pooled policy achieves at least as high of an aggregate conversion rate as the TS-GLM pooled policy.</p><p>However, the partially pooled policy (TS-HGLM) does not perform better than the TS-BB-unpooled policy, which defeats the balanced policy by 10%, on average, as compared to 8% for the TS-HGLM. This is interesting for a variety of reasons. Partial pooling while seemingly flexible-between pooled and </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Policy</head><p>Notes. The distributions of total conversions for TS-based are compared. TS-HGLM performs better than the other versions of TS with alternative model specifications, suggesting that the continuous parameter heterogeneity across websites drives the improvement in performance. For all of the box plots, the center line is the median, the box represents the interquartile range (IQR), the whiskers stretch to 1.5 × IQR beyond the edges of the IQR, and the points are any values beyond the range of the whiskers.</p><p>unpooled-does impose a particular parametric form, which may be wrong for a given setting. Furthermore, any Bayesian shrinkage approach is known to generate biased estimates of the unit-level parameters compared to unbiased estimates via separate MLEs as in the unpooled policy. Nevertheless, one can justify using the partially pooled model over the unpooled models for two reasons. First, it has a lower mean squared error (lower risk), as seen in the lower variation of performance in Table <ref type="table" target="#tab_3">8 and Figure 4</ref>. Second, if there are smaller sample sizes, M jt , then compared to partial pooling, unpooled models will have less precise estimates, especially early and for the smallest units of observations. The partially pooled model uses shrinkage to obtain better estimates for small sample cases. In this case, partial pooling also forces website-level parameters toward the average, which happens to be a set of population-level parameters showing less extreme differences among ads than many individual websites separately show. This leads the partially pooled model to generate less "aggressive" allocations than the unpooled binomial, even though they both rely on the same TS allocation rule. Shrinkage is a form of hedging-yielding a slightly worse mean but better variance in performance, and the TS allocation rule also leads to more hedging than other allocation rules.</p><p>In our data, however, we find that the website-specific sample sizes per period, M jt , are large even early in the data collection, allowing the unpooled models to perform very well. Approximately 20% of the impressions were delivered in the first week, aggregating across all websites (as referenced in Section 6). In Section 9, we test the policies with daily updates, using approximately 3% of the total impressions in the first day, and we find similarly positive results for the unpooled models. The issue is that one will never know a priori if this is the case, making partially pooled models with TS a potentially safer and more reliable option.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.2.">Evaluating the Allocation Rule Component of the MAB Policy</head><p>With the mixed evidence for the partially pooled model combined with the TS allocation rule, and strong support of unpooled models, we now evaluate a range of alternative allocation rules. These include standard heuristics from the reinforcement learning literature, such as greedy and epsilon-greedy <ref type="bibr" target="#b55">(Sutton and Barto 1998)</ref>, and bandit solutions known to be optimal for simpler MAB problems, such as UCB policy and Gittins index policy. We also test managerially intuitive heuristic test-rollout policies, varying the length of the initial test period. While we tested both pooled and unpooled versions of these policies, we spend extra attention on the unpooled ones given Section 8.1's results.</p><p>Marketing <ref type="bibr">Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.2.1.">Performance of Index Policies and Heuristics.</head><p>While we know our problem setup violates the formal conditions under which a Gittins index is guaranteed to be optimal (e.g., one-at-a-time updates without batching), we include it to see how much those violations affect the performance of this well-known policy, especially since it has been used recently in marketing <ref type="bibr" target="#b32">(Hauser et al. 2009</ref><ref type="bibr" target="#b31">(Hauser et al. , 2014</ref><ref type="bibr" target="#b58">Urban et al. 2014)</ref>. The basic UCB policy also does not optimally account for the correlations among actions, batches, and unobserved heterogeneity. However, since the Gittins and UCB policies are important benchmarks we implement them in their usual form. Despite being deterministic and lacking an agreed-upon way to transform their values to proportions for batches or randomized actions, we implement the policies using the adaptive "winnertake-all" greedy-style allocation.</p><p>We find that these policies are surprisingly robust and generate strong performance. While the Gittins and UCB policies perform poorly in their pooled versions, their unpooled versions outperform all of the TS-based policies, including the partially pooled TS-HGLM (Figure <ref type="figure" target="#fig_6">5</ref>). The Gittins unpooled and UCBtuned unpooled have an average performance of 13% and 14%, respectively, better than a balanced experiment (Table <ref type="table" target="#tab_9">8</ref>). These two unpooled policies even defeat TS with an unpooled model by a sizable margin (Gittins unpooled ppp = 0.85 and UCB-tuned unpooled ppp = 0.92).</p><p>To conclude that the Gittins and UCB policies are better than TS in general may be an overstatement. Yet the results show that the advantage TS may enjoy over those policies is smaller than previously reported, for a range of models combined with TS, even under settings where it would not seem to be the case. In fact, the Gittins and UCB policies may not be unique here; their patterns of performance are more similar to greedy and epsilon-greedy policies than any other policy.</p><p>The greedy unpooled policy also has a 14% improvement, on average. The epsilon-greedy unpooled policies with ε set to 10% and 20% perform similarly, both at 13% (Figure <ref type="figure" target="#fig_7">6</ref> and Table <ref type="table" target="#tab_9">8</ref>). By contrast, their pooled versions are much worse (all at 3%). Within these policies, the greedy policy (which has ε set to 0%) has a higher mean and more variability than both epsilongreedy policies.</p><p>The ε controls the riskiness of the policy, so setting it to 20% leads to less variability on the downside of performance, leading to a better worst case scenario. Much like the value of TS, the exploration percentage reduces risk. However, unlike TS, it requires one to set the level of ε even though it is impossible to know the best level of exploration a priori, an issue that applies to test-rollout policies considered next.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.2.2.">Test-Rollout Policies: Evaluating Different Stop-</head><p>ping Times. We implemented the test-rollout heuristic with six different lengths of the initial period of balanced design, and for each one, using either pooled (population-level) or unpooled (website-specific) data. For the pooled test-rollout implementations, the average performance for different amounts of initial learning does not change substantially, all achieving an approximate 2% improvement above the balanced </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Policy</head><p>Notes. The distributions of total conversions for greedy and epsilongreedy policies are compared to the TS-HGLM policy and the balanced design policy. Setting epsilon to 20% performs better than setting it to 10%.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Figure 7. Distributions of Conversion Rates Following Test-Rollout Policies</head><p>Balanced Testrollout-t1</p><p>Testrollout-t2</p><p>Testrollout-t3</p><p>Testrollout-t4</p><p>Testrollout-t5</p><p>Testrollout-t6</p><p>Testrollout-unpooled-t1</p><p>Testrollout-unpooled-t2</p><p>Testrollout-unpooled-t3</p><p>Testrollout-unpooled-t4</p><p>Testrollout-unpooled-t5</p><p>Testrollout-unpooled-t6</p><p>Perfect info 4.0 4.5 5.0 5.5 6.0</p><p>Conversion rate (per million)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Policy</head><p>Notes. The distributions of total conversions for test-rollout policies are compared to the TS-HGLM policy and the balanced design policy. Testing for only two initial periods yields better performance than testing for any other length of time between one and six periods.</p><p>design, which is equivalent to testing and never rolling out a winner (Figure <ref type="figure">7</ref> and Table <ref type="table" target="#tab_9">8</ref>).</p><p>The unpooled test-rollout policies perform much better than their pooled versions, and they have a wider range of performance. The best average performance occurs when the balanced experiment for every website-size combination lasts for one or two periods (both 10%) compared to when it lasts for longer (between 7% and 9%). This simple policy can be surprisingly effective as it can beat the partially pooled policy, TS-HGLM, on average, and their performance distributions overlap substantially.</p><p>These results may be somewhat idiosyncratic to the present setting. The impression volume for period 1 included over 150 million impressions, approximately 20% of all observations, which explains why there may have been enough information content, particularly for larger volume websites, to learn the best ad from observed conversions alone. Nevertheless, the results confirm that such a test-rollout policy is sensitive to the level of selecting a winner and the choice of the testperiod length, neither of which we would not know how to set in practice a priori. In fact, setting the test period length is precisely the optimal stopping problem underlying bandit problems, as described in Section 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.2.3.">Discussion of Policy Counterfactuals.</head><p>Our findings reveal the relative performance of each policy and which aspects of the methods are most important for improving performance. The list below collects the key findings, which we support with evidence to follow:</p><p>• Model choice has more of an impact on policy performance than the choice of bandit allocation rule.</p><p>• The partially pooled model with TS beats all pooled model policies.</p><p>• The unpooled policies beat their pooled versions, regardless of MAB allocation rule.</p><p>• The unpooled binomial model with TS and unpooled heuristic policies beat the partially pooled model with TS.</p><p>• The partially pooled model has less variability than the unpooled binomial, among TS-based policies.</p><p>While we may have thought that the choice of MAB allocation rule would be the most important aspect of the policy, we find that the largest driver of policy performance is the model choice: handling heterogeneity and the level of data aggregation-whether the model is pooled, aggregating data across websites into a single population-level bandit problem, or unpooled, treating each website's bandit problem separately. Figure <ref type="figure">8</ref> presents the unpooled version of each policy to highlight their relatively better performance and to show the minor performance differences among them.</p><p>Using a TS-based policy seems to be an attractive compromise, and even a partially pooled TS policy layers an additional level of compromise. On one hand, the partially pooled approach (TS-HGLM) always performs better than pooled policies. On the other hand, it does not beat unpooled policies (including Gittins, UCB, epsilon-greedy, greedy, and test-rollout), on average, but it does have a lower variability in performance </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Policy</head><p>Notes. The relatively small differences among the unpooled policies suggest that the allocation rule has less of an impact on performance than the level of the model (pooled versus unpooled). Within unpooled policies, even simple heuristics, such as greedy and epsilon-greedy, perform well.</p><p>Schwartz, Bradlow, and Fader: Customer Acquisition Using Multi-Armed Bandits</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>516</head><p>Marketing <ref type="bibr">Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref>  Notes. Daily batching improves the mean performance compared to weekly batching for nearly all policies. The percent improvement is based on the mean in this table for daily batching and the mean from Table <ref type="table" target="#tab_9">8</ref> showing weekly batching. The mean and standard deviation summarize the distribution of performance from the 100 simulated replicates of the selection of policies considered.</p><p>than those unpooled policies. The lower variability suggests it may be robust to changes in problem setting related to the amount of data per unit of observation.</p><p>The amount of data in each context is important. In this experiment, the Gittins, UCB, unpooled greedy, epsilon-greedy, and test-rollout policies can outperform TS, but we note that with enough data in each context, the partially pooled TS policy eventually approaches the behavior of those unpooled policies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.">Evaluating Sensitivity to Changes in Problem Setting</head><p>9.1. Changing the Timing of Updates, Batch Size, and Incidence Rate While the preceding analyses evaluated different methods using these same true data generating processes in the same setting, we now consider a counterfactual under a different setting. What if we updated the allocations, w jkt , more frequently with smaller batch sizes, M jt ? What if the conversion rates were different but still within random variation at the same order of magnitude? This allows us to examine the robustness of the methods tested as well as investigate boundary conditions of these MAB approaches.</p><p>The batching schedule in the actual experiment was weekly, so we reran the previously discussed policies with daily updating instead of weekly updates, to show the impact of 62 batches instead of 10. We find the pattern of results for the policies we test is surprisingly robust to using either weekly or daily batch sizes, with minimal to modest improvements using daily instead of weekly updates. Our finding is consistent with the literature, but shows an attenuated effect. Table <ref type="table" target="#tab_10">9</ref> shows that TS performs better (and nearly similar to the Gittins index) for one-at-a-time updates (batch size of one observation) <ref type="bibr" target="#b54">(Scott 2010)</ref>. Reducing each batch size has a slightly stronger impact on the unpooled policies and winner-take-all policies, such as greedy-unpooled (3% improvement relative to the weekly batches), UCBtuned-unpooled (3%), and . Their corresponding pooled versions did not change. For TS-based policies, there was less improvement for pooled (2%) and unpooled (1%). On the whole, however, decreasing batch size improves performance, but not by much, for our data set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.2.">Changing the Goal: Optimizing Clicks But</head><p>Measuring Conversion Often, firms may run experiments and optimize those tests using easier to measure (or more immediate) outcomes such as clicks instead of conversions as we used here. We reran the analysis of various MAB policies using clicks as the outcome and highlight the difference between optimizing clicks and conversions. We find that if you were to optimize click-through rate, in hopes of having a positive impact on downstream consequences such as conversions, you would have an acquisition rate 12% worse than optimizing conversions directly.</p><p>This stems from the observation that the best ads for conversions are not the best for clicks. The correlation is weak (0.02, not significant) between click-through rate and conversion rate across the 532 units of observation and is visible in the scatter plot contained in Figure <ref type="figure" target="#fig_9">9</ref>. As a result, optimizing for clicks, compared to optimizing for conversions, leads to very different allocations.</p><p>Before looking at the impact on conversions, we first examine how effective the policies were in achieving their goal: aggregate click-through rate improvement. Since clicks occur more frequently than conversions by multiple orders of magnitude (on average four clicks per 10,000 impressions), one imagines it is easier to optimize clicks. However, the relative effect sizes between ads' click-through rates is even smaller than that for conversion rates. So there is little systematic variation that the MAB policies can exploit to do much better than one another for click-through rates.</p><p>As expected, all policies generate fewer conversions when optimizing for clicks, but the size of the difference varies by policy. The policies most affected are those that perform better when optimizing conversions (unpooled policies), and they suffer a loss between 8% to 12%. TS attenuates this effect a bit with its variants suffering the least among unpooled policies (8%). The pooled binomial (4%) and homogeneous logit (2%) are less affected. The policies nearly unaffected are those that already do not perform well and are similar to a balanced policy. More broadly, the differences between optimizing clicks versus conversions raises interesting avenues for future research on consumer funnel that we discuss next.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.">General Discussion</head><p>We have intended to make two key contributions: we addressed a common problem in adaptive testing in online display advertising; and we drew on a mix of disciplines to generalize existing MAB problems in marketing. We have focused on improving the practice of real-time adaptive experiments with online display advertisements to acquire customers. We translated the components of the online advertiser's problem into an MAB problem framework. The component missing from existing MAB methods was a way to account for unobserved heterogeneity (e.g., ads differ in effectiveness when they appear on different websites) in the presence of a hierarchical structure (e.g., ads within websites). We contribute this natural marriage of hierarchical regression models and randomized allocation rules to the existing MAB policies. We tested that policy in a live large-scale field experiment with a holdout control policy and demonstrated that it increased the customer acquisition rate 8% more than a balanced design. However, we also show alternative MAB policies can reach similar and even better levels of performance. By running counterfactual policy simulations, we find that the most influential component of the MAB policies is the level of analysis: whether the policy is pooled or unpooled, because of significant website heterogeneity in conversion rates. Among unpooled policies, even greedy, epsilon-greedy, and test-rollout policies perform as well as Gittins and UCB policies, all of which can perform modestly better than an unpooled or partially pooled TS policy, in this setting. Nevertheless, because of the impact of both the TS rule and partial pooling, our proposed policy controls variance of performance better than most of those alternatives, which would be more susceptible to changes in setting, as in the classic risk-reward trade-off.</p><p>The results can serve as a guide suggesting which policies are appropriate for different settings. For instance, when consumer heterogeneity may be present, it should not be ignored. It is even worth testing different parametric (partially pooled) and nonparametric (unpooled) forms of heterogeneity. In addition, if it is possible to perform one-at-a-time updates, most policies perform better. Index policies, such as Gittins and UCB policies, in particular, will likely improve even more as they are applied at a more granular level, without batching at the individual level.</p><p>There are limitations to our field experiment and simulations, which offer promising future directions for research. We acknowledge that acquisition from a display ad is a complex process, and we do not aim to capture all aspects of the acquisition funnel. We showed that trying to optimize clicks leads to substantially worse conversion rates (Section 9.2).</p><p>Related to the consumer funnel, we do not explicitly address the effects of multiple exposures within the campaign. Yet we acknowledge an individual may have seen more than one of the ads during the experiment or the same ad multiple times. The issue of multiple campaign exposures would raise concerns if the following conditions were true: (i) the repeated viewing of particular types of ads has a substantially different impact on acquisition than the repeated viewing of other types of ads; (ii) that difference is so large that a model including accounting for repeated exposures would identify different winning ads than a model that ignores them; and (iii) there is a difference in the identified winning ad for many of the websites with a large impression volume. While this scenario is possible, we believe it is unlikely. An additional assumption that would be problematic is the assumed stationarity of conversion rates at the website-ad level. The data suggest the assumption of a constant µ jk is reasonable during our <ref type="bibr">Marketing Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref> experiment, and most of the variation in aggregate conversion rates, viewed in Figure <ref type="figure" target="#fig_4">3</ref> can be attributed to changes in the mix of impression volume across media placements outside of our decision-making control.</p><p>Ignoring the consumer funnel was a constraint in our data and setting. Because of the scale of the campaign, the advertiser did not collect individual-level or cookie-level panel data. Indeed advertisers often only work at the level of media placement, ad, and time period, instead of individual customers over time. Working with that individual data with repeated ad exposures, however, would offer an opportunity to combine research in MAB problems with ad attribution modeling <ref type="bibr" target="#b12">(Braun and Moe 2013)</ref>. To focus on repeated interactions with the same individual could also suggest an entirely different framework: dynamic treatment regimes, used in a stream of clinical trials <ref type="bibr" target="#b43">(Murphy 2005)</ref>.</p><p>A second limitation is that we do not take into account the known finite-time horizon or the potential size of the population affected by the decisions after the experiment. If the relative cost required to run the experiment is negligible, then there is little benefit from optimizing the experiment during that period. This reduces to a test-rollout setting where it is best to learn then earn. By contrast, if the observations are relatively costly or if there is always earning to be gained from learning, then it would be useful to consider a MAB experiment for an infinite horizon. However, most MAB experiments fall somewhere between those two extremes. The length of the MAB experiment is a decision that the experimenter should optimize and is the subject of two streams of research. A family of methods known as expected value of information gained and knowledge gradient optimize this extra optimal stopping problem in a bandit setting <ref type="bibr" target="#b16">(Chick and Gans 2009</ref><ref type="bibr" target="#b17">, Chick and Inoue 2001</ref><ref type="bibr" target="#b18">, Chick et al. 2010</ref><ref type="bibr" target="#b24">, Frazier et al. 2009</ref><ref type="bibr" target="#b48">, Powell 2011</ref>. The other stream of research is known as patient horizon, explicitly considering the relative number of patients in clinical trials and the potential patient population affected by the conclusions <ref type="bibr" target="#b7">(Berry 1972</ref><ref type="bibr" target="#b8">(Berry , 2004</ref>. Both have promise for improving A/B testing practices and research in marketing involving experiments and bandit problems.</p><p>Third, future research may aim to generalize our problem to a setting of media buying and planning in which we had control of the batch size and allocate impression volume across websites with varying media costs. Our analysis applied to a mix of media purchased via cost per impression, cost per click, and cost per action since the budget was allocated in advance for each media placement regardless of the method of purchase. We treated batch size as exogenous for each website and each period. Instead, however, future research could account for the complex interplay among impression volume, type of media buy, cost per impression, and expected conversion rate. This is relevant as realtime bidding for media on ad exchanges and automated media buying such as programmatic advertising become even more common.</p><p>Finally, we consider another limitation in our data: we only observe conversion without linking those customers to their subsequent behavior. It seems natural to acquire customers by considering the relative values of their expected customer lifetime value (CLV) and CPA instead of merely seeking to increase the acquisition rate (i.e., lower cost per acquisition). Improving CPA alone is important since it guides future budget decisions, e.g., willingness to spend for each expected acquisition; however, sequentially allocating resources to acquire customers based on predictions about their future return on acquisition investment (CLV/CPA) seems like a promising marriage between the MAB and CLV literature.</p><p>We see the MAB problem as a powerful framework for optimizing a wide range of business operations. As we continue equipping managers and marketing researchers with these tools to employ in a wide range of settings, we should have a more systematic understanding of the robustness and sensitivity of these methods to common practical issues. Notes. The lines represent the belief distributions of conversion rates, based on predictive distributions of parameters from the HGLM. Within each panel of a website j, time period t, and an ad size, there are four ad concepts (horizontal lines, ordered from top to bottom, ad concepts 1 to 4). The allocation probabilities based on that model are printed (and shown by level of transparency of shading, from invisible 0% to opaque 100%). The four vertical panels show two websites at two time periods. Heterogeneity is shown through differences across the two websites (j) for the same time period. Learning is shown through the two time periods (t) for the same website.</p><p>ad size B (mean conversion rate is 131 per million) nor on C (mean conversion rate is 47 per million). In both cases, the best predicted ad concept for sizes B and C is ad concept 3. The distributions of µ jk (θ) shown as box plots in Fig- <ref type="figure">ure A</ref>.1 are the heart of the TS procedure. They represent our current beliefs in the conversion rates reflecting our uncertainty in the HGLM parameters based on the data through t periods. At the end of each period, we simulate G draws from each of those distributions. Using these empirical distributions, we approximate the probability that each ad has the highest mean for each website-by-size pair.</p><p>As a result of this procedure, the right side of each panel of Figure A.1 shows the next set of allocation probabilities, w j, k, t+1 , within each ad size, website, and time period for all ad concepts. Looking at these allocation probabilities for j 103 using data through t 6, we see that for sizes B and C, ad concept 1 is hardly given any impressions in the next period. However, for size A, ad concept 1 is actually predicted to be as good as ad concept 3. Figure A.1 not only shows the importance of attributes (differences within a website across ads), but it also shows learning (changes within an ad-website combination over time) and heterogeneity (differences across websites). The MAB policy learns parameters over time. In our case, it is not practical to report how all parameters are learned, but we highlight how the TS-HGLM policy updates its beliefs about µ jk (θ) for particular ad-website combinations. It is clear from Figure A.1 that the distributions are wider after the initial period (t 1) than they are after more data have accumulated (t 6).</p><p>For instance, after the initial period (t 1) for ad size B and ad concept 3, the predicted distribution of the conversion rate has a 95% interval of (0.92, 56.65) with a mean of 7.35 per million. The probability that it is optimal is 27%. Later on, after the policy learns more about the parameters (t 6), we see that the interval not only shrinks (0.82, 10.31) but also shifts its mean to 2.93 customers per million impressions. This leads the MAB policy to assign a higher probability that this ad concept is optimal, hence allocating 41% of impressions for the next period.</p><p>The unobserved heterogeneity in the hierarchical model leads allocations to differ across websites. For example, the <ref type="bibr">Marketing Science, 2017</ref><ref type="bibr">, vol. 36, no. 4, pp. 500-522, © 2017</ref>  Notes. The predictive distribution of each µ jk based on the model and data through t periods, is summarized by its mean (column labeled "µ jk Mean") and 95% interval (columns labeled "µ jk 2.5%" and "µ jk 97.5%"). The predictive distributions are based on the actual cumulative number of conversions and impressions (columns labeled "y jkt " and "m jkt ," respectively). The subsequent allocation weights are for period t + 1 (column labeled "w j, k, t+1 "). The above descriptions apply here and to Tables A.2 and A.3. two websites in Figure A.1 have different winning ads. After t 6 periods, for website j 103, the predicted winners for each ad size (A, B, and C) are ad concepts 4, 3, and 3, whereas those for website j 149 are ad concepts 1, 3, and 4, respectively. Capturing such patterns of website-to-website differences enables the proposed MAB policy to reach greater improvement than other MAB policies that may ignore those patterns.</p><p>The key benefit of partial pooling is capturing heterogeneity across websites, but an added benefit is providing a predictive distribution for the ads on any website in question, even in the absence of a large amount of data on that website. Such sparse data on any one website is a natural feature of this problem. If we were to rely on the observed data alone, especially early in the experiment, we would see that observed conversion rates would be highly misleading. After the initial period for website j 149, there were zero conversions in total, except for some customer acquisition from ad concept 2 on ad size B. That would be rated the best ad concept and ad size combination if we were only using the observed conversion rate for evaluating the ads. Yet can we really trust that signal given the rare incidence rate in the environment? Trusting those data alone, without leveraging other information, would be problematic; typically, such oversight leads to a significant variability in performance of any policy that relies heavily on observed data (e.g., policies referred to as greedy) and independently on each unit's observations (e.g., policies that lack partial pooling across websites). Tables A.1-A.3 provide the underlying key values illustrated in the panels of Figure A.1 (one table for each ad size), as well as the observed data of cumulative conversions and impressions broken down by two time periods (t 1 and 6), two websites (j 103 and 149), each ad size (A, B, and C), and each ad concept (1, 2, 3, and 4). The belief distributions of µ jk (θ) for all k and the two j are summarized by mean and 95% intervals. The resulting allocations, w j, k, t+1 , are shown in the tables and match those shown in Figure A.1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Endnotes 1</head><p>In practice, running experiments has recently become a capability for firms in a variety of domains: advertising testing (e.g., Facebook, Twitter), email (e.g., Mailchimp), website and user-interface design (e.g., Optimizely), and a mix of on-and off-line business practices (e.g., Applied Predictive Technologies). Some of these firms are using MAB algorithms to improve performance during the tests (e.g., Google; Scott 2010). 2 This work stems from the correspondence between dynamic programming and reinforcement learning. In particular, there is a mathematical link between the error associated with a value function approximation (i.e., Bellman error) and regret (i.e., opportunity cost of selecting any bandit arm) <ref type="bibr" target="#b46">(Osband et al. 2013</ref>).</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. Histogram of Conversion RatesRates less than 1/100,000</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. Scatter Plot of Conversion Rates by Impression Volume</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>Notes. "Pooled" refers to a policy or model where data are aggregated across all websites and allocations are the same across all websites. "Unpooled" refers to a policy or model where data are separated by each website and allocations are website specific. The pooled observed mean isμ k jks . The unpooled observed mean isμ jk t−1 s 1 y jks / t−1 s 1 m jks . Recall the number of observations here is impressions, M jt K k 1 m jkt .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>Gittins pooled:k t arg max k {G(a kt , b kt , γ− y jks ) Gittins unpooled:k jt arg max k {G jkt (a jkt , b jkt , γ− y jks ) TS with binomial model and beta prior distribution TS-BB-pooled: w kt</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. Results Observed in the Field Experiment</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. Distributions of Conversion Rates Following TS-Based Policies</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. Distributions of Conversion Rates Following Gittins Index and Upper Confidence Bound Policies</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. Distributions of Conversion Rates Following Greedy and Epsilon-Greedy Policies</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure</head><label></label><figDesc>Figure 8. Comparing Unpooled Policies</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 9 .</head><label>9</label><figDesc>Figure 9. Click-through Rate vs. Conversion Rate Scatter Plot</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Figure A. 1 .</head><label>1</label><figDesc>Figure A.1. Heterogeneity in Conversion Rates Across Websites and Learning Over Time</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>List of Online Media Publishers</figDesc><table><row><cell>Publishers</cell><cell></cell></row><row><cell>About.com</cell><cell>MSN</cell></row><row><cell>AllRecipes.com</cell><cell>NBC Universal</cell></row><row><cell>AOL Inc.</cell><cell>New York Magazine</cell></row><row><cell>AT&amp;T.com</cell><cell>Philly.com</cell></row><row><cell>BBC</cell><cell>Salon.com</cell></row><row><cell>Cars.com</cell><cell>Scripps Network</cell></row><row><cell>CNN</cell><cell>Synacor</cell></row><row><cell>Current TV</cell><cell>Time Inc.</cell></row><row><cell>Education.com</cell><cell>Turner Broadcasting</cell></row><row><cell>Federated Media</cell><cell>White Pages</cell></row><row><cell>Google</cell><cell>X plus 1</cell></row><row><cell>Google Display Reserve</cell><cell>Yahoo</cell></row><row><cell>Hooklogic.com</cell><cell>Yelp.com</cell></row><row><cell>Meredith Corporation</cell><cell></cell></row></table><note>Note. The display ad campaign involved all of these publishers.</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Categories of Media Placements</figDesc><table><row><cell>Observations</cell></row></table><note>Notes. The table summarizes the data by the media categories and types of advertisement methods used in the field experiment over all 62 days. For certain categories of media placement (e.g., demandside platform, retargeting), the advertiser may not know the exact web address in which the ad appeared.</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Correlation of Ad Concept Conversion Rates</figDesc><table><row><cell cols="2">Across Media Placements</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>4</cell></row><row><cell></cell><cell cols="2">Pearson correlation</cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>1</cell><cell>0.843</cell><cell>0.646</cell><cell>0.847</cell></row><row><cell>2</cell><cell>0.843</cell><cell>1</cell><cell>0.743</cell><cell>0.890</cell></row><row><cell>3</cell><cell>0.646</cell><cell>0.743</cell><cell>1</cell><cell>0.739</cell></row><row><cell>4</cell><cell>0.847</cell><cell>0.890</cell><cell>0.739</cell><cell>1</cell></row><row><cell></cell><cell cols="3">Spearman rank-order correlation</cell><cell></cell></row><row><cell>1</cell><cell>1</cell><cell>0.657</cell><cell>0.526</cell><cell>0.649</cell></row><row><cell>2</cell><cell>0.657</cell><cell>1</cell><cell>0.542</cell><cell>0.660</cell></row><row><cell>3</cell><cell>0.526</cell><cell>0.542</cell><cell>1</cell><cell>0.642</cell></row><row><cell>4</cell><cell>0.649</cell><cell>0.660</cell><cell>0.642</cell><cell>1</cell></row><row><cell cols="5">Note. Pearson and Spearman rank-order correlation matrices show</cell></row><row><cell cols="5">that conversion rates covary, across 133 unique website-ad-size</cell></row><row><cell cols="5">combinations, but their rank ordering is less consistent than their</cell></row><row><cell>magnitudes.</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>MAB Policies Using Heuristics and Upper Confidence Bound (UCB)</figDesc><table><row><cell>Balanced policy</cell><cell>w kt</cell><cell>1 K</cell><cell>for all t</cell></row><row><cell>Test-rollout(τ) pooled:k t arg max</cell><cell></cell><cell></cell><cell></cell></row><row><cell>k</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 5 .</head><label>5</label><figDesc>MAB Policies Using Gittins Index and Thompson Sampling (TS)    </figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head></head><label></label><figDesc>MarketingScience, 2017, vol. 36, no. 4, pp. 500-522, © 2017 </figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head>Table 6 .</head><label>6</label><figDesc>Impression Volume</figDesc><table><row><cell>Period</cell><cell>Impressions</cell></row><row><cell>1</cell><cell>151,404,479</cell></row><row><cell>2</cell><cell>78,201,889</cell></row><row><cell>3</cell><cell>78,263,752</cell></row><row><cell>4</cell><cell>33,864,649</cell></row><row><cell>5</cell><cell>53,628,300</cell></row><row><cell>6</cell><cell>79,520,690</cell></row><row><cell>7</cell><cell>73,238,448</cell></row><row><cell>8</cell><cell>104,740,932</cell></row><row><cell>9</cell><cell>59,557,343</cell></row><row><cell>10</cell><cell>44,153,954</cell></row><row><cell>Total</cell><cell>756,574,436</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8"><head>Table 7 .</head><label>7</label><figDesc>Aggregate Summary Statistics</figDesc><table><row><cell>Ad size Ad concept</cell><cell>Impressions</cell><cell>Clicks</cell><cell cols="3">Conversions Conversion rate Observations</cell></row><row><cell>A</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>55,214,371</cell><cell>26,875</cell><cell>287</cell><cell>5.20</cell><cell>39</cell></row><row><cell>2</cell><cell>29,989,021</cell><cell>15,635</cell><cell>131</cell><cell>4.37</cell><cell>39</cell></row><row><cell>3</cell><cell>42,180,270</cell><cell>20,874</cell><cell>203</cell><cell>4.81</cell><cell>39</cell></row><row><cell>4</cell><cell>48,426,287</cell><cell>29,981</cell><cell>359</cell><cell>7.41</cell><cell>39</cell></row><row><cell>B</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>81,677,801</cell><cell>32,337</cell><cell>390</cell><cell>4.77</cell><cell>50</cell></row><row><cell>2</cell><cell>87,119,895</cell><cell>34,176</cell><cell>299</cell><cell>3.43</cell><cell>50</cell></row><row><cell>3</cell><cell>52,631,340</cell><cell>22,764</cell><cell>319</cell><cell>6.06</cell><cell>50</cell></row><row><cell>4</cell><cell>69,864,609</cell><cell>31,599</cell><cell>348</cell><cell>4.98</cell><cell>50</cell></row><row><cell>C</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>1</cell><cell>46,826,804</cell><cell>18,575</cell><cell>229</cell><cell>4.89</cell><cell>44</cell></row><row><cell>2</cell><cell>52,164,963</cell><cell>20,741</cell><cell>215</cell><cell>4.12</cell><cell>44</cell></row><row><cell>3</cell><cell>77,066,851</cell><cell>31,930</cell><cell>219</cell><cell>2.84</cell><cell>44</cell></row><row><cell>4</cell><cell>113,412,224</cell><cell>51,134</cell><cell>363</cell><cell>3.20</cell><cell>44</cell></row><row><cell>Total</cell><cell>756,574,436</cell><cell>336,621</cell><cell>3,362</cell><cell>4.44</cell><cell>532</cell></row></table><note>Notes. The table summarizes impressions, clicks, and conversions combined from the test and control groups, split by the 12 ads in the field experiment after 62 days. The observations represent the number of units of observation used per period, which are unique website-size-concept combinations. The conversion rate is the number of customers acquired per million impressions.</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9"><head>Table 8 .</head><label>8</label><figDesc>Summary of Performance for All MAB Policies Tested</figDesc><table><row><cell>Policy</cell><cell>Bandit allocation</cell><cell>Model</cell><cell>Relative mean (%)</cell><cell>Mean</cell><cell>SD</cell><cell>2.5%</cell><cell>97.5%</cell></row><row><cell></cell><cell>Balanced</cell><cell>Pooled</cell><cell>0</cell><cell>4.373</cell><cell>0.138</cell><cell>4.052</cell><cell>4.569</cell></row><row><cell></cell><cell>Test-rollout 1</cell><cell>Pooled</cell><cell>2</cell><cell>4.453</cell><cell>0.155</cell><cell>4.157</cell><cell>4.721</cell></row><row><cell></cell><cell>Test-rollout 2</cell><cell>Pooled</cell><cell>2</cell><cell>4.479</cell><cell>0.128</cell><cell>4.194</cell><cell>4.700</cell></row><row><cell></cell><cell>Test-rollout 3</cell><cell>Pooled</cell><cell>2</cell><cell>4.463</cell><cell>0.108</cell><cell>4.243</cell><cell>4.631</cell></row><row><cell></cell><cell>Test-rollout 4</cell><cell>Pooled</cell><cell>2</cell><cell>4.463</cell><cell>0.099</cell><cell>4.242</cell><cell>4.610</cell></row><row><cell></cell><cell>Test-rollout 5</cell><cell>Pooled</cell><cell>2</cell><cell>4.446</cell><cell>0.098</cell><cell>4.216</cell><cell>4.591</cell></row><row><cell></cell><cell>Test-rollout 6</cell><cell>Pooled</cell><cell>2</cell><cell>4.450</cell><cell>0.085</cell><cell>4.284</cell><cell>4.610</cell></row><row><cell></cell><cell>Test-rollout 1</cell><cell>Unpooled</cell><cell>10</cell><cell>4.814</cell><cell>0.118</cell><cell>4.593</cell><cell>5.030</cell></row><row><cell></cell><cell>Test-rollout 2</cell><cell>Unpooled</cell><cell>10</cell><cell>4.822</cell><cell>0.100</cell><cell>4.617</cell><cell>5.009</cell></row><row><cell></cell><cell>Test-rollout 3</cell><cell>Unpooled</cell><cell>9</cell><cell>4.778</cell><cell>0.094</cell><cell>4.588</cell><cell>4.941</cell></row><row><cell></cell><cell>Test-rollout 4</cell><cell>Unpooled</cell><cell>9</cell><cell>4.751</cell><cell>0.093</cell><cell>4.588</cell><cell>4.941</cell></row><row><cell></cell><cell>Test-rollout 5</cell><cell>Unpooled</cell><cell>8</cell><cell>4.707</cell><cell>0.088</cell><cell>4.557</cell><cell>4.891</cell></row><row><cell></cell><cell>Test-rollout 6</cell><cell>Unpooled</cell><cell>7</cell><cell>4.668</cell><cell>0.088</cell><cell>4.469</cell><cell>4.832</cell></row><row><cell></cell><cell>Greedy</cell><cell>Pooled</cell><cell>3</cell><cell>4.520</cell><cell>0.115</cell><cell>4.274</cell><cell>4.726</cell></row><row><cell></cell><cell>Greedy</cell><cell>Unpooled</cell><cell>14</cell><cell>4.992</cell><cell>0.117</cell><cell>4.799</cell><cell>5.198</cell></row><row><cell></cell><cell>Epsilon-greedy (10)</cell><cell>Pooled</cell><cell>3</cell><cell>4.489</cell><cell>0.094</cell><cell>4.276</cell><cell>4.654</cell></row><row><cell></cell><cell>Epsilon-greedy (20)</cell><cell>Pooled</cell><cell>3</cell><cell>4.504</cell><cell>0.089</cell><cell>4.348</cell><cell>4.663</cell></row><row><cell></cell><cell>Epsilon-greedy (10)</cell><cell>Unpooled</cell><cell>13</cell><cell>4.951</cell><cell>0.086</cell><cell>4.754</cell><cell>5.088</cell></row><row><cell></cell><cell>Epsilon-greedy (20)</cell><cell>Unpooled</cell><cell>13</cell><cell>4.957</cell><cell>0.094</cell><cell>4.784</cell><cell>5.127</cell></row><row><cell></cell><cell>Gittins</cell><cell>Pooled</cell><cell>3</cell><cell>4.513</cell><cell>0.112</cell><cell>4.278</cell><cell>4.705</cell></row><row><cell></cell><cell>Gittins</cell><cell>Unpooled</cell><cell>13</cell><cell>4.954</cell><cell>0.086</cell><cell>4.807</cell><cell>5.097</cell></row><row><cell></cell><cell>UCB1</cell><cell>Unpooled</cell><cell>0</cell><cell>4.366</cell><cell>0.072</cell><cell>4.192</cell><cell>4.493</cell></row><row><cell></cell><cell>UCB-tuned</cell><cell>Unpooled</cell><cell>14</cell><cell>5.005</cell><cell>0.103</cell><cell>4.789</cell><cell>5.190</cell></row><row><cell>TS-binomial-pooled</cell><cell>Thompson</cell><cell>Pooled binomial</cell><cell>3</cell><cell>4.493</cell><cell>0.087</cell><cell>4.340</cell><cell>4.666</cell></row><row><cell>TS-binomial-unpooled</cell><cell>Thompson</cell><cell>Unpooled binomial</cell><cell>10</cell><cell>4.832</cell><cell>0.102</cell><cell>4.619</cell><cell>5.024</cell></row><row><cell>TS-GLM</cell><cell>Thompson</cell><cell>Pooled logit</cell><cell>3</cell><cell>4.493</cell><cell>0.091</cell><cell>4.334</cell><cell>4.662</cell></row><row><cell>TS-LCGLM</cell><cell>Thompson</cell><cell>Latent-class logit</cell><cell>4</cell><cell>4.527</cell><cell>0.088</cell><cell>4.353</cell><cell>4.682</cell></row><row><cell>TS-HGLM</cell><cell>Thompson</cell><cell>Partially pooled logit</cell><cell>8</cell><cell>4.717</cell><cell>0.090</cell><cell>4.560</cell><cell>4.900</cell></row><row><cell></cell><cell>Perfect information</cell><cell></cell><cell>36</cell><cell>5.932</cell><cell>0.078</cell><cell>5.785</cell><cell>6.080</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10"><head>Table 9 .</head><label>9</label><figDesc>Improvement from Daily Instead of Weekly Batching</figDesc><table><row><cell></cell><cell cols="2">Daily batches</cell><cell>Improvement</cell></row><row><cell>Policy</cell><cell>Mean</cell><cell>SD</cell><cell>(Daily/Weekly) (%)</cell></row><row><cell>Balanced</cell><cell>4.333</cell><cell>0.099</cell><cell>−0.9</cell></row><row><cell>Epsilon-greedy (10)</cell><cell>4.547</cell><cell>0.068</cell><cell>1.3</cell></row><row><cell>pooled</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Epsilon-greedy (20)</cell><cell>4.490</cell><cell>0.012</cell><cell>−0.3</cell></row><row><cell>pooled</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Epsilon-greedy (10)</cell><cell>4.972</cell><cell>0.115</cell><cell>0.4</cell></row><row><cell>unpooled</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Epsilon-greedy (20)</cell><cell>4.975</cell><cell>0.071</cell><cell>0.4</cell></row><row><cell>unpooled</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Greedy pooled</cell><cell>4.543</cell><cell>0.103</cell><cell>0.5</cell></row><row><cell>Greedy unpooled</cell><cell>5.124</cell><cell>0.060</cell><cell>2.6</cell></row><row><cell>Gittins pooled</cell><cell>4.516</cell><cell>0.065</cell><cell>0.1</cell></row><row><cell>Gittins unpooled</cell><cell>5.059</cell><cell>0.114</cell><cell>2.1</cell></row><row><cell>UCB1 unpooled</cell><cell>4.348</cell><cell>0.057</cell><cell>−0.4</cell></row><row><cell>UCB-tuned unpooled</cell><cell>5.112</cell><cell>0.120</cell><cell>2.1</cell></row><row><cell>TS-BB-pooled</cell><cell>4.576</cell><cell>0.067</cell><cell>1.8</cell></row><row><cell>TS-BB-unpooled</cell><cell>4.891</cell><cell>0.076</cell><cell>1.2</cell></row><row><cell>Perfect information</cell><cell>5.942</cell><cell>0.094</cell><cell>0.2</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_11"><head>Table A . 1 .</head><label>A1</label><figDesc>Values from Figure A.1 for Ad Size A</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Size A</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Website</cell><cell>Time</cell><cell>Concept</cell><cell>w j, k, t+1</cell><cell>µ jk Mean</cell><cell>µ jk 2.5%</cell><cell>µ jk 97.5%</cell><cell>y jkt</cell><cell>m jkt</cell></row><row><cell>j103</cell><cell>1</cell><cell>1</cell><cell>0.30</cell><cell>4.76</cell><cell>0.42</cell><cell>43.70</cell><cell>0</cell><cell>13,086</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.27</cell><cell>3.99</cell><cell>0.36</cell><cell>46.47</cell><cell>0</cell><cell>13,086</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.19</cell><cell>2.81</cell><cell>0.19</cell><cell>40.03</cell><cell>0</cell><cell>13,086</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.23</cell><cell>3.64</cell><cell>0.25</cell><cell>43.96</cell><cell>0</cell><cell>13,086</cell></row><row><cell></cell><cell>6</cell><cell>1</cell><cell>0.24</cell><cell>12.99</cell><cell>4.52</cell><cell>35.13</cell><cell>1</cell><cell>96,415</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.17</cell><cell>9.94</cell><cell>2.71</cell><cell>36.93</cell><cell>1</cell><cell>78,776</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.26</cell><cell>12.73</cell><cell>3.84</cell><cell>44.13</cell><cell>1</cell><cell>86,540</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.33</cell><cell>13.88</cell><cell>4.23</cell><cell>41.37</cell><cell>2</cell><cell>97,296</cell></row><row><cell>j149</cell><cell>1</cell><cell>1</cell><cell>0.27</cell><cell>5.83</cell><cell>0.55</cell><cell>64.33</cell><cell>0</cell><cell>3,572</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.25</cell><cell>4.84</cell><cell>0.34</cell><cell>64.83</cell><cell>0</cell><cell>3,572</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.22</cell><cell>3.99</cell><cell>0.19</cell><cell>79.68</cell><cell>0</cell><cell>3,572</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.27</cell><cell>4.70</cell><cell>0.29</cell><cell>85.16</cell><cell>0</cell><cell>3,572</cell></row><row><cell></cell><cell>6</cell><cell>1</cell><cell>0.30</cell><cell>6.08</cell><cell>1.09</cell><cell>33.82</cell><cell>1</cell><cell>48,028</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.16</cell><cell>3.43</cell><cell>0.47</cell><cell>22.71</cell><cell>0</cell><cell>38,914</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.28</cell><cell>5.61</cell><cell>0.82</cell><cell>37.47</cell><cell>0</cell><cell>40,281</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.27</cell><cell>5.05</cell><cell>0.66</cell><cell>37.00</cell><cell>0</cell><cell>48,360</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_12"><head>Table A .</head><label>A</label><figDesc>2. Values from Figure A.1 for Ad Size B</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Size B</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Website</cell><cell>Time</cell><cell>Concept</cell><cell>w j, k, t+1</cell><cell>µ jk Mean</cell><cell>µ jk 2.5%</cell><cell>µ jk 97.5%</cell><cell>y jkt</cell><cell>m jkt</cell></row><row><cell>j103</cell><cell>1</cell><cell>1</cell><cell>0.01</cell><cell>76.05</cell><cell>28.40</cell><cell>210.40</cell><cell>1</cell><cell>18,215</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.22</cell><cell>165.29</cell><cell>56.90</cell><cell>492.54</cell><cell>5</cell><cell>18,215</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.41</cell><cell>210.07</cell><cell>78.38</cell><cell>662.32</cell><cell>5</cell><cell>18,215</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.37</cell><cell>206.97</cell><cell>75.22</cell><cell>554.49</cell><cell>3</cell><cell>18,215</cell></row><row><cell></cell><cell>6</cell><cell>1</cell><cell>0.01</cell><cell>88.70</cell><cell>44.36</cell><cell>171.69</cell><cell>2</cell><cell>24,814</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.30</cell><cell>147.29</cell><cell>71.24</cell><cell>303.86</cell><cell>14</cell><cell>88,826</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.52</cell><cell>167.57</cell><cell>89.55</cell><cell>299.38</cell><cell>36</cell><cell>207,258</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.18</cell><cell>131.02</cell><cell>61.53</cell><cell>294.88</cell><cell>8</cell><cell>61,298</cell></row><row><cell>j149</cell><cell>1</cell><cell>1</cell><cell>0.16</cell><cell>5.69</cell><cell>1.07</cell><cell>36.85</cell><cell>0</cell><cell>28,356</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.33</cell><cell>9.03</cell><cell>1.41</cell><cell>63.44</cell><cell>1</cell><cell>28,356</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.27</cell><cell>7.35</cell><cell>0.92</cell><cell>56.65</cell><cell>0</cell><cell>28,356</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.23</cell><cell>6.81</cell><cell>1.03</cell><cell>56.76</cell><cell>0</cell><cell>28,356</cell></row><row><cell></cell><cell>6</cell><cell>1</cell><cell>0.21</cell><cell>2.35</cell><cell>0.76</cell><cell>7.41</cell><cell>0</cell><cell>295,132</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.22</cell><cell>2.17</cell><cell>0.59</cell><cell>8.67</cell><cell>1</cell><cell>404,384</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.41</cell><cell>2.93</cell><cell>0.82</cell><cell>10.31</cell><cell>2</cell><cell>403,467</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.15</cell><cell>1.87</cell><cell>0.52</cell><cell>7.18</cell><cell>0</cell><cell>302,950</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_13"><head>Table A .</head><label>A</label><figDesc>3. Values from Figure A.1 for Ad Size C</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Size C</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Website</cell><cell>Time</cell><cell>Concept</cell><cell>w j, k, t+1</cell><cell>µ jk Mean</cell><cell>µ jk 2.5%</cell><cell>µ jk 97.5%</cell><cell>y jkt</cell><cell>m jkt</cell></row><row><cell>j103</cell><cell>1</cell><cell>1</cell><cell>0.10</cell><cell>27.48</cell><cell>6.68</cell><cell>116.32</cell><cell>2</cell><cell>17,439</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.08</cell><cell>21.36</cell><cell>4.27</cell><cell>93.26</cell><cell>1</cell><cell>17,439</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.26</cell><cell>40.23</cell><cell>8.58</cell><cell>190.65</cell><cell>0</cell><cell>17,439</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.57</cell><cell>61.37</cell><cell>14.87</cell><cell>256.00</cell><cell>1</cell><cell>17,439</cell></row><row><cell></cell><cell>6</cell><cell>1</cell><cell>0.02</cell><cell>26.28</cell><cell>12.08</cell><cell>58.81</cell><cell>3</cell><cell>43,323</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.31</cell><cell>45.15</cell><cell>17.26</cell><cell>119.30</cell><cell>4</cell><cell>40,787</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.39</cell><cell>50.49</cell><cell>20.97</cell><cell>121.70</cell><cell>5</cell><cell>102,441</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.28</cell><cell>47.01</cell><cell>19.73</cell><cell>111.75</cell><cell>3</cell><cell>115,023</cell></row><row><cell>j149</cell><cell>1</cell><cell>1</cell><cell>0.23</cell><cell>3.31</cell><cell>0.29</cell><cell>31.32</cell><cell>0</cell><cell>14,059</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.18</cell><cell>2.78</cell><cell>0.29</cell><cell>31.35</cell><cell>0</cell><cell>14,059</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.22</cell><cell>2.98</cell><cell>0.20</cell><cell>42.94</cell><cell>0</cell><cell>14,059</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.37</cell><cell>5.01</cell><cell>0.50</cell><cell>75.27</cell><cell>0</cell><cell>14,059</cell></row><row><cell></cell><cell>6</cell><cell>1</cell><cell>0.25</cell><cell>1.63</cell><cell>0.36</cell><cell>6.97</cell><cell>0</cell><cell>186,382</cell></row><row><cell></cell><cell></cell><cell>2</cell><cell>0.20</cell><cell>1.34</cell><cell>0.23</cell><cell>8.13</cell><cell>0</cell><cell>157,923</cell></row><row><cell></cell><cell></cell><cell>3</cell><cell>0.22</cell><cell>1.53</cell><cell>0.32</cell><cell>6.60</cell><cell>0</cell><cell>222,576</cell></row><row><cell></cell><cell></cell><cell>4</cell><cell>0.33</cell><cell>1.90</cell><cell>0.33</cell><cell>9.14</cell><cell>1</cell><cell>288,744</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>This paper is based on the first author's dissertation. The first author would like to acknowledge conference attendees and seminar participants at several schools, especially the Wharton School, University of Pennsylvania, and the Ross School of Business, University of Michigan.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix</head><p>We examine how the TS-HGLM policy works by focusing on three aspects of the policy: (1) how allocations differ across combinations of ad concept and ad size (i.e., attributes), (2) how allocations differ across websites (i.e., heterogeneity), and (3) how allocations across ads within a website change over time (i.e., learning). Consider two representative websites (j 103 and 149) highlighted at two time points (t 1 and 6) in We see ad attribute importance by noting the differences in the µ jk (θ) distributions across the ad concepts and ad sizes (within a website at any snapshot in time). In particular, it is clear that the interactions between ad concepts and ad sizes are meaningful: the rank order of the ad concepts' conversion rates varies for different ad sizes. For instance, consider the snapshot of how the TS-HGLM policy evaluated ads and allocated impressions to website j 103 using data through t 6. This is shown as the second row (from the top) of four panels in Figure A.1, which we continue to refer to throughout this section to explain the findings about ad attributes. For ad size A, the ad concept with the best predicted mean conversion rate is ad concept 4 (14 acquisitions per million impressions), but that same concept is neither the best on</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Explore/exploit schemes for web content optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B-C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Elango</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+	<note>Research paper series</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Sample mean based index policies with O(log n) regret for the multi-armed bandit problem</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Agrawal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Appl. Probab</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1054" to="1078" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Analysis of Thompson sampling for the multi-armed bandit problem</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Agrawal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Goyal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res. Workshop Conf. Proc</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="39" to="40" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A step-by-step guide to smart business experiments</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Simester</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Harvard Bus. Rev</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="98" to="105" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Using confidence bounds for exploitation-exploration trade-offs</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Auer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="397" to="422" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Watts</surname></persName>
+		</author>
+		<title level="m">Nonlinear Regression Analysis and Its Applications</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Wiley</publisher>
+			<date type="published" when="1988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maechler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bolker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Walker</surname></persName>
+		</author>
+		<ptr target="http://cran.r-project.org/web/packages/lme4/lme4.pdf" />
+		<title level="m">R Package &apos;lme4</title>
+				<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A Bernoulli two-armed bandit</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Berry</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Math. Statist</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="871" to="897" />
+			<date type="published" when="1972" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Bayesian statistics and the efficiency and ethics of clinical trials</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Berry</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Sci</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="175" to="187" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Berry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fristedt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1985" />
+			<publisher>Chapman &amp; Hall</publisher>
+			<pubPlace>London</pubPlace>
+		</imprint>
+	</monogr>
+	<note type="report_type">Bandit Problems</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Learning approach for interactive marketing</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bertsimas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Mersereau</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1120" to="1135" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">On sequential designs for maximizing the sum of n observations</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">N</forename><surname>Bradt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Karlin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Math. Statist</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1060" to="1074" />
+			<date type="published" when="1956" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Online display advertising: Modeling the effects of multiple creatives and individual impression histories</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">W</forename><surname>Moe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="753" to="767" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Optimal learning and experimentation in bandit problems</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brezzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Lai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Dynam. Control</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="page" from="87" to="108" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Advances in neural information processing systems</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Chapelle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shawe-Taylor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Zemel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">L</forename><surname>Bartlett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Pereira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Sequential sampling with economics of selection procedures</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Chick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Frazier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="550" to="569" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Economic analysis of simulation selection problems</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Chick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gans</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="421" to="437" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">New two-stage and sequential procedures for selecting the best simulated system</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Chick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Inoue</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="732" to="743" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Sequential sampling to myopically maximize the expected value of information</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Chick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Branke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Schmidt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">INFORMS J. Comput</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="71" to="80" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Stochastic linear optimization under bandit feedback</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Dani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Hayes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Kakade</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conf. Learn. Theory</title>
+				<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="355" to="366" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">How to design smart business experiments</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Davenport</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Harvard Bus. Rev</title>
+		<imprint>
+			<biblScope unit="volume">87</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">How eBay developed a culture of experimentation: HBR interview of John Donahoe</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Donahoe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Havard Bus. Rev</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="92" to="97" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Parametric bandits: The generalized linear case</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Filippi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Cappe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Garivier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szepesvári</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Processing Systems</title>
+		<editor>Lafferty J, Williams CKI, Shawe-Taylor J, Zemel RS, Culotta A</editor>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title/>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Science</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="500" to="522" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The knowledge-gradient policy for correlated normal beliefs</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">I</forename><surname>Frazier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">B</forename><surname>Powell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dayanik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">INFORMS J. Comput</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="599" to="613" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hill</surname></persName>
+		</author>
+		<title level="m">Data Analysis Using Regression and Multilevel/ Hierarchical Models</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Carlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">S</forename><surname>Stern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+		<title level="m">Bayesian Data Analysis</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Chapman &amp; Hall</publisher>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+	<note>2 ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Bandit processes and dynamic allocation indices</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gittins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Royal Statist. Soc., Ser. B</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="148" to="177" />
+			<date type="published" when="1979" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gittins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Glazebrook</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Weber</surname></persName>
+		</author>
+		<title level="m">Multi-Armed Bandit Allocation Indices</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>John Wiley and Sons</publisher>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+	<note>2 ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Online display advertising: Targeting and obtrusiveness</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goldfarb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tucker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="389" to="404" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Solving two-armed Bernoulli bandit problems using a Bayesian learning automaton</title>
+		<author>
+			<persName><forename type="first">O-C</forename><surname>Granmo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. J. Intelligent Comput. Cybernetics</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="207" to="232" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Website morphing 2.0: Technical and implementation advances and a field experiment</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Liberali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">L</forename><surname>Urban</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1594" to="1616" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Website morphing</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">L</forename><surname>Urban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Liberali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Braun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="202" to="223" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Effects of Internet display advertising in the purchase funnel: Model-based insights from a randomized field experiment</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hoban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bucklin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="375" to="393" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Thompson sampling: An asymptotically optimal finite time analysis</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kaufmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Korda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Munos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Algorithmic Learning Theory</title>
+				<editor>
+			<persName><forename type="first">N</forename><forename type="middle">H</forename><surname>Bshouty</surname></persName>
+			<persName><forename type="first">G</forename><surname>Stoltz</surname></persName>
+			<persName><forename type="first">N</forename><surname>Vayatis</surname></persName>
+			<persName><forename type="first">T</forename><surname>Zeugmann</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Berlin Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="199" to="213" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Branching bandits: A sequential search process with correlated pay-offs</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Keller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Oldale</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Theory</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="302" to="315" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Partially observed Markov decision process multiarmed bandits: Structural results</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Krishnamurthy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wahlberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="287" to="302" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Adaptive treatment allocation and the multi-armed bandit problem</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Lai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1091" to="1114" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">When does retargeting work? Information specificity in online advertising</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lambrecht</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tucker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="561" to="576" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Learning from experience, simply</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hauser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="19" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">The effect of banner advertising on Internet purchasing</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Manchanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J-P</forename><surname>Dubé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Y</forename><surname>Goh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Chintagunta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="98" to="108" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+		<title level="m" type="main">Optimistic Bayesian sampling in contextual bandit problems</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>May</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Korda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Leslie</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+			<pubPlace>Bristol, UK</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Department of Mathematics, University of Bristol</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Technical report</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Sequential choice under ambiguity: Intuitive solutions to the armed-bandit problem</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Meyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="817" to="834" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">An experimental design for the development of adaptive treatment strategies</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Murphy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Medicine</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="1455" to="1481" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">A minimum relative entropy principle for learning and acting</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Ortega</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Braun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Artificial Intelligence Res</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="475" to="511" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Generalized Thompson sampling for sequential decision-making and causal inference</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Ortega</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Braun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Complex Adaptive Systems Modeling</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">More) efficient reinforcement learning via posterior sampling</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Osband</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Russo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Van</forename><surname>Roy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B ;</forename><surname>Burges</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cjc</forename><surname>Bottou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Welling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Weinberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="3003" to="3011" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Batched bandit problems</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Perchet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rigollet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chassang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Snowberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="660" to="681" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<monogr>
+		<title level="m" type="main">Approximate Dynamic Programming: Solving the Curses of Dimensionality</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">B</forename><surname>Powell</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>Wiley</publisher>
+			<pubPlace>Hoboken, NJ</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Display advertising impact: Search lift and social influence</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Reiley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Papadimitriou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Garcia-Molina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Krishnamurthy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 17th ACM SIGKDD Conf. Knowledge Discovery Data Mining</title>
+				<meeting>17th ACM SIGKDD Conf. Knowledge Discovery Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1019" to="1027" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Some aspects of the sequential design of experiments</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Robbins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bull. Amer. Math. Soc</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="527" to="535" />
+			<date type="published" when="1952" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Estimating causal effects of treatments in randomized and nonrandomized studies</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Ed. Psych</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="688" to="701" />
+			<date type="published" when="1990" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Linearly parameterized bandits</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rusmevichientong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Tsitsiklis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="395" to="411" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Learning to optimize via posterior sampling</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Russo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Van Roy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1221" to="1243" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">A modern Bayesian look at the multi-armed bandit</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L</forename><surname>Scott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Stochastic Models Bus. Indust</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="639" to="658" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Sutton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Barto</surname></persName>
+		</author>
+		<title level="m">Reinforcement Learning: An Introduction</title>
+				<meeting><address><addrLine>Cambridge, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">On the likelihood that one unknown probability exceeds another in view of the evidence of two samples</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">R</forename><surname>Thompson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="285" to="294" />
+			<date type="published" when="1933" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">A lemma on the multi-armed bandit problem</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Tsitsiklis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Automatic Control</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="576" to="577" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Morphing banner advertising</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">L</forename><surname>Urban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Liberali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bordley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Macdonald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="27" to="46" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Bayesian rules for the two-armed bandit problem</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Wahrenberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Antle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Klimko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="172" to="174" />
+			<date type="published" when="1977" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<monogr>
+		<title level="m" type="main">Bandit Algorithms for Website Optimization</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>White</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012" />
+			<pubPlace>O&apos;Reilly Media, Sebastopol, CA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Multi-armed bandits and the Gittins index</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Whittle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Royal Statist. Soc., Ser. B</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="143" to="149" />
+			<date type="published" when="1980" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

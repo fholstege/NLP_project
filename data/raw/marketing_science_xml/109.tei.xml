@@ -1,0 +1,1590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Dynamic Online Pricing with Incomplete Information Using Multiarmed Bandit Experiments</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2019-03-29">March 29, 2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Kanishka</forename><surname>Misra</surname></persName>
+							<email>kamisra@ucsd.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Rady School of Management</orgName>
+								<orgName type="institution">University of California</orgName>
+								<address>
+									<addrLine>San Diego, La Jolla</addrLine>
+									<postCode>92093</postCode>
+									<region>California</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Eric</forename><forename type="middle">M</forename><surname>Schwartz</surname></persName>
+							<email>ericmsch@umich.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Ross School of Business</orgName>
+								<orgName type="institution">University of Michigan</orgName>
+								<address>
+									<postCode>48109</postCode>
+									<settlement>Ann Arbor</settlement>
+									<region>Michigan</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jacob</forename><surname>Abernethy</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">School of Computer Science</orgName>
+								<orgName type="department" key="dep2">College of Computing</orgName>
+								<orgName type="institution">Georgia Institute of Technologyy</orgName>
+								<address>
+									<postCode>30332</postCode>
+									<settlement>Atlanta</settlement>
+									<country key="GE">Georgia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff3">
+								<address>
+									<addrLine>http://orcid.org/0000</addrLine>
+									<postCode>0002-3115</postCode>
+									<settlement>-6804 (JA)</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Dynamic Online Pricing with Incomplete Information Using Multiarmed Bandit Experiments</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2019-03-29">March 29, 2019</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2018.1129</idno>
+					<note type="submission">Received: June 4, 2017 Revised: February 13, 2018; May 6, 2018 Accepted: May 25, 2018</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:25+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>dynamic pricing</term>
+					<term>e-commerce</term>
+					<term>online experiments</term>
+					<term>machine learning</term>
+					<term>multiarmed bandits</term>
+					<term>partial identification</term>
+					<term>minimax regret</term>
+					<term>nonparametric econometrics</term>
+					<term>A/B testing</term>
+					<term>field experiments Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Pricing managers at online retailers face a unique challenge. They must decide on real-time prices for a large number of products with incomplete demand information. The manager runs price experiments to learn about each product's demand curve and the profitmaximizing price. In practice, balanced field price experiments can create high opportunity costs, because a large number of customers are presented with suboptimal prices. In this paper, we propose an alternative dynamic price experimentation policy. The proposed approach extends multiarmed bandit (MAB) algorithms from statistical machine learning to include microeconomic choice theory. Our automated pricing policy solves this MAB problem using a scalable distribution-free algorithm. We prove analytically that our method is asymptotically optimal for any weakly downward sloping demand curve. In a series of Monte Carlo simulations, we show that the proposed approach performs favorably compared with balanced field experiments and standard methods in dynamic pricing from computer science. In a calibrated simulation based on an existing pricing field experiment, we find that our algorithm can increase profits by 43% during the month of testing and 4% annually.</p><p>History: K. Sudhir served as the editor-in-chief and Olivier Toubia served as associate editor for this article.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>1. Introduction 1.1. Overview Consider a pricing decision for a manager at an online retailer. Two features of this setting make it different from a brick-and-mortar retailer. First, online sellers can vary prices nearly continuously and often randomize those changes for learning purposes <ref type="bibr" target="#b28">(Furman and Simcoe 2015)</ref>. This differs from a traditional retail setting where retailers face high costs, known as menu costs, to make price changes <ref type="bibr" target="#b4">(Anderson et al. 2015)</ref>. Second, large online retailers sell a far larger number of products than brickand-mortar retailers (e.g., Amazon.com sells hundreds of millions of products with thousands of new products per day). <ref type="bibr">1</ref> At the time of pricing, the manager is unlikely to have complete information about each product's demand curve. In these markets, a manager must consider an automated pricing policy <ref type="bibr" target="#b9">(Baker et al. 2014)</ref> to set realtime retail prices despite incomplete demand information.</p><p>Consider how a firm typically tests prices when faced with incomplete demand information. For example, a firm is deciding among a set of 10 prices (p ∈ {$0.10, $0.20, . . . , $0.90, $1.00}), but it does not have information about demand at each price. The firm may experiment with the prices one at a time, observe demand and profits at each level, and then select the price that leads to highest total profits. This approach is intuitive, often implemented in industry, and is a benchmark in the academic operations research literature <ref type="bibr" target="#b15">(Besbes and Zeevi 2009)</ref>. This form of price experimentation is described as "learn, then earn." In our example, the firm runs a balanced experiment, where the same number of consumers are shown each of the 10 prices. The experiment estimates the mean (with measurement error) demand (D(p $0.10), . . . , D(p $1.00)) and profit at each price (π(p $0.10), . . . , π(p $1.00)). The manager can then select the price with the highest profits.</p><p>In this paper, we build on the dynamic price experimentation literature. Instead of considering the two distinct phases of learning and earning, this literature frames the problem as a dynamic optimization problem with the goal of maximizing earning while learning. The objective of continuous price experimentation is to maximize long-run profits, where the firm wants to minimize the opportunity costs of experimentation.</p><p>The pricing algorithm sequentially sets prices to balance currently earning profits and learning about demand with future profits. The key difference here is that the firm observes real-time purchase decisions and incorporates this additional information for future pricing decisions. Therefore, to select the price for the tth round of the experiment, the firm will use profit estimates from the first t − 1 rounds.</p><p>Multiarmed bandit (MAB) methods provide algorithms for adaptive experimentation. The MAB problem is a fundamental dynamic optimization problem in reinforcement learning <ref type="bibr" target="#b61">(Sutton and Barto 1998)</ref>. The problem has a long history in statistics and operations researchand more recently in marketing <ref type="bibr" target="#b30">(Gittins et al. 2011)</ref>; see also <ref type="bibr" target="#b58">Schwartz et al. (2017)</ref> for an overview of MAB in the marketing literature). The algorithm is faced with a set of possible decisions, called "arms" (in our application, arms represent different prices). Each arm has a stable but unknown reward distribution (in our application, profit). In this setup, the algorithm selects arms sequentially in real time with the goal of optimizing cumulative reward.</p><p>We illustrate the difference between a MAB experiment and a balanced experiment for the example above. In the computer science literature, <ref type="bibr" target="#b6">Auer (2002)</ref> propose the UCB1, an optimal nonparametric bandit algorithm that continuously balances learning and earning over time (we will build on this algorithm in our paper, and it is described in detail in Section 2). For our illustration, we assume a demand curve (here, D(p) 3 * (1 − p), with the profit-maximizing price at $0.5) and run both algorithms over 1,000 experimental periods. In any period, the manager gets a noisy signal of the true profit with variance of 0.3. The results are shown in Figure <ref type="figure" target="#fig_0">1</ref>. In panel (a), we show the prices played (by round and a histogram across all rounds) in each method. In a balanced experiment, by definition, each price is played an equal number of times. The bandit experiment, on the other hand, learns the profitmaximizing price and charges that price more often.</p><p>As a result (Figure <ref type="figure" target="#fig_0">1</ref>, panel (b)), the bandit algorithm earns more profit than the balanced experiment (95% versus 66%). Moreover, the bandit continuously increases the profit achieved with experiments, whereas the balanced experiment is, by definition, constant over time.</p><p>A second important difference is the precision of the learning. Figure <ref type="figure" target="#fig_0">1</ref>, panel (b) (right side) also illustrates that the confidence intervals for the balanced experiment are the same for all prices. However, the bandit experiment results in smaller confidence intervals for prices around the optimal price and much larger ones for prices that are suboptimal. In terms of profit learning, a balanced experiment focuses on learning everywhere, whereas the bandit focuses on relevant learning. Relevant learning <ref type="bibr" target="#b1">(Aghion et al. 1991)</ref> refers to learning the true profit for the most profit-relevant price points. We use this example to illustrate the value of relevant learning and the value gained from MAB algorithms to optimize experiments, as we will use this MAB framework throughout the paper.</p><p>Our proposed solution extends common MAB algorithms to include choice theory from microeconomics. We account for the two key features of the online retail pricing problem setting: a wide variety of products and real-time changes for those millions of products. To ensure that our model can be used for a wide variety of products, we make minimal assumptions about the underlying demand curve for a particular product. Instead of assuming each product's demand curve to come from the same family of distributions, we opt for an approach that is driven by economic theory and flexible. By limiting parametric assumptions, our algorithm will be more robust to any arbitrary unknown downwardsloping demand system. Although traditional robust optimization solutions come with a relatively large computational cost (e.g., Berger 1985 note on p. 309 that the "minimax principle can be devilishly hard to implement"), our algorithm can be estimated in real time.</p><p>Our algorithm builds on the upper confidence bound (UCB) algorithm in the nonparametric MAB literature <ref type="bibr" target="#b7">(Auer et al. 2002)</ref>. The family of UCB algorithms works as follows. In each time period, the algorithm assigns each arm a so-called UCB value: the sum of the expected reward and an exploration bonus. That exploration bonus is the potential value from experimentation. Then the algorithm plays the arm with the highest UCB value. The algorithm observes a noisy reward and updates these values for each arm. The UCB algorithm is guaranteed to be the "best" nonparametric algorithm for any bounded payoff function in terms of achieving the theoretically optimal error rate in a finite-time setting <ref type="bibr" target="#b45">(Lai 1987)</ref>.</p><p>We extend this MAB algorithm to incorporate partially identified demand learning. In the typical UCB algorithm, when a particular price is charged (an arm is played), the firm's observations are limited to profits (reward) from that price (arm). We extend this to allow learning across prices (arms) based on economics. Formally, we assume that a consumer's choice structure is such that individual demand curves are weakly downward sloping. With this additional yet minimal assumption, when a consumer is exposed to any price, the manager can partially identify the consumer's underlying preference across different potential prices. For example, if a consumer purchases a good at $3, the manager can infer she would have purchased at any price below $3. And if a consumer does not purchase a good at $3, the manager can infer she would not have purchased at any price above $3.</p><p>We consider a setting where each consumer makes a single purchase decision, so we rely on cross-sectional identification to estimate aggregate demand. We assume the firm observes consumer characteristics and can use this to observe heterogeneity for segmentation. In practice, these segments may be based on many variables, including demographics and behavior. Because of the abundance of data, online retailers can have a large number of segments. For example, Google Analytics and Facebook Analytics offer over 1,000 segments to advertising brands. <ref type="bibr">2</ref> We estimate the within-segment variation Notes. The bandit experiment is adaptive. This particular algorithm is UCB-tuned <ref type="bibr" target="#b6">(Auer 2002)</ref>. (a) Prices played: the left hand side plots show the price charged over time and the right hand side charts show the distribution of all prices charged; a balanced experiment (top) charges all prices equally while the bandit (bottom) learns in real time and charges the truly optimal price ($0.50) more often. (b) Profits learning and earning: the left hand side plots show the profits over time (earning); after 1,000 prices tested, the bandit earns 95% of optimal profits, while the balanced experiment earns only 66% of optimal profits; the right hand side chart shows the mean and 95% confidence intervals of the learned profit at each price; the dotted line represents the true profit curve; the balanced experiment learns the profit curve with the same precision at all prices, while the bandit learns the true profit with small confidence intervals around the optimal price ($0.5) and large confidence intervals at sub optimal prices.</p><p>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments in customer valuations and allow the heterogeneity across segments to be fully nonparametric; that is, information about preferences in each segment are independent.</p><p>Because we impose minimal assumptions about the shape or structure of the demand model, our algorithm is quite robust to distributional assumptions about heterogeneity and context <ref type="bibr" target="#b33">(Handel et al. 2013)</ref>, and therefore it can be credibly applied for a variety of products. We will show that this includes situations where demand and profit functions are discontinuous or multimodal. It even allows for special price effects (e.g., contextual factors). This robustness to the structure of the demand model is important, as our pricing model can be used to estimate prices for a variety of products.</p><p>Finally, the other key feature of online retail is pricing in real time at large scale. We ensure that our algorithm can run in real time for millions of products. Because our proposed algorithm has minimal estimation requirements, it plays prices at speeds that are orders of magnitude faster than current solutions. In a two-period version of a pricing problem, the full solution in <ref type="bibr" target="#b32">Handel and Misra (2015)</ref> plays first-period prices for one product in about 15 hours of computation time. Our proposed method can calculate about 2 million prices per minute, and it can be used for real-time online pricing.</p><p>We consider a monopolist's pricing, which is consistent with much of the literature on price experimentation-for example, the literature on MAB <ref type="bibr" target="#b43">(Kleinberg and Leighton 2014)</ref>, pricing under ambiguity <ref type="bibr" target="#b15">(Besbes and</ref><ref type="bibr">Zeevi 2009, Bergemann and</ref><ref type="bibr" target="#b12">Schlag 2011)</ref>, and field experiments <ref type="bibr" target="#b25">(Dubé and Misra 2017)</ref>. Our algorithm is therefore most relevant for products with limited competition. <ref type="bibr">3</ref> This includes products with a monopolist seller and products with limited distribution early or late in their life cycles. The algorithm is also relevant when faced with a stable or predictable competitor. A stable competitor will not to respond to real-time price changes. A predictable competitor, for example, may use an automated realtime price-matching algorithm. With "nonstrategic" competition (see <ref type="bibr" target="#b38">Hviid and Shaffer 1999</ref> for a review of price matching), the product's demand curve is stable over time. We note that our algorithm and theoretical results are not guaranteed for products with strategic competition.</p><p>Our main results are as follows:</p><p>1. We analytically prove our proposed algorithm's performance using a novel analysis technique for MAB algorithms. Here, we show that our algorithm is guaranteed to be asymptotically optimal (see Section 3).</p><p>2. In a series of Monte Carlo simulation experiments across a range of settings, we outperform a set of benchmarks. We find our algorithm achieves a higher mean profit and a lower variance across simulation settings. We document the limiting condition (no observable heterogeneity) under which our proposed algorithm matches current machine learning methods (see Section 4).</p><p>3. We conduct a simulation experiment based on a randomized pricing experiment in <ref type="bibr" target="#b25">Dubé and Misra (2017)</ref>, run with ZipRecruiter.com. Approximately 8,000 consumers were shown one of 10 prices between $19 and $399. We use those experimental results as a basis for simulating demand curves. We find that our algorithm achieves 43% higher profits during the month of testing and about 4% higher annual profits (see Section 5).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2.">Contributions</head><p>With the emergence of big data, we see an increase in machine learning applications in marketing <ref type="bibr" target="#b22">(Chintagunta et al. 2016)</ref>. But a natural critique is machine learning algorithms' absence of economic theory. This work illustrates how we can bridge this gap. We propose a novel combination of economic theory with machine learning. To marketing and economics, we adapt scalable reinforcement learning methods to address dynamic optimization problems. We propose a fast dynamic pricing algorithm rooted in economic theory.</p><p>To machine learning, we introduce distributionfree theory of demand to improve existing algorithms theoretically and empirically. Typically, the models of active learning in computer science often rely on stylized demand models, because they are amenable to formal analysis. But they may lack the economic theory, which, as we find, can improve the optimal pricing algorithms.</p><p>1.3. Related Literature 1.3.1. Literature on Pricing. Our paper adds to a large literature on pricing and learning demand in marketing, economics, and operations research. Much of the current literature makes strong assumptions about the information that a firm has about demand for each product. In marketing and operations, for instance, the literature often assumes that firms make product pricing decisions based on knowing the demand curve <ref type="bibr" target="#b54">(Oren et al. 1982</ref><ref type="bibr" target="#b56">, Rao and Bass 1985</ref><ref type="bibr" target="#b59">, Smith 1986</ref><ref type="bibr" target="#b66">, Wernerfelt 1986</ref><ref type="bibr" target="#b10">, Bayus 1992</ref><ref type="bibr" target="#b55">, Rajan et al. 1992</ref><ref type="bibr" target="#b0">, Acquisti and Varian 2005</ref><ref type="bibr" target="#b52">, Nair 2007</ref><ref type="bibr" target="#b3">, Akçay et al. 2010</ref><ref type="bibr" target="#b39">, Jiang et al. 2011</ref>). These methods assume that the firm has access to perfect information about the demand curve and considers the optimal dynamic pricing given this information. We argue that it is not feasible for large online retailers to know the demand curves for millions of products.</p><p>A second related literature assumes that firms know demand only up to a parameter <ref type="bibr" target="#b57">(Rothschild 1974</ref><ref type="bibr" target="#b48">, Lodish 1980</ref><ref type="bibr" target="#b1">, Aghion et al. 1991</ref><ref type="bibr" target="#b19">, Braden and Oren 1994</ref><ref type="bibr" target="#b40">, Kalyanam 1996</ref><ref type="bibr" target="#b13">, Bergemann and Valimaki 2000</ref><ref type="bibr" target="#b8">, Aviv and Pazcal 2002</ref><ref type="bibr" target="#b16">, Biyalogorsky and Gerstner 2004</ref><ref type="bibr" target="#b37">, Hitsch 2006</ref><ref type="bibr" target="#b24">, Desai et al. 2010</ref><ref type="bibr" target="#b18">, Bonatti 2011</ref><ref type="bibr" target="#b17">, Biyalogorsky and Koenigsberg 2014</ref>. The modeling approach in these papers assumes that the manager knows the structure of demand and just learns the parameters. This could be a two-period model <ref type="bibr" target="#b17">(Biyalogorsky and Koenigsberg 2014)</ref> or an infinite-time model <ref type="bibr" target="#b1">(Aghion et al. 1991</ref>). In the infinite-time model, <ref type="bibr" target="#b1">Aghion et al. (1991)</ref> consider a very general model where the manager knows the structure of demand up to a parameter (u), and the firm sets prices and observes market outcomes. In subsequent periods, the firm updates the posterior belief distributions for the parameters, and then the firm sets prices. They show that under this structure, learning can be "inadequate" in cases where the profit function is multimodal or discontinuous. Inadequate learning is defined as when the agent never acquires adequate knowledge (i.e., asymptotically, adequate with probability zero). Adequate knowledge is defined when the agent knows enough about the true profit function to achieve ex post optimal profits. The <ref type="bibr" target="#b1">Aghion et al. (1991)</ref> paper concludes: "Even when learning goes on forever, it does not result in adequate knowledge" (p. 642).</p><p>We argue that it is important for a robust pricing policy to incorporate all possible demand curves. Therefore, we make weaker assumptions than assuming a demand model to derive optimal prices. By making only weak assumptions about the demand curve, we sacrifice precision for credibility <ref type="bibr" target="#b49">(Manski 2005)</ref>. This is consistent with saying that it is not feasible for a firm to have both precise and credible demand information about every single product, so we have to make a tradeoff between precision and credibility.</p><p>Our nonparametric method builds on the robust pricing literature <ref type="bibr">Schlag 2008, 2011;</ref><ref type="bibr" target="#b33">Handel et al. 2013</ref>). The robust dynamic pricing literature provides a solution for two-period pricing <ref type="bibr" target="#b32">(Handel and Misra 2015)</ref>. Here, the authors consider a brick-andmortar retail setting, where the retailer must keep a fixed price for the entire time period. We differ from these papers by building a solution based on the MAB literature in computer science. The advantage of our model is that it allows for continuous learning and realtime changes to suggested prices. The key simplifying assumption here is that we do not account for fully endogenous demand curve learning. In our model, we account for the fact that observed outcomes of all prior price experiments impact expected demand for all price points (through our demand estimation). However, when we estimate the value of experimentation at any price, we consider only the benefit from reducing uncertainty about profits at that price (e.g., an experiment at price = $3 will reduce the future uncertainty about profits at price = $3). A fully forward-looking experimenter (endogenous demand curve learning) would also consider the benefit from reducing uncertainty about profits at other prices (e.g., an experiment at price = $3 could reduce the future uncertainty about profits at price = $4). We believe endogenous demand curve learning is more relevant in settings with infrequent price changes. The advantage of not including endogenous learning is analytical tractability. As a result, whereas <ref type="bibr" target="#b32">Handel and Misra (2015)</ref> can only consider a two-time period model, our model can generalize to longer-run experiments (e.g., we consider 200,000 experimental rounds in Section 4).</p><p>The current work also contributes to theoretical work in operations research-namely, dynamic pricing and revenue management. The area of revenue management has a large literature that considers dynamic pricing (see <ref type="bibr" target="#b26">Elmaghraby and</ref><ref type="bibr" target="#b26">Keskinocak 2003 and</ref><ref type="bibr" target="#b23">den Boer 2015</ref> for reviews of the literature). Our work falls into a category known as dynamic pricing without inventory constraints, where dynamics are due to incomplete information and learning. Within this literature, our paper fits with the less studied and more recent stream of nonparametric work. Nonparametric approaches <ref type="bibr" target="#b15">(Besbes and Zeevi 2009)</ref> consider pricing policies in an incomplete information setting. Here, the authors consider algorithms that minimize the maximum ex post statistical regret from not charging the optimal static price. The proposed algorithm divides the sales horizon into an "exploration" phase during which the demand function is learned and an "exploitation" phase during which the estimated optimal price is used. The firm has to ex ante set the length of experimentation stage; therefore this algorithm corresponds to a balanced field experiment. In more recent additions to this literature, <ref type="bibr" target="#b65">Wang and Hu (2014)</ref> and <ref type="bibr" target="#b47">Lei et al. (2014)</ref> improve the convergence results, yet the algorithms proposed in these papers also consider distinct phases for exploration then exploitation, or, as we refer to it, "learning then earning." Instead, in our paper, we consider the learning and earning phases simultaneously, accounting for the potential value from learning at each point in time. This is consistent with the broader MAB literature from machine learning.</p><p>1.3.2. Literature on Multiarmed Bandits. We consider the problem of pricing using MAB methods, which are not typically used for pricing but do stretch across computer science, statistics, operations research, and marketing. The MAB problem is the quintessential problem of the fields of active learning, referring to the sequential decision-making process, and reinforcement learning in the computer science literature (for an overview, see <ref type="bibr" target="#b61">Sutton and Barto 1998)</ref>.</p><p>A large part of this literature provides theoretical analysis and mathematical guarantees of algorithms. The algorithms are policies to adaptively select the arms to achieve the best profits. The objective function for these algorithms is to minimize the statistical regret. Statistical regret "is the loss due to the fact that the globally optimal policy is not followed all the times" <ref type="bibr">(Auer et al. 2002, p. 235)</ref>. That is the difference between the achieved profits and the ex post optimal profits, if Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments the decision maker knew the true average profits for each arm. Algorithms are compared based on the bounds on regret. This bound represents the worst-case performance: the maximum possible regret for any possible distribution of the true rewards across the arms.</p><p>These UCB policies provide the backbone of a stream of MAB solutions in reinforcement learning coming from statistical machine learning <ref type="bibr" target="#b2">(Agrawal 1955</ref>. <ref type="bibr" target="#b46">Lai and Robbins (1985)</ref> first obtained these "nearly optimal index rules in the finite-horizon case" <ref type="bibr">(Brezzi and Lai 2002, p. 89)</ref> where the indices can be interpreted as "upper confidence bounds for the expected rewards"-hence UCB <ref type="bibr">(Brezzi and Lai 2002, p. 89)</ref>. Although these index rules do not provide the exactly optimal solution to the optimization problem with a discounted infinite sum of expected rewards, these rules are asymptotically optimal for arbitrarily large finite-time horizons, T. As T → ∞, the UCB-based index rule achieves optimal performance with respect to maximizing the expected sum of rewards through T periods "from both the Bayesian and frequentist viewpoints for moderate and small values of [T]" <ref type="bibr">(Brezzi and Lai 2002, p. 89</ref>). <ref type="bibr">4</ref> Asymptotic theory links the finite-horizon undiscounted case and the infinite-horizon discounted multiarmed bandit problem <ref type="bibr" target="#b20">(Brezzi and Lai 2002)</ref>. Depending on the discount factor, disc, the UCB directly approximates the Gittins index <ref type="bibr" target="#b45">(Lai 1987)</ref>. When setting T (1 − disc) −1 , as disc → 1, then the UCB in <ref type="bibr" target="#b45">Lai (1987)</ref> (p. 1113) is asymptotically optimal not only for the finitehorizon undiscounted problem but also for the infinitehorizon undiscounted problem from <ref type="bibr" target="#b29">Gittins (1989)</ref>. The link is strengthened as <ref type="bibr" target="#b20">Brezzi and Lai (2002)</ref> derive an approximate Gittins index, with a structure exactly the same as that of the UCB, the sum of expected reward and an exploration bonus.</p><p>We add to this literature by allowing (partially identified) demand curve learning across the potential prices. Formally, we assume that each consumer's choice structure satisfies the weak axiom of revealed preference (WARP) (see proposition 3.D.3 in <ref type="bibr" target="#b50">Mas-Colell et al. (1995)</ref> and discussed in the next section). Although in the UCB models the prices would typically be considered independent arms, adding an economic assumption allows us to use information about demand at a price (say, p 1 ) to make an inference about demand at other prices (p p 1 ).</p><p>The learning-and-earning problem for pricing relates to a broader class of problems, optimizing marketing experiments or so-called A/B testing. The emerging framework is using MAB methods to optimally balance earning while learning. These approaches most commonly appear in online advertising or website design <ref type="bibr" target="#b35">(Hauser et al. 2009</ref><ref type="bibr" target="#b63">, Urban et al. 2014</ref><ref type="bibr" target="#b58">, Schwartz et al. 2017</ref>. We argue that pricing is different from other marketing decisions in two key ways. First, economic theory gives strong predictions that individual indirect utility functions are nonincreasing in prices, but this is not true for other marketing decision variables. Without particular parametric assumptions, learning about one ad creative or website design does not inform predictions of others in predictable ways. Second, unlike advertising, the randomization of prices is imperfect. Retailers do not commonly offer the same product to different consumers at a given point in time. <ref type="bibr">5</ref> Therefore, price changes can happen only across time and not across consumers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Dynamic Multiperiod Monopoly Pricing</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Model Setup and Maintained Assumptions</head><p>In this section, we state the main assumptions in our analysis. We first discuss our assumptions on the demand side and then our assumptions on the supply side.</p><p>We assume there are a large set of potential consumers with unit demand for each product. For each consumer we assume the following:</p><p>1. she has stable preferences, 2. she has a stable budget over time, 3. she faces a stable outside option, and 4. her choice structure satisfies the WARP. We note that the first three of these assumptions, although typically unstated, are assumed in any field experiment; these ensure that the results of the field experiment can be used to understand demand after the experiment. With these assumptions, we represent the consumer's preference as v i . In any purchase occasion, when facing a price p, her indirect utility can be written as u i v i − p, and she will purchase the good if and only if u i ≥ 0; that is, v i ≥ p. The assumption of stable preference guarantees that v i does not change over time. This rules out learning <ref type="bibr" target="#b27">(Erdem and Keane 1996)</ref>, stockpiling <ref type="bibr" target="#b36">(Hendel and Nevo 2006)</ref>, network externalities <ref type="bibr" target="#b53">(Nair et al. 2004)</ref>, reference price effect <ref type="bibr">(Winer 1986, Kalyanaram and</ref><ref type="bibr" target="#b41">Winer 1995)</ref>, and strategic consumers <ref type="bibr" target="#b52">(Nair 2007)</ref>. Unlike much of the prior work on dynamic prices (e.g., <ref type="bibr" target="#b52">Nair 2007)</ref>, in our paper, firms change prices for learning the demand curve as opposed to intertemporal price discrimination.</p><p>Our next set of assumptions considers the heterogeneity across consumers. We assume that the manager has access to demand-relevant descriptive variables for each consumer. These could include observable variables, such as demographics and behavioral patterns, or modelbased criteria. As an example, in their application, <ref type="bibr" target="#b25">Dubé and Misra (2017)</ref> consider geography, company type, and job benefits as relevant demand shifters in their pricing for ZipRecuriter.com. We assume heterogeneity among consumers can be separated as observable (by descriptive variables Z) and unobservable heterogeneity. Formally, v i f (Z i ) + n i .</p><p>To allow for any functional form of the f (Z i ), we assume that the firm assigns consumers into segments S, where each s ∈ S represents a combination of the descriptor variables Z i . We define the aggregate proportion of consumers in each segment, c s . We note that the online retailers have the ability to use a large number of segments; for example, Google and Facebook offer more than 1,000 different segments to its advertisers (see Endnote 2).</p><p>With this formulation, we can add a fixed effect for each segment. Formally, for a consumer i in segment s, we have v i v s + n i , where v s represents the midpoint of range of consumer valuations within segment s and n i represents the unobserved heterogeneity. Rather than assume a function form for n i , we assume it can be bounded by d (or <ref type="bibr" target="#b33">Handel et al. (2013)</ref> show that this formulation sacrifices precision for credibility, in the sense that it is robust to violations to standard distributional and independence assumptions. With this assumption, the preferences of all consumers in a segment are within d of the segment midpoint, v s . Taken together,</p><formula xml:id="formula_0">n i ∈ [−d, d]). 6</formula><formula xml:id="formula_1">v i ∈ [v s − d, v s + d]∀i ∈ s.</formula><p>(1)</p><p>These demand assumptions are quite general. Within each segment, we allow for any distribution of preferences within this range; therefore, we note that v s is not assumed to be the mean or the median of the segment valuations. Across segments, we allow for fully nonparametric heterogeneity across segments. This assumption allows cross-sectional learning of consumer preferences.</p><p>We will estimate v s and d in our empirical algorithm. Our estimate of d can be interpreted as a measure of the "quality of segmentation." If the firm's ex ante segmentation does not group consumers with similar preferences, then the estimate of d will be large. But if the firm's ex ante segmentation does group consumers with similar preferences, then d will be small.</p><p>On the supply side, we assume that the firm is a monopolist that sets online prices to maximize profits for a constant marginal cost product. The main deviation we make from the standard pricing literature (e.g., <ref type="bibr" target="#b54">Oren et al. 1982 and</ref><ref type="bibr" target="#b56">Rao and</ref><ref type="bibr" target="#b56">Bass 1985)</ref> is that we assume the firm does not know consumer valuations. We assume that the only information available to the firm at the time of initial pricing is that consumer valuations are between</p><formula xml:id="formula_2">[v L , v H ].</formula><p>The interpretation here is that if the product is sold for v L (can be zero), all consumers will purchase for sure, and if the product is sold for v H , no consumers will buy. Consistent with the robust pricing literature <ref type="bibr">Schlag 2008, 2011;</ref><ref type="bibr" target="#b15">Besbes and Zeevi 2009;</ref><ref type="bibr" target="#b33">Handel et al. 2013;</ref><ref type="bibr" target="#b47">Lei et al. 2014;</ref><ref type="bibr" target="#b65">Wang and Hu 2014;</ref><ref type="bibr" target="#b32">Handel and Misra 2015)</ref>, we assume within this range that the firm does not know the distribution of consumer preferences across or within segments. Our motivation for this assumption is that it is infeasible for the manager to have credible priors for millions of products.</p><p>We assume that the firm does not price discriminate across consumers. Formally, the firm observes a consumer's identity and segment membership; however, we assume the firm does not use this information to price discriminate. If we had full information, there exists an optimal static price that a monopolist would charge. However, because of the lack of information, the monopolist must experiment with prices. We assume that the firm can change prices quickly. <ref type="bibr" target="#b28">Furman and Simcoe (2015)</ref> report that Amazon.com can change prices within 15 minutes. In our model, we will assume that prices can change after every N consumers who visit the product. 7</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Overview of Multiarmed Bandit Pricing</head><p>We begin by formulating the pricing problem as a dynamic optimization problem. We assume that there exists a finite set of K prices that the firm can choose from, p ∈ {p 1 , . . . , p K }. For any price, p, the firm faces an unknown true demand D(p). We assume a constant marginal cost (set to zero for ease of exposition). Given this setup, the true profit is given by π(p) pD(p).</p><p>Although the true profit function π(p) is unknown, the firm observes realizations of profits for each price p k . Suppose by time t, the firm has charged p k a total of n kt times. Let π k,1 , π k,2 , . . . , π k,n kt be realizations of profit per consumer from every time that price p k has been charged. We assume that these are drawn from an unknown probability distribution with a mean at the true profit π(p k ). We refer to the sample mean at time t asπ kt 1/n kt n kt τ 1 π kτ . By definition, we must have K k 1 n kt t. A pricing policy or algorithm, Ψ, selects prices based on the history of past prices and earned profits. From a mathematical perspective, this can be described as, p t Ψ({p τ , π τ | τ 1, . . . , t − 1}). The policy maps data from all previous experiments onto price.</p><p>To evaluate a policy's performance, the literature considers statistical regret. <ref type="bibr">8</ref> The key criterion to evaluate policies is minimizing maximum regret (i.e., minimax regret). Regret for a policy is defined as the expected profit loss as a result of not always playing the unknown ex post optimal profit-maximizing fixed price <ref type="bibr" target="#b46">(Lai and Robbins 1985)</ref>. The notion of regret is standard in the computer science and decision theory literature <ref type="bibr" target="#b14">(Berger 1985</ref><ref type="bibr" target="#b46">, Lai and Robbins 1985</ref><ref type="bibr" target="#b6">, Auer 2002</ref>. This was first proposed by <ref type="bibr" target="#b64">Wald (1950)</ref> and has been axiomatized in the economic literature <ref type="bibr" target="#b51">(Milnor 1954</ref><ref type="bibr" target="#b60">, Stoye 2011</ref>. This criterion has been used to study pricing in economics <ref type="bibr">Schlag 2008, 2011;</ref><ref type="bibr" target="#b33">Handel et al. 2013)</ref> and marketing <ref type="bibr" target="#b32">(Handel and Misra 2015)</ref>. The economic interpretation of regret is the "forgone profits" as a result of price experimentation.</p><p>Formally, we represent regret as the distance to the optimal profits. We define the ex post profit-maximizing price to be p * for all t, yielding an expected profit <ref type="bibr">Misra, Schwartz, and</ref> </p><formula xml:id="formula_3">Abernethy: Dynamic Online Pricing Using MAB Experiments m * E [π(p)] p * D(p * ) each time period. The regret of a policy Ψ through time t is Regret(Ψ, {π(p k )}, t) E t τ 1 π * − π p τ t τ 1 (π * − π(p τ )) π * t − K k 1 π(p k )E [n kt ], (2)</formula><p>where π p τ is the profit realized when the price p τ was charged in time period τ, and then E [π p τ ] π(p τ ) is expected profit for that price. We note that regret can be simply stated in terms of unknown true average profits, {π(p k )} {π(p 1 ), . . . , π(p K )}, and the expected number of times each price is charged, E [n kt ]. A summary of the notation is provided in Table <ref type="table" target="#tab_1">1</ref>.</p><p>But when considering the analysis of regret, we do not observe true profits, {π(p 1 ), . . . , π(p K )}, and therefore, we also do not know truly optimal profit, π * . The analysis instead considers all possible realizations of profit, because the distribution of profits is not known before running the algorithm. Next we consider the possible realization that generates the "worst case" or maximum regret for a given policy, Ψ. The economic interpretation of this is to consider a feasible demand curve, D(p), that results in the maximum regret given a pricing policy. The algorithm with the best minimax regret is one that can minimize the maximum regret.</p><p>In the MAB literature, according to the minimax regret criterion, the optimal solution for this nonparametric problem is a policy involving an index rule scoring each action with its UCB of expected rewards <ref type="bibr" target="#b2">(Agrawal 1955</ref><ref type="bibr" target="#b46">, Lai and Robbins 1985</ref><ref type="bibr" target="#b45">, Lai 1987</ref><ref type="bibr" target="#b6">, Auer 2002</ref>. This policy is proven to be the asymptotically best possible performance in terms of achieving the lowest maximum regret.</p><p>The structure of the index assigned to each action in the UCB algorithm is the sum of expected reward and an exploration bonus. For instance, in the focal algorithm in Auer ( <ref type="formula">2002</ref>), UCB1, the index for action k at time T, is based on only the sample mean reward of the arm and an exploration bonus. In our notation, this translates to</p><formula xml:id="formula_4">UCB1 kt π kt + 2 log t n kt . (<label>3</label></formula><formula xml:id="formula_5">)</formula><p>Then the arm with the highest UCB value is selected to be played in the next round.</p><p>In Equation ( <ref type="formula" target="#formula_4">3</ref>), the amount by which UCB exceeds the expected reward is called the exploration bonus, representing the value of information. The exploration bonus, 2 log t/n kt , can be expressed more generally with a parameter a &gt; 0 as a log t/n kt . The particular structure inside the UCB1 exploration bonus follows from the proof of the algorithm's optimality. The proof in <ref type="bibr" target="#b6">Auer (2002)</ref> leads to setting a 2 to obtain its bound on regret for UCB1. But we will discuss the details of UCB in greater detail in Section 3 and derive an alternative value of a informed by economic theory and the pricing setting.</p><p>To prove that it is asymptotically optimal, the exploration bonus, which quantifies the value of information, is defined to ensure that cumulative regret grows slowly at a logarithmic rate in time, with arbitrarily high probability. Cumulative regret is the difference between the cumulative reward and the optimal cumulative reward, and we refer to ex post profits. We illustrate this in our proof, using deviation bounds (concentration inequalities), for our algorithm later in the theoretical analysis (Section 3.1 and the appendix).</p><p>The UCB framework, spawning multiple versions since Auer <ref type="bibr">(2002)</ref>, has become a standard approach in the MAB literature in machine learning, but those UCB versions have had limited application-for instance, first appearing in marketing in <ref type="bibr" target="#b58">Schwartz et al. (2017)</ref>. Even starting in <ref type="bibr" target="#b6">Auer (2002)</ref> itself, new versions emerge. The authors note that the UCB1 algorithm considers only the number of times each action is played and does not account for the variance in outcomes from the trial of each arm. They provide an additional algorithm called UCB-tuned, with which they report better performance but without analytical regret bounds. For this algorithm, they define</p><formula xml:id="formula_6">V kt 1 n kt n kt τ 1 π 2 kτ −π 2 kt + 2 log t n kt UCB-tuned kt π kt + log t n kt min 1 4 , V kt .<label>(4)</label></formula><p>An assumption in nonparametric multiarmed bandit algorithms, including the UCB algorithms, is that the profit outcomes in any two actions are uncorrelated.</p><p>That is, the realized profits when action k is played do not inform us of the possible profits when another action j is played. In many marketing applications, this is a valid assumption depending on the design of the experiment, such as website design <ref type="bibr" target="#b35">(Hauser et al. 2009</ref>). In other marketing applications with correlated actions, parametric assumptions are required to capture those correlations, as shown in online advertising <ref type="bibr" target="#b58">(Schwartz et al. 2017)</ref>.</p><p>Pricing is different. But it typically enters into a parametric demand model. In our application to pricing, however, we can add nonparametric demand learning <ref type="bibr" target="#b33">(Handel et al. 2013</ref>) to MAB algorithms. We will prove the regret convergence rates with adding demand learning for the UCB1 algorithm and will then adapt the UCBtuned algorithm to account for variance in observed profits. In the next section, we discuss how we can add nonparametric demand learning, and then we will discuss an updated model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Learning the Demand Curve from</head><p>Price Experiments In this section, we will discuss how an analyst can learn preferences across different price experiments. In this section, our key parameter of interest is the demand for each product at each price level, or D(p k ) ∀k ∈ <ref type="bibr">[1, K]</ref>. This section is based on the demand-side assumptions we make in Section 2.1. The implication of these assumptions is that if a consumer is willing to purchase a product at price p 1 , she will be willing to purchase the product for a price p k &lt; p 1 . Similarly, if the consumer does not purchase the product at p 2 , she will not be willing to purchase the product for any price p k &gt; p 2 . 9 Formally, we can define a set of possible consumer preference as Θ [{u 1 , . . . , u K }, where u k refers to a preference that satisfies (a) u k − p k &gt; 0 and (b) u k − p k+1 &lt; 0. Here, u k represents a preference under which the highest amount the consumer will purchase this good for is p k .</p><p>If we consider products that are purchased repeatedly, we can use this information to identify bounds for each consumer's valuations. Consider an example where we observe the following price experiments for a consumer i. She purchases at $3, does not purchase at $8, purchases at $2, and does not purchase at $6. We can say that the true preference for this consumer (v i ) must be between $3 and $6. We can then aggregate this nonparametrically across all consumers to identify the set to all feasible demand curves (see section 2 of <ref type="bibr" target="#b33">Handel et al. 2013</ref> for details).</p><p>Requiring many repeat-purchase data for each customer may be overly restrictive or not suited for most products. In particular, we believe the assumption of stable preferences is likely to be violated when a consumer is exposed to multiple prices for the same product <ref type="bibr" target="#b41">(Kalyanaram and Winer 1995)</ref>. Instead, we focus on cross-sectional learning across consumers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.1.">Learning Segment-Level Demand with Partial</head><p>Identification. The firm has data on n s,t price experiments for segment s through time t. In each experiment, a consumer i in segment s is exposed to a price p k and makes a purchase decision. In this section, we will first describe how one can estimate v s (segment valuations) and d (intrasegment heterogeneity) from observed price experiments.</p><p>First, we can define the possible set of valuations containing consumers of various types, u, to be consistent with observing segment s demand at price p k , D(p k ) s,t . We explain this with three cases:</p><p>• D(p k ) s,t 0 is consistent with consumers being of types {u 1 , . . . , u k−1 }, where consumers will not purchase at price p k ;</p><p>• D(p k ) s,t 1 is consistent with consumers being of types {u k , . . . , u K }, where consumers will purchase for sure at price p k ; and</p><p>• D(p k ) s,t ∈ (0, 1) is consistent with a mixture of consumer types {u 1 , . . . , u k−1 } and {u k , . . . , u K }, where some consumers will purchase and other consumers will not purchase.</p><p>For any segment s, we can take intersection of the identified types across all pricing experiments, t. In our application, to estimate this set, we define p min s as the highest price where all consumers in segment s purchase. From a mathematical perspective, we set p min s,t [ max{p k | D(p k ) s,t 1}. And similarly, we define p max s as the lowest price where no consumer from segment s purchased, so p max s,t [ min{p k |D(p k ) s,t 0}. To illustrate our estimation of p min s and p max s , consider the following example. Suppose we have data for a segment, s A, with the following observations:</p><p>• At a price $1, 100% of consumers purchased.</p><p>• At a price $2, 20% of consumers purchased.</p><p>• At a price $3, 0% of consumers purchased.</p><p>• At a price $4, 0% of consumers purchased.</p><p>• At a price $5, 0% of consumers purchased. Given these data, we would define p min A $1 and p max A $3 because we know for sure that all consumers purchase at prices lower than $1 and that no consumers will purchase at prices higher than $3. This example is graphically displayed in Figure <ref type="figure" target="#fig_1">2</ref>, panel (a). Here, we introduce another example for purchases in another segment, labeled segment B. We will refer to these segments in the next section.</p><p>We know that given the information so far, ∀i ∈ s, v i,s 2 .</p><p>The interpretation ofd s,t here is that it is the smallest value of d that can rationalize the observed decisions for consumers in segment s after t observed price experiments. We note that this estimate will be consistent: in the limit as t →∞ and with enough price variation, we can identify the true d, calling this d * . That is, lim t→∞ P(d st d * ) 1. However, for any finite t, thesê d st will be biased downward.</p><p>To correct for this downward bias for each segment, we rely on the assumption that all segments have the same d. We note that in the case where all segments do have heterogeneous d s our assumption then equates to d max(d s ). This is a conservation assumption, as the estimate of the individual segments' d s can be upward biased. In turn, this upward bias leads to less precisely estimated demand and therefore slower learning of optimal prices. <ref type="bibr">10</ref> After t price experiments, consider the set {d 1t , . .. ,d St }. We then estimate the maximum of that set, max{d st , s ∈ S}. However, in small samples, this will be also be biased downward relative to the true d * . We follow the econometric literature on estimating boundaries to correct for this bias (see <ref type="bibr" target="#b42">Karunamuni and Alberts 2005</ref> for a review). We then denote the bias as g t , and we define f (.) as the empirical distribution ofd st across consumers. Formally, f (x) s∈S c s 1 (d st x). Note that c s represents the segment sizes.</p><p>Our estimator for the bias g t is:</p><formula xml:id="formula_7">11 g t {d st } (max{d st , s ∈ S} −d st ) f (d st ).</formula><p>Therefored t max{d st , s ∈ S} +ĝ t . This estimator is consistent, by our assumption of a common d * across segments. <ref type="bibr" target="#b33">Handel et al. (2013)</ref> show thatd t provides a reliable and conservative estimate for the true d * . In Online Appendix A3 (Figure <ref type="figure" target="#fig_1">2</ref>, panel (b)), we empirically show how the estimatedd t converges from above to the true d as we run more price experiments.</p><p>Then we definev min s,t v s,t −d t andv max s,t v s,t +d t to represent, respectively, the lowest and highest possible consumer valuations within segment s. Therefore, the key output from this analysis is that for each segment s, we express the identified set of consumer valuations to be H t [v i,s ] as follows:</p><formula xml:id="formula_8">H t [v i,s ] [v min s,t ,v max s,t ] [v s,t −d t ,v s,t +d t ].</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.2.">Learning Population-Level Demand with Partial</head><p>Identification. Using distribution-free partial identification, aggregated to the population level, we gain information to narrow the set of possible demand curves. As we accumulate data of demand for different prices, we aim to bound expected demand (and expected profit) more tightly. After gaining new data, we can update the bounds. For each price p k , the true demand is D(p k ).</p><p>Without any data, we can define the identification region of demand at p k as</p><formula xml:id="formula_9">H t [D(p k )] = [0, 1].</formula><p>Here, we will use the identified set of valuations within each segment, H t [v i,s ], to estimate the bounds on aggregate demand and profits.</p><p>The aggregate demand at a price p k is the number of consumers in each segment that have valuations v i,s ≥ p k . Define F s (.) to be the true cumulative density of all valuation with a segment s. Then, we can rewrite aggregate demand as</p><formula xml:id="formula_10">D(p k ) s∈S c s (1 − F s (p k )),</formula><p>where c s is the (known) proportion of consumers in segment s.</p><p>However, we do not observe F s (p k ). Therefore we can consider bounds of this distribution. From our estimation in the previous section, we know that F s (p k ) 0 if p k is less than the lower bound of valuations for segment s,v min s,t . Similarly, F s (p k ) 1 if p k is greater than the upper bound of valuations for segment s,v max s,t . Therefore, we can define the identified region for demand at price p k as</p><formula xml:id="formula_11">H t [D(p k )] [ s∈S c s 1 (v min s,t ≥ p k ), s∈S c s 1 (v max s,t ≥ p k )].<label>(5)</label></formula><p>That is, we aggregate the segment-level bounds of valuations, H t [v i,s ], to form the population-level bounds of aggregate demand, H t [D(p k )]. This aggregation is best described in an example illustrated in Figure <ref type="figure" target="#fig_1">2</ref>. Suppose we have two segments, A and B, of equal sizes. For segment A, we have identified preferences to be in the set [$1, $3], as described in the previous section. For segment B, suppose we have identified preference to be between [$2, $4]. We can identify the feasible demand sets as follows: </p><formula xml:id="formula_12">• H t [D(p ≤ $1)] [1, 1] (point identified)</formula><p>, as consumers in segments A and B will purchase for sure;</p><p>• H t [D(p ∈ ($1, $2])] [0.5, 1], as consumers in segment A may or may not purchase and consumers in segment B will purchase for sure;</p><formula xml:id="formula_13">• H t [D(p ∈ ($2, $3])] [0, 1],</formula><p>as consumers in segment A and segment B may or may not purchase;</p><p>• H t [D(p ∈ ($3, $4])] [0, 0.5], as consumers in segment A will not purchase and consumers in segment B may or may not purchase; and the dashed regions reflect ambiguity within a range of valuations in Segment A (vertical dashes) and Segment B (horizontal dashes); at prices below the identified set of valuations, everyone in the segment would purchase certainly (solid light gray, Segment A, or dark gray, Segment B); at prices above that set, no one in the segment would purchase (solid white). (b) Aggregate demand bounds: demand bounds (thick lines around dashed areas) come from aggregating segment-specific identified sets of valuations; solid colored areas represent prices where a segment would purchase certainly, and dashed regions reflect uncertainty; for instance, when the price is $1.50, all of Segment B will purchase, but some of Segment A may or may not purchase (hence, feasible demand is between 50% and 100%).</p><p>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments • H t [D(p &gt; $4)] [0, 0] (point identified), as consumers in segments A and B will not purchase.</p><p>Using the identified aggregate demand bounds, we define profit bounds for each price as H t [π(p k )] p k H t [D(p k )]. This gives us the lower and upper bounds of true profit after t observations, which we define as L B t (π(p k )) and U B t (π(p k )), respectively. In summary, we have</p><formula xml:id="formula_14">H t [π(p k )] [L B t (π(p k )), U B t (π(p k ))] (<label>6</label></formula><formula xml:id="formula_15">)</formula><formula xml:id="formula_16">L B t (π(p k )) p k s∈S c s 1(v min s,t ≥ p k ) U B t (π(p k )) p k s∈S c s 1(v max s,t ≥ p k ).</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Upper Confidence Bound with Partial Identification to Learn Demand</head><p>In this section, we extend the UCB1 algorithm to accommodate profit maximization by incorporating learning demand with partial identification. We define this upper confidence bound bandit algorithm incorporating learning partially identified demand (UCB-PI). The UCB-PI (untuned 12 ) index is</p><formula xml:id="formula_17">UCB-PI-untuned kt π kt + p k 2 log t n kt if U B t (π(p k )) &gt; max l LB t (π(p l )), 0 i f U B t (π(p k )) ≤ max l LB t (π(p l )). ⎧ ⎪ ⎪ ⎨ ⎪ ⎪ ⎩ (7)</formula><p>There are two key differences between our proposed algorithm and the UCB1 algorithm (see Equation ( <ref type="formula" target="#formula_4">3</ref>)) described in <ref type="bibr" target="#b6">Auer (2002)</ref>. First, we assign an action a nonzero value only if the upper bound of potential returns is higher than the highest lower bound across all actions. In a partial identification sense, we only consider an action if it is not dominated by another action. From an economic sense, there is no reason to explore an action if we know an alternative action will lead to higher profits with certainty. From an empirical standpoint, we will examine how the set of active prices varies over time, eliminating dominated prices and focusing on a set including the true optimal price. Second, we scale the exploration bonus by price p k . This is because we know D(p k ) ∈ [0, 1], and therefore π(p k ) ∈ [0, p k ]. But the original UCB1 algorithm was defined where each action's reward had the same potential range (e.g., [0, 1]), regardless of action. By restricting demand, we impose a natural upper bound of profit that depends on price.</p><p>In the following sections, we first prove properties of the UCB-PI and show that regret is lower than UCB1. Then we define a tuned version of the UCB-PI algorithm analogous to the UCB-tuned algorithm in <ref type="bibr" target="#b5">Audibert et al. (2009)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Theoretical Performance</head><p>In this section, we provide the key result of the theoretical analysis of our proposed algorithm. First, we derive the exploration bonus in the UCB-PI-untuned algorithm, given by Equation ( <ref type="formula">7</ref>), and second, we prove performance guarantees for the algorithm. The complete proof is in the appendix. The derived performance guarantee is an upper bound on the regret for our algorithm, which describes performance in the worst-case scenario. From an economic perspective, this represents the maximum regret over all feasible demand curves for our algorithm.</p><p>We give the structure of the theoretical results. In Equation ( <ref type="formula">2</ref>), we define regret as a function of (a) a feasible demand curve (and therefore, a profit curve), (b) an algorithm (i.e., UCB-PI-untuned), and (c) a time horizon (T). To understand theoretical performance, we can derive the implications of an algorithm across all feasible demand systems. Our main result shows that the UCB-PI-untuned algorithm (Equation ( <ref type="formula">7</ref>)) provides a log-regret upper bound. That is, for any feasible demand model, the regret from UCB-PI-untuned increases, at most, on the scale of log(T) over time. Log-regret bounds are important; the computer science literature shows that these are asymptotically optimal for MAB problems <ref type="bibr" target="#b2">(Agrawal 1955</ref><ref type="bibr" target="#b46">, Lai and Robbins 1985</ref><ref type="bibr" target="#b45">, Lai 1987</ref><ref type="bibr" target="#b6">, Auer 2002</ref>. Therefore, our proposed UCB-PI-untuned is an asymptotically optimal MAB algorithm.</p><p>From a mathematical perspective, suppose we consider a set of prices {p k |k 1, . . . , K} and any feasible demand curve that generates a set of profits {π(p k )}. Without loss of generality, we label p 1 as the optimal prices for this demand curve (i.e., p 1 argmax p k {π(p k )}). The regret through time T, in terms of profit, is bounded from above as follows:</p><formula xml:id="formula_18">Regret(UCB-PI-untuned, {π(p k )}, T) ≤ 8 K k 2 p i log(T) π * − π(p i ) + O(1).<label>(8)</label></formula><p>Because all p k are scaled to be in [0, 1], this regret is guaranteed to be lower than that in the UCB1 algorithm, which is the standard UCB formulation in the computer science literature. We note that our proof is based on an alternative view of the original UCB analysis <ref type="bibr" target="#b7">(Auer et al. 2002)</ref>. But our proof differs from the standard proof, even in technique, because we use an argument based on the potential function, which we define formally in the proof. This argument using the potential function is a novel application of these tools for the formal analysis of learning algorithms. We choose this technique because we believe it provides a clearer economic intuition for UCB-style algorithms and their proofs. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">UCB-PI-Tuned Algorithm</head><p>We will present a version of our algorithm where we tune the exploration bonus by considering both the variance of the observed outcomes and the size of the bound. This is analogous to the UCB-tuned algorithm presented in <ref type="bibr" target="#b7">Auer et al. (2002)</ref>. The V kt represents an upper bound on the reward variance (as opposed to mean). It is also equal to its empirical variance plus an exploration bonus:</p><formula xml:id="formula_19">V kt 1 n kt n kt τ 1 π 2 kτ −π 2 kt + 2 log t n kt .</formula><p>The upper bound on variance enters the UCB of the mean to control the size of the exploration bonus. We add an additional tuning factor, 2d, because it is the size of the range for our partially identified intervals. When d is large, there is more uncertainty; when it is small, the intervals shrink and so does the exploration bonus:</p><formula xml:id="formula_20">UCB-PI-tuned kt π kt + 2p kd log t n kt min 1 4 , V kt if U B t (π(p k )) &gt; max l LB t (π(p l )), 0 ifU B t (π(p k )) ≤ max l LB t (π(p l )). ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩ (9)</formula><p>The final novel aspect of the proposed algorithm is "shutting off" prices that are dominated. Dominated prices have an upper bound that is still worse than at least some other price's lower bound, U B t (π(p k )) ≤ max l (LB t (π(p l ))).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Empirical Performance: Simulation Study</head><p>We test our proposed algorithm in a series of simulation experiments. These show its robust performance across unknown true distributions of consumer valuations. Each simulation has the same structure of the data-generating process. Customers arrive, observe the price, and purchase only if their valuation is greater than the price. After the customers decide, the firm observes which customers arrived (in particular, the consumer's segment) and their choices. Then the firm sets the price for the next period.</p><p>In our simulation, we consider a firm with K 100 potential prices from $0 to $1 in 1c increments. The firm can change prices after every 10 consumers visit. Each consumer belongs to one of S 1, 000 segments. We draw the segment probabilities (true c s ) from a simplex on the uniform distribution.</p><p>Each segment's valuation (true v s ) is drawn from a parametric distribution. We consider five possible distributions of valuations. Importantly, this distribution is the data-generating process and is unknown to the researcher, so it is not assumed in the estimation method:</p><p>1. right-skewed Beta distribution given by Beta(2, 9), 2. symmetric Beta distribution given by Beta(2, 2), 3. left-skewed Beta distribution given by Beta(9, 2), 4. bimodal continuous given by Beta(0.2, 0.3), and 5. discontinuous finite mixture model with each v s equal to either $0.2 (with 70% chance) or $0.9 (30%).</p><p>The purpose of these settings is to consider a range of different possible distributions of consumer preferences, leading to range of aggregate demand and profit curves. The first three simulation settings involve unimodal continuous distributions of valuations. Varying the distribution of consumer preferences across these simulations will result in different levels of sparseness of purchases at each price point. The last two simulations have bimodal continuous and bimodal discontinuous distributions leading to bimodal profit functions. <ref type="bibr" target="#b1">Aghion et al. (1991)</ref> show that Bayesian learning leads to inadequate learning in these settings. The distribution of the valuations, the aggregate demand curve, and the aggregate profit curve for each simulation setting are all shown in Appendix A2.</p><p>Within each segment, consumers' valuations can be 10c (d = 0.1) above or below the segment valuation. Alternatively, the range of within-segment heterogeneity is 20% of the range of across-segment heterogeneity (between 0 and 1).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Estimating the Demand Model: Comparing</head><p>Untuned Algorithms To show the advantage of adding partial identification to UCB algorithms, we run simulations of prices and consumer decisions over 200,000 decision rounds. We note that the computer science literature has noted that tuned algorithms outperform untuned algorithms, although <ref type="bibr" target="#b6">Auer (2002)</ref> feels that this is an important comparison to show the relative benefit of adding partial identification.</p><p>The results for the first simulation (segment valuations are right-skewed) are shown in Figure <ref type="figure" target="#fig_2">3</ref>. In panel (a), we plot the prices charged in each of 200,000 rounds for UCB1 untuned (left) and UCB-PI untuned (right). We can see the set of prices tested each period by UCB-PI narrows, showing that partial identification allows us to reduce the number of prices with which to experiment. The algorithm narrows to focus only on prices near the true optimal price. This is summarized in panel (b) (left), which shows the number of times each possible price is charged by UCB and UCB-PI. Although UCB's modal price is near the true optimal price, the UCB-PI algorithm concentrates nearly all of its observations on prices at or close to optimal.</p><p>The key reason for the differences between the algorithms is partial identification. We illustrate the partially identified bounds of the aggregate demand for UCB-PI in Figure <ref type="figure" target="#fig_2">3</ref>, panel (b), right. At each price the shaded areas represent the partially identified bounds for the demand curve after 100, 1,000, and 10,000 rounds (later rounds are shown in darker shades). The true demand (which is the dashed line) is always within the partially identified bounds. Notice that after only one round, we have very wide demand bounds, and as we get more data, the partially identified bounds get narrower. Furthermore, after 10,000 rounds we know that the demand above a price of $0.7 is the point identified at 0. As a result, the UCB-PI algorithm no Notes. (a) Price charged; prices by experiment with UCB (left) and UCB-PI (right) to learn the true optimal price (red line). The UCB-PI learns the optimal price sooner and does not experiment with higher prices (compared to UCB). (b) Prices and demand: the left histogram of prices charged under UCB (gray) and UCB-PI (blue), with truly optimal price (vertical red line); the right figure shows the partially identified demand learning under UCB-PI; the shaded gray regions show the partially identified demand bounds after 1 round (start; lightest), 100 rounds, 1,000 rounds and 10,000 rounds (darkest). (c) Profits: implication of price learning on profits earned by round; the left chart consider profits relative to optimal profits, and the right chart shows the relative performance of the algorithms [defined as: (UCB-PI profits/UCB profits) -1].</p><p>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments <ref type="bibr">Marketing Science, 2019</ref><ref type="bibr">, vol. 38, no. 2, pp. 226-252, © 2019</ref> longer experiments with prices above $0.7 (see panel (a), right chart). In Appendix A3, we explicitly show the prices "turned off" by round. Because of this demand learning, the UCB-PI algorithm results in higher ex post profits than the UCB algorithm (panel (c)). Overall, the UCB-PI attains 90% of ex post optimal profits, whereas the UCB1 attains 50% of ex post optimal profits. We note that we will focus on profits when comparing the tuned algorithms in the next section.</p><p>We show this demand learning for the other four simulations in Figure <ref type="figure" target="#fig_4">4</ref>. Each panel of this figure represents a simulation. The left column is the histogram of prices charged across 200,000 rounds. Here, we see that in each of our simulations the histogram for prices played under UCB-PI (blue) is tighter around the true optimal profit (vertical left line) than the prices played under UCB (gray). Therefore, with partial identification, the algorithm spends more rounds earning and fewer rounds learning.</p><p>Figure <ref type="figure" target="#fig_4">4</ref> (right column) represents demand learning over time. In all of our simulations, the demand bounds get narrower around the true demand curve as we get more data. This is the advantage of partial identification: for any data-generating process that satisfies the assumptions in Section 2.1, we can bound the true demand curve. Most importantly, consider Figure <ref type="figure" target="#fig_4">4</ref>, panel (d), where demand is discontinuous. This is a case where <ref type="bibr" target="#b1">Aghion et al. (1991)</ref> find that Bayesian learning almost surely leads to inadequate learning. With partial identification we do correctly learn the demand curve; moreover, after 10,000 rounds (the darkest shade), the model recovers with certainty that the true demand curve must be discontinuous.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Profit Implications of Adding PI: Comparison of</head><p>Tuned Algorithms In this section, we will consider the UCB-tuned and the UCB-PI-tuned algorithms. In this section, we will run our simulation for 20,000 rounds (as opposed to 200,000 rounds in the previous section), as learning is faster in the tuned algorithms. Figure <ref type="figure" target="#fig_5">5</ref> plots the prices played and profit earned in each of these five simulation settings based on different true demand curves. Each row of this figure corresponds to each simulation setting.</p><p>We will first focus on the prices charged. In panel (a) of Figure <ref type="figure" target="#fig_5">5</ref>, we plot the price played each round for UCBtuned (left column) and UCB-PI-tuned (middle column) algorithms. Across all simulations we find that adding partial identification results in the algorithm setting prices at the optimal levels more often, with more focused experimentation. This is consistent with our results from the untuned algorithms where we found that partial identification leads to faster learning of demand.</p><p>Turning our attention to profit achieved, Figure <ref type="figure" target="#fig_5">5</ref>, panel (a) (right column) shows UCB-PI's relative profit improvement over UCB over time. We find that the UCB-PI outperforms UCB consistently. The maximum increase in profitability is between 15% and 90% across the different simulations. As the number of rounds goes to infinity, the UCB is guaranteed to achieve optimal profits <ref type="bibr" target="#b6">(Auer 2002)</ref>, and therefore the relative benefit is guaranteed to asymptote to zero. However, we find that adding partial identification increases the profits gained in smaller rounds, with the maximum benefit achieved between 1 and 5,000 rounds.</p><p>In an absolute sense, the algorithms can be compared with ex post optimal profit. The ex post optimal profit is the profit achieved assuming the firm had perfect demand information and set the optimal price in every period. Figure <ref type="figure" target="#fig_5">5</ref>, panel (b) shows the ex post profits across all five settings. Again, we find the UCB-PI-tuned achieves higher profits than the UCB-tuned algorithm in each simulation. In particular, the UCB-PI algorithm achieves above 95% of ex post optimal profit in four of the five settings. In the finite mixture setting where learning is difficult <ref type="bibr" target="#b1">(Aghion et al. 1991)</ref>, the algorithm achieves 89% of ex post profits.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Monte Carlo Comparisons to</head><p>Alternative Algorithms Whereas we have just illustrated UCB-PI's superior performance over UCB in five settings, the algorithm performance is stochastic, so we now show a large Monte Carlo simulation across algorithms and problem settings. Here, we consider a broader set of algorithms; we consider the learn-then-earn algorithm, or a balanced field experiment. In these algorithms, the researcher has to ex ante set how long the algorithm should learn (experimental time) and how long the algorithm should use that learning in order to earn. In our simulation experiments, we consider five versions of the learn-andthen-earn algorithm where learning is set for 0.1%, 1%, 5%, 10%, and 25% of experiments. We also include the case where the learning period is 100% because it is exactly a balanced experiment, which matches typical research-driven field experiments and A/B or multivariate testing in industry. The performance of a balanced experiment is not optimizing because it only earns the average profit of all its arms.</p><p>In all, we consider 10 different algorithms: UCB untuned and tuned, UCB-PI untuned and tuned, and learn-then-earn with six different settings. We test each algorithm across each of our five simulation settings. We run each algorithm and setting pair for 1,000 independent Monte Carlo (MC) simulations. In each, we run each algorithm for 20,000 rounds, simulating time, with 10 consumers in the time period. In all, we simulate one billion prices in this Monte Carlo simulation, and it takes only about five hours of computation time.</p><p>Our key measure of performance is profits as a percentage of optimal, for which a summary of ex post achieved profits for each setting and algorithm appears  Notes. The left panel is a histogram of prices charged under UCB (gray) and UCB-PI (blue), with truly optimal price (vertical red line). The right panel shows the partially identified demand learning under UCB-PI. The shaded gray regions show the partially identified demand bounds after 1 round (start; lightest), 100 rounds, 1,000 rounds, and 10,000 rounds (darkest). For all settings, the within-segment heterogeneity is set to d = 0.1.  Notes. The UCB-tuned (gray) and UCB-PI-tuned (blue) algorithms differ across five settings, for one simulation each, by prices charged, relative profits, and percentage of ex post optimal profits. (a) Each row represents a simulation setting; the first (second) column contains the UCB Tuned (UCB-PI Tuned) prices by round; the dotted (red) line represent the optimal prices; the third column considers the percentage difference in profits. (b) Ex post profits achieved across the five (5) simulation settings.</p><p>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments in Figure <ref type="figure" target="#fig_6">6</ref>. In panel (a), we display the distribution of performance for each algorithm across all five settings and 1,000 MC simulations. We display the mean and range (in brackets) of profits achieved. The bar charts represent the 100th (full range), 90th, and 75th percentiles of the profits achieved. Looking across all settings, the UCB-PI algorithm stands out, with the average of 96% of ex post optimal profit and a narrow range from 91% to 99%. The ex post optimal profit is the highest across all algorithms, and the range is the narrowest across all algorithms.</p><p>The learn-then-earn algorithms, with learning periods between 0.5% and 25%, achieve an average between 89% and 95% of ex post optimal profits depending on the time to learn. We find that in this setting, the highest mean profit is for the 5% learning period. However, a researcher cannot know ex ante (when setting the learning time) that 5% would be have been best in this setting. Consistent with the empirical bandit literature <ref type="bibr" target="#b44">(Kuleshov and Precup 2014)</ref>, we find that heuristicbased algorithms (learn-then-earn) can achieve higher ex post profits than UCB-tuned. We find that when we add economic theory to the UCB algorithm, the UCB-PItuned algorithm outperforms the heuristic-based algorithms across a wide range of settings.</p><p>The learn-then-earn experiments have a large range of ex post profit outcomes. A key advantage of the theorybased algorithms (such as UCB-PI) is that they have a lower range of outcome; this is consistent with the objective of minimax regret. To show the differences across rounds, in Figure <ref type="figure" target="#fig_6">6</ref>, panel (b), we plot the outcomes across all simulations for the UCB-PI algorithm and the learn then earn (5%) policy (which had the highest ex post average profit among alternative algorithms) by experimental round (time). This shows that UCB-PI has higher profits, particularly in early time periods. The highest average percentage difference between the algorithms is at the end of the learn-then-earn policy's learning phase (5%). On average, the UCB-PI achieved 20% higher profits after 5% of experimental rounds. As both algorithms run for longer time periods, the mean difference is reduced to 1%. Beyond the mean difference, the UCB-PI has a lower variability across the 1,000 Monte Carlo experiments. This variability is desirable because a researcher could not predictably know ex ante, for any given setting, when the learnthen-earn algorithm will perform well. In Appendix A4, we show the distribution of outcomes after 10,000 rounds for each simulation setting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Empirical Performance: Simulation</head><p>Based on a Pricing Field Experiment <ref type="bibr" target="#b25">(Dubé and Misra 2017)</ref> In this section, we conduct a simulation study based on the field experiment in <ref type="bibr" target="#b25">Dubé and Misra (2017)</ref> (henceforth referred to as DM). DM conducted a price experiment in collaboration with the business-to-business company ZipRecruiter.com, "a large, online recruiting firm" (DM, p. 2). In the experiment's phase I, conducted in September 2015, they ran a randomized price experiment where "the experiment randomly assigned each new customer arriving at the website's paywall to one of ten price buckets ranging from $19 to $399, including a control condition of $99, which was the firm's regular base price at that time" (DM, p. 2). In phase II, they "used the experimental data to estimate (i.e., 'train') a demand model" (DM, p. 3). In phase III, they implemented the best uniform price (DM, table <ref type="table">4</ref>).</p><p>Using the terminology from our paper, it could be said that the pricing policy implemented in DM is learn-thenearn, where DM phases I and II were "learn" and phase III was "earn." In this section, we will consider a simulation to illustrate the benefits of our proposed bandit algorithm over a pricing experiment using distinct learn-and-earn phases.</p><p>We note that we consider only the uniform pricing in DM. Importantly, the objective (and title) of DM is to consider price discrimination with a targeting pricing model that is not considered in our algorithm. <ref type="bibr">13</ref> This section is best viewed as considering the field experiment from DM with the objective function limited to finding the optimal uniform price.</p><p>Two main features of this setting are consistent with our model. First, consistent with DM, we assume that the firm does not have additional information about the demand curve (formally, the firm does not have additional ex ante demand information such as, e.g., probability distribution over feasible demand curves, outside the experiment). Second, each consumer has to enter detailed characteristics data (e.g., type of job, type of firm). This allows the firm to assign consumers to different segments in our model.</p><p>Next, we will first discuss how we simulate data sets based on the DM study. Then we will compare our proposed method (UCB-PI) for optimizing pricing experiments with the computer science method (UCBtuned) and a balanced field experiment (learn-then-earn). We find our approach achieves 43% higher profits in the first month and sustains positive gains throughout the year in 80% of simulations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Simulation Setup: Data Generation Using Field</head><p>Experiment Data Our simulation is based on table 5 in DM, which reports the observed demand ("acquisition rates") based on phase I of the experiment. We use a simple data-generating process from a demand system consistent with the realized demand in the experiment. DM discusses that in its setting consumers have to reveal 11 different descriptive variables before they are shown a price. Because this is a business-to-business application, the consumers are firms paying for the services of ZipRecruiter. <ref type="bibr">Abernethy: Dynamic Online Pricing Using MAB Experiments Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS</ref> These descriptive variables include company descriptors, job posting descriptors, and job benefits (for a complete list, see table 2 in DM). We assume that the firm can use these variables to create segments of consumers, and we assume there are 1,000 such ex ante equally sized segments the firm can create, just as we have previously assumed. We simulate the 1,000 segment mean valuations based on the following underlying piecewise-continuous distribution that is consistent with the aggregate demand reported for 10 prices in table 5 of DM. Notes. We compare the performance of the UCB, UCB-PI, and learn-then-earn algorithms across 1,000 MC simulations and five settings. We consider the ex post profits achieved, the average, and the variability in performance, summarizing the full distributions of outcomes overall (a) and over time by simulation setting (b). (a) Summary across all simulations: plot considers the ex post profits achieved by UCB, UCB-PI and Learn Then Earn (balanced experiments) across all 5 simulations and 1,000 Monte Carlo simulations; the bars represent the range of 100% (light gray; numerical values are shown below the bars), 95% (dark gray) of estimates; the dots (red) represent the mean profit achieved (numerical values are shown above the bars). (b) Profits over time: plot considers the mean and range of profits achieved by the UCB-PI tuned and the learnthen-earn (5%) algorithms by simulation settings and experimental round (time); the vertical line shows the end of the leaning period; this shows that the UCB-PI achieves the same or higher mean profits than the best performing learn-then-earn algorithm, and UCB-PI has a smaller range across Monte Carlo simulations.</p><p>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments Of all consumers viewing the lowest price of $19, 36% of them purchase, so we assume that 64% of segments have valuations drawn from a uniform distribution between $0 and $19. At the second-lowest price of $39, 32% of consumers purchase, so we assume that 4% (36% − 32%) of segments have valuations drawn from a uniform distribution between $19 and $39, and so on, to the highest price of $399. <ref type="bibr">14</ref> We now illustrate how our data-generating process is consistent with the data reported in DM. We consider 10,000 independent replications of the observed experiment with 7,870 simulated consumers. For each replication, we draw a set of 1,000 midpoints of segment valuations from the distribution described above. From all of the equally sized segments, we sample 7,870 consumers' segment membership labels. Each consumer's valuation is then a draw from a uniform distribution between −d and +d, that midpoint of the consumer's segment. We set d $5 because we find that this value makes the true optimal price, averaged across replications of the experiment, to be $281, so we are consistent with DM. We randomize all consumers to the same 10 price points, with 787 consumers drawn for each price. This allows for small-sample upward-sloping demand curves. From the demand curve, and assuming zero marginal cost, we calculate the implied profit curve for each replication of the experiment.</p><p>The resulting empirical distributions of our simulated demand and profit curves are consistent with the realized demand and profit in DM, as we show in Figure <ref type="figure" target="#fig_7">7</ref>, panel (a). For each price, we illustrate the distribution of simulated demand (panel (a), left) including the realized acquisition rates in DM's table 5 (red dots). The distribution of simulated per-consumer profits at each price (panel (a), right) shows that the optimal profit levels are achieved at prices $199-$399. For 60% of the experiment replications, the optimal fixed uniform price is $249. We also find $399 is optimal for 15% of small-sample experiments (as in DM's raw data). The average optimal uniform price is $281 (as in DM's phase II calculations). It is important to note that this implies, in an infinite sample setting, that the optimal uniform price would be $249 for all Monte Carlo draws (as in the implemented uniform price in DM).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Pricing Policies in Simulation</head><p>We now consider the firm's pricing decision, facing the previously described data and under the following assumptions. First, we assume that the firm sets prices with the objective to maximize total annual profits. In the DM experiment, ZipRecruiter.com had about 8,000 visitors in one month, so we assume 100,000 consumers will visit in a year. Second, the firm considers only a well-defined set of 10 prices to test, the same as in the DM field experiment.</p><p>And third, at the start of the year, the firm does not know what the optimal price would be.</p><p>Under these assumptions, we will consider two type of experiment policies: learn-then-earn and bandit experiments. As we have defined, using the learn-thenearn policy, the firm runs a balanced field experiment, setting each price uniformly randomly for the predefined learning phase. Then, in the earn phase, the firm finds the optimal price and sets that for a remaining time. For example, a 10% learn-then-earn experiment runs a balanced experiment for 10% of the year, finds the optimal price, and sets that for the remaining 90% of the year. We will consider learning phases of various lengths: 0.5%, 1%, 5%, 7.9% (this represents the DM experiment), 10%, and 25%.</p><p>Using the bandit experiment, as opposed to the distinct phases of the learn-then-earn policy, the firm continually balances learning and earning across each time period. We assume that the firm can change prices after every 10 visitors, so there are 10,000 possible price changes (pricing rounds). In addition to our proposed policy, UCB-PI-tuned, we consider the standard MAB algorithm from computer science, UCB-tuned, described earlier.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Results of Simulation Based on</head><p>Field Experiment The resulting total annual profits, across different policies and all simulated replications, are shown in Figure <ref type="figure" target="#fig_7">7</ref>, panel (b). The UCB-PI policy achieves the highest average profit and has the lowest variability of profits across simulations. To highlight the advantage of adding partial identification to this method, the UCB-PI-tuned increases ex post optimal profits to 98%. The computer science benchmark, UCB-tuned, does not perform as well and achieves only 81% of ex post optimal profits. Among the learn-then-earn policies tested, the highest ex post profit is achieved by the 7.9% version, which represents the DM experiment. This corresponds to about one month of balanced experimentation followed by setting the optimal price for the remaining 11 months of the year. However, even with this method, which attains 94% of optimal profits, there is a wide range of ex post profit achieved, as high as 97% and as low as 83%. The UCB-PI algorithm not only has a higher mean (98%) but also has a much tighter range across simulations, as high as 99% and only as low as 96%. Looking at profits across the year with 100,000 customers, compared with the 7.9% learn-then-earn, the UCB-PI does maintain higher profits, with a mean difference of about 4%. The range across all simulations is from −1% to 18%, with a positive difference in 88% of simulations.</p><p>Beyond looking at the annual profits, we specifically look at profits during the first month. Whereas annual profits combine the learn phase (first month) of the 7.9% learn-then-earn policy and its earning (remaining 11 months), profits in the first month alone show UCB-PI enjoys its best relative performance, 43% higher profits (Figure <ref type="figure" target="#fig_7">7</ref>, panel (b)). The UCB-PI quickly achieves 92% of optimal profits during those first 7,870 customer interactions. By contrast, the 7.9% learn-then-earn policy achieves 62% of optimal profits. Because it is a balanced experiment for the month, the policy just achieves an average of the profit levels for each price tested.</p><p>We consider the evolution of prices and profits by over time in both algorithms to better understand how the UCB-PI performs better than the learn-then-earn Notes. We describe a data-generating process to recreate data from DM (a). We compare performance of the UCB, UCB-PI, and learn-then-earn algorithms across 1,000 Monte Carlo experiments (b). (a) Simulation set up: we consider the simulated demand (left) and profits (right) for 10,000 draws of 7,870 consumers; in each draw, we assume that an independent set of 787 consumers are exposed to each of the 10 prices. Consumers valuations are draw from a uniform distribution between −$5 and +$5 of the segment midpoint; the percentage of simulations in which each price is profit-maximizing appears in value above the denisty (right chart). (b) Ex post profits: we consider the ex post profits achieved by UCB, UCB-PI and Learn Then Earn (balanced experiments) across 1,000 Monte Carlo simulations; we consider the profit after 100,000 consumers (about 1 year); the bars represent the range of 100% (light gray, and the interval values are shown below the bars), and 95% (dark gray) of the profit estimates; the dots (red) represent the mean profit (the mean values are shown above the bars).</p><p>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments algorithm. In Figure <ref type="figure" target="#fig_8">8</ref>, panel (a), we plot the evolution of prices by round, where each round refers to 10 customers visiting the website, and prices are shaded based on their true ex post profit level (i.e., higher profits are shown with less shading). In the learn-then-earn algorithm, by definition, the first 7,870 consumers are in a balanced field experiment and, therefore, are exposed to one of the 10 prices with equal probability (i.e., all prices appear as equally sized regions). After the end of the learning period (marked by the dotted vertical line, Figure <ref type="figure" target="#fig_8">8</ref>), the algorithm picks the price with the best profits so far and charges that price for the remaining rounds. Reflecting the underlying data-generating process (Figure <ref type="figure" target="#fig_7">7</ref>, panel (a)), the algorithm learns the true ex post optimal price of $249 in about 60% of simulations.</p><p>The UCB-PI algorithm, however, balances learning and earning continuously over all rounds and brings about two important differences in the price paths. First, the UCB-PI tends not to charge low prices with lower profits (regions shaded by dark gray). This is driven by the partial identification (PI) in the algorithm. For example, if the estimated lower bound of demand at $399 is 5%, then the lower bound of profit at $399 is higher than the profit at $19 even with 100% demand. Based on Figure <ref type="figure" target="#fig_8">8</ref>, panel (a), the UCB-PI will "turn off" experimentation at $19. Second, whereas learn-then-earn stops adjusting price after its experimentation phase, the UCB-PI method continues learning and continuously keeps increasing the percentage of rounds charging the ex post optimal price of $249. These trends are also shown in the profits across rounds (Figure <ref type="figure" target="#fig_8">8</ref>, panel (b)).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Conclusion and Future Research</head><p>With the emergence of big data, we see an increase in machine learning applications in marketing <ref type="bibr" target="#b22">(Chintagunta et al. 2016</ref>). We study a realistic dynamic pricing problem for an online retailer. The goal is a pricing experimentation policy that can apply to many types of products (robust) and run in real time (fast).</p><p>We propose a novel combination of reinforcement learning with microeconomic theory. To marketing and economics, we bring these scalable reinforcement learning methods for the firm's pricing problem. Here, we show the benefit of earning while learning over balanced field experiments.</p><p>To the machine learning literature, we introduce distribution-free theory of demand to improve existing algorithms theoretically and empirically.</p><p>We provide strong evidence for the benefit of partial identification of demand in nonparametric bandit problems. We derive theoretically the rate of convergence for our algorithm. This shows that when faced with any weakly downward-sloping demand, our algorithm is guaranteed to converge faster than current algorithms. Across a range of simulation settings, we show that our proposed algorithm, compared with alternatives, achieves a higher mean profit and a lower variance of outcomes across settings. This suggests that our proposed algorithm can be used for a variety of products and will predictably lead to higher profits. In a calibrated simulation based on a field experiment <ref type="bibr" target="#b25">(Dubé and Misra 2017)</ref>, we find that our algorithm achieves 43% higher profits during the month of testing and about 4% higher annual profits.</p><p>A limitation of our current work is that we consider a simple demand system, where each consumer has a stable valuation. We note that our demand model assumes that the firm has information about observed heterogeneity. In the limit, if the firm has no information about observed heterogeneity (or d 1), our method (UCB-PI) will exactly replicate the computer science method (a version of UCB with scaling the exploration bonus by prices). We illustrate this in Online Appendix A5.3.</p><p>Further research can consider settings where consumer valuation can change over time. This could be in the form of prior prices creating reference prices or consumers with dynamic preferences. A challenge is that optimal profit will no longer be stationary and, moreover, will vary based on the experimentation method. Another avenue for further research is to analyze demand systems that consider more than one product; this includes both category management and competition. (We note that our algorithm and theoretical results are not guaranteed for markets with strategic competition.) Additionally, further research can consider optimal price discrimination in the form of targeted or personalized pricing. t is the action described by ! t . Profit π p k at price p k is described as a random variable R t i of reward for i ∈ 1, . . . , K. Let Q i be a distribution on the reward R t i , with support on [0, p i ]. Then let the rewards R 1 i , . . . , R T i iid</p><p>; Q i , where mean E [R t i ] m i . We assume that the largest m i is unique and, without loss of generality, assume that the coordinates are permuted in order that m 1 is the largest ex post mean reward. Define Δ i : m 1 − m i for i 2, . . . , K. Notes. We compare the prices (a) and profits (b) of UCB-PI versus learn-then-earn (7.9%) algorithms over time. The 7.9% reflects the 7,870 customers, corresponding to the one month (or 787 rounds). (a) Distribution of prices: we plot the distribution of prices charged across 1,000 Monte Carlo simulations by UCB-PI tuned (right) and the learn-then-earn (7.9%) (left) algorithms by round (each round represents a price charged to 10 cosumers); the prices charged are color coded by optimal ex post profits (light is high and dark is low); the dashed (red) line indicates the end of the learning period in the learn-then-earn algorithm. (b) Profits over time: we plot the profits achieved by the UCB-PI tuned and the learn-then-earn (7.9%) algorithms by round (10 consumers); the lines represent the means and the shaded area represents the distribution across 1,000 Monte Carlo simulations; the left hand side plot shows the percent of ex post optimal achieved, and the right hand side plot show the relative profits; the vertical line indicates the end of the learning period in the learn then earn algorithm.</p><p>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments <ref type="bibr">8</ref> We note that regret is appropriate because of the active learning setting. We need an "ex ante" criteria to evaluate a pricing policy. By ex ante, we mean that the objective function must be one that can be calculated without knowing the true demand curve. Specifically, we cannot consider criteria such as total expected profits, as these cannot be used to evaluate a policy before the probability of outcomes is realized. <ref type="bibr">9</ref> In the treatment choice literature <ref type="bibr" target="#b49">(Manski 2005)</ref>, this corresponds to monotone treatment response. <ref type="bibr">10</ref> In estimating partially identified demand models, a downward biased estimate of d leads to incorrect demand inferences, whereas an upward biased estimate of d leads to imprecisely estimated demand. Consider our example in panel (a) of Figure <ref type="figure" target="#fig_1">2</ref>. If d is downward biased, then for segment A, we could estimate a set smaller than [$1, $3]; however, for an upward biased d, we would estimate a set larger than [$1, $3]. 11 Our estimator is similar to that used in <ref type="bibr" target="#b33">Handel et al. (2013)</ref>, which is an adaption of the <ref type="bibr" target="#b31">Hall and Park (2002)</ref> estimator. Formally, the <ref type="bibr" target="#b31">Hall and Park (2002)</ref> boundary estimator considers a setup where the econometrician observes N draws from a continuous univariate distribution F with an unknown and finite upper boundary. The <ref type="bibr" target="#b33">Handel et al. (2013)</ref> estimator is a discrete analog to these methods, because the distribution ofd st is discrete.</p><p>12 Where we label this "untuned" in contrast to its tuned version defined later. <ref type="bibr">13</ref> Note that table 4 in DM suggests that optimal uniform pricing results in (a) a higher profit than the control condition and (b) the profits from uniform and targeted pricing being statistically indistinguishable. <ref type="bibr">14</ref> We make two further assumptions when simulating true population valuations. First, the acquisition rates in DM are upward sloping between $59 and $79. We assume that this is a small sample error, as opposed to the distribution of the population's preferences. In our simulation we assume 28% of consumers purchase at both $59 and $79 (instead of 27% at $59 and 29% at $79 as in DM, Table <ref type="table">5</ref>). Second, in table 5 of DM, the acquisition rate is 11% at $399. At this number, $399 is the optimal uniform price (11% * 399[43.89] &gt; 17% * 249 <ref type="bibr">[42.33]</ref>). This is inconsistent with the population's optimal price from the analysis in DM ("We can rule out $399 as being too high since there is close to a 100% posterior probability that the own-elasticity is well above −1 at that point"; p. 17). We assume that this is because of a small sample error and assume demand at $399 is 10%. <ref type="bibr">15</ref> In the main text we refer to this as the UCB-PI-untuned, but we drop the "untuned" label here for easier reading because the theoretical literature does not focus on the "tuned" algorithms. <ref type="bibr">16</ref> Here, we can see that if d were less than its maximum value, the partially identified intervals shrink, and the above probabilities are smaller.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. Balanced Field Experiment (Left) vs. Multiarmed Bandit Experiment (Right)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. Partial Identification of Valuations by Segments and Aggregated Estimated Demand Bounds</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. (Color online) Value from Partial Identification: Comparison of the UCB1-and UCB-PI-Untuned Algorithms for the Simulation with True Segment Valuations from Right-Skewed Distribution, beta(2, 9), and Within-Segment Heterogeneity Set to d 0.1</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. (Color online) Value from Partial Identification: Demand Learning for the UCB-PI-Untuned Algorithm</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. (Color online) Value of Partial Identification for Tuned Algorithms</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. (Color online) Monte Carlo Experiment</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 7 .</head><label>7</label><figDesc>Figure 7. (Color online) Simulation Based on Dubé and Misra (2017): Setup and Results</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 8 .</head><label>8</label><figDesc>Figure 8. (Color online) Simulation Based on Dubé and Misra (2017): Tracking over Time</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc> Abernethy: Dynamic Online Pricing Using MAB Experiments   Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS   </figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Summary of Notation Midpoint of valuations in segment s, with its estimated valuev st after t rounds d Estimated range of valuations across with v is ∈ [v s − d, v s + d s ], ∀ŝ d st Lowest value of d that can rationalize all data for segment s after t roundŝ d t Estimated range of valuations across all segments at time t Ψ Policy for dynamic pricing (i.e., data-driven decision rule p t+1 Ψ({p 1 , π p1 , . . . , p t , π pt })) Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments Marketing Science<ref type="bibr" target="#b34">, 2019</ref>,  , vol. 38, no. 2, pp. 226-252, © 2019 </figDesc><table><row><cell>Notation</cell><cell></cell><cell>Description</cell></row><row><cell>p</cell><cell cols="2">Price, with p ∈ {p 1 , . . . , p K }</cell></row><row><cell>D(p)</cell><cell>Demand at price p</cell></row><row><cell>π(p)</cell><cell cols="2">Profit at price p (i.e., π(p) pD(p)))</cell></row><row><cell>v is</cell><cell cols="2">Valuation of individual consumer i in segment s</cell></row><row><cell>v s</cell><cell></cell></row><row><cell>n kt</cell><cell cols="2">Number of times price p k was tested through time t</cell></row><row><cell>n st</cell><cell cols="2">Number of times any price was tested with segment s</cell></row><row><cell></cell><cell>through time t</cell></row><row><cell>c s</cell><cell cols="2">Percentage of consumers in segment s</cell></row><row><cell>LB t (x),</cell><cell cols="2">Estimated lower and upper bounds through t of</cell></row><row><cell>U, B t (x)</cell><cell></cell></row><row><cell></cell><cell>[</cell><cell>x) ] )</cell></row><row><cell>UCB</cell><cell cols="2">Upper confidence bound, with its original</cell></row><row><cell></cell><cell cols="2">implementations UCB1</cell></row><row><cell>UCB-PI</cell><cell cols="2">Upper confidence bound with partial identification</cell></row><row><cell></cell><cell cols="2">(proposed in this paper)</cell></row></table><note>a parameter x (e.g., either v is , D(p), or π(p)) H t (x)Partially identified set through t of a parameter x (i.e., H t (x) [ LB t (x), U, B t (</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>∈ [p min s,t , p max s,t ]. To formally express set identification, we define H t (x) : LB t (x), UB t (x) [ ]to be the partially identified set for any parameter of interest, x, after t observed price experiments. Here, LB t (x) and UB t (x) are the estimated lower and upper bounds, respectively. In set notation, x ∈ H t (x) [ LB t (x), UB t</figDesc><table><row><cell></cell><cell>[</cell><cell>(x) ] . In this no-</cell></row><row><cell cols="2">tation, H t [v i,s ] [p min s,t , p max s,t ].</cell></row><row><cell cols="3">We can define an estimated midpoint of the segment</cell></row><row><cell cols="3">valuations (v s ) and the segment leveld s,t aŝ</cell></row><row><cell>v s,t</cell><cell>p max s,t + p min s,t 2</cell></row><row><cell>d s,t</cell><cell>p max s,t − p min s,t</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc> Abernethy: Dynamic Online Pricing Using MAB Experiments   Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS   </figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head></head><label></label><figDesc>Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments</figDesc><table><row><cell>Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head></head><label></label><figDesc> Abernethy: Dynamic Online Pricing Using MAB Experiments   Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS   </figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head></head><label></label><figDesc> Abernethy: Dynamic Online Pricing Using MAB Experiments   Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS   </figDesc><table /></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">MarketingScience, 2019, vol. 38, no. 2, pp. 226-252, © 2019 </note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot"> Abernethy: Dynamic Online Pricing Using MAB Experiments   Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS   </note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="5">Amazon.com ran price experiments in 2000 and then, as a result of consumer feedback, released a statement saying "random testing was a mistake, and we regret it because it created uncertainty and complexity for our customers, and our job is to simplify shopping for customers. That is why, more than two weeks ago, in response to customer feedback, we changed our policy to protect customers" (http://cnnfn.cnn.com/2000/09/28/technology/amazon/, accessed February 11, 2018). 6 This is an assumption about the data-generating process and not the information that the firm has. In our empirical application, we assume that d is not known to the firm and will be estimated from observed choice data. 7 Using the websites http://camelcamelcamel.com and https:// thetracktor.com (accessed February 11, 2018), we can track price changes.Misra, Schwartz, and Abernethy: Dynamic Online Pricing Using MAB Experiments</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The first two authors are listed alphabetically.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix. Theoretical Performance of UCB-PI Algorithm</head><p>We provide theoretical guarantees for the UCB-PI index (Equation (7)) <ref type="bibr">15</ref> . The log-regret bound was first shown by <ref type="bibr" target="#b46">Lai and Robbins (1985)</ref> for a particular stylized multiarmed bandit problem. Our proof is based on an alternative view of the original UCB analysis. The proof we present here differs from the standard UCB proof from <ref type="bibr" target="#b7">Auer et al. (2002)</ref> because we use an argument based on potential function, which we define in the proof. This argument in the proof features a novel application of these tools for formally analysis of algorithms. We use this alternative approach, in part, because it permits a more general description of the exploration bonus.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Problem Definition and Preliminaries</head><p>We use more general notation here to go beyond price and profit to describe actions and rewards. Price p k played at time The bandit algorithm is a procedure that chooses an action ! t on round t as a function of the set of past observed action/ reward pairs, (! 1 , R 1 ! 1 ), . . . , (! t−1 , R t−1 ! t−1 ). On round t, the past data are summarized by the count, N t i :</p><p>t−1 τ 1 I[! τ i], and the empirical mean estimator,m t i :</p><p>Analysis Techniques: Concentration Inequalities and Potential Function Much of the literature and techniques used to analyze finite time multiarmed bandit problems rely on a standard set of tools known as deviation bounds or concentration inequalities. Deviation bounds are used to reason about tail probabilities of averages of independent and identically distributed random variables and martingales, for instance. Perhaps the most basic deviation bound is Chebyshev's inequality, which says that for any random variable X with mean m and variance s 2 we have Pr |X − m| &gt; ks ( )≤ 1 k 2 . More advanced results are based on the Chernoff bounds, which provide much sharper guarantees on the decay of the tail probability. For example, the Hoeffding-Azuma inequality (Cesa-Bianchi and Lugosi 2006), which we present below, gives a probability bound on the order of exp(−k 2 ), which is much faster than 1/k 2 .</p><p>Let us assume we are given a particular deviation bound that provides the following guarantee:</p><p>where f (•, •) is a function, continuous in e &gt; 0 and monotonically decreasing in both parameters, that controls the probability of a large deviation. Although UCB relies specifically on the Hoeffding-Azuma inequality, for now we leave the deviation bound in a generic form.</p><p>We define a pair of functions that allows us to convert between values of e and N in order to guarantee that f (N, e) ≤ n for a given n &gt; 0. To this end, define</p><p>We omit the n in the argument to Λ(•), ρ(•). Note the property that ρ(N, n) ≤ e/2 for any N ≥ Λ(e, n). Note thatd, which plays a role in the lower and upper bounds on reward, does not enter this proof, yet we can conclude the proof applies to our proposed algorithm. Indeed, d is not known to the researcher and must be estimated. Consider the worst case (in the sense that this will lead to the maximum regret), where segmentation is useless; then d 1. Then the credible intervals for every segment's feasible profit still are the entire possible range. This is the case presented in the proof here. But in practice, 0 ≤ d ≤ 1, and d can be smaller than its maximum value, making segmentation useful and narrowing the partially identified intervals. Therefore, the proposed UCB-PI algorithm does no worse than the performance described here.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Bounds for the UCB-PI Algorithm</head><p>Recall that the UCB-PI index is defined in Equation ( <ref type="formula">7</ref>) by taking the mean estimated reward plus an exploration bonus for each price p i . The precise form of the exploration bonus derives from the deviation bound, particularly from the form of ρ(•). In other words, for a fixed choice of n &gt; 0, we can redefine the algorithm as follows:</p><p>UCB-PI Algorithm : on round t, play ! t arg max</p><p>(11)</p><p>A central piece of the analysis relies on the following potential function, which depends on the current number of plays of each arm i 2, . . . , K:</p><p>With our notation, the expected regret can be expressed as</p><p>Lemma 1. The expected regret of UCB is bounded as</p><p>Proof. The additional (statistical) regret suffered on round t of UCB is exactly m 1 − m ! t . From our deviation bound (Equation ( <ref type="formula">10</ref>)), we can consider two inequalities: 16</p><p>To analyze the two inequalities above, we let ξ t be the indicator variable that one of the above two inequalities fails to hold. Note we chose ρ(•) so that P[ξ t 1] ≤ 2n.</p><p>Because the algorithms choose arm ! 1 , we havê</p><p>If we combine the above two equations, and consider the event that ξ t 0, then we obtain</p><p>Even in the event that ξ t 1, we have that m</p><p>Finally, we observe that the potential function was chosen so that Φ(N t+1 2 , . . . ,</p><p>The final piece we need to establish is that the number of pulls N i of arm i, for i 2, . . . , K, is unlikely to exceed Λ(Δ i , n).</p><p>Lemma 2. For any T &gt; 0, we have</p><p>Proof of Lemma 2. To obtain the inequality of the lemma, define for every t 1, . . . , T and i 2, . . . the indicator variable z t i , which returns 1 when ! t i given that N t i ≥ Λ( Δi pi , n) and returns 0 otherwise. We can show that z t i 1 with a probability smaller than 2n. <ref type="bibr">Abernethy: Dynamic Online Pricing Using MAB Experiments Marketing Science, 2019, vol. 38, no. 2, pp. 226-252, © 2019 INFORMS</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>249</head><p>Note that if ! t i, then the upper confidence estimate for i was larger than that of action 1. More precisely, it must be that m t i + p i ρ(N t i ) ≥m t 1 + p 1 ρ(N t 1 ). For this to occur, either we had (a) a large underestimate on m 1 -that ism t</p><p>It is clear that (a) occurs with a probability of less than n by construction of ρ.</p><p>To analyze (b), note that m 1 m i + Δ i , and we are also given that</p><p>which happens with a probability of no more than n.</p><p>Therefore,</p><p>□ We are now able to combine the above results for the final bound.</p><p>Theorem 3. If we set n T −2 /2, the deviation bound is given by</p><p>And the expected regret of UCB is bounded as</p><p>Proof. A standard deviation bound that holds for all distributions supported on [0, p i ] is the Hoeffding-Azuma inequality <ref type="bibr" target="#b21">(Cesa-Bianchi and Lugosi 2006)</ref>, where the bound is given by f (N, e) 2 exp(−2Ne 2 ). Utilizing Hoeffding-Azuma, we have</p><p>Set n T −2 /2 in the equation above. From Lemma 1 and 2, we prove that this provides an upper bound for the expected regret. □ Notice in Theorem 3 that we set</p><p>Substituting this into the UCB algorithm in Equation ( <ref type="formula">11</ref>), we get the exploration bonus in our proposed algorithm (see Equation ( <ref type="formula">7</ref>)). The bound for regret for this algorithm is strictly lower than that of <ref type="bibr" target="#b6">Auer (2002)</ref> as all p i 's are scaled to be lower than 1. Further adding the additional partial identification implies that an arm is played weakly less than Λ(e, n) derived by the Hoeffding-Azuma inequality. Consider the proofs for Lemmas 1 and 2: as arms are "turned off," we get lower deviation bounds. As we discussed above, the number of arms turned off in an empirical application depends on the value of d. The bounds derived are for d at its maximum value, where no arms are turned off, and segmentation is not useful. However, the empirical performance of our algorithm should improve for any lower values of d. The theoretical argument holds true as a worst-case analysis; that is d 1.</p><p>Please see the online appendix for appendix Sections A2-A5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Endnotes</head><p>1 For example, industry reports suggest Amazon.com sells about 500 million products (https://www.scrapehero.com/many-products-amazon -sell-january-2018/, accessed February 11, 2018). <ref type="bibr">2</ref> We note that in practice such segmentation is used by advertisers using data from Facebook (https://www.facebook.com/help/ analytics/1568220886796899/) or Google Analytics (https://support .google.com/analytics/answer/3123951?hl=en, accessed March 2016).</p><p>3 Recent industry reports suggest that Amazon.com carries 14 times more products than the second-largest online retailer, Walmart.com (https://www.scrapehero.com/amazon-vs-walmart-products-sold -in-april-2017/). <ref type="bibr">4</ref> We note that if the decision maker is willing to make stronger parametric assumptions about the demand curve, alternative streams of MAB algorithms based on parametric models are more appropriate. One such algorithm is the earliest Bayesian formulation of the MAB problem, which led to <ref type="bibr">Thompson sampling (Thompson 1933)</ref>. A more prominent formulation with Bayesian learning led to the Gittins index <ref type="bibr" target="#b29">(Gittins 1989</ref>) and Whittle index <ref type="bibr" target="#b67">(Whittle 1980)</ref>.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Conditioning prices on purchase history</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Acquisti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Varian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="367" to="381" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Optimal learning by experimentation</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Aghion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bolton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Harris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Jullien</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Rev. Econom. Stud</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="621" to="654" />
+			<date type="published" when="1991" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Sample mean based index policies with O(log n) regret for the multi-armed bandit problem</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Agrawal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Appl. Probab</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1054" to="1078" />
+			<date type="published" when="1955" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Joint dynamic pricing of multiple perishable products under consumer choice</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Akçay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">P</forename><surname>Natarajan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1345" to="1361" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Price stickiness: Empirical evidence of the menu cost channel</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Jaimovich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Simester</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Rev. Econom. Statist</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="813" to="826" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Exploration-exploitation trade-off using variance estimates in multi-armed bandits</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Audibert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Munos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szepesvári</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Theoret. Comput. Sci</title>
+		<imprint>
+			<biblScope unit="volume">410</biblScope>
+			<biblScope unit="page" from="1876" to="1902" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Using confidence bounds for exploitation-exploration trade-offs</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Auer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="397" to="422" />
+			<date type="published" when="2002-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Finite-time analysis of the multiarmed bandit problem</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Auer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Cesa-Bianchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Machine Learn</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">2/3</biblScope>
+			<biblScope unit="page" from="235" to="256" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Pricing of short life-cycle products through active learning. Working paper</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Aviv</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pazcal</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2002" />
+			<pubPlace>St. Louis</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Washington University of St. Louis</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Using big data to make better pricing decisions</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Baker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kiewell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Winkler</surname></persName>
+		</author>
+		<ptr target="http://www.mckinsey.com/business-functions/marketing-and-sales/our-insights/using-big-data-to-make-better-pricing-decisions" />
+	</analytic>
+	<monogr>
+		<title level="j">McKinsey &amp; Company</title>
+		<imprint>
+			<date type="published" when="2014-06" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The dynamic pricing of next generation consumer durables</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">L</forename><surname>Bayus</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="251" to="265" />
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Pricing without priors</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bergemann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schlag</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Eur. Econom. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">2-3</biblScope>
+			<biblScope unit="page" from="560" to="569" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Robust monopoly pricing</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bergemann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schlag</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Theory</title>
+		<imprint>
+			<biblScope unit="volume">146</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="2527" to="2543" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Experimentation in markets</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bergemann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Valimaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Rev. Econom. Stud</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="page" from="213" to="234" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Berger</surname></persName>
+		</author>
+		<title level="m">Statistical Decision Theory and Bayesian Analysis</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="1985" />
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Dynamic pricing without knowing the demand function: Risk bounds and near-optimal algorithms</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Besbes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zeevi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1407" to="1420" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Contingent pricing to reduce price risks</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Biyalogorsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Gerstner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="146" to="155" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The design and introduction of product lines when consumer valuations are uncertain. Production Oper</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Biyalogorsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Koenigsberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1539" to="1548" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Menu pricing and learning</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bonatti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. Econom. J. Microeconom</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="124" to="163" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Nonlinear pricing to produce information</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Braden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Oren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="310" to="326" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Optimal learning and experimentation in bandit problems</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brezzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Lai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Dynam. Control</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="87" to="108" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<author>
+			<persName><forename type="first">N</forename><surname>Cesa-Bianchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lugosi</surname></persName>
+		</author>
+		<title level="m">Prediction, Learning, and Games</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Marketing science and big data</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Chintagunta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Hanssens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="341" to="342" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Dynamic pricing and learning: Historical origins, current research, and new directions</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Boer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Surveys Oper. Res. Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Forward buying by retailers</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Koenigsberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Purohit</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="90" to="102" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Scalable price targeting</title>
+		<author>
+			<persName><forename type="first">J-P</forename><surname>Dubé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Misra</surname></persName>
+		</author>
+		<ptr target="http://www.nber.org/papers/w23775" />
+	</analytic>
+	<monogr>
+		<title level="j">National Bureau of Economic Research</title>
+		<imprint>
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+	<note type="report_type">NBER Working Paper 23775</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Dynamic pricing in the presence of inventory considerations: Research overview, current practices, and future directions</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Elmaghraby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Keskinocak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1287" to="1309" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Decision-making under uncertainty: Capturing dynamic brand choice processes in turbulent consumer goods markets</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Erdem</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Keane</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="20" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">The economics of big data and differential pricing. The White House: President Barack Obama (blog</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Furman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Simcoe</surname></persName>
+		</author>
+		<ptr target="https://obamawhitehouse.archives.gov/blog/2015/02/06/economics-big-data-and-differential-pricing" />
+		<imprint>
+			<date type="published" when="2015-02-06" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Multi-Armed Bandit Allocation Indices</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gittins</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1989" />
+			<publisher>John Wiley &amp; Sons</publisher>
+			<pubPlace>Chichester, UK</pubPlace>
+		</imprint>
+	</monogr>
+	<note>1st ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Multi-Armed Bandit Allocation Indices</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gittins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Glazebrook</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Weber</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>John Wiley &amp; Sons</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">New methods for bias correction at endpoints and boundaries</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">U</forename><surname>Park</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1460" to="1479" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Robust new product pricing</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Handel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Misra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="864" to="881" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Robust firm pricing with panel data</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Handel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Roberts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econometrics</title>
+		<imprint>
+			<biblScope unit="volume">174</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="165" to="185" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<author>
+			<persName><forename type="first">Schwartz</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Abernethy</forename></persName>
+		</author>
+		<title level="m">Dynamic Online Pricing Using MAB Experiments Marketing Science</title>
+				<imprint>
+			<date type="published" when="2019" />
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="226" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Website morphing</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">L</forename><surname>Urban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Liberali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Braun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="202" to="223" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Measuring the implications of sales and consumer inventory behavior</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Hendel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nevo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Econometrica</title>
+		<imprint>
+			<biblScope unit="volume">74</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1637" to="1673" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Optimal dynamic product launch and exit under demand uncertainty</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hitsch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="25" to="30" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Hassle costs: The achilles&apos; heel of pricematching guarantees</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hviid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shaffer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Management Strategy</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="489" to="521" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Optimizing e-tailer profits and customer savings: Pricing multistage customized online bundles</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Kemerer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="737" to="752" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Pricing decisions under demand uncertainty: A bayesian mixture model approach</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kalyanam</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="207" to="221" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Empirical generalizations from reference price research</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kalyanaram</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Winer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="G161" to="G169" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">On boundary correction in kernel density estimation</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Karunamuni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Alberts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Methodol</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="191" to="212" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<title level="m" type="main">The value of knowing a demand curve: Bounds on regret for on-line posted-price auctions, Working paper, Akamai Technologies</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">T</forename><surname>Leighton</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014" />
+			<pubPlace>Cambridge, MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Algorithms for the multi-armed bandit problem Working paper</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kuleshov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Precup</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/1402.6028" />
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+		<respStmt>
+			<orgName>McGill University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Adaptive treatment allocation and the multi-armed bandit problem</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Lai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1091" to="1114" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Asymptotically efficient adaptive allocation rules</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Lai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Robbins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Appl. Math</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="4" to="22" />
+			<date type="published" when="1985" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">Near-optimal bisection search for nonparametric dynamic pricing with inventory constraint</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jasin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sinha</surname></persName>
+		</author>
+		<ptr target="https://ssrn.com/abstract=2509425" />
+		<imprint>
+			<date type="published" when="2014" />
+			<pubPlace>Ann Arbor</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>University of Michigan</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Ross School of Business Working Paper 1252</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Applied dynamic pricing and production models with specific application to broadcast spot pricing</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Lodish</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="1980" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<title level="m" type="main">Social Choice with Partial Knowledge of Treatment Response</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Manski</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<publisher>Princeton University Press</publisher>
+			<pubPlace>Princeton, NJ</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mas-Colell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Whinston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Green</surname></persName>
+		</author>
+		<title level="m">Microeconomic Theory</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Oxford University Press</publisher>
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Games against nature</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Milnor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Decision Processes</title>
+				<editor>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Thrall</surname></persName>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Coombs</surname></persName>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Davis</surname></persName>
+		</editor>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>John Wiley &amp; Sons</publisher>
+			<date type="published" when="1954" />
+			<biblScope unit="page" from="49" to="59" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Intertemporal price discrimination with forwardlooking consumers: Application to the US market for console video-games</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Nair</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quant. Marketing Econom</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="239" to="292" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Empirical analysis of indirect network effects in the market for personal digital assistants</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Nair</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Chintagunta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J-P</forename><surname>Dube</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quant. Marketing Econom</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="23" to="58" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Nonlinear pricing in markets with interdependent demand</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Oren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Wilson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="287" to="313" />
+			<date type="published" when="1982" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Dynamic pricing and ordering decisions by a monopolist</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rajan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Steinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Steinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="240" to="262" />
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Competition, strategy, and price dynamics: A theoretical and empirical investigation</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Bass</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="283" to="296" />
+			<date type="published" when="1985" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">A two-armed bandit theory of market pricing</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rothschild</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Theory</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="185" to="202" />
+			<date type="published" when="1974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Customer acquisition via display advertisements using multi-armed bandit experiments</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">M</forename><surname>Schwartz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Bradlow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="500" to="522" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">New product pricing in quality sensitive markets</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="70" to="87" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Axioms for minimax regret choice correspondences</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Stoye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Theory</title>
+		<imprint>
+			<biblScope unit="volume">146</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2226" to="2251" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Sutton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Barto</surname></persName>
+		</author>
+		<title level="m">Reinforcement Learning: An Introduction</title>
+				<meeting><address><addrLine>Cambridge, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">On the likelihood that one unknown probability exceeds another in view of the evidence of two samples</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">R</forename><surname>Thompson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="285" to="294" />
+			<date type="published" when="1933" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Morphing banner advertising</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">L</forename><surname>Urban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Liberali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Macdonald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bordley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="27" to="46" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<monogr>
+		<title level="m" type="main">Statistical Decision Functions</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wald</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1950" />
+			<publisher>John Wiley &amp; Sons</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Committed versus contingent pricing under competition. Production Oper</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1919" to="1936" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">A special case of dynamic pricing policy</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wernerfelt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1562" to="1566" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">Multi-armed bandits and the Gittins index</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Whittle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Roy. Statist. Soc. Ser. B</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="143" to="149" />
+			<date type="published" when="1980" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">A reference price model of brand choice for frequently purchased products</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Winer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="250" to="256" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<monogr>
+		<title level="m" type="main">Dynamic Online Pricing Using MAB Experiments</title>
+		<author>
+			<persName><forename type="first">Schwartz</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Abernethy</forename></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

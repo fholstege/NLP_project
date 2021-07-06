@@ -1,0 +1,1286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Probabilistic Topic Model for Hybrid Recommender Systems: A Stochastic Variational Bayesian Approach</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2018-11-21">November 21, 2018</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Asim</forename><surname>Ansari</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Marketing Division</orgName>
+								<orgName type="department" key="dep2">Columbia Business School</orgName>
+								<orgName type="institution">Columbia University</orgName>
+								<address>
+									<postCode>10027</postCode>
+									<settlement>New York</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Yang</forename><surname>Li</surname></persName>
+							<email>yangli@ckgsb.edu.cn</email>
+							<affiliation key="aff1">
+								<orgName type="institution">Cheung Kong Graduate School of Business</orgName>
+								<address>
+									<postCode>100738</postCode>
+									<settlement>Marketing, Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jonathan</forename><forename type="middle">Z</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">Department of Marketing and International Business</orgName>
+								<orgName type="department" key="dep2">Foster School of Business</orgName>
+								<orgName type="institution">University of Washington</orgName>
+								<address>
+									<postCode>98195</postCode>
+									<settlement>Seattle</settlement>
+									<region>Washington</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Probabilistic Topic Model for Hybrid Recommender Systems: A Stochastic Variational Bayesian Approach</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2018-11-21">November 21, 2018</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2018.1113</idno>
+					<note type="submission">Received: September 16, 2016 Revised: September 21, 2017; March 15, 2018 Accepted: April 19, 2018</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>hybrid recommendation models</term>
+					<term>personalized search</term>
+					<term>user-generated content</term>
+					<term>probabilistic topic models</term>
+					<term>big data</term>
+					<term>scalable inference</term>
+					<term>stochastic variational Bayes Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Internet recommender systems are popular in contexts that include heterogeneous consumers and numerous products. In such contexts, product features that adequately describe all the products are often not readily available. Content-based systems therefore rely on user-generated content such as product reviews or textual product tags to make recommendations. In this paper, we develop a novel covariate-guided, heterogeneous supervised topic model that uses product covariates, user ratings, and product tags to succinctly characterize products in terms of latent topics and specifies consumer preferences via these topics. Recommendation contexts also generate big-data problems stemming from data volume, variety, and veracity, as in our setting, which includes massive textual and numerical data. We therefore develop a novel stochastic variational Bayesian framework to achieve fast, scalable, and accurate estimation in such big-data settings and apply it to a MovieLens data set of movie ratings and semantic tags. We show that our model yields interesting insights about movie preferences and makes much better predictions than a benchmark model that uses only product covariates. We show how our model can be used to target recommendations to particular users and illustrate its use in generating personalized search rankings of relevant products.</p><p>History: Peter Rossi served as the senior editor and Michel Wedel served as associate editor for this article.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Over the last decade, e-commerce firms and digital content providers, such as Amazon, Netflix, and the New York Times, have become increasingly reliant on recommender systems to target products and digital content to users. Recommender systems are particularly useful in environments that are characterized by numerous users who face a vast array of products to choose from. In such contexts, because of the large number of products, users are often uncertain about or unaware of products that might appeal to them, and there is considerable heterogeneity in user preferences for product attributes. Moreover, such environments are often constantly evolving, as new users and new items are added on a regular basis. Firms therefore use recommender systems to offer personalized suggestions to users.</p><p>Recommendation systems need to overcome various modeling and computational challenges to successfully predict preferences and recommend products. Such systems often operate on a sparse database in which each consumer rates only a few items and each product is rated or chosen by only a few customers. The paucity of data for most consumers implies that it is critical to borrow information from other consumers to predict the preferences of a given consumer <ref type="bibr" target="#b0">(Ansari et al. 2000)</ref>. The large number of products also poses a challenge in representing these items in terms of their underlying features. Such feature representations are often unavailable, or, at best, partially available, as considerable domain expertise is needed to manually supply detailed content descriptors for each product. Yet, a rich representation of products in terms of their attributes is crucial for properly modeling preference heterogeneity. Thus, many systems rely on some sort of automatic feature extraction based on textual data or user-generated content (UGC; <ref type="bibr" target="#b27">Lops et al. 2011)</ref>. Finally, recommender systems need to overcome various cold-start problems in dealing with new users or new items.</p><p>Apart from the above modeling challenges, typical recommendation contexts generate big-data problems stemming from data volume, variety, and veracity. Although personalization focuses on a given user or a given product, the large data volume that results from a massive user base and a vast product mix are critical for recommendation success, as they facilitate the borrowing of information and enrich the representation of products. However, these also result in scalability challenges, especially when complex probabilistic representations are needed to fully capture the information content in the data. Moreover, automatic feature extraction based on online texts and product tags implies a curse of dimensionality that necessitates appropriate dimensionality reduction procedures. Thus, scalable methods that are capable of estimating probabilistic models containing many latent variables on large data sets of variegated forms are required.</p><p>In this paper, we propose a novel hybrid model-based recommendation framework that addresses these modeling and scalability challenges. Specifically, we construct a covariate-guided, heterogeneous supervised probabilistic topic model that synergistically uses product ratings, textual descriptions of products or user-generated product tags, and firm-provided product covariates to automatically infer the set of latent product features (topics) that not only summarizes the semantic content within the tags/ words, but is also most predictive of user preferences. The firm-specified product attributes are used to guide the allocation of topics to products. The latent topics result in an automatic dimension reduction of the vast vocabulary underlying the textual descriptions, and the model infers heterogeneous user preferences over these latent topics. This yields a recommendation system that leverages preference heterogeneity over rich user-generated content representations in a seamless manner and is capable of handling various cold-start scenarios.</p><p>On the methodological front, our model extends the literature on supervised topic models <ref type="bibr" target="#b2">(Blei and McAuliffe 2007)</ref> in several directions to accommodate the unique characteristics of the recommendation context. Recommendation data sets often have a complex dependency structure as a given user rates multiple products and each product is rated by multiple users. Thus, in our model, each product description (i.e., a document in the topic model) is associated with multiple product ratings given by different users. This is distinct from typical supervised topic models in which each document is rated by a single user-such models are more suitable for sentiment analysis of reviews, but are not rich enough to represent the preference heterogeneity that is crucial for successful recommendations. We therefore account for preference heterogeneity over the topics and explicitly take into account the nested structure of the data. We also use firm-specified product covariates to deviate from the restrictive exchangeability assumptions of supervised latent Dirichlet allocation (LDA) models. Furthermore, we develop a novel stochastic variational Bayesian (SVB) framework for the scalable estimation of our model.</p><p>We apply our model in the context of personalized movie recommendations and search. We show that our model generates much better predictions when compared with a benchmark model that uses only manually specified genre covariates. This illustrates the benefits that accrue from the rich feature representations derived from UGC and highlights that standard content descriptors such as the genre variables are not rich enough to flexibly capture the many reasons why certain movies appeal to particular users. We uncover a number of interesting insights about user preferences and about the semantic structure behind the movie tags. We then illustrate how the model is useful for the functioning of a recommender system. Specifically, we show how our model can generate product recommendations that are conditional on different information sets and how it can support a variety of personalized search tasks. These include generating a user-specific ranking of movies most similar to a given movie, or identifying and ranking movies relevant to a set of needs that a user specifies via keywords. Finally, because the set of movies a user rates may exhibit some degree of self-selection, we perform robustness checks using a <ref type="bibr" target="#b19">Heckman (1979)</ref> selectivity correction <ref type="bibr" target="#b50">(Ying et al. 2006</ref>), but find no significant differences in our results.</p><p>Our application can be considered a quintessential big-data example, as it simultaneously incorporates multiple facets of the Volume, Variety, Veracity, and Velocity framework that is used to characterize big-data situations <ref type="bibr">(Sudhir 2016, Wedel and</ref><ref type="bibr" target="#b49">Kannan 2016)</ref>. For instance, our application uses a large volume of ratings stemming from large sets of users and products. Also, the model uses a variety of data, including unstructured text and numbers, and summarizes the high-dimensional space of tags into a small set of latent topics. Moreover, our application showcases the challenges and opportunities of data veracity, in that data can be fused together from disparate sources, as the tags, ratings, and features can be gathered from different sets of users on various platforms. We show that our SVB algorithm, which leverages many novel computational features such as stochastic natural gradient descent and adaptive learning rates, yields estimation results in a fraction of the time needed for regular Markov chain Monte Carlo (MCMC) methods.</p><p>In summary, our research makes both methodological and managerial contributions. Methodologically, we develop a novel supervised topic model that incorporates a number of features that are relevant for recommendation and personalized search. In addition, we develop a new SVB framework that can be useful in a variety of big-data marketing scenarios. On the managerial front, our model can be used not only for generating insights about consumer preferences, but also for directly recommending products. As segmentation, targeting, and personalization are core marketing activities, our modeling and estimation approaches are immediately useful for marketers in a variety of product and service contexts.</p><p>The rest of this paper proceeds as follows. After a literature review in Section 2, we describe our data in Section 3. We develop our modeling framework in Section 4 and discuss scalable estimation in Section 5. Section 6 describes the results and managerial insights from our application. We then illustrate the use of our model for movie recommendation and personalized search in Section 7. We conclude by discussing the limitations of our model and by highlighting directions for further research.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Literature Review</head><p>Several research areas in marketing, statistics, and machine learning are relevant for our work on personalized recommendation systems in big-data settings. These include the literature on recommendation systems, the natural language processing (NLP) work on probabilistic topic models, and the ongoing research on scalable Bayesian inference in statistics and computer science. We succinctly review these areas below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Recommendation Systems</head><p>A number of studies in marketing and computer science have developed memory-based or model-based methods for generating product recommendations. Prominent classes of recommendation algorithms include collaborative filtering, content filtering, and hybrid approaches that combine collaborative and content filtering.</p><p>Collaborative filtering systems (for a review, see Desrosiers and Karypis 2011) rely solely on user ratings or purchase data and do not utilize attribute information in making recommendations. User-based collaborative filtering recommends items to a user by leveraging the preferences of other users who are closest to the user. Similarly, item-based collaborative filtering identifies those products that are closest to a given product in terms of their appeal to customers and uses them for recommendations. More recent incarnations of collaborative filtering use matrix factorization <ref type="bibr" target="#b25">(Koren and Bell 2011)</ref> of the user-item ratings matrix to uncover a limited number of latent factors that represent user preferences or unobservable product features. Despite their utility, collaborative filtering methods suffer from coldstart problems and cannot be used for new users or new items. Moreover, they do not provide any rationale for the recommendations they make.</p><p>Content filtering systems (for a review, see <ref type="bibr" target="#b27">Lops et al. 2011)</ref>, in contrast, use content information pertaining to an item to capture the drivers of preferences. Content is broadly defined and can take the shape of a set of product features that are either supplied or extracted from other data sources. Content-based systems can provide the underlying rationale for a recommendation and can, therefore, increase customer trust in the system. Content-based methods have additional advantages in that they can be used to predict preferences for new items based on their constituent features. However, manually coding a set of features that comprehensively describe an item can be difficult, especially when products are added on a continual basis or when dealing with a large number of products. Moreover, a complete description of a product requires many attributes, especially for experiential products such as movies. This can amplify the difficulty of data collection considerably, especially when domain experts are needed to specify the relevant attribute values.</p><p>Hybrid recommender systems integrate collaborative and content filtering to leverage the best features of both. <ref type="bibr" target="#b0">Ansari et al. (2000)</ref> developed such a hybrid hierarchical Bayesian model to leverage user preference heterogeneity in making recommendations. <ref type="bibr" target="#b37">Salakhutdinov and Mnih (2008)</ref> also discussed a related Bayesian probabilistic matrix factorization model. In such models, Bayesian shrinkage enables model-based collaborative filtering, whereas content is explicitly specified. A number of marketing scholars have made significant advances in studying hybrid recommender systems, including <ref type="bibr" target="#b50">Ying et al. (2006)</ref>, <ref type="bibr" target="#b4">Bodapati (2008)</ref>, <ref type="bibr" target="#b8">Chung et al. (2009)</ref>, and <ref type="bibr" target="#b7">Chung and Rao (2012)</ref>. In this paper, we continue in this tradition, but focus explicitly on leveraging automatic content representations obtained via probabilistic topic models to predict user preferences, and on the scalability challenges arising from big-data settings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Natural Language Processing</head><p>The automatic content representation in our model relates to the NLP literature on probabilistic topic models for textual data (e.g., <ref type="bibr" target="#b3">Blei et al. 2003</ref><ref type="bibr" target="#b2">, Blei and McAuliffe 2007</ref><ref type="bibr" target="#b43">, Tirunillai and Tellis 2014</ref><ref type="bibr" target="#b6">, Büschken and Allenby 2016</ref>. As outlined in the introduction, our work extends the supervised LDA model <ref type="bibr" target="#b2">(Blei and McAuliffe 2007)</ref> in several directions to represent the unique requirements of recommendation systems. Whereas traditional supervised topic models are not suitable for personalized recommendations, our model uses a richer latent variable specification that allows for multiple ratings from different users for each document (movie) and accounts for user differences in their preference structure over the topics. Moreover, our model uses firm-specified product covariates to guide the allocation of topics to products, which is helpful for managing the cold-start problems and for improving recommendation performance.</p><p>The NLP literature has explored how user-generated tags can be used to infer feature representations. For instance, <ref type="bibr" target="#b29">Michlmayr and Cayzer (2007)</ref> used tag cooccurrences to represent user preferences and employed simple string matching to establish a correspondence between preferences and product information. <ref type="bibr" target="#b13">Firan et al. (2007)</ref> built tag-based user profiles for music recommendations. In their algorithm, individual liking/ disliking is inferred from tag usage and frequencies of listened tracks. Szomszor et al. ( <ref type="formula">2009</ref>) described a movie <ref type="bibr">Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 987-1008</ref><ref type="bibr" target="#b47">, © 2018</ref> recommendation system in which the similarity between the keywords of a movie and the previous tags a user had provided to other movies is used to make recommendations. As the authors acknowledged, such a system can be further improved by combining collaborative tagging with a more content-based strategy.</p><p>As such, <ref type="bibr" target="#b9">de Gemmis et al. (2008)</ref> proposed a more sophisticated hybrid approach, in which user preference is learned from both product content and user-supplied tags, and the latter include not only the personal tags of the user, but also tags from other users on the same product-the so-called social tags <ref type="bibr" target="#b31">(Nam and Kannan 2014)</ref>. The pooling of tags across users is particularly important when the users generating the content have different levels of expertise in the product domain. We adopt the same social tagging strategy in setting up our movie recommendation model. Furthermore, topic models have been used previously in the context of product recommendations. <ref type="bibr" target="#b21">Jin et al. (2005)</ref> used topics extracted from an unsupervised latent Dirichlet topic model to recommend products. In contrast, we use a more sophisticated supervised approach where the topics are informed simultaneously by the ratings, the user-generated tags, and other firm-supplied covariates.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Scalable Bayesian Inference</head><p>Finally, the statistical and machine learning literature on scalable Bayesian inference is relevant for the big-data setting of our application. Bayesian methods <ref type="bibr" target="#b36">(Rossi et al. 1996)</ref> are particularly suited for recommendation problems, given the need to pool information across users in modeling heterogeneity and generating individual-level estimates of consumer preferences. MCMC methods are popular in summarizing the posterior distribution of latent variables and parameters, but can be slow in bigdata situations because of the need for tens of thousands of iterations to achieve convergence. We therefore use variational Bayesian methods <ref type="bibr" target="#b1">(Bishop 2006</ref><ref type="bibr" target="#b33">, Ormerod and Wand 2010</ref><ref type="bibr" target="#b11">, Dzyabura and Hauser 2011</ref>, which replace sampling with optimization, thus resulting in significant speed improvement. In particular, we leverage the state-of-the-art advances in stochastic variational methods <ref type="bibr" target="#b20">(Hoffman et al. 2013</ref><ref type="bibr" target="#b42">, Tan 2015</ref> to significantly enhance the speed and scalability of model inference for our movie recommender system.</p><p>Next, we describe the data context to facilitate an easier understanding of our model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Data Description</head><p>We applied our model to MovieLens data <ref type="bibr" target="#b18">(Harper and Konstan 2015)</ref> for movie recommendations. Our analysis uses the data set made available by MovieLens on August 6, 2015. The MovieLens system used a number of different mechanisms and interfaces over the span of the data to elicit ratings from users. For example, the movies that a user rated could be influenced by the mechanisms for searching, filtering, and ordering movies that were available at any particular point in time. Although users could rate unseen movies by relying on the linked Internet Movie Database (IMDb) descriptions of the movies, they could still decide not to rate a presented movie for a variety of reasons. Thus, the set of movies a user rated could reflect some degree of self-selection. Moreover, the exact consideration set of movies for a user is not observable, and so the data contain ratings for a nonrandom set of movies for each user.</p><p>The data set covers a time span from January 9, 1995, to August 6, 2015, and contains (1) movie ratings given by users on a 10-point scale ranging from 0 to 5 in 0.5point increments, (2) textual tags applied to movies by the users, and (3) the title and genre information for each movie. The data set does not include any user demographics, and the movies are described by a set of 19 genres, where each movie can simultaneously belong to multiple genres. Not all users in the data set tagged every movie, so we aggregated all the tags applied to the same movie across users to construct a "bag-of-tags" description of the movie. Thus, in using the tags, we ignored the identities of the users who supplied the tags. It is important to note that using a bag-of-words description is not restrictive in our application, as there is no inherent sequential ordering to the tag applications, unlike when dealing with natural text (e.g., product reviews) where the semantic meaning of a given word depends critically on the sequence of words either preceding or succeeding it. To ensure an adequate number of tags for each movie, we focused on the set of 10,722 movies that received tags from at least four users and randomly selected 5,000 movies from this set for our analysis.</p><p>We used a number of preprocessing steps to clean the movie tags for statistical analysis. In particular, we converted the tags to lowercase to eliminate any redundancy that may arise from lowercase and uppercase versions of the same tag. We decided against tag stemming to facilitate easy understanding of the topics by readers and chose not to tokenize multiworded tags into space-separated words, because a tag as a whole is more meaningful than the individual words it comprises. To reduce vocabulary size, that is, the number of unique tags, to a manageable level, we also discarded all tags that were applied only once in the data. In addition, as our data contain well-formed tags and no free-flowing reviews or conversations, there was no need to remove stop words, as is typically done in textual preprocessing. These preprocessing steps resulted in a sample of 4,609 movies that were rated by 111,793 users. The total number of tag applications across all movies is 233,268, whereas the overall vocabulary size of 21,255 is much smaller, because the same tag can be applied to a given movie by multiple users. Compared with the 19 genres, this large Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems vocabulary has the potential to be a lot more expressive about the movie characteristics perceived by the users. The final data set contains 8,865,061 ratings across the users and movies. Now we provide some summary statistics on the data. First, the proportions of the 19 movie genres in our sample are shown in Figure <ref type="figure" target="#fig_0">1</ref>(a). We can see that drama, comedy, thriller, action, and romance are the top most represented genres, whereas film-noir is the least represented. Figure <ref type="figure" target="#fig_0">1</ref>(b) shows a word cloud that reflects the most frequent tags applied to the movies. It is clear that many of these popular tags do not overlap with the 19 genres and include additional information about the theme, provenance, and cast of the movies, among other things. The diversity of the tags that is reflected in the word cloud highlights the importance of using social tagging to generate automated "attributes" beyond the traditional standard ones (i.e., genres) for describing and recommending products.</p><p>Figure <ref type="figure" target="#fig_1">2</ref> shows the histogram of the number of tags received by each movie. The median number of tags for a movie is 16, with a mean of 50 and a standard deviation of 114.9. It is interesting to note that the median number of tags is lower than 19, the number of prespecified genres within the data. The number of tags that are attached to a movie depends on the movie's popularity and on the time span for which it was part of the MovieLens database. Figure <ref type="figure">3</ref> shows word clouds of the tags for children's movies and romantic movies. It is clear from the figure that movies belonging to different genres have very different constellations of tags applied to them. For instance, children's movies show the frequent use of tags such as "animation," "funny," "Pixar," and "Disney." Moreover, it is heartening to note the lack of nudity in the set of children's movies.</p><p>The users in our data set differ significantly in the number and sets of movies they rated. The median number of movies a user rated is 43, and the mean is 79. As for the ratings, the mean across all observations is 3.57, with a standard deviation of 1.03, and the median rating is 4. We also computed the mean and standard deviation of the ratings received by each movie and, similarly, the mean and standard deviation of the ratings supplied by each user. These statistics indicates that there is considerable heterogeneity in the ratings at both the movie and user levels. This highlights the importance of accounting for individual differences in our modeling approach.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Model</head><p>In this section, we develop a recommendation model that integrates multiple data modalities, including standard product covariates (e.g., movie genres), usergenerated textual descriptions (e.g., tags), and user ratings. For ease of exposition, we take the set of products that a user has rated as given and discuss selectivity issues in the robustness checks. The overall model structure can be understood from the directed acyclic graph presented in Figure <ref type="figure" target="#fig_2">4</ref>. We now describe the model in terms of the observed data, topic distributions, topic proportions, covariate guidance, tag applications, rating mechanism, and preference heterogeneity. Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 987-1008</ref><ref type="bibr" target="#b47">, © 2018</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Observed Data</head><p>We index the products (or documents/movies) by d ∈ {1, . . ., D} and the users by i ∈ {1, . . ., I}, and represent the standard product attributes using a vector x d that includes a constant term and binary indicators for the movie genres. We also assume that each product comes with a textual description that can take a variety of forms. For instance, this textual representation can be a bag-of-words agglomeration of user reviews for a product, or may come from web descriptions of the products. Alternatively, it can be composed from product tags. As depicted in Figures 1(b) and 3, in our application, this bag of words is a collection of user-generated movie tags.</p><p>We represent the bag of tags for product d using a vector w d {w dn } N d n 1 , where w dn is the nth token, or tag application, and N d is the total number of tags applied to the product. Recall that a given product description can include multiple applications of the same tag from different users. The set of unique tags across all product descriptions is indexed by v ∈ {1, . . ., V}, where V is the vocabulary size, or the total number of unique tags within the database. In addition to the product content, the database also contains product ratings y id provided by the users as part of the normal operation of the recommender system. The matrix of product ratings, which represents the preferences of the users, is typically sparse, as only a fraction of products are rated by a given user, and a fraction of users provide ratings to a given product.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Topic Distributions</head><p>We assume that the tags can be summarized using a set of K "topics," where K ≪ V. Such automatic summarization and dimensionality reduction via topics is critical for appropriately handling the large vocabulary size and the sparseness of the tag applications across products. A topic is a discrete probability distribution over the vocabulary. The kth topic is characterized by the probability vector τ k {τ kv } V v 1 , where the element τ kv indicates the probability with which the tag v occurs in that topic. The K topics differ in the probabilities τ kv with which they generate a given tag v. In other words, a given tag has different probabilities of occurrence across the K topics and does not belong solely to a single topic. As these topic probability vectors lie in a V − 1-dimensional simplex, we assume a symmetric Dirichlet prior, Dir(τ k |η), for the topic vector τ k , where η &gt; 0 is a scalar concentration parameter. The symmetric Dirichlet is a special case of Dirichlet distribution where all the K Dirichlet parameters are assumed to be equal to η. The marginal distribution for τ kv , the vth element of τ k , is a beta distribution with expectation E[τ kv ] 1/V. Thus, assuming a symmetric Dirichlet prior is akin to using a discrete uniform distribution. This is appropriate for specifying the uncertainty over topic distributions as we do not possess prior knowledge about how different topics would favor one tag over another, and therefore our prior confirms with the principle of indifference (Keynes 1921).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Topic Proportions and Covariate Guidance</head><p>As each tag can come from any of the K topics with different probabilities, the bag of tags for a product (document) represents multiple topics. Thus, unlike a finite mixture specification in which each product description draws from a single topic, we assume that a product simultaneously belongs to all the topics with varying probabilities, thus yielding a mixed membership model <ref type="bibr" target="#b12">(Erosheva et al. 2004</ref>). The probabilities with which the K topics are represented within the description for product d are given by the topic proportions vector, ω d {ω dk } K k 1 . Figure <ref type="figure">3</ref> implies that the mix of tags applied to a movie depends on its genre. We therefore specify ω d to be a function of the product attributes x d . We use a Dirichlet regression to model this dependence, that is, ω d~D irichlet(exp(Θx d )), where Θ {θ k } K k 1 is a matrix of regression coefficients for the K equations. The estimate of θ k represents how the product attributes impact the probability of a particular topic being present in the document. Therefore, the Dirichlet regression setup allows the standard product covariates x d to guide the allocation of topics ω d . Moreover, it enables borrowing of information within groups of movies having the same genres. Our use of such a conditionally exchangeable asymmetric Dirichlet distribution for the topic proportions is more general and flexible than typical LDA specifications that rely on a symmetric Dirichlet distribution for this task. Moreover, according to <ref type="bibr" target="#b46">Wallach et al. (2009)</ref>, such asymmetric priors result in more interpretable topics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.">Tag Applications</head><p>We further associate a K-dimensional latent topic assignment vector z dn with each tag n of the document d, such that the kth element of z dn is a binary indicator that takes the value one with probability ω dk . If the tag is assigned from topic k, then the actual tag is randomly drawn from the V-dimensional vocabulary with probability given by the topic distribution τ k .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5.">Rating Mechanism</head><p>We relate the ratings y id to the tags using the empirical frequencies of different topics in the bag-of-words description of the product. Following <ref type="bibr" target="#b2">Blei and McAuliffe (2007)</ref>, we regress y id on the unobserved average em-</p><formula xml:id="formula_0">pirical frequenciesz d , wherez d (1/N d ) N d</formula><p>n 1 z dn , and allow each user to have her or his own regression coefficient γ i . Also, by regressing the ratings on the mean unobserved frequenciesz d , rather than on the topic proportions ω d , we ensure that the ratings are determined by the topic frequencies that actually underlie the bag-of-tags description of the product. Such an approach is likely to yield topics that not only capture the semantic content of the tags, but are also most predictive of the user ratings and reflective of the standard product covariates. Using the topic proportions, instead, could result in specialization of topics, such that some of them only explain the ratings, whereas others exclusively summarize the tags. Therefore, the use of actual frequencies has the potential to improve the predictive ability of the model, which is central to the successful functioning of recommender systems.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.6.">Preference Heterogeneity</head><p>The user-specific coefficient γ i reflects the extent to which the prevalence of different latent semantic dimensions (topics) within the textual description for a product matters in explaining the preference of user i. As the data contain multiple ratings from each user, we are able to properly account for sources of unobserved user heterogeneity, which is critical for capturing the diversity of user preferences on the latent topics. We model this heterogeneity via a normal distribution, γ i~1 (β, Γ), where β is the mean and Γ is the covariance of the population preference distribution. Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 987-1008</ref><ref type="bibr" target="#b47">, © 2018</ref> The diagonal elements of Γ capture the variability in the preference parameters, and the off-diagonal elements reflect how the preferences for different latent topics covary across users. Our use of a population distribution allows us to leverage the Bayesian mechanism of borrowing information across users to explain the preference of a given user. The estimated coefficient for a user reflects a weighting between the individual's data and the population mean, such that the coefficients of those users with many ratings are mostly estimated from their data alone, whereas the coefficients for users with very few ratings are mostly shrunk toward the population mean. This is also beneficial in handling various cold-start scenarios involving new users.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.7.">Generative Process</head><p>We fuse together the tag applications, ratings, and product covariates to jointly uncover the latent topics that best predict user ratings and the preference parameters underlying these ratings. Given the above description, our model can be specified using the following generative process. Fixing the number of topics K, the Dirichlet parameter η, the Dirichlet regression parameters Θ, the population distribution parameters β and Γ, and the regression error variance σ 2 , our model generates product tags and their associated user ratings as follows:</p><p>1. Draw topic distribution for each topic, τ k~D ir(η). 2. Draw topic proportions for each product description, ω d~D ir(exp(Θx d )).</p><p>3. For each tag application n belonging to product description d, (a) draw topic assignment z dn~M ultinomial(ω d );</p><p>(b) Draw tag w dn~M ultinomial(τ z dn ). 4. For each user i who rated product d, (a) draw her or his preference parameters γ i1 (β, Γ);</p><formula xml:id="formula_1">(b) draw rating y id~1 (z ′ d γ i , σ 2 ), wherez d (1/N d ) N d n 1 z dn .</formula><p>Until now, we focused on specifying the model conditional on the set of products a user rated. However, if this set of movies is self-selected and nonrandom, it could be beneficial to explicitly accommodate the selection mechanism in the modeling framework. In our robustness checks, we model the "selection" stage and use the two-stage Heckman correction as in <ref type="bibr" target="#b50">Ying et al. (2006)</ref>. In particular, we assume that a user's decision to rate a product can be modeled via a heterogeneous binary probit regression as a function of the topic proportions of the product. We obtain these topic proportions from an unsupervised LDA model of the product tags, using the same number of topics as in the main model. The user-specific coefficients can then be used to compute the inverse Mills ratios of the probit <ref type="bibr" target="#b16">(Greene 2003</ref>). In the second stage, we include the inverse Mills ratio for each rating observation in the main model as an additional covariate, using a straightforward modification of Step 4(b) above.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Posterior Inference via Stochastic Variational Bayes</head><p>We now focus on inference for our main model, as modifications to handle the selectivity correction via the addition of the inverse Mills ratio are straightforward.</p><p>The full posterior distribution of our covariate-guided, heterogeneous supervised topic model can be written as</p><formula xml:id="formula_2">p(ω 1:D , z 1:D , τ 1:K , θ 1:K , γ 1:I , β, Γ, σ 2 | w 1:D , y 1:I , x 1:D )} p β p(Γ)p(σ 2 ) ∏ K k 1 {p(θ k )p τ k |η ∏ I i 1 {p γ i |β, Γ × ∏ d∈$i p y id |γ i , z d , σ 2 × ∏ D d 1 {p(ω d |x d , Θ) × ∏ N d n 1 p(w dn |z dn , T)p(z dn |ω d )},<label>(1)</label></formula><p>where T {τ k } K k 1 , and $ i denotes the set of movies rated by user i.</p><p>Because the normalizing constant cannot be computed in closed form, the posterior distribution is not available analytically, therefore necessitating approximate methods of inference. Marketers have traditionally used MCMC methods for summarizing the posterior distribution. MCMC methods involve iteratively sampling parameter values from the full conditional distributions, and inference is then made based on the sample of correlated draws. MCMC methods such as Gibbs sampling and the Metropolis-Hastings algorithm typically require tens of thousands of draws from the posterior. In big-data contexts such as movie recommendations that involve a large volume of data characterized by millions of ratings and high dimensionality resulting from massive numbers of user-supplied tags, MCMC methods are computationally intensive and take a long time to converge. We therefore use stochastic variational Bayesian approaches to approximate the posterior distribution. As this is the first application of SVB inference in the marketing literature, we briefly review these methods before deriving a specific instantiation for our model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Variational Bayesian Inference</head><p>Suppose p(ν|y) represents the posterior, p ( y, ν) denotes the joint distribution, and p( y) is the normalizing constant for a generic Bayesian model. Variational Bayes (VB) methods approximate the intractable posterior p(ν|y) with a simpler approximating distribution q(ν|λ), called the variational distribution <ref type="bibr" target="#b22">(Jordan et al. 1999</ref><ref type="bibr" target="#b1">, Bishop 2006</ref><ref type="bibr" target="#b33">, Ormerod and Wand 2010</ref>, that is indexed by a set of variational parameters λ. In variational inference, we search over the space of variational distributions to find a member that is closest to the posterior distribution. The closeness between the approximating distribution q(ν|λ) and the posterior p(ν|y) is measured by the <ref type="bibr" target="#b26">Kullback and Leibler (1951)</ref>  </p><formula xml:id="formula_3">E q log q(ν|λ) − E q log p (y, ν) + log p( y) ≥ 0,<label>(2)</label></formula><p>where the equality holds if and only if q(ν|λ) p(ν|y).</p><p>As the last term log p ( y) is a constant, minimization of the KL divergence with respect to q(ν|λ) is equivalent to maximizing the evidence lower bound, or</p><formula xml:id="formula_4">ELBO(λ) E q [log p( y, ν)] − E q [log q(ν | λ)].</formula><p>Because we do not know the posterior p(ν | y) to begin with, we must place restrictions on the approximating variational distribution for the optimization to proceed. These restrictions structure the approximating distribution such that its functional form is either inferred automatically from the model structure or explicitly set by the analyst via the selection of a specific parametric family of distributions. The choice of the restrictions reflects the trade-off between the tractability and the richness of the approximation. In practice, mean-field restrictions are popular in handling conjugate models <ref type="bibr">(Bishop 2006, Ormerod and</ref><ref type="bibr" target="#b33">Wand 2010)</ref>, whereas fixed-form approximations are often applied to nonconjugate setups <ref type="bibr" target="#b5">(Braun and McAuliffe 2010</ref><ref type="bibr" target="#b24">, Knowles and Minka 2011</ref><ref type="bibr" target="#b38">, Salimans and Knowles 2013</ref><ref type="bibr" target="#b44">, Titsias and Lazaro-Gredilla 2014</ref>. In this paper, we develop a novel hybrid VB framework that combines structured mean-field and fixed-form approximations to estimate the movie recommendation model. As the speed of model output is crucial in the big-data recommendation context, we also use stochastic optimization with adaptive minibatch sizes and adaptive moment estimation to speed up the estimation, resulting in a novel stochastic VB algorithm. Our algorithm also includes various forms of parallelization that leverages the conditional independence structure of the model. In the following, we provide enough detail for the presentation of these methods to be self-sufficient and relegate additional technical aspects to the appendices.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Hybrid Variational Bayes</head><p>We use a structured mean-field approximation that mimics the dependency structure of the joint distribution and specify the variational distribution as follows:</p><formula xml:id="formula_5">q(ω 1:D , z 1:D , τ 1:K , θ 1:K , γ 1:I , β, Γ, σ 2 ) q(β) q(Γ) q(σ 2 ) ∏ D d 1 q(ω d ) ∏ N d n 1 q(z dn ) × ∏ K k 1 {q(θ k )q(τ k )} ∏ I i 1 q(γ i ).</formula><p>(</p><formula xml:id="formula_6">)<label>3</label></formula><p>We assume a normal prior for the population mean β, an inverse-Wishart prior for the population covariance Γ, and an inverse-gamma prior for regression error variance σ 2 . We also assume a normal prior 1(µ θ , Σ θ ) for the Dirichlet regression parameters θ k . All unknowns except for θ k imply a semiconjugate setup; thus, we can derive closed-form variational expressions for the conjugate components in Appendix A. For ease of exposition, Table <ref type="table" target="#tab_1">1</ref> summarizes the prior and the variational distributions for all the model parameters.</p><p>To estimate the nonconjugate component θ k , we specify a multivariate normal variational component <ref type="bibr" target="#b44">(Titsias and Lazaro-Gredilla 2014)</ref> and develop a novel adaptive doubly stochastic variational Bayesian (ADSVB) method, detailed in Appendix B, to compute q(θ k ) 1(µ q(θ k ) , Σ q(θ k ) ). Combining the updates for the meanfield components with the ADSVB scheme yields an iterative coordinate ascent algorithm that uses ADSVB approach to update q(θ k ) in an inner loop within an outer loop that updates all other conjugate parameters listed in Table <ref type="table" target="#tab_1">1</ref>. Appendix A provides the updating details for this hybrid VB procedure. To further speed up inference for big-data settings, in the following discussion we develop a stochastic optimization version of our hybrid VB scheme.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Stochastic Optimization with</head><p>Adaptive Minibatches When fitting a complex model with many individuallevel latent parameters to a big data set, the coordinate ascent procedure requires significant computation because of the need to iteratively update every latent variable, including those for every user, within each iteration. This creates a computational bottleneck, especially if the data contain a large number of users. Recent research has explored strategies to enhance speed via stochastic variational inference <ref type="bibr" target="#b20">(Hoffman et al. 2013)</ref>.</p><p>Recall that the goal of variational Bayesian estimation is to maximize the ELBO. In our main model, the ELBO has the following form:</p><formula xml:id="formula_7">ELBO I i 1 E log p(γ i |β, Γ) + d∈$ i E log p (y id |z d , γ i , σ 2 ) + K k 1 E log p(τ k |η) + E log p(θ k ) + D d 1 E log p(ω d |x d , Θ) + N d n 1 E log p(z dn |ω d ) + N d n 1 E log p(w dn |z dn , T) + E log p(β) + E log p(Γ) + E[log p(σ 2 )] + H(q),<label>(4)</label></formula><p>Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems</p><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 987-1008</ref><ref type="bibr" target="#b47">, © 2018</ref> where the expectation is taken with respect to the associated variational distributions, and the last term H(q) is the entropy of all variational distributions in the model. Maximizing the ELBO requires computing the gradient of the objective to move the iteration in the direction of the steepest ascent; that is, in each VB iteration we have to calculate the variational parameters for γ i for all users to obtain the gradient. When the data contain a large number of users, as is the norm in the recommendation context, this becomes time-consuming. Because the ELBO and its gradient both involve a sum of individual terms that are independent conditional on population parameters, the theory on stochastic optimization <ref type="bibr" target="#b35">(Robbins and</ref><ref type="bibr">Monro 1951, Spall 2003)</ref> helps us accelerate this optimization by randomly sampling a subset of users (minibatch) in each iteration to calculate a noisy gradient to replace the exact gradient. 1 Such a stochastic gradient, albeit computationally inexpensive, is asymptotically unbiased and makes the objective function probabilistically converge to an optimum under proper regularity conditions.</p><p>Note that the updates for the user-specific variational parameters within the minibatch depend on the population-level variational parameters, which are invariant across individuals. The minibatch strategy discussed above can be further improved in speed and scalability by sampling smaller batches of users in the initial VB iterations and allowing the batch size to increase adaptively over the iterations till it includes all the users (the entire data set). Such speed gain stems from the fact that the population parameters in the early iterations are most likely far from their optimum; therefore, it is wasteful to use these very "wrong" parameters to update many other (individual-level) parameters. Instead, we just sample smaller batches with fewer individuals as the iteration starts. In this way we can quickly move the optimization toward the (noisy) right direction. The batch size is increased by sampling more individuals when the current batch no longer suffices to move the estimation toward an optimum, that is, when more precision and more information are required for further convergence. Eventually, the minibatch reaches the full size of the data, after which the iterations are continued till convergence.</p><p>In essence, the SVB method is an adaptive procedure that automatically determines the most appropriate batch size to use in a given iteration, resulting in a significant enhancement in the speed and scalability of the already fast variational Bayesian estimation that uses the full data set in every iteration. To implement such an adaptive strategy, it is important to have a rule regarding when and how to increase the batch size during the iterations. In current paper, we adopt the ratio of path and progress (RPP) criterion <ref type="bibr" target="#b14">(Gaivoronski 1988</ref><ref type="bibr" target="#b42">, Tan 2015</ref> and use it on the fly to determine whether to sample more individuals into the minibatch and by how many users. Appendix C provides more details regarding this adaptive strategy, which is a part of the SVB estimation procedure outlined in Appendix A.</p><p>In addition, we leverage the conditional independence structure of the model to parallelize our optimization algorithm. As the preference parameters of each sampled user within a minibatch are conditionally independent, given the population parameters, we parallelize the updates of these user-specific parameters within the minibatch. Second, we parallelize the updates of the variational parameters for the topic assignments, as these are conditionally independent across documents (movies), given the population and user level parameters. Last, we parallelize the updates of topic distributions for every topic, as the distributions are independent conditional on other model parameters.</p><p>Having described our SVB methods, we need to acknowledge certain caveats regarding their properties. As VB methods approximate the posterior, the quality of the resulting estimates, when compared with those from MCMC methods, depends on the richness of the variational distribution and how well it captures the dependency structure of the full posterior distribution. A limited set of results are available on the properties of variational inference in specific settings. <ref type="bibr" target="#b51">You et al. (2014)</ref> and <ref type="bibr" target="#b28">Luts and Ormerod (2014)</ref> found that mean-field VB estimates of the posterior mean for </p><formula xml:id="formula_8">)) Dir(ζ d ) z dn Multinomial(ω d ) Multinomial(f dn ) γ i 1(β, Λ) 1(µ q(γ i ) , Σ q(γ i ) ) Λ IW(ρ Λ , R Λ ) IW(ρ q(Λ) , R q(Λ) ) β 1(µ β , Σ β ) 1(µ q(β) , Σ q(β) ) α 1(µ α , σ 2 α ) 1(µ q(α) , σ 2 q(α) ) σ 2 IG(a σ 2 , b σ 2 ) IG(a q(σ 2 ) , b q(σ 2 ) ) Nonconjugate components θ k 1(µ θ , Σ θ ) 1(µ q(θk ) , Σ q(θ k ) )</formula><p>Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems a linear model are consistent. <ref type="bibr" target="#b17">Hall et al. (2011)</ref> proved consistency and asymptotic normality for a Poisson mixed effects model, and <ref type="bibr" target="#b45">Titterington and Wang (2006)</ref> showed that coordinate ascent variational inference results in a consistent estimator for the posterior mean in the context of a mixture of normals. However, these results are specific to particular models and approximations, so there is a need for greater theoretical analyses of both the convergence and the properties of estimates obtained via variational inference. It is also known that variational inference tends to underestimate posterior standard deviations, particularly when a fully independent mean-field variational specification is used. This could be a concern when theory testing is of prime importance. Some recent research focuses on the use of robustness methods <ref type="bibr" target="#b15">(Giordano et al. 2017)</ref> and more expressive approximations such as structured mean-field methods and normalizing flows <ref type="bibr" target="#b34">(Rezende and Mohamed 2016)</ref> to handle this aspect. Thus, we use a structured mean-field specification to better capture the dependency structure of the posterior. Prediction accuracy, however, is governed by the recovery of parameter means, and in contexts such as ours, in which prediction is paramount, variational inference offers a good alternative to MCMC procedures when the latter are computationally prohibitive. 2 6. Results</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">Null Model and Holdout Data</head><p>We now compare our model to a null model that has a hierarchical Bayesian linear specification and uses the prespecified 19 movie genres as covariates. As each movie is represented in terms of multiple genres, the null model has an intercept and a set of 19 genre-specific coefficients for each user. These user-specific effects are assumed to come from a multivariate normal population distribution with a full covariance structure, yielding a sophisticated benchmark specification. A comparison of the results from the two models allows us to assess the predictive benefits that stem from the richer semantic representations made possible by the latent topics. Furthermore, given the nonrandom nature of the set of movies that a user rated, we performed robustness checks for our proposed model using the previously described two-step Heckman selectivity approach. Because our data contain no prior information regarding a user's consideration set, we augmented the set of movies that the user rated with a random sample of 1,000 movies that the user did not rate, and estimated a hierarchical probit regression on the topic proportions obtained from a regular LDA. The selectivity correction did not significantly change our results, either qualitatively in terms of the inferred topics or quantitatively in terms of the model predictions. <ref type="bibr">3</ref> We therefore concentrate on the results from our original specification without the selectivity correction, and refer to the results from the model with selectivity, briefly, when discussing the predictive power of different models.</p><p>We estimated both the proposed model and the genreonly null model using stochastic variational Bayesian methods. Details of the mean-field coordinate-ascent variational updates for the null are available upon request. With a convergence criterion of 10 −6 on the ELBO, the variational Bayesian estimation on the null model finishes in 10 iterations with 585.9 seconds (0.16 hours), whereas the regular MCMC estimation on the same model with 5,000 runs takes 8.0 hours to complete. <ref type="bibr">4</ref> Also, the mean parameter estimates obtained from SVB and MCMC estimation for the null are virtually indistinguishable. Given that SVB estimation significantly outperforms MCMC estimation in speed, when estimating the main model, which is far more complex than the null, we did not use MCMC estimation. We expect that MCMC methods will not be competitive in terms of the computational time as our main model contains a very large number of latent variables, including the multinomial topic indicators for each of the 233,268 tag applications and multivariate user-level coefficients for each of the 111,793 users. The use of data augmentation to sample these latent variables is likely to be timeconsuming, especially given that MCMC estimation typically requires a much larger number of iterations to converge, in comparison with VB estimation.</p><p>To evaluate the predictive performance of the genreonly model and the main model, we split our data set into calibration and holdout samples. We estimated both models on the calibration data and made predictions on both data sets. To form the holdout data, we set aside eight movies per individual. This resulted in a total of 7,970,717 ratings in the calibration data and 894,344 ratings in the holdout data.</p><p>We estimated multiple versions of the proposed model that differ in the number of topics K. Based on model fit, predictive performance, and topic interpretability, as reported in Table <ref type="table" target="#tab_4">4</ref>, we settled on a model with 20 topics, and the results presented here are from this version. We estimated our model using both deterministic and stochastic VB methods. The deterministic VB method that uses the full data in every iteration takes 18,930 seconds (5.3 hours) and 275 iterations to converge, whereas the stochastic VB method with adaptive minibatch sizes takes only 5,464 seconds (1.5 hours) and 164 iterations to finish. Convergence is declared when the joint Euclidean norm on the population parameters changes by less than 10 −4 between iterations. The substantial difference in computational times once again highlights the scalability benefits of stochastic variational inference in big-data settings. As the actual estimates do not vary between the VB and SVB estimations, we now report the results from the SVB approach. We begin with the qualitative insights and discuss predictive performance and model fit subsequently.  Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems 6.2. Topical Insights 6.2.1. Topic Distributions. Our model yields topic distributions that are most predictive of the ratings. Table <ref type="table" target="#tab_2">2</ref> shows the top eight tags within each of the 20 topics. These topics are arranged in ascending order of their population mean coefficients β. Thus, the most important topics are shown at the bottom of Table <ref type="table" target="#tab_2">2</ref>. It is interesting to see how certain tags naturally congregate to form meaningful topics. For example, Topic 18 is about American animation movies for children. These are usually fairy tales and adventure themed, and are often produced by Pixar and Disney. Topic 12 is about Japanese animation movies, many of which are made by Mr. Miyazaki of Studio Ghibli. His films are quite different from those "family fun" Disney or Pixar productions, and tend to have story lines and characters that are fantastic, surreal, and dream-like in nature (Spirited Away, Howl's Moving Castle). Topic 16 appears to be closely related to the director Quentin Tarantino, who uses violence and nonlinear plot lines, and has directed works related to World War II (Inglourious Basterds, starring Brad Pitt), martial arts (Kill Bill), and revenge (Kill Bill, Pulp Fiction). It is clear that the topics richly depict the semantic information pertaining to the theme, provenance, popularity, awards, and actors of a movie. Thus, they capture a much greater semantic terrain than what is possible using a set of genre dummies.</p><p>Table <ref type="table" target="#tab_3">3</ref> reports the population mean and variance associated with each topic coefficient. The table shows that the movies associated with the last few topics have high ratings, on average. We also see that the heterogeneity associated with the user coefficients γ i varies across the topics. The large magnitude of these crossuser variances indicates that users exhibit considerable heterogeneity in their sensitivities on different topics. These results exhibit face validity as the higher numbered topics contain characteristics that most users would consider to be desirable. For example, Topic 19 contains "oscar best pictures," "true story," and "inspirational," and Topic 20 includes "imdb top 250" and semantics related to dark humor, which often sets a high requirement for screenplay excellence. All of these qualities are considered desirable by most people, resulting in higher means and smaller standard deviations. In contrast, lower numbered topics contain more negative and polarizing semantics. For instance, although some may be fans of silly, sequel, alternative reality, or Adam Sandler movies from Topics 1, 2 and 3, many others might consider such movies as undesirable, as evidenced by the tags such as "predictable," "boring," "bad acting," or "not funny." Scanning the adjectives across the topics also suggests that characteristics such as "nudity" or "franchise" do not predict greatness in the eyes of users, whereas "dark humor" is generally appreciated. These traits could inform studios about evolving public tastes. 6.2.2. Top Movies Associated with a Topic. We can also identify the top movies associated with each topic using the topic proportions ω d for movies. Specifically, for a given topic k, we can find movies with the largest proportions ω dk on this topic. Because of the limit imposed by page width, Table <ref type="table" target="#tab_5">5</ref> shows only the top three movies associated with each topic. It can be seen by juxtaposing Tables <ref type="table" target="#tab_2">2 and 5</ref> that these identified top movies are consistent with the semantic content of the topic. For example, the top movies for Topic 16 feature violent, martial arts movies-two of them directed by Tarantino-that are highly consistent with the top tags for that topic in Table <ref type="table" target="#tab_2">2</ref>. Another example is from Topic 19, which includes Oscar-winning dramas based on inspirational historical backgrounds (Forrest Gump, Million Dollar Baby, and Titanic). Movie enthusiasts would note that, although the top movies associated with Topic 20 are critically acclaimed, they are of a different flavor than those from Topic 19. For example, Black Swan, Pulp Fiction, and Dead Poets Society owe their success to quirky scripts instead of historical grandeur or high production value. 6.2.3. Topic Proportions for a Given Movie. Focusing on a given movie and using its topic proportions ω d , we can study how the bag-of-tags representation draws from the different topics. Figure <ref type="figure" target="#fig_4">5</ref> shows the topic proportions for Forrest Gump. We see that this movie draws heavily from Topic 19, followed by Topics 20 and 14. A look at the tags associated with these topics in Table <ref type="table" target="#tab_2">2</ref> reveals their striking relevance in describing Forrest Gump, an Oscar-winning romantic and inspirational drama starring Tom Hanks, set in historical America from the 1950s to present day (Topic 19), and with the quirky protagonist Forrest, who engages in behaviors and dialogue that is funny in a satirical way <ref type="bibr">(Topics 14 and 20)</ref>.</p><p>This example shows that our model can (1) flexibly describe a movie using multiple topics and (2) provide a relative ranking of the topics related to the movie that yields interesting and informative insights. For instance,  <ref type="table" target="#tab_1">70 1.68 1.72 1.47 1.58 0.89 1.95 0.85 1.48 1.79 1.19 1.07 1.53 0.98 1.46 1.60 1.37 1.06 1.32 1.58</ref> Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems <ref type="bibr">Marketing Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 987-1008</ref><ref type="bibr" target="#b47">, © 2018</ref> although Forrest Gump has some comical characteristics found in Topics 14 and 20, most users would appreciate it for its inspirational features, described by Topic 19. Just because a movie is most related to a topic does not mean that it is married entirely to that topic. This flexible feature of our recommender system stems from the underlying mixed-membership model that governs the recommendations.</p><p>We see from the above that our model is capable of generating deep qualitative insights about the underlying drivers for movie preference. Such information is highly valuable in a recommender system, as it can be used to explain why a particular product is being recommended, something that is crucial for engendering trust.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3.">Predictive Performance</head><p>We now discuss how well our model performs in predicting preferences. Table <ref type="table" target="#tab_4">4</ref> presents the predictive performance measures for the genre-only null model and for the different versions of the proposed model, on both the calibration and the holdout data sets.</p><p>We report the mean absolute deviation (MAD), the root mean squared error (RMSE), and the correlation between the actual and the predicted ratings. In addition, the table also reports the predictive R 2 for these models. The column "Genre only" refers to the null model. The remaining columns refer to the variants of the proposed model. These versions differ in the number of topics, for example, "M10" indicates a 10-topic main model. From the comparison we can see that all the different versions of the covariate-guided, heterogeneous supervised topic model significantly outperform the genre-only model, even though the null is fairly sophisticated in its treatment of user heterogeneity. It is interesting to note that even the main model with just 10 topics does better than the null model with 19 genres. We also note that, in our case, adding more topics does not improve predictions much, but increases the computational time significantly. Of all the variants, the 20-topic version offers the best trade-off among model complexity, predictive performance, and topic interpretability. Therefore, we only report results from the 20-topic main model. In addition, the last column presents the statistics for our model with the selectivity correction. It is clear that accounting for selectivity using the available data does not improve predictions.</p><p>Table <ref type="table" target="#tab_6">6</ref> compares the predicted ratings with the actual ratings to gauge the quality of the product recommendations. Users of the recommender system are interested in identifying good movies that conform with their taste; thus, suggestions from our model should correspond well with the good movies (i.e., those with high ratings) in the database. To assess this aspect, we divided the observations within our calibration and holdout samples into three groups (low, medium, and high) based on the one-third and two-third percentiles of the predicted ratings. We then computed the proportions of observations within each of these three groups that have low (actual ratings from 0 to 2), medium (actual ratings from 2.5 to 3.5), and high (actual rating from 4 to 5) ratings. For example, for the M20 model, the entry 0.929 of the high-high cell for the calibration sample indicates that 92.9% of the observations that the model predicts to have high ratings indeed have true ratings between 4 and 5. It is clear from the table that our proposed model predicts much better than the genre-only null model in each of the three groups, on both the calibration and holdout samples. We also see that the holdout predictions  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Movie Recommendations and Personalized Search</head><p>We now focus on how to use our model to make personalized recommendations for specific users, conditional on different information sets. We also show how our model can be used to support personalized search based on user queries involving movies and keywords.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1.">Cold-Start Recommendations</head><p>As new movies or users are added on a continual basis to the recommender system, it is important to show how our model can generate recommendations in different cold-start scenarios. For example, when a new userĩ appears, without any prior information about her or him, we can use the variational estimates of the population distribution to predict the user's rating on any given movie in the data set with</p><formula xml:id="formula_9">y˜i d f ′ d µ q(β) , wheref d (1/N d ) N d</formula><p>n 1 f dn and µ q(β) represents population mean preference, and we recommend the highest rated movies accordingly. Similarly, when a new movied comes out on the market, it takes some time for user-generated content to become available. However, genre information xd is readily available and can be used to compute the expected topic proportions</p><formula xml:id="formula_10">withωd } exp(M θ xd), where M θ {µ q(θ k ) } K k 1</formula><p>. We can then predict user i's rating for this new movie with y id ω ′ d µ q(γ i ) . Finally, to predict a new userĩ's rating on a new movied (i.e., the case with least information), we can simply use the variational estimates of population preference with firm-provided product attributes to produce the prediction, y id ω ′ d µ q(β) .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2.">Recommendations Conditional on Past Ratings</head><p>Now we discuss recommendations for users or items that are already part of the database. The simplest form of conditional recommendations are those based solely on the past ratings of a user and are made using movies that are part of the estimation data set but have not yet been rated by the user. The expected rating y * id for user i and movie d can be computed using the variational distributions for γ i and z d , that is,</p><formula xml:id="formula_11">y * id f ′ d µ q(γ i ) .</formula><p>The expected rating can be computed for all the movies that the user has not rated, and the top-most movies, in terms of expected ratings, can then be recommended to the user.</p><p>Table <ref type="table" target="#tab_7">7</ref> shows the 10 most preferred movies, identified using the above procedure, for three randomly chosen users in our data. The numerical entries under each movie indicate the probability with which the movie occupies that particular rank, given the estimated uncertainty on individual preferences. <ref type="bibr">5</ref> As we can see, the recommendation set differs considerably across the three   <ref type="bibr" target="#b47">, 2018</ref><ref type="bibr">, , vol. 37, no. 6, pp. 987-1008</ref><ref type="bibr" target="#b47">, , © 2018</ref> users, reflecting their different tastes. In particular, User 1 prefers visually stunning, large-production action films.</p><p>User 2, instead of liking large Hollywood productions, prefers movies with quirky story lines and leading characters with unusual logic, and appears to be a big fan of director Quentin Tarantino's films. User 3 clearly prefers classics. These results highlight the importance of capturing preference heterogeneity to support personalized recommendations. In addition, the rank probabilities also vary across the users. Such variation comes from the fact that the three users provided different numbers of ratings (11, 33, and 76 ratings, respectively) in our calibration data set. Remember that our model accounts for the topic mix and textual description of every film. Therefore, it can also support personalized search and can generate personalized rankings of movies, conditional on user queries that involve movie titles or movie keywords. Such personalized search and ranking based on additional user input are useful in that users may express different interests at different times, even though their latent movie preferences may remain largely unchanged. Thus, the search or browsing context can be leveraged to improve recommendation quality. We now show how the tags can be used to identify movies that are similar to a queried movie.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.3.">Movies Similar to a Given Movie</head><p>Item-based collaborative filtering algorithms identify the products that are closest to a given product in their appeal to customers. This is usually done using solely the ratings matrix, and, therefore, this approach suffers from the inability to provide an explanation regarding why a particular product is being recommended.</p><p>In contrast, our model can be leveraged to compute meaningful distances between movies based on their topic proportion vectors. Although many different distance metrics can be used for this task, here we use the Hellinger distance <ref type="bibr" target="#b32">(Nikulin 2001)</ref> to compute the similarity between two movies, d and d ′ , based on their topic proportions, ω d and ω d ′ , respectively. The Hellinger distance satisfies the triangle inequality and is defined as</p><formula xml:id="formula_12">H(d, d ′ ) 1 2 K k 1 ( ω dk √ − ω d ′ k √ ) 2 . (<label>5</label></formula><formula xml:id="formula_13">)</formula><p>The use of topic proportions means that both ratings and textual content are utilized in computing closeness between movies, as the topic proportion is inferred by taking into account the tags, the genre covariates, and the ratings. This is therefore different from relying solely on either the movie ratings or the content of movies to compute similarity.   The Game (1997) Indiana Jones (2008)</p><p>Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems Table <ref type="table" target="#tab_8">8</ref> illustrates three examples of five movies that are most similar to a given movie, based on the Hellinger distance. It is interesting to see that the movies deemed similar to Pulp Fiction mostly feature the directorial talent of Quentin Tarantino. The movies most similar to The Dark <ref type="bibr">Knight (2008)</ref>, include, in addition to its sequel in 2012, thrillers with complicated plots and elements of suspense. Finally, good (nonpersonalized) recommendations for those looking for something similar to The Lord of The Rings (2003), appear to be science-fiction and fantasy films that have large production values. It is apparent that the above set of results exhibit high face validity.</p><p>The ability to identify nearest neighbors in content space while simultaneously accounting for user preferences is highly beneficial in the day-to-day operation of a recommender system, as it enables the capability of suggesting additional movies that are similar to a movie the user queries about. Below we apply the movie similarity measures to implement personalized search based on user queries involving movie title or movie keywords.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.4.">Movie-Based Personalized Search</head><p>When a user actively looks for movies that are similar to a given movie, either by typing in the name of the movie or by browsing the description of the movie, we can leverage this extra information to obtain personalized rankings of movies that are most similar to the searched movie. For instance, with a search of the movie Pulp Fiction, we can use the Hellinger distance to identify the most similar movies, that is, the 10 movies shown in Table <ref type="table" target="#tab_9">9</ref>. These items constitute the recommendation set of relevant movies. We can then compute the predicted ratings, y * id f ′ d µ q(γ i ) , for each user on the 10 movies. As users differ in their preference parameter µ q(γ i ) , the ranking of the 10 movies can be personalized.</p><p>The personalized ranking and top recommended movies of our three users, conditional on their search for Pulp Fiction and on their preference parameters, are shown in Table <ref type="table" target="#tab_9">9</ref>. We can see that out of the 10 relevant movies, From Dusk Till Dawn, a vampire-killing film, perhaps offers the most amount of nonstop action to fit the preferences of User 1. The top recommendation for User 2 is Inglourious Basterds (2009), a Tarantino film. User 3's top recommendation is Once Upon a Time in the West (1968), the oldest and most classic film within the set. Although the movie name is a special type of search keyword, we now show how other keywords from the movie tags can be used to support personalized search.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.5.">Keyword-Based Personalized Search</head><p>When a user searches movies using a list of keywords from the movie tags, the keywords can be grouped to form a new "document" that describes a "movie" the user is interested in. This new document can then be used to make recommendations. Specifically, for every searched keyword, we can take the K-element probability vector τ v , which gives the probability of the keyword v in each of the topics, and aggregate these vectors across all the keywords in the query and normalize them to get the topic proportions for the new "document." The Hellinger distance can then be used to determine the set of most similar movies, from which we apply the preference parameter to calculate a personalized ranking for the user.</p><p>For instance, if a user searches the two keywords "heartwarming" and "inspirational," the model can generate a set of 10 movies that are closest to the new document consisting of the two tags. Table <ref type="table" target="#tab_1">10</ref> shows the relevant set of "heartwarming, inspirational" films and their personalized ranking for our three users. The ranking differs across the users because it is driven by the variation in their preferences. For instance, Braveheart (1995), a large-production action movie, is the top most recommendation for User 1, who is the "action enthusiast." User 2's top recommendation is Into the  <ref type="bibr">Wild (2007)</ref>, which features a young college grad who shuns the material world, cuts off communication with his family, lives off the land in Alaska, and eventually dies from food poisoning. Consistent with User 2's preference, this is a small production film with unusual protagonist actions and story line. Ben-Hur (1959) is the top recommendation for User 3. This movie is an epic historical drama, which could please our "classics enthusiast."</p><p>In summary, the results show our model cannot only predict the ratings well, but can also yield a number of qualitative insights regarding the structure of user preferences and the high-dimensional semantic space that characterizes user perceptions of movies. Moreover, our model can be useful in supporting personalized movie recommendations based on different information sets underlying various search scenarios and recommendation contexts.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">Conclusion</head><p>In this research, we contribute to the literature on recommendation systems by developing a novel covariateguided, heterogeneous supervised topic model that leverages numerical ratings, texts, and standard product attributes to make recommendations based on latent topics. The topics are inferred from both the tag vocabulary and the user ratings, thereby enhancing the predictive ability of the model, and our use of crowd-sourced tags alleviates the often onerous need for firm-provided product attributes. We developed a new stochastic variational Bayesian approach for scalable estimation and used it to estimate our model on a large data set of movie ratings and semantic tags. We show that our recommendation model generates much better predictions than the benchmark model and yields a number of interesting insights regarding user preferences, something that is not possible with the benchmark model. Our SVB methodology ensures a fast estimation, thereby making our approach useful in actual recommendation contexts.</p><p>We show how our modeling framework can produce targeted recommendations for users and support personalized search based on movie similarity or relevance to a set of specific keywords. This is possible as the topic proportions can be used to measure the perceptual distance between movies within the high-dimensional semantic space of user-generated tags. When combined with user-level preference parameters, the perceptual distance can yield a unique ordering of the relevant movies for each user, thus resulting in personalized search rankings.</p><p>On the methodology front, we developed a hybrid stochastic variational Bayesian framework for scalable inference in models that involve both conjugate and nonconjugate components. Although we showcased our estimation framework in the context of product recommendations, it can be used in a variety of big-data settings. The rapid growth in data volume, data variety, and crowdsourcing has opened new opportunities for deeper learning about customer preferences and for using predictions from such data for marketing actions. Novel and complex marketing models such as ours that include many latent variables are needed to fully capitalize on the information contained in these information-rich big-data scenarios. Scalable inference therefore becomes one of the major challenges in big-data and big-learning environments, and traditional approaches in Bayesian inference based on regular MCMC methods do not scale well for practical big-data applications. In contrast, by building on state-of-the-art advances in variational Bayesian inference, we developed a stochastic VB algorithm that offers a versatile solution to the scalability and computational challenges in estimating complex marketing models.</p><p>Although we focused on stochastic VB methods in the current paper, other approaches such as stochastic gradient-based MCMC and the divide-and-conquer approaches to MCMC are being actively investigated to tackle scalability issues. We leave a thorough comparison of these emerging methodologies for future research. Finally, although we explored the movie recommendation context, our model can also be applied to other situations where text data prevail. These include  The variational parameters for the population covariance matrix Γ are calculated as</p><formula xml:id="formula_14">ρ q(Γ) ρ Γ + I, (A.6) R q(Γ) (1 − π)R (t−1) q(Γ) + π R Γ + IΣ q(β) + I |6 (t) | i∈6 (t) [(µ q(β) − µ q(γ i ) )(µ q(β) − µ q(γ i ) ) ′ + Σ q(γ i ) ] .</formula><p>The variational parameters for the population mean β are given by</p><formula xml:id="formula_15">Σ −1 q(β) (1 − π)Σ −1 q(β) + π(Σ −1 β + I • ρ q(Γ) R −1 q(Γ) ), (A.7) µ q(β) (1 − π)µ (t−1) q(β) + πΣ q(β) Σ −1 β µ β + ρ q(Γ) R −1 q(Γ) I |6 (t) | i∈6 (t)</formula><p>µ q(γ i ) .</p><p>The variational parameters for the selection correction coefficient α are calculated as</p><formula xml:id="formula_16">σ −2 q(α) (1 − π)σ −2 (t−1) q(α) + π σ −2 α + a q(σ 2 ) b q(σ 2 ) I |6 (t) | i∈6 (t) χ ′ i χ i , (A.8) µ q(α) (1 − π)µ (t−1) q(α) + πσ 2 q(α) σ −2 α µ α + a q(σ 2 ) b q(σ 2 ) I |6 (t) | i∈6 (t)</formula><p>χ ′ i (y i − E(A i )µ q(γ i ) ) .</p><p>The variational parameters for the error variance σ 2 are given by a q(σ 2 ) a σ 2 + 1 2</p><formula xml:id="formula_17">D d 1 |( d |, (A.9) b q(σ 2 ) (1 − π)b (t−1) q(σ 2 ) + π b σ 2 + 1 2 I |6 (t) | i∈6 (t) y i − E(A i )µ q(γ i ) − µ q(α) χ i 2 + Tr[E(A ′ i A i )Σ q(γ i ) ] + σ 2 q(α) χ i 2 .</formula><p>(A.10)</p><p>Finally, we apply the ADSVB procedure described in Appendix B to obtain q(θ k ) 1(µ q(θ k ) , Σ q(θ k ) ), k 1. . .K. Because of the summation over the sampled documents, the gradient calculation in the ADSVB procedure is subject to the rescaling we discuss in Appendix C.</p><p>In the algorithm, C denotes the diagonal matrix with {1/C 11 , . . ., 1/C mm } on its diagonal. The gradient of the logjoint density is derived as</p><formula xml:id="formula_18">∂ log p(ω, θ k ) ∂θ k D d 1 u dk Ψ K j 1 u dj − Ψ(u dk ) + Ψ(ζ dk ) − Ψ K j 1 ζ dj x d − Σ −1 θ k θ k − µ θ k , (B.1)</formula><p>where u dk exp (x ′ d θ k ). Additional technical details are available from the authors upon request.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix C. SVB Estimation with Adaptive Minibatch Sizes</head><p>To adaptively adjust the minibatch size to achieve faster convergence, we start the SVB estimation by sampling small batches of the data, and increase the batch size in a VB iteration only if information from the current batch no longer suffices to move the optimization toward the appropriate direction. We follow the RPP strategy in <ref type="bibr" target="#b42">Tan (2015)</ref> to determine whether to keep or to change batch size in an iteration. The RPP indicates the extent to which the parameter values are moving monotonically toward optimum in the past M iterations, as opposed to merely bouncing back and forth around the optimum.</p><p>Denote by ν the generic representation of the population parameter of interest. In iteration t, the RPP is calculated as <ref type="bibr" target="#b14">(Gaivoronski 1988</ref>) where ν <ref type="bibr">(t)</ref> is the scalar component of the population parameter vector in iteration t. The RPP is bounded between zero and one. It equals zero if ν (l−M) ν <ref type="bibr">(l)</ref> , a sign that no real progress was made after M iterations. It equals one if the path from ν (l−M) to ν (l) is perfectly monotonic. Between zero and one, a small RPP implies that the optimization process exhibits considerable oscillating behavior, and thus more resolution and information are needed from data, whereas a big RPP signals relatively more monotonic progress has been made. In iteration t, if the RPP falls below a prespecified threshold 9, we increase the batch size by a fixed percentage. When the minibatch reaches the full data set, we continue the optimization by switching to the nonstochastic VB method till convergence. Using the RPP indicator, we essentially allow the algorithm to determine by itself the most appropriate batch size to have during the optimization process.</p><p>In applying adaptive minibatch sizes to the main model, we take a random sample 6 (t) from the I individuals in iteration t and calculate RPP at the end of the iteration, until the minibatch reaches the full data. For each sampled individual, the computation of their variational parameters remains the same as before. The updating for the population parameters now includes an exponential smoothing of the variational results between the current and the last iterations with weight π. Such weighted average ensures the convergence of the stochastic optimization <ref type="bibr" target="#b20">(Hoffman et al. 2013)</ref>. Also, any terms that involve summation over the sampled individual parameters are rescaled by a multiplier I/|6 (t) |, as if the entire data set (i.e., all individuals) was used for the current updating. The nonstochastic version of VB algorithm is recovered when π 1 and |6 (t) | I, that is, the minibatch includes all individuals from the original data set. For faster convergence, we allow higher tolerance and less precision in early iterations by changing the RPP threshold 9 and the weight π linearly with the batch size across iterations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Endnotes</head><p>1 Alternative stochastic strategies include taking samples on documents (movies) rather than on individuals in each iteration, or sampling both documents and users in the same iteration. In the MovieLens data, there are many more individuals than movies, and thus sampling users is more beneficial.</p><p>2 For a nonlinear model, prediction based on posterior parameter means can be different from prediction based on averaging posterior predictive samples. In our case, however, the predicted ratings are obtained via a linear combination of the empirical frequencies of different topics in the product descriptions, that is, the rating equation is linear in γ i conditional on other unknowns, and therefore Jensen's inequality has little impact on predicting the ratings. Also, given the trade-off between scalability and accuracy in the recommendation context, our prediction based on point estimates is sufficiently accurate given the goal of providing timely estimates. <ref type="bibr">3</ref> The insignificant impact of selectivity correction could be due to multiple reasons. For instance, selection bias could be minimal, or the data (also from MovieLens) used to model the first stage could be unable to tease out the selection sources. The setups of searching, filtering, ordering, and displaying movies could separately or jointly affect whether a movie is rated, and there are numerous factors external to MovieLens, such as promotions and word of mouth, that may affect a user's awareness of a movie. As we have no information about these aspects beyond what is available in the MovieLens database, modeling the exact consideration set is nearly impossible.</p><p>Input: standard normal density φ(s) and gradient =log p(ω, θ k ) Setup: step size ϖ, constants and ε, and exponential decay rates κ 1 , κ 2 ∈ [0, 1) Initialize: µ q(θ k ) , C, t, m µ , v µ , m C , and v C Repeat till convergence:</p><formula xml:id="formula_19">t t + 1 s~φ(s) θ k Cs + µ q(θ k ) κ 1t κ 1 • ε t−1 For µ q(θ k ) : g µ =log p(ω, θ k ) (Get gradient for µ) m µ κ 1t • m µ + (1 − κ 1t ) • g µ (Update biased 1 st moment) v µ κ 2 • v µ + (1 − κ 2 ) • g 2 µ (</formula><p>Update biased 2 nd moment) m µ m µ /(1 − κ t 1 ) (Correct bias for 1 st moment) v µ v µ /(1 − κ t</p><p>2 ) (Correct bias for 2 nd moment)</p><formula xml:id="formula_20">µ q(θ k ) µ q(θ k ) − ϖ • m µ /( v √ µ + ) (Update variational parameter) For Σ q(θ k ) : g C =log p(ω, θ k ) × s ′ + C m C κ 1t • m C + (1 − κ 1t ) • g C v C κ 2 • v C + (1 − κ 2 ) • (g Cȯ g C ) m C m C /(1 − κ t 1 ) v C v C /(1 − κ t 2 ) C C − ϖ • m C /( v √ C + ) Σ q(θ k ) CC ′</formula><p>Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>1006</head><p>Marketing <ref type="bibr">Science, 2018</ref><ref type="bibr">, vol. 37, no. 6, pp. 987-1008</ref><ref type="bibr" target="#b47">, © 2018</ref> For a fair comparison we coded both the SVB and MCMC methods using Mathematica 11.1 and used its just-in-time compilation capability to compile the programs to C. We ran all programs on a computer with a 3 GHz 8-Core Intel Xeon E5 processor and 32 GB of RAM. <ref type="bibr">5</ref> We simulated 10,000 draws from q(γ i ) of a user to compute the rank probabilities.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. (Color online) Standard Movie Genres and User-Generated Tags</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. (Color online) Histogram of Number of Tags Received by Each Movie</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. (Color online) Directed Acyclic Graph for Main Model</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. (Color online) Topic Proportions for Forrest Gump</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>Five Movies Most Similar to Given Movie Movies Pulp Fiction (1994) The Dark Knight (2008) The Lord of the Rings (2003) Similar movies Inglourious Basterds (2009) Léon: The Professional (1994) The Lord of the Rings (2001) Kill Bill: Volume 1 (2003) The Dark Night Rises (2012) The Hobbit (2013) Reservoir Dogs (1992) The Prestige (2006) WALL • E (2008) Kill Bill: Volume 2 (2004) Lucky Number Slevin (2006) Star Wars (1980) Django Unchained (2012)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>RPP |ν (t−M) − ν (t) | t−1 r t−M |ν (r) − ν (r+1) | , (C.1)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Model Parameters, Priors, and Variational Distributions    </figDesc><table><row><cell>Model Parameter</cell><cell>Prior Distribution</cell><cell>Variational Distribution</cell></row><row><cell>Conjugate components</cell><cell></cell><cell></cell></row><row><cell>ω</cell><cell></cell><cell></cell></row></table><note>d Dir(exp(Θx d</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc></figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Population Coefficients and Variances Associated with Each Topic</figDesc><table><row><cell>Topic</cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>4</cell><cell>5</cell><cell>6</cell><cell>7</cell><cell>8</cell><cell>9</cell><cell>10</cell><cell>11</cell><cell>12</cell><cell>13</cell><cell>14</cell><cell>15</cell><cell>16</cell><cell>17</cell><cell>18</cell><cell>19</cell><cell>20</cell></row><row><cell>β</cell><cell cols="20">1.43 1.96 2.25 2.47 2.52 2.53 2.88 3.05 3.11 3.37 3.48 3.57 3.67 3.79 3.91 4.10 4.18 4.26 4.41 4.44</cell></row><row><cell cols="2">Diag(Γ) 1.</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 4 .</head><label>4</label><figDesc>Measures of Predictive Performance</figDesc><table><row><cell></cell><cell></cell><cell cols="6">Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems</cell></row><row><cell></cell><cell>Genre only</cell><cell>M10</cell><cell>M20</cell><cell>M30</cell><cell>M40</cell><cell>M50</cell><cell>Heckman20</cell></row><row><cell>Calibration sample</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>MAD</cell><cell>0.62</cell><cell>0.55</cell><cell>0.52</cell><cell>0.51</cell><cell>0.51</cell><cell>0.50</cell><cell>0.52</cell></row><row><cell>RMSE</cell><cell>0.79</cell><cell>0.72</cell><cell>0.69</cell><cell>0.68</cell><cell>0.67</cell><cell>0.67</cell><cell>0.70</cell></row><row><cell>Correlation</cell><cell>0.61</cell><cell>0.71</cell><cell>0.74</cell><cell>0.76</cell><cell>0.76</cell><cell>0.77</cell><cell>0.74</cell></row><row><cell>Predictive R 2</cell><cell>0.42</cell><cell>0.51</cell><cell>0.55</cell><cell>0.56</cell><cell>0.58</cell><cell>0.59</cell><cell>0.56</cell></row><row><cell>Holdout sample</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>MAD</cell><cell>0.70</cell><cell>0.65</cell><cell>0.62</cell><cell>0.62</cell><cell>0.61</cell><cell>0.61</cell><cell>0.63</cell></row><row><cell>RMSE</cell><cell>0.89</cell><cell>0.84</cell><cell>0.82</cell><cell>0.81</cell><cell>0.81</cell><cell>0.81</cell><cell>0.82</cell></row><row><cell>Correlation</cell><cell>0.51</cell><cell>0.58</cell><cell>0.61</cell><cell>0.61</cell><cell>0.61</cell><cell>0.62</cell><cell>0.61</cell></row><row><cell>Predictive R 2</cell><cell>0.22</cell><cell>0.34</cell><cell>0.37</cell><cell>0.37</cell><cell>0.38</cell><cell>0.38</cell><cell>0.36</cell></row><row><cell>Estimation time (hours)</cell><cell>0.16</cell><cell>0.99</cell><cell>1.52</cell><cell>2.89</cell><cell>4.16</cell><cell>5.83</cell><cell>1.71</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 5 .</head><label>5</label><figDesc>Top Three Movies Associated with Each Topic</figDesc><table><row><cell>Topic</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 6 .</head><label>6</label><figDesc>Predicted vs. Actual Ratings</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell cols="2">Actual rating</cell><cell></cell></row><row><cell></cell><cell cols="3">Genre-only model</cell><cell>M20 model</cell><cell></cell></row><row><cell>Predicted rating</cell><cell cols="5">Low Medium High Low Medium High</cell></row><row><cell>Calibration sample</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Low</cell><cell>0.44</cell><cell>0.37</cell><cell>0.19 0.57</cell><cell>0.36</cell><cell>0.07</cell></row><row><cell>Medium</cell><cell>0.13</cell><cell>0.37</cell><cell>0.50 0.09</cell><cell>0.40</cell><cell>0.51</cell></row><row><cell>High</cell><cell>0.08</cell><cell>0.14</cell><cell>0.78 0.01</cell><cell>0.06</cell><cell>0.93</cell></row><row><cell>Holdout sample</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Low</cell><cell>0.31</cell><cell>0.38</cell><cell>0.31 0.41</cell><cell>0.41</cell><cell>0.18</cell></row><row><cell>Medium</cell><cell>0.11</cell><cell>0.32</cell><cell>0.57 0.09</cell><cell>0.34</cell><cell>0.57</cell></row><row><cell>High</cell><cell>0.11</cell><cell>0.16</cell><cell>0.73 0.02</cell><cell>0.09</cell><cell>0.89</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head>Table 7 .</head><label>7</label><figDesc>Top Recommended Movies with Rank Probabilities</figDesc><table><row><cell></cell><cell>USER 1</cell><cell></cell><cell>USER 2</cell><cell></cell><cell>USER 3</cell><cell></cell></row><row><cell>Rank</cell><cell>Movie Title</cell><cell>Probability</cell><cell>Movie Title</cell><cell>Probability</cell><cell>Movie Title</cell><cell>Probability</cell></row><row><cell>1</cell><cell>Transformers: Revenge</cell><cell>0.46</cell><cell>Pulp Fiction (1994)</cell><cell>0.70</cell><cell>Casablanca (1942)</cell><cell>0.87</cell></row><row><cell></cell><cell>of the Fallen (2009)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>2</cell><cell>Armageddon (1998)</cell><cell>0.23</cell><cell>Grand Budapest Hotel, The (2014)</cell><cell>0.41</cell><cell>Sunset Blvd. (1950)</cell><cell>0.53</cell></row><row><cell>3</cell><cell>Pearl Harbor (2001)</cell><cell>0.35</cell><cell>Inglourious Basterds (2009)</cell><cell>0.31</cell><cell>Citizen Kane (1941)</cell><cell>0.39</cell></row><row><cell>4</cell><cell>Transformers: Dark of the</cell><cell>0.18</cell><cell>Django Unchained (2012)</cell><cell>0.29</cell><cell>Rear Window (1954)</cell><cell>0.39</cell></row><row><cell></cell><cell>Moon (2011)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>5</cell><cell>Star Wars: The Phantom</cell><cell>0.23</cell><cell>City of God (2002)</cell><cell>0.22</cell><cell>Third Man, The (1949)</cell><cell>0.34</cell></row><row><cell></cell><cell>Menace (1999)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>6</cell><cell>Con Air (1997)</cell><cell>0.31</cell><cell>American Beauty (1999)</cell><cell>0.27</cell><cell>Lawrence of Arabia (1962)</cell><cell>0.22</cell></row><row><cell>7</cell><cell>Star Wars: Attack of the</cell><cell>0.20</cell><cell>Lock, Stock &amp; Two Smoking</cell><cell>0.26</cell><cell>City Lights (1931)</cell><cell>0.34</cell></row><row><cell></cell><cell>Clones (2002)</cell><cell></cell><cell>Barrels (1998)</cell><cell></cell><cell></cell><cell></cell></row><row><cell>8</cell><cell>Transformers (2007)</cell><cell>0.20</cell><cell>Kill Bill 1 (2003)</cell><cell>0.22</cell><cell>Maltese Falcon, The (1941)</cell><cell>0.29</cell></row><row><cell>9</cell><cell>G.I. Joe: The Rise of</cell><cell>0.24</cell><cell>Snatch (2000)</cell><cell>0.38</cell><cell>12 Angry Men (1957)</cell><cell>0.21</cell></row><row><cell></cell><cell>Cobra (2009)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>10</cell><cell>Terminator Salvation (2009)</cell><cell>0.19</cell><cell>American History X (1998)</cell><cell>0.36</cell><cell>To Kill a Mockingbird (1962)</cell><cell>0.45</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8"><head>Table 8 .</head><label>8</label><figDesc></figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9"><head>Table 9 .</head><label>9</label><figDesc>Top Recommended Movies with Rank Probabilities Based on Search of Movie</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10"><head>Table 10 .</head><label>10</label><figDesc>Top Recommended Movies with Rank Probabilities Based on Search of Keywords Probabilistic Topic Model for Hybrid Recommender Systemsmatching markets such as the job hunting market, where candidates can be matched with firms based on the text within their resumes and firm preferences. We look forward to exploring these and other applications with our framework.</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell>Ansari, Li, and Zhang:</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>USER 1</cell><cell></cell><cell>USER 2</cell><cell></cell><cell>USER 3</cell><cell></cell></row><row><cell>Rank</cell><cell>Movie Title</cell><cell>Probability</cell><cell>Movie Title</cell><cell>Probability</cell><cell>Movie Title</cell><cell>Probability</cell></row><row><cell>1</cell><cell>Braveheart (1995)</cell><cell>0.57</cell><cell>Into the Wild (2007)</cell><cell>0.62</cell><cell>Ben-Hur (1959)</cell><cell>0.83</cell></row><row><cell>2</cell><cell>Forrest Gump (1994)</cell><cell>0.52</cell><cell>Saving Private Ryan (1998)</cell><cell>0.52</cell><cell>Fiddler on the Roof (1971)</cell><cell>0.63</cell></row><row><cell>3</cell><cell>Saving Private Ryan (1998)</cell><cell>0.58</cell><cell>Forrest Gump (1994)</cell><cell>0.43</cell><cell>Saving Private Ryan (1998)</cell><cell>0.57</cell></row><row><cell>4</cell><cell>Dances with Wolves (1990)</cell><cell>0.45</cell><cell>Braveheart (1995)</cell><cell>0.26</cell><cell>Braveheart (1995)</cell><cell>0.46</cell></row><row><cell>5</cell><cell>Secondhand Lions (2003)</cell><cell>0.24</cell><cell>Cider House Rules, The (1999)</cell><cell>0.27</cell><cell>Dances with Wolves (1990)</cell><cell>0.66</cell></row><row><cell>6</cell><cell>Amistad (1997)</cell><cell>0.34</cell><cell>Amistad (1997)</cell><cell>0.46</cell><cell>Forrest Gump (1994)</cell><cell>0.49</cell></row><row><cell>7</cell><cell>Cider House Rules, The (1999)</cell><cell>0.51</cell><cell>Dances with Wolves (1990)</cell><cell>0.84</cell><cell>Cider House Rules, The (1999)</cell><cell>0.52</cell></row><row><cell>8</cell><cell>Into the Wild (2007)</cell><cell>0.66</cell><cell>Ben-Hur (1959)</cell><cell>0.82</cell><cell>Into the Wild (2007)</cell><cell>0.72</cell></row><row><cell>9</cell><cell>Fiddler on the Roof (1971)</cell><cell>0.58</cell><cell>Secondhand Lions (2003)</cell><cell>0.64</cell><cell>Amistad (1997)</cell><cell>0.70</cell></row><row><cell>10</cell><cell>Ben-Hur (1959)</cell><cell>0.55</cell><cell>Fiddler on the Roof (1971)</cell><cell>0.70</cell><cell>Secondhand Lions (2003)</cell><cell>0.68</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">MarketingScience, 2018, vol. 37, no. 6, pp. 987-1008<ref type="bibr" target="#b47">, © 2018</ref> </note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems   Marketing Science, 2018, vol. 37, no. 6, pp. 987-1008<ref type="bibr" target="#b47">, © 2018</ref> </note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors are grateful to the MovieLens team at the University of Minnesota, for providing the invaluable data to our inquiries. The authors also thank the editor, the associate editor, the two anonymous reviewers, as well as the participants of seminars and conferences in which this work has been presented, for their constructive comments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix B. ADSVB Estimation</head><p>We now detail the adaptive doubly stochastic variational Bayesian updating for the nonconjugate model component θ k . Ansari, Li, and Zhang: Probabilistic Topic Model for Hybrid Recommender Systems   Marketing Science, 2018, vol. 37, no. 6, pp. 987-1008<ref type="bibr" target="#b47">, © 2018</ref> </p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>In each iteration t, we sample a subset of users 6 (t) using the RPP strategy discussed in Appendix C. Let $ s ∪ i∈S (t) $ i denote the documents rated by the sampled individuals in the current iteration. We first update the variational parameters for d ∈ $ s . Specifically, we calculate the variational parameters for topic proportions ω dk , for all d ∈ $ s and k 1. . .K, by</p><p>The variational parameters for topic assignment of word w dn are obtained from</p><p>where f d,−n j≠n f j , and Ψ( • ) is the digamma function. Let ( s,d ( d ∩ 6 (t) denote the sampled individuals who rated document d.</p><p>We update the variational parameters of coefficient γ i for every sampled user,</p><p>where E(A i ) {f d } d∈$i , and</p><p>Next, we update the population parameters using the exponential smoothing and rescaling discussed in Appendix C. Specifically, the topic distribution is given by τ kw } (1 − π)τ (t−1) kw + π</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Internet recommendation systems</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ansari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Essegaier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kohli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="363" to="375" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bishop</surname></persName>
+		</author>
+		<title level="m">Pattern Recognition and Machine Learning</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Supervised topic models</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mcauliffe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 20th Annual Internat. Conf. Advances in Neural Information Processing Systems</title>
+				<meeting>20th Annual Internat. Conf. Advances in Neural Information essing Systems<address><addrLine>Red Hook, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>Curran Associates</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="121" to="128" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Latent Dirichlet allocation</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="993" to="1022" />
+			<date type="published" when="2003-01" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Recommendation systems with purchase data</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Bodapati</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="77" to="93" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Variational inference for large-scale models of discrete choice</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mcauliffe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">105</biblScope>
+			<biblScope unit="issue">489</biblScope>
+			<biblScope unit="page" from="324" to="335" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Sentence-based text analysis for customer reviews</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Büschken</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="953" to="975" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A general consumer preference model for experience products: Application to internet recommendation services</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">R</forename><surname>Rao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="289" to="305" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">My mobile music: An adaptive personalization system for digital audio players</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Chung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Rust</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="52" to="68" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Integrating tags in a semantic content-based recommender</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Gemmis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lops</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Semeraro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Basile</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 2008 ACM Conf. Recommender Systems</title>
+				<meeting>2008 ACM Conf. Recommender Systems<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="163" to="170" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A comprehensive survey of neighborhoodbased recommendation methods</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Desrosiers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Karypis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Recommender Systems Handbook</title>
+				<editor>
+			<persName><forename type="first">F</forename><surname>Ricci</surname></persName>
+			<persName><forename type="first">L</forename><surname>Rokach</surname></persName>
+			<persName><forename type="first">B</forename><surname>Shapira</surname></persName>
+			<persName><forename type="first">P</forename><surname>Kantor</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Boston</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="107" to="144" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Active machine learning for consideration heuristics</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Dzyabura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="801" to="819" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Mixed-membership models of scientific publications</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Erosheva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fienberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci. USA</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="5220" to="5227" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+	<note>Suppl</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The benefit of using tag-based profiles</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Firan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Nejdl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Paiu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 2007 Latin American Web Conf</title>
+				<meeting>2007 Latin American Web Conf<address><addrLine>Washington, DC</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="32" to="41" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Implementation of stochastic quasigradient methods</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gaivoronski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Numerical Techniques for Stochastic Optimization</title>
+				<editor>
+			<persName><forename type="first">Y</forename><surname>Ermoliev</surname></persName>
+			<persName><forename type="first">R</forename><forename type="middle">J B</forename><surname>Wets</surname></persName>
+			<persName><forename type="first">Rjb</forename></persName>
+		</editor>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="1988" />
+			<biblScope unit="page" from="313" to="352" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Covariances, robustness, and variational Bayes. Working paper</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Giordano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Broderick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<pubPlace>Berkeley, Berkeley</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>University of California</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">H</forename><surname>Greene</surname></persName>
+		</author>
+		<title level="m">Econometric Analysis</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Pearson Education</publisher>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+	<note>5th ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Theory of Gaussian variational approximation for a Poisson mixed model</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Ormerod</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Wand</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statistica Sinica</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="369" to="389" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">The MovieLens datasets: History and context</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Harper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Konstan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Interactive Intelligent Systems</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="19" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Sample selection bias as a specification error</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Heckman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Econometrica</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="153" to="161" />
+			<date type="published" when="1979" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Stochastic variational inference</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hoffman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Paisley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1303" to="1347" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A maximum entropy web recommendation system: Combining collaborative and content features</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mobasher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 11th ACM SIGKDD Internat. Conf. Knowledge Discovery in Data Mining</title>
+				<meeting>11th ACM SIGKDD Internat. Conf. Knowledge Discovery in Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="612" to="617" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">An introduction to variational methods for graphical models</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Jaakkola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Saul</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Machine Learn</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="183" to="233" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m">Keynes JM (1921) A treatise on probability. Collected Writings of John Maynard Keynes</title>
+				<meeting><address><addrLine>Macmillan, London</addrLine></address></meeting>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Non-conjugate variational message passing for multinomial and binary regression</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Knowles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Minka</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 24th Annual Internat. Conf. Advances in Neural Information Processing Systems</title>
+				<meeting>24th Annual Internat. Conf. Advances in Neural Information essing Systems<address><addrLine>Red Hook, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>Curran Associates</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1701" to="1709" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Advances in collaborative filtering</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Koren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Recommender Systems Handbook</title>
+				<editor>
+			<persName><forename type="first">F</forename><surname>Ricci</surname></persName>
+			<persName><forename type="first">L</forename><surname>Rokach</surname></persName>
+			<persName><forename type="first">B</forename><surname>Shapira</surname></persName>
+			<persName><forename type="first">P</forename><surname>Kantor</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Boston</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="145" to="186" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">On information and sufficiency</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kullback</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Leibler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Math. Statist</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="79" to="86" />
+			<date type="published" when="1951" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Content-based recommender systems: State of the art and trends</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lops</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gemmis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Semeraro</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Recommender Systems Handbook</title>
+				<editor>
+			<persName><forename type="first">F</forename><surname>Ricci</surname></persName>
+			<persName><forename type="first">L</forename><surname>Rokach</surname></persName>
+			<persName><forename type="first">B</forename><surname>Shapira</surname></persName>
+			<persName><forename type="first">P</forename><surname>Kantor</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Boston</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="73" to="105" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Mean field variational Bayesian inference for support vector machine classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Luts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Ormerod</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Statist. Data Anal</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page" from="163" to="176" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Learning user profiles from tagging data and leveraging them for personalized information access</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Michlmayr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Cayzer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 16th Internat. World Wide Web Conf. Tagging and Metadata for Social Inform</title>
+				<meeting>16th Internat. World Wide Web Conf. Tagging and Metadata for Social Inform<address><addrLine>Banff, Canada</addrLine></address></meeting>
+		<imprint>
+			<biblScope unit="page" from="1" to="7" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">The informational value of social tagging networks</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Nam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Kannan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="21" to="40" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Nikulin</surname></persName>
+		</author>
+		<title level="m">Hellinger distance. Hazewinkel M</title>
+				<meeting><address><addrLine>Berlin</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer Science+Business Media B.V./Kluwer Academic Publishers</publisher>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+	<note>Encyclopedia of Mathematics</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Explaining variational approximations</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Ormerod</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Wand</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. Statist</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="140" to="153" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Variational inference with normalizing flows. Working paper</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Rezende</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mohamed</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<pubPlace>Google, London</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">A stochastic approximation method</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Robbins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Monro</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Math. Statist</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="400" to="407" />
+			<date type="published" when="1951" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">The value of purchase history data in target marketing</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Mcculloch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="321" to="340" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Bayesian probabilistic matrix factorization using Markov chain Monte Carlo</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Salakhutdinov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mnih</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 25th Internat. Conf. Machine Learn</title>
+				<meeting>25th Internat. Conf. Machine Learn<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="880" to="887" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Fixed-form variational posterior approximation through stochastic linear regression</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Salimans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Knowles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bayesian Anal</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="837" to="882" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Introduction to Stochastic Search and Optimization: Estimation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Spall</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Simulation, and Control</title>
+				<meeting><address><addrLine>Hoboken, NJ</addrLine></address></meeting>
+		<imprint>
+			<publisher>John Wiley &amp; Sons</publisher>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Editorial: The exploration-exploitation tradeoff and efficiency in knowledge production</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sudhir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Folksonomies, the semantic web, and movie recommendation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Szomszor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Cattuto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Alani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>O'hara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Baldassarri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Loreto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vdp</forename><surname>Servedio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Workshop Bridging Gap Semantic Web and Web 2.0</title>
+				<meeting>Workshop Bridging Gap Semantic Web and Web 2.0<address><addrLine>Innsbruck, Austria</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Stochastic variational inference for large-scale discrete choice models using adaptive batch sizes</title>
+		<author>
+			<persName><forename type="first">Lsl</forename><surname>Tan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Comput</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="237" to="257" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Mining marketing meaning from online chatter: Strategic brand analysis of big data using latent Dirichlet allocation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tirunillai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Tellis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="463" to="479" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Doubly stochastic variational Bayes for non-conjugate inference</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Titsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lazaro-Gredilla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 31st Internat. Conf. Machine Learn</title>
+				<meeting>31st Internat. Conf. Machine Learn<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1971" to="1979" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Convergence properties of a general algorithm for calculating variational Bayesian estimates for a normal mixture model</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Titterington</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bayesian Anal</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="625" to="650" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Rethinking LDA: Why priors matter</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wallach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Mimno</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mccallum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 22nd Annual Internat. Conf. Advances</title>
+				<meeting>22nd Annual Internat. Conf. Advances</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<author>
+			<persName><forename type="first">Li</forename><surname>Ansari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhang</forename></persName>
+		</author>
+		<title level="m">Probabilistic Topic Model for Hybrid Recommender Systems Marketing Science</title>
+				<meeting><address><addrLine>Red Hook, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>Curran Associates</publisher>
+			<date type="published" when="2018" />
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="1973" to="1981" />
+		</imprint>
+	</monogr>
+	<note>© 2018 INFORMS in Neural Information Processing Systems</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Variational inference in nonconjugate models</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1005" to="1031" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Marketing analytics for data-rich environments</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Kannan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="97" to="121" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Leveraging missing ratings to improve online recommendation systems</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ying</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Feinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="355" to="365" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">On variational Bayes estimation and variational information criteria for linear regression models</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>You</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Ormerod</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Müller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Australian New Zealand J. Statist</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="73" to="87" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<monogr>
+		<title level="m" type="main">Probabilistic Topic Model for Hybrid Recommender Systems</title>
+		<author>
+			<persName><forename type="first">Li</forename><surname>Ansari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhang</forename></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,1205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Targeting and Privacy in Mobile Advertising</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2020-12-08">December 8, 2020</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Omid</forename><surname>Rafieian</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">Cornell Tech and SC Johnson Graduate School of Management</orgName>
+								<orgName type="institution" key="instit2">Cornell University</orgName>
+								<address>
+									<postCode>14853</postCode>
+									<settlement>Ithaca</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Hema</forename><surname>Yoganarasimhan</surname></persName>
+							<email>hemay@uw.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Michael G. Foster School of Business</orgName>
+								<orgName type="institution">University of Washington</orgName>
+								<address>
+									<postCode>98195</postCode>
+									<settlement>Seattle</settlement>
+									<region>Washington</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Targeting and Privacy in Mobile Advertising</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2020-12-08">December 8, 2020</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2020.1235</idno>
+					<note type="submission">Received: April 13, 2018 Revised: April 9, 2019; January 30, 2020; April 8, 2020 Accepted: April 18, 2020</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:31+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>advertising</term>
+					<term>mobile</term>
+					<term>machine learning</term>
+					<term>targeting</term>
+					<term>behavioral targeting</term>
+					<term>privacy</term>
+					<term>auctions</term>
+					<term>regulation</term>
+					<term>public policy</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Mobile in-app advertising is now the dominant form of digital advertising. Although these ads have excellent user-tracking properties, they have raised concerns among privacy advocates. This has resulted in an ongoing debate on the value of different types of targeting information, the incentives of ad networks to engage in behavioral targeting, and the role of regulation. To answer these questions, we propose a unified modeling framework that consists of two components-a machine learning framework for targeting and an analytical auction model for examining market outcomes under counterfactual targeting regimes. We apply our framework to large-scale data from the leading in-app ad network of an Asian country. We find that an efficient targeting policy based on our machine learning framework improves the average click-through rate by 66.80% over the current system. These gains mainly stem from behavioral information compared with contextual information. Theoretical and empirical counterfactuals show that although total surplus grows with more granular targeting, the ad network's revenues are nonmonotonic; that is, the most efficient targeting does not maximize ad network revenues. Rather, it is maximized when the ad network does not allow advertisers to engage in behavioral targeting. Our results suggest that ad networks may have economic incentives to preserve users' privacy without external regulation.</p><p>History: Puneet Manchanda served as the senior editor and Olivier Toubia served as associate editor for this article.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1.">Mobile Advertising and Targeting</head><p>Mobile advertising now constitutes the largest share of total digital ad spend <ref type="bibr" target="#b14">(Enberg 2019)</ref>. The popularity of mobile advertising stems from an ad format unique to the mobile environment: in-app ads or ads shown inside apps. These ads have excellent usertracking properties and allow ad networks to stitch together user data across sessions, apps, and advertisers. <ref type="bibr">1</ref> Thus, one of the main attractions of in-app advertising is its ability to facilitate behavioral targeting <ref type="bibr" target="#b12">(Edwards 2012)</ref>.</p><p>Whereas the advertising industry has lauded the trackability of in-app ads, consumers and privacy advocates have derided them, citing privacy concerns. Advertisers argue that tracking allows consumers to enjoy free apps and content and see relevant ads, whereas users demand higher privacy and limits on behavioral tracking and targeting <ref type="bibr" target="#b13">(Edwards-Levy and Liebelson 2017)</ref>. Responding to consumer concerns, regulatory bodies have started taking action. For example, the European Union's General Data Protection Regulation requires users to opt into, rather than opt out of, behavioral targeting <ref type="bibr" target="#b23">(Kint 2017</ref>).</p><p>Even as consumers, businesses, and regulators are trying to find the right balance between consumer protection and business interests, we do not have a good understanding of the key issues at the core of targeting and privacy. For example, to what extent does targeting improve the efficiency of the advertising ecosystem, what is the value of different types of targeting information, and what are the incentives of different players in the advertising industry to engage in user tracking and behavioral targeting? The lack of a cohesive framework to analyze these issues hampers our ability to have an informed discussion and to form policy on them.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2.">Research Agenda and Challenges</head><p>In this paper, we seek to address this gap by providing a unifying framework to answer the following sets of questions related to targeting and privacy in the advertising ecosystem. The first set of questions relates to targeting and efficiency. How can ad networks use the data available to them to develop targeting policies? How can we evaluate the performance of these policies in both factual and counterfactual settings? In particular, what are the gains in click-through rate (CTR) from adopting an efficient (CTR-maximizing) targeting policy?</p><p>The second set of questions relates to the value of targeting information. We are particularly interested in the relative value of contextual versus behavioral information. The former captures the context (when and where) of an impression, and the latter summarizes an individual user's past app usage, ad exposure, and ad response. Contextual information is privacy preserving, whereas behavioral information is based on user tracking and therefore impinges on users' privacy.</p><p>Third, we are interested in quantifying the revenueefficiency trade-off and ad network's incentives to enable different forms of targeting. What is the empirical relationship between efficiency and ad network revenues? What is the optimal level of targeting from the perspective of different players in the market? Finally, to what extent are the ad network's and advertisers' incentives aligned?</p><p>There are three main challenges that we need to overcome to satisfactorily answer these questions. First, to develop efficient targeting policies, we need to obtain accurate estimates of CTR for all ads that could have been shown in an impression (i.e., counterfactual ads) and not just the ad that was actually shown in that impression. Thus, we need exogenous variation in the ad-allocation mechanism to evaluate counterfactual targeting policies. Second, to quantify the value of different pieces of targeting information, we need a model that can accurately predict whether a targeted impression will lead to a click or not. Models with poor predictive ability will lead to downward bias in the estimates of the value of information. Third, we need an underlying model of strategic interactions that can quantify market outcomes (e.g., ad network and advertiser revenues) under different targeting regimes. Without an economic model that puts some structure on the ad network's and advertisers' utilities, we cannot make any statements on their incentives to target and/or the extent to which these incentives are aligned.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.3.">Our Approach</head><p>We present a unified and scalable framework that coherently combines predictive machine learning models with prescriptive economic models to overcome the challenges listed earlier. Our framework consists of two main components. The first, a machine learning framework for targeting, addresses the first two challenges of obtaining counterfactual CTR estimates and achieving high predictive accuracy in this task. The second is an analytical model that incorporates competition and characterizes the ad network's and advertisers' profits under different targeting regimes. This addresses the third challenge of linking targeting regimes to ad network and advertiser revenues.</p><p>The main goal of the first component is to estimate the match value between an impression and an ad, where match value can be interpreted as the CTR of an impression-ad combination. Once we have match values for all impression-ad combinations, we can use them to define and evaluate any counterfactual targeting strategy. Match values are thus the key primitives of interest here, and we infer them by combining ideas from causal inference with predictive machine learning models. Our approach consists of three parts: (1) a filtering procedure, (2) a featuregeneration framework, and (3) a learning algorithm. The goal of the filtering procedure is to identify the set of ads for which we can generate accurate counterfactual estimates of CTR for each impression. If the platform uses a deterministic ad-allocation mechanism (as is common practice in the industry), then this set is null, by definition. However, in our setting, there is exogenous variation in the ad-allocation process, which gives us a nonempty set of counterfactual ads for each impression. Our filtering procedure determines this set by identifying the ads that have a nonzero propensity of being shown in a given impression. Next, our feature-generation framework relies on a set of functions to generate a large number of features that capture the contextual and behavioral information associated with an impression. Using these functions, we generate a total of 160 features that serve as input variables into a CTR prediction model. Finally, we use XGBoost, proposed by <ref type="bibr" target="#b8">Chen and Guestrin (2016)</ref>, a fast and scalable version of boosted regression trees, as our learning algorithm.</p><p>In the second component, we focus on the ad network's incentives to allow targeting. In an influential paper, <ref type="bibr" target="#b25">Levin and Milgrom (2010)</ref> conjecture that whereas high levels of targeting can increase efficiency in the market, it can reduce the ad network's revenue by softening the competition between advertisers. We propose a theoretical framework that allows us to characterize this revenue-efficiency trade-off under counterfactual targeting regimes. To take this framework to data, we need an estimate of each advertiser's valuation for a given impression. This valuation can be decomposed into two sets of primitives: (1) match valuations or CTRs for all impression-ad combinations and (2) advertisers' click valuations for each impression. Although match valuations are already available from the machine learning targeting framework, we need to infer click valuations by inverting advertisers' observed equilibrium bids <ref type="bibr" target="#b19">(Guerre et al. 2000)</ref>. The product of these two entities gives us each advertiser's value of a given impression, which allows us to quantify the ad network's revenue, advertisers' surplus, and total surplus under different targeting regimes.</p><p>We apply our framework to one month of data from the leading mobile ad network from a large Asian country. The scale and scope of the data are large enough to provide realistic substantive and counterfactual results. For our analysis, we sample over 27 million impressions for training, validation, and testing and use another 146 million impressions for feature generation. A notable feature of our setting is that a quasi-proportional auction allocates impressions to ads using a probabilistic rule: an advertiser's probability of winning an impression is proportional to his or her bid. This induces randomization or exogenous variation in ad allocation, which, in turn, allows us to estimate match valuations for counterfactual ad-impression combinations. At the same time, the auction mechanism preserves the strategic linkage between bids and advertisers' click valuations, which allows us to estimate click valuations from the bid data. Our setting thus facilitates the separate identification of both match and click valuations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.4.">Findings and Contribution</head><p>We first discuss the results from the machine learning model for targeting. We present both factual and counterfactual evaluations of our model. In the factual evaluation, we use goodness-of-fit measures to evaluate how well our model can predict the observed outcome. We find that our model predicts the outcome on a hold-out test set with substantial accuracy: It achieves a Relative Information Gain (RIG) of 17.95% over a baseline model that simply predicts the average CTR for all impressions. Next, we find that behavioral information contributes more to the predictive accuracy of the model than contextual information. In the second part of our evaluation, we consider the efficient targeting policy, wherein each impression is allocated to the ad with the highest estimated CTR in that impression. We show that this efficient targeting policy can increase the average CTR in the ad network by 66.80% over the current system.</p><p>Next, we link advertisers' targeting strategies to the ad network's incentives and revenues. First, we theoretically prove that in an efficient auction mechanism (e.g., second-price auction), (1) the total surplus in the system monotonically increases as the extent of targeting increases, but (2) the ad network's revenues are not monotonic; revenue may or may not increase with more granular targeting. Thus, we take our theoretical framework to data and perform empirical counterfactuals to compare ad network revenues under different targeting regimes.</p><p>In particular, we consider four targeting regimes that relate to our research agenda: full (impression-level targeting), behavioral (user-level targeting), contextual (app-time-level targeting), and no targeting. We find that the ad network's revenue is maximized when it restricts targeting to the contextual level even though doing so lowers total surplus; that is, allowing behavioral targeting thins out the market, which, in turn, reduces ad network revenues. Therefore, the ad network has economic incentives to adopt a privacypreserving targeting regime, especially if it cannot extract additional surplus from advertisers through other mechanisms. On the advertisers' side, we find that although a majority of them prefer a regime where the ad network allows behavioral targeting, not all do. An important implication of our findings is that it may not be necessary for an external entity such as the European Union or Federal Trade Commission to impose privacy regulations in light of ad networks' economic incentives.</p><p>Our paper makes several contributions to the literature. First, from a methodological perspective, we propose a novel machine learning framework for targeting that is compatible with counterfactual analysis in a competitive environment. A key contribution of our targeting framework is in combining existing ideas from causal inference literature with recent machinelearning literature to generate counterfactual estimates of user behavior under alternative targeting regimes. Further, we present an efficient auction framework with targeting that characterizes advertisers' utility function under any targeting regime and provides a direct link to the estimation of market outcome such as efficiency and revenue. Second, from a substantive perspective, we provide a comprehensive comparison of contextual and behavioral targeting, with and without the presence of competition. To our knowledge, this is the first study to compare the role of behavioral and contextual targeting on market outcomes. Third, from a managerial perspective, our results demonstrate a nonmonotonic relationship between targeting granularity and revenue. Although our findings may depend on the context of our study, our framework is generalizable and can be applied to most standard advertising platforms that use deterministic auctions as long as the platform randomizes ad allocation over a small portion of the traffic (which would satisfy the unconfoundedness assumption). Finally, from a policy perspective, we identify the misalignment of the ad network's and advertisers' incentives regarding behavioral and contextual targeting and information disclosure. We expect our findings to be of relevance to policymakers interested in regulating user tracking and behavioral targeting in the advertising space.</p><p>The rest of this paper is organized as follows. In Section 2, we discuss the related literature. We introduce the setting and data in Section 3. In Section 4, <ref type="bibr">Yoganarasimhan: Targeting and</ref><ref type="bibr">Privacy in Mobile Advertising Marketing Science, 2021, vol. 40, no. 2, pp. 193-218, © 2020 INFORMS</ref> we present our machine learning framework for targeting, and in Section 5, we present a series of results on efficiency gains from targeting. Next, in Section 6, we develop a theoretical framework for analyzing the revenue-efficiency trade-off and a corresponding empirical analysis of auctions with targeting. In Section 7, we present the results on market outcomes under counterfactual targeting regimes. Finally, in Section 8, we conclude with a discussion on the generalizability of our framework and our main contributions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Related Literature</head><p>First, our paper relates to the computer science literature on CTR prediction <ref type="bibr" target="#b29">(McMahan et al. 2013</ref><ref type="bibr" target="#b20">, He et al. 2014</ref><ref type="bibr" target="#b7">, Chapelle et al. 2015</ref>. These papers make prescriptive suggestions on feature generation, model selection, learning rates, and scalability. Our work differs from these papers in two main ways. First, we develop a filtering procedure that allows us to obtain accurate CTR estimates for both the ad shown during an impression as well as counterfactual ads not shown in the impression. Thus, unlike the preceding papers, our framework can be used to develop and evaluate different targeting policies. Second, we quantify the value of different types of information in the targeting of mobile ads, whereas the preceding papers were mainly concerned with click prediction.</p><p>Our paper also relates to the literature on ad networks' incentives to allow targeting. <ref type="bibr" target="#b25">Levin and Milgrom (2010)</ref> were one of the first to conjecture the tradeoff between value creation and market thickness. They argue that too much targeting can thin out markets, which, in turn, can soften competition and make the ad network worse off. This is particularly the case when there is significant heterogeneity in the distribution of advertisers' valuation of impressions <ref type="bibr" target="#b6">(Celis et al. 2014)</ref>. Building on this insight, a growing stream of analytical papers shows that there is a nonmonotonic pattern between the extent of targeting and ad network revenues <ref type="bibr" target="#b4">(Bergemann and Bonatti 2011</ref><ref type="bibr" target="#b1">, Amaldoss et al. 2015</ref><ref type="bibr">, De Corniere and De Nijs 2016</ref><ref type="bibr" target="#b21">, Hummel and McAfee 2016</ref><ref type="bibr" target="#b42">, Sayedi 2018</ref>. A key difference between these papers and ours is that we do not make any distributional assumptions on the match values in our analytical model.</p><p>In spite of the increasing interest from the theoretical side, there has been limited empirical work on this topic with mixed findings. In an early paper, <ref type="bibr" target="#b46">Yao and Mela (2011)</ref> present a structural model to estimate advertisers' valuations and show that targeting benefits both advertisers and the ad network. In a similar context, however, <ref type="bibr" target="#b3">Athey and Nekipelov (2012)</ref> present a case study of two keywords and show that coarsening CTR predictions (worse targeting) can help a search advertising ad network generate more revenue. However, unlike our paper, neither of these papers can effectively design or evaluate counterfactual targeting regimes because their data come from highly targeted ecosystems without any randomization in ad allocation. More broadly, ours is the first empirical paper to view the revenue-efficiency trade-off through the lens of privacy and quantify the ad network's incentives to preserve users' privacy.</p><p>Next, our work relates to the literature on the interplay between privacy and targeting. <ref type="bibr" target="#b18">Goldfarb and Tucker (2011b)</ref> use data from a series of regime changes in advertising regulations to show that restricting targeting reduces response rates and thereby advertisers' revenues. Similarly, <ref type="bibr" target="#b17">Goldfarb and Tucker (2011a)</ref> and <ref type="bibr" target="#b44">Tucker (2014)</ref> highlight the perils of excessive targeting because users perceive increased targeting as a threat to their privacy. Please see <ref type="bibr" target="#b16">Goldfarb (2014)</ref> for an excellent review of targeting in online advertising and <ref type="bibr" target="#b0">Acquisti et al. (2016)</ref> for a detailed discussion of consumer privacy issues. Our paper contributes to this literature by providing the first empirical evidence in support of the possibility of self-regulation in this market.</p><p>Finally, our paper adds to the growing literature on applications of machine learning in marketing, which focus on prediction problems; see <ref type="bibr" target="#b43">Toubia et al. (2007)</ref> and <ref type="bibr" target="#b11">Dzyabura and Yoganarasimhan (2018)</ref> for excellent summaries. Our paper contributes to this stream by demonstrating how a combination of theory-driven frameworks and machine learning methods can be used to go beyond prediction and help answer important substantive and prescriptive questions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Setting and Data</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Setting</head><p>Our data come from the leading mobile in-app advertising network of a large Asian country, which had over 85% market share in the category in 2015. The ad network works with over 10,000 apps and 250 advertisers, and it serves over 50 million ads per day (about 600 auctions per second). This ad network specializes in the Android operating system (OS). At the time of our study, smartphone penetration was reasonably high in the country, with over 60% of the population having access to smartphones. The share of the Android OS was over 85% of the market in this country in 2015, which is consistent with its share worldwide <ref type="bibr" target="#b40">(Rosoff 2015)</ref>.</p><p>3.1.1. Players. There are four key players in this marketplace.</p><p>Users. Individuals who use apps. They see the ads shown within the apps that they use and may choose to click on the ads.</p><p>Advertisers. Firms that show ads through the ad network. They design banner ads and specify their bid as the amount they are willing to pay per click and Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile Advertising can include a maximum budget if they want to. Advertisers can target their ads based on the following variables: app category, province, connectivity type, time of day, mobile operators, and mobile brand of the impression. The ad network does not support more detailed targeting (e.g., behavioral targeting) at this point in time.</p><p>Publishers. App developers who have joined the ad network. They accrue revenues based on the clicks generated within their app. Publishers earn 70% of the cost of each click in their app (paid by the advertiser), and the remaining 30% is the ad network's commission.</p><p>Ad network or platform. It functions as the matchmaker between users, advertisers, and publishers. It runs a real-time auction for each impression generated by the participating apps and shows the winning ad during the impression. The platform uses a costper-click pricing mechanism and therefore generates revenues only when clicks occur. 2 3.1.2. Auction Mechanism. The platform uses a quasiproportional auction mechanism <ref type="bibr" target="#b31">(Mirrokni et al. 2010)</ref>. Unlike other commonly used auctions (e.g., second price or Vickrey), this auction uses a probabilistic allocation rule:</p><formula xml:id="formula_0">π ia b a q a ∑ j∈! i b j q j ,<label>(1)</label></formula><p>where π ia is the probability that advertiser a with bid b a and quality score q a wins impression i, and ! i denotes the set of advertisers participating in the auction for impression i. The quality score is an aggregate measure that reflects the advertiser's potential profitability for the platform. Currently, the platform does not use impression-specific quality scores; rather, it uses an advertiser-specific quality score that remained constant during our observation period. Because of the probabilistic nature of the auction, the ad that generates the highest expected revenue for the platform is not guaranteed to win. Rather, advertiser a's probability of winning is proportional to b a q a . 3 Further, advertisers are only charged when a user clicks on their ad. The cost per click for an impression is determined using a next-price mechanism similar to that of Google's sponsored search auctions. In this case, the amount that the winning ad is charged per click is the minimum amount that guarantees its rank among the set of bidders. For example, suppose that there are three advertisers with bids 1, 2, and 3, and quality scores 0.1, 0.2, and 0.3, bidding on an impression. Then the products of bid and quality score for the three advertisers are 0.1, 0.4, and 0.9, respectively. In this case, if the second-ranked bidder wins the auction, he or she only needs to pay 1 × 0.1/0.2 0.5 because it is the minimum bid amount that guarantees that he or she will be ranked higher than the third-ranked bidder. Formally, we can write the cost per click for ad a in impression i as</p><formula xml:id="formula_1">CPC ia inf b ∑ j∈! i ,j a 1 b q a ≤ b j q j ( ) ⃒ ⃒ ⃒ ⃒ ⃒ { ∑ j∈! i ,j a 1 b a q a ≤ b j q j ( ) } ,<label>(2)</label></formula><p>where ∑ j∈! i ,j a 1(b a q a ≤ b j q j ) is essentially the number of ads whose product of bid and quality score is lower than ad a, and the infimum over this set finds the minimum bid (b ) that guarantees ad a's rank. Finally, note that the platform uses a fixed reserve price r 0 for all impressions. It is the minimum bid that is accepted by the platform. Thus, if an advertiser is not willing to pay at least r 0 per click, he or she is automatically out of competition.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Data</head><p>We have data on all the impressions and corresponding clicks (if any) in the platform for a 30-day period from September 30, 2015, to October 30, 2015. For each impression, we have data on</p><p>• Time and date. This is the time stamp of the impression.</p><p>• Android advertising identification (AAID). This is a user-resettable, unique device ID that is provided by the Android OS. It is accessible to advertisers and ad networks for tracking and targeting purposes. We use it as the user identifier in our main analysis.</p><p>• App ID. This is a unique identifier for apps that advertise through the platform.</p><p>• Ad ID. This is the identifier for ads shown in the platform.</p><p>• Bid. This is the bid that the advertiser has submitted for his or her ad; advertisers' bids do not change across impressions in our sample.</p><p>• Cost per click (CPC). This is the price that the winning advertiser has to pay if he or she wins the impression and a click occurs; this is calculated by the ad network based on Equation (2).</p><p>• Location. This includes the province as well as the exact location of a user, based on latitude and longitude.</p><p>• Connectivity type. This refers to the user's type of connectivity (e.g., Wi-Fi or cellular data).</p><p>• Smartphone brand. This is the brand of the user's smartphone (e.g., Samsung, Huawei).</p><p>• MSP. This is the user's mobile-phone service provider.</p><p>• ISP. This is the user's internet service provider.</p><p>• Click indicator. This variable indicates whether the user has clicked on the ad or not.</p><p>The total data we see in this one-month interval is quite large. Overall, we observe a total of 1,594,831,699 impressions and 14,373,293 clicks in this timeframe, implying a 0.90% CTR.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Data Splits and Sampling</head><p>We use the penultimate two days of our sample period (October 28 and 29) for training and validation and the last day for testing (October 30). We also use the preceding history from September 30 to October 27 (referred to as global data) to generate the features associated with these impressions. The splits of data are shown in Figure <ref type="figure" target="#fig_0">1</ref>. Note that we do not fit our model on the global data because we do not have sufficient history to generate features for these impressions. Further, constraining all three data sets-training, validation, and testing-to a three-day window has advantages because recent research has shown that data freshness plays an important role in CTR prediction; that is, using older history for prediction can lead to poor predictive performance <ref type="bibr" target="#b20">(He et al. 2014)</ref>.</p><p>We draw a sample of 728,340 unique users (out of approximately 5 million) seen on October 28, 29, and 30 to form our training, validation, and test data sets. <ref type="bibr">4</ref> In Online Appendix E.4, we show that this sample size is sufficient and that larger samples do not significantly improve model performance.</p><p>Figure <ref type="figure" target="#fig_0">1</ref> presents a visual depiction of the sampling procedure. Rows represent users. The impressions by users in our sample are shown using black points. There are 17,856,610 impressions in the training and validation data and 9,625,835 impressions in the test data. We have an additional 146,825,916 impressions by these users in the time preceding October 28, which form global data. These impressions will be used solely for feature generation (and not for model fitting). Note that both our user-based sampling procedure and feature-generation approach (see Online Appendix B) require us to be able to identify and track users. For this purpose, we use the AAID variable as our user identifier.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.">Summary Statistics</head><p>We now present some summary statistics on our training, validation, and test data, which constitute a total of 27, 482, 444 impressions. Table <ref type="table" target="#tab_0">1</ref> shows the summary statistics of the categorical variables in the data. For each variable, we present the number of unique values, the share of top three values that the categorical variable can take, and the number of nonmissing data. Although we always have information on the app, ad, and time stamp of the impression, the other variables are sometimes missing. The shares are shown after excluding the missing variables in the respective category.</p><p>We observe a total of 263 unique ads and 9,709 unique apps in the data. The top three subcategories in each have large shares, and there is a long tail of smaller apps and ads. Moreover, as shown in Figure <ref type="figure" target="#fig_1">2</ref>, we find that the top 37 ads account for more than 80% of the impressions, and similarly, the top 50 apps account for 80% of impressions.</p><p>Next, we present some descriptive analysis that examines the role of contextual and behavioral information in predicting CTR. A context is characterized by the when and where of an impression. As such, we define a unique context as a combination of an app and a specific hour of the day. Figure <ref type="figure" target="#fig_2">3</ref> shows the histogram of CTR for different contexts. As we can see, there is a significant amount of variation in CTR across contexts, which suggests that contextual information can be informative for predicting clicks. Next, to understand the role of behavioral information, we focus on the length of history available for a user. Figure <ref type="figure" target="#fig_3">4</ref> shows the cumulative distribution function (CDF) of the length of history for all the impressions and clicks. It suggests that users with longer histories are less sensitive to ads. Most of the clicks come from users with shorter histories, whereas most impressions come from users with longer histories. Thus, user-history or behavioral information </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Machine Learning Framework for Targeting</head><p>In this module, our goal is to develop a framework that can accurately estimate the gains in efficiency or the CTR for any targeting policy. To do this, we first need to specify and train a machine learning model that accurately predicts the match between an impression and an ad, that is, predicts whether an impression will generate a click or not, for both factual and counterfactual ads. This section is organized as follows. We first define our problem in Section 4.1. Next, in Section 4.2, we discuss our empirical strategy. Here we explain the need for, and the extent of, randomization in our data-generating process and propose a filtering approach that establishes the scope of our framework in estimating both factual and counterfactual targeting policies. In Section 4.3, we present the details of our feature-generation framework. Finally, in Section 4.4, we discuss our estimation procedure, which consists of the learning algorithm, the loss function, and the validation method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Problem Definition</head><p>Consider a setting with N impressions and A ads. We begin with a formal definition of a targeting policy. Definition 1. A targeting policy τ is defined as a mapping between impressions to ads such that each impression is allocated one ad. For example, τ(i) a means that targeting policy τ selects ad a to be shown in impression i.</p><p>In order to evaluate the effectiveness of a targeting policy, we first need an accurate prediction of CTR for each ad for a given impression in our data. That is, for each impression i and ad a, we need to estimate Pr(y i,a 1), where y i,a is the indicator that ad a receives a click when it is shown in impression i. This brings us to the formal definition of the match value matrix.  Marketing <ref type="bibr">Science, 2021</ref><ref type="bibr">, vol. 40, no. 2, pp. 193-218, © 2020</ref> where N denotes the total number of impressions in our data, and A denotes the total number of ads competing for these impressions. There is a corresponding N × A matrix of outcomes Y, which consists of elements y i,a . Note that we only observe the realized outcome for one element in each row or impression i for Y, which corresponds to the ad that was actually shown in that impression. The rest of the elements are treated as potential or unrealized outcomes.</p><formula xml:id="formula_2">Definition 2. Let m i,a Pr(y i,a 1). The N × A match value matrix M is defined as M m 1,1 m 1,2 . . . m 1,A m 2,1 m 2,2 . . . m 2,A . . . . . . . . . . . . m N,1 m N,2 . . . m N,A ⎡ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎣ ⎤ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎦ ,<label>(3)</label></formula><p>In this section, our goal is to develop a machinelearning framework to estimate this match value matrix. We can use our estimated match value matrix M to perform the following analyses:</p><p>1. Evaluate model performance. We can evaluate the predictive performance of our model using the observed outcome. Let τ 0 denote the current targeting policy such that</p><formula xml:id="formula_3">τ 0 i ( ) a i ,<label>(4)</label></formula><p>where a i is the ad that is actually shown in impression i.</p><p>Because we observe the actual outcomes for y i,a i , we can evaluate how well ourm i,a i estimates these outcomes. 2. Evaluate the gains from efficient targeting policy. Using the match value matrix, we can evaluate the expected CTR of any counterfactual targeting policy τ asm τ 1 N</p><formula xml:id="formula_4">∑ N i 1m i,τ i ( ) .<label>(5)</label></formula><p>In particular, we are interested in the efficient targeting policy τ * determined by our model that allocates each impression to the ad with the highest CTR for that impression:</p><formula xml:id="formula_5">τ * i ( ) argmax am i,a .<label>(6)</label></formula><p>In Section 5.2, we quantify the gains in average CTR from efficient targeting over the current system.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Empirical Strategy</head><p>We now present our empirical strategy to estimate matrix M. At a high level, our goal is to build a model to predict whether an impression i showing ad a will receive a click or not based on the joint distribution of impressions and clicks in our data. That is, we seek to estimate a function f</p><formula xml:id="formula_6">(X i,a ) such that m i,a Pr y i,a 1 ( ) f X i,a ( ),<label>(7)</label></formula><p>where X i,a is a set of features that are informative of whether impression i showing ad a will receive a click.</p><p>Because this problem can be interpreted as function evaluation, we turn to machine learning algorithms that can capture complex relationships between the covariates and the outcome without imposing strong parametric restrictions on f (•).</p><p>Although machine learning methods can flexibly learn the function f from the data, their prediction power is bounded by the joint distribution of covariates and outcome (click) in the data. That is, these methods can accurately predict the outcome for an observation only if that observation could have been observed in the data. This requirement gives rise to   Challenge 1. Function f cannot learn m i,a from the data if ad a could never have been shown in impression i; that is, ad a has zero propensity of being shown in impression i.</p><p>The reason is simple: if ad a could never have been shown in impression i, then the set of features X i,a is not within the joint distribution of the observed data. For example, if the ad for a fashion clothing brand was never shown in a sports app, then it is not possible to recover the fashion ad's click probability in the sports app.</p><p>It is worth noting that if the platform runs a deterministic auction (e.g., second-price auction), the set of ads that could have won the auction (and hence been shown during an impression) is a singleton. Similarly, the set of ads that can be shown in an impression in highly targeted environments would be very small. Therefore, data sets generated without any randomization in the ad-allocation mechanism will not allow researchers to push the scope of their analysis beyond the set of actual outcomes observed in the data. Randomization in ad allocation is thus necessary if we want to use our framework to evaluate the effectiveness of counterfactual targeting policies. This brings us to our first remark, which addresses Challenge 1.</p><p>Remark 1. Any ad participating in the auction for impression i (∀ a ∈ ! i ) has a nonzero propensity of being shown in impression i. This is a direct result of the quasi-proportional auction run by the platform. As shown in Equation ( <ref type="formula" target="#formula_0">1</ref>), each ad that participates in an auction has a nonzero probability of winning. This claim is the equivalent of the positivity or overlap assumption in the causal inference literature <ref type="bibr" target="#b39">(Rosenbaum and Rubin 1983)</ref>.</p><p>Although any kind of randomization can help overcome Challenge 1, we need to know the distribution of randomization to be able to correctly infer the click probability of counterfactual ads in any given impression i, that is, infer m ia for ads a a i . If ads are randomized according to an unobserved rule, we may run into selection issues and obtain biased estimates of m ia . We can characterize this challenge as follows.</p><p>Challenge 2. Function f cannot correctly infer match values (m ia s) for counterfactual ads if the allocation rule is a function of an unobserved variable that is correlated with the outcome.</p><p>The following example helps illustrate this challenge: suppose that ad a Y is targeted more toward younger users, whereas ad a O is targeted more toward older users. Now, if younger users have a higher probability of click, failure to account for users' age will lead us to attribute the better performance of ad a Y to the ad rather than to users' age. In the causal inference literature, this is usually known as endogeneity or selection on unobservables <ref type="bibr" target="#b45">(Wooldridge 2010)</ref>.</p><p>In our setting, we can simulate the allocation rule using the observed covariates. This gives us the unconfoundedness assumption, which we characterize in Remark 2.</p><p>Remark 2. For any impression i, ad allocation is independent of the set of the potential outcomes for participating ads (a ∈ ! i ), after controlling for the observed covariates. Thus,</p><formula xml:id="formula_7">y i,a { } a∈! i a i | X i,a .<label>(8)</label></formula><p>Again, the allocation rule in Equation ( <ref type="formula" target="#formula_0">1</ref>) directly satisfies the unconfoundedness assumption because everything on the right-hand side of this equation is known. First, for each i, we can infer the set of ads competing (! i ) from our data because we observe all the targeting variables that can induce variation in ! i . Second, advertisers do not change their bids, and the platform does not customize the quality score for each impression. Hence, b a q a remains constant throughout our study, and we can easily infer propensity scores π ia from the data, controlling for ! i .</p><p>Together, in light of Remarks 1 and 2, we can estimate the match values m i,a not only for the ad that is shown in impression i but also for any counterfactual ad that could have been shown with nonzero propensity score. Naturally, estimates for small ads with very small probabilities of winning will be noisy. However, it is possible to overcome this issue by focusing on the top 37 ads that constitute over 80% of our data. In Section 4.2.1, we discuss our procedure for identifying the set of all participating ads in each impression that have nonzero propensity scores. Next, in Section 4.2.2, we discuss how we estimate these propensity scores and assess covariate balance. 4.2.1. Filtering Procedure. As discussed earlier, if ad a could never have been shown in impression i, we cannot accurately estimate the match value for that impression-ad combination m i,a . As such, we need to identify the set of participating ads in each impression and filter those that have zero propensity of being shown. In general, two factors influence whether an ad is available to participate in an auction for an impression.</p><p>• Targeting. Targeting by advertisers is the main reason why some ads are unavailable to compete for certain impressions and, therefore, have zero probability of being shown in them. For example, if an ad chooses to target only mornings, then it is not Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile Advertising</p><p>Marketing <ref type="bibr">Science, 2021</ref><ref type="bibr">, vol. 40, no. 2, pp. 193-218, © 2020</ref> considered in the auctions for impressions in evenings. In this case, we should filter out this ad for all impressions in the evening. Although limited, targeting is nevertheless present in our setting and mainly happens on province, time, and app categories. Hence, for each impression i, we filter out all ads that were excluded from the auction for i because of targeting.</p><p>• Campaign availability. Second, some ads may be unavailable to compete for a given impression because their ad campaigns may not be running in the system when the impression happens. This could happen either because the advertiser's budget has been exhausted or because the advertiser has exited the market. Therefore, for each impression i, we filter out ads that were unavailable when it happens. Empirically, we find that campaign availability is not a major factor that leads to ad filtering because we focus on top ads. <ref type="bibr">5</ref> We now construct a filtering matrix E N×A [e i,a ] that filters out ads for each impression based on the factors just discussed, where each element e i,a takes value one if ad a has a nonzero probability of winning impression i and zero otherwise. Each row in this matrix shows which ads are competing for an impression. <ref type="bibr">6</ref> However, our filtering may not be accurate for observations with missing targeting variables. Therefore, for all the analyses that use filtering, we focus only on the filtered sample, which consists of the impressions in the test data for which all targeting variables are nonmissing. Figure <ref type="figure" target="#fig_5">5</ref> shows the empirical CDF of the number of competing ads for each impression in the filtered sample data among the top 37 ads per impression. Note that almost all impressions have at least 8 top ads competing for it, and the median impression has 13 top ad competitors.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.2.">Propensity Score Estimation and Covariate</head><p>Balance. As discussed earlier, the accuracy of our counterfactual match value estimates is predicated on the independence of assignment to ads and potential outcomes, given the observed covariates. Even though we know that this is theoretically true in our setting because of the allocation rule (Remark 2), we nevertheless need to empirically demonstrate the validity of this remark in our setting.</p><p>The standard practice in these cases is to assess and show covariate balance because it is a necessary condition for the unconfoundedness assumption. In simple settings, where both treatment and control are randomly assigned with a fixed probability to the entire population, we can easily assess balance by comparing the pretreatment variables across treatment and control groups. Our case is more complicated because of two reasons: (1) assignment to ads is not fully random but random given the propensity scores, and (2) because we focus on the top 37 ads, we have more than two treatment arms. To assess covariate balance, we therefore need to take the following steps:</p><p>1. Propensity score estimation. The first step is to estimate the propensity score π ia for all a and i. Because we have multiple treatments, the dependent variable is a categorical variable with multiple classes. We use a multiclass XGBoost to estimate propensity scores given the success of machine learning methods in propensity score estimation <ref type="bibr" target="#b28">(McCaffrey et al. 2013)</ref>. Please see Online Appendix A.1 for more details.</p><p>2. Assessing covariate balance. Once we have the estimates for propensity scores, we can assess the balance for all pretreatment covariates. In our case, these covariates are the variables on which advertisers can target: province, app, time of day, smartphone brand, connectivity type, and MSP. To assess balance, we need to show that the inverse propensity-weighted distribution of each pretreatment variable is the same across all ads. Following the norm in the literature, we use the standardized difference between the population mean of a covariate and the inverse propensity-weighted mean of that covariate when assigned to ad a, and call it balanced if the difference is below 0.2 <ref type="bibr" target="#b28">(McCaffrey et al. 2013)</ref>. Please see Online Appendix A.2 for details on our balance measures and results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Feature-Generation Framework</head><p>As discussed in Section 4.2, our goal is to build a model m ia Pr(y ia 1) f (X ia ) to accurately predict whether an impression i will receive a click or not. As such, we first need a vector of features X i,a that captures the factors that affect whether the user generating impression i will click on ad a.</p><p>It is important to generate an exhaustive and informative set of features because the predictive accuracy of our model will largely depend on the quality of the features we use. Given our research agenda, our features should also be able to capture the contextual and behavioral information associated with an impression over different lengths of history preceding the impression (long term, short term, and session level). To achieve these objectives, we adopt the main ideas from the functional feature-generation framework proposed by <ref type="bibr" target="#b48">Yoganarasimhan (2020)</ref>. There are three advantages to doing so. First, her functionbased approach allows us to generate a large and varied set of features using a parsimonious set of functions. Second, it allows for a natural mapping between feature inputs and feature classification. Third, the general class of features she suggests has been shown to have good predictive power in this class of problems.</p><p>We now present a short overview of our feature functions and feature categorization, and we refer interested readers to Online Appendix B for a more detailed description.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.1.">Inputs for Feature Functions.</head><p>To generate a set of features for each impression, we use feature functions that take some inputs at the impression level and output a corresponding feature for that impression. Our feature functions typically need two types of inputs:</p><p>• Impression-specific information. Each impression in our data can be uniquely characterized by three types of information, namely (1) contextual information that captures the context (where and when) of the impression (i.e., which app serves this impression and at what time (hour of day) is the impression being shown), (2) behavioral information that denotes the identity of the user generating this impression, and (3) ad-related information that denotes the identity of the ad that was shown during this impression.</p><p>• History. This input characterizes the history over which we aggregate to calculate the output of our functions. We define three different levels that capture the long-term (approximately one month), shortterm (three days), and ongoing session-level history. Besides, we characterize the history in such a way that we can update the features in real time.</p><p>To reduce the dimensionality of our feature sets and boost the speed of our feature-generation framework, we group the smaller apps (below top 50) into one app category and all the smaller ads (below top 37) into one ad category. Thus, our features do not distinguish the context of smaller apps (ads) as separate from each other, though they are able to distinguish them from the top apps (ads). Please see Online Appendix B.1 for a complete formal definition of the inputs for feature functions. 4.3.2. Feature Functions. One challenge we face is that most of the information characterizing an impression-ad combination is categorical in nature, for example, the app showing the ad and the user seeing the ad. As a result, approaches that include all these categorical raw inputs and their interactions as covariates are prone to the curse of dimensionality. So we define functions that take these raw inputs as well as their interactions and map them onto a parsimonious set of features that reflect the outcome of interest-CTR.</p><p>We present an overview of our feature functions in Table <ref type="table" target="#tab_1">2</ref> along with their functionality (see Online Appendix B.2 for a detailed description of the feature functions). These functions take different inputs based on the focal impression and return outputs that are integers or real numbers. These inputs are basically interactions of different raw inputs. The following examples give a high-level overview of what these functions do. Let p i , t i , u i , and a i denote the app, hour, user, and ad associated with impression i. If the function Impressions is given p i , u i , and a i and longterm history as inputs, it simply returns the number of times user u i has seen ad a i inside app p i from the start of the data until the time at which impression i occurred. However, if it is only given u i and short-term history, it returns the number of impressions user u i has seen across all apps and ads over the last three days. Using this logic, we give different sets of inputs to these functions and generate 98 features for each impression i. In addition, we include a few standalone features such as dummies for each of the top ads, the user's mobile phone and internet service providers, latitude, longitude, and connectivity type. Overall, we have a total of 160 features for each impression-ad (ia) combination. Together, these features capture the interactive effects of advertising that are documented in the literature, such as carryover effects <ref type="bibr" target="#b41">(Sahni 2015)</ref>, spillover effects <ref type="bibr" target="#b26">(Li and Kannan 2014)</ref>, and effects of ad variety <ref type="bibr" target="#b36">(Rafieian and Yoganarasimhan 2020)</ref>. Please see Online Appendix B.3 for the full list of features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.3.">Feature Categorization.</head><p>All our features capture one or more type of information-contextual, behavioral, and ad specific. To aid our analysis, we therefore classify features based on the type of information used to generate them and group them into the following (partially overlapping) categories:</p><p>• Contextual features (F C ). These are features that contain information on the context of the impression app and/or hour of the day.</p><p>• Behavioral features (F B ). These are features that contain information on the behavior of the user who generated the impression.</p><p>• Ad-specific features (F A ). These are features that contain information on the ad shown during the impression.</p><p>The three feature sets form our full set of features F F F B ∪ F C ∪ F A . We now present a few examples of features generated using the Clicks function to elucidate this classification. The total clicks made by user u i across all apps, ads, and hours of the day in the past month is a purely behavioral feature because it only contains information on the behavior of the user who generated impression i. In contrast, the total clicks made by user u i in the app p i over the last month constitute both a behavioral and contextual feature because it contains information on both the behavior of u i and the context (app p i ) in which he or she made these clicks. Finally, the total clicks received by ad a i over the last one month across all users, apps, and times is a purely ad-specific feature because it only reveals information about the ad's propensity to receive clicks. Thus, a feature can contain any combination of behavioral, contextual, or ad-specific information depending on the inputs used to generate it. Please see Table <ref type="table" target="#tab_0">A1</ref> in Online Appendix B for a mapping between each feature and the categories under which it falls and Figure <ref type="figure" target="#fig_6">6</ref> for a Venn diagram of our classification system.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Learning Algorithm: XGBoost</head><p>We now discuss the final step of our machine learning framework: the learning algorithm, which helps us learn the function f (X i,a ). It provides a mapping between our feature set (X i,a ) and the match value or click probability as f (X i,a ) m i,a Pr(y i,a 1). Given that we want to maximize the predictive accuracy of the model, we do not want to impose parametric assumptions f (•). The problem of function evaluation is fundamentally different and harder than the standard approach used in the marketing literature, wherein we simply evaluate parameters after assuming a functional form. In the latter, the researcher only needs to search over the set of parameters given the functional form, whereas in the former we have to search over the space of functions. Therefore, we turn to machine learning algorithms that are designed for this task.</p><p>Specifically, we employ the XGBoost algorithm proposed by <ref type="bibr" target="#b8">Chen and Guestrin (2016)</ref>. XGBoost is a variant of the standard boosted regression trees and is one of the most successful prediction algorithms developed in the last few years. It has been widely adopted in both academia and industry. <ref type="bibr">7</ref> At a high level, boosted regression trees can be thought of as performing gradient descent in function space using shallow trees as the underlying weak learners <ref type="bibr" target="#b5">(Breiman 1998</ref><ref type="bibr" target="#b15">, Friedman 2001</ref>. Although boosted  <ref type="bibr" target="#b8">Chen and Guestrin's (2016)</ref> implementation is superior to earlier implementations from both methodological and implementation standpoints. <ref type="bibr">8</ref> We refer interested readers to Online Appendix C for a more detailed description of XGBoost and now focus on two key components of our implementation: the loss function and the validation procedure.</p><p>To train any learning model, we need to specify how the model should penalize model fit, that is, the difference between the observed outcome y i,a i and model predictionm i,a i (where a i refers to the ad shown in impression i). This is done using a loss function, which the machine learning algorithm minimizes. Because our outcome variable is binary, we use logarithmic loss (log loss) as our loss function. It is the most commonly used loss function in the CTR prediction literature <ref type="bibr" target="#b47">(Yi et al. 2013)</ref> and has some attractive properties, for example, a faster convergence rate than other loss functions such as squared loss <ref type="bibr" target="#b38">(Rosasco et al. 2004</ref>). The log loss for a model with predictionsM when the prediction matrix is Y can be written as</p><formula xml:id="formula_8">+ log lossM , Y ( ) − 1 N ∑ N i 1 y i,a i logm i,a i ( ) ( + 1 − y i,a i ( ) log 1 −m i,a i ( ) ) .<label>(9)</label></formula><p>Note that although the log-loss function takes as inputs the two matricesM and Y, the metric is calculated only over those ad-impression combinations that are actually observed in the data.</p><p>Validation is an important part of training any machine learning model. The boosting algorithm is designed to continuously update the prediction rule (or current estimate of f (•)) to capture more and more complex relationships between the features X i,a in order to predict y i,a . Because we do not impose any assumptions on the parametric form of f (•), this will likely lead to overfitting; that is, the model will evolve to fit too closely to the training data and perform poorly out of sample. Validation helps us avoid this problem by using parts of the data to validate the model. This ensures that the chosen model f (•) will have a good out-of-sample performance. Please see Online Appendix C.2 for a full description of our validation procedure.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Results from the Machine Learning Targeting Models</head><p>Recall that the goal of our machine learning framework is to estimate the matrix M defined in Equation ( <ref type="formula" target="#formula_2">3</ref>). As such, ourM contains CTR estimates for (1) the ads shown in the data and (2) counterfactual situations, that is, ads that could have been shown. In Section 5.1, we focus on the actual data and present results on the predictive performance of our framework on the observed sample. We also document the contribution of behavioral versus contextual information to our framework in this section. Next, in Section 5.2, we focus on the counterfactual estimates inM and evaluate the gains in CTR from an efficient targeting policy. Finally, in Section 5.3, we discuss robustness and scalability.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Predictive Performance of the</head><p>Machine Learning Model 5.1.1. Evaluation Metric. To evaluate whether a targeting model improves our ability to predict clicks, we first need to define a measure of predictive accuracy or an evaluation metric. In line with our loss function, we use relative information gain (RIG), which is defined as the percentage improvement in log loss over the baseline that simply predicts average CTR for all impressions. Formally,</p><formula xml:id="formula_9">RIGM, Y ( ) 1 − + log lossM , Y ( ) + log lossȲ , Y (<label>)</label></formula><formula xml:id="formula_10">( ) × 100,<label>(10)</label></formula><p>whereȲ is an N × A matrix, each of whose elements is equal to ( ∑ N i 1 y i,a i )/N, that is, the average observed outcome of the sample or the average CTR of the data. Average CTR is the simplest aggregate metric available from any data, and using it as the baseline prediction tells us how well we can do without any model. It is important to control for this baseline because if the average CTR is very high (close to one) or very low (close to zero, as in most e-commerce settings, including ours), a naive prediction based on the average CTR leads to a pretty good log loss. Normalizing the log loss with the average CTR reduces the sensitivity of the metric to the data distribution <ref type="bibr" target="#b20">(He et al. 2014)</ref>. Nevertheless, we need to be careful when interpreting RIGs computed on different data sets because there is no obvious normalization in those cases <ref type="bibr" target="#b47">(Yi et al. 2013)</ref>.</p><p>In Online Appendix E.1, we present four other commonly used evaluation metrics: (1) mean squared error (MSE), (2) area under the curve (AUC), (3) 0/1 loss, and (4) confusion matrix. We discuss the pros/ cons of these metrics and demonstrate the performance of our model on them.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.2.">Predictive</head><p>Accuracy of the Full-Targeting Model. We now discuss our framework's ability to predict the actual outcomes in the data. trains the XGBoost model). The second row depicts the log loss for the baseline model, which simply predicts the average CTR for the data set for all impressions. The third row is the RIG of the Full model compared with that of the baseline model.</p><p>The RIG of the Full model over the baseline is 17.95% on the test data, a substantial improvement in CTR prediction problems. This suggests that the data collected by the ad network is quite valuable and that our machine learning framework has significant predictive power on whether an impression-ad combination will receive a click. <ref type="bibr">9</ref> The RIG improvement for training and validation data is 18.47%, which is somewhat higher than the 17.95% for the test data. There are two potential reasons for this. First, all statistical models estimated on finite data have higher in-sample fit than out-ofsample fit. Indeed, this is the main reason we use the test data to evaluate model performance. Second, the difference could simply reflect the differences in the underlying data distributions for the two data sets. As discussed in Section 5.1.1, we cannot compare RIG across data sets because it is codetermined by the model and data. Thus, the difference between the RIG values across the data sets is not necessarily informative.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.3.">Value of Information: Behavioral vs. Contextual</head><p>Features. We now examine the impact of different types of features on the predictive accuracy of our model. This is important for two reasons. First, data storage and processing costs vary across feature types. For example, some user-specific behavioral features require real-time updating, whereas pure contextual features tend to be more stable and can be updated less frequently. In order to decide whether to store and update a feature or not, we need to know its incremental value in improving targeting. Second, the privacy and policy implications of targeting depend on the features used. For example, models that use behavioral features are less privacy preserving than those that use purely contextual features. Before adopting models that are weaker on privacy, we need objective measures of whether such models actually perform better.</p><p>Recall that our features can be categorized into three broad overlapping sets: (1) behavioral, denoted by F B , (2) contextual, denoted by F C , and (3) ad specific, denoted by F A . We now use this categorization to define two models:</p><p>• Behavioral model. This model is trained using behavioral and ad-specific features, without including any contextual features. Formally, the feature set used is (F B ∪ F A ) \ F C .</p><p>• Contextual model. This model is trained using only contextual and ad-specific features, without including any behavioral features. The feature set for this model is (</p><formula xml:id="formula_11">F C ∪ F A ) \ F B .</formula><p>Both models include ad-specific features that are neither behavioral nor contextual, for example, the total impressions received by the ad shown in the impression in the past month (Feature 2 in Table <ref type="table" target="#tab_0">A1</ref> in the Online Appendix B). 10 They also use the same loss function and training algorithm and only differ on the set of features used. Hence, it is possible for us to directly compare the RIG of one model over another within the same data. <ref type="bibr">11</ref> The results from these two models and their comparisons with the baseline model are presented in Table <ref type="table" target="#tab_4">4</ref>. First, consider the results for the full test data (presented in the second column). The Behavioral model has a 12.27% RIG over the baseline, which is considerably higher than 5.12%, the RIG of the Contextual model over the baseline. Together, these findings suggest that from a targeting efficiency perspective, behavioral information is more effective than contextual information in mobile in-app advertising.</p><p>This difference in the effectiveness of the two models directly relates to the extent of variation in the information used by the two models. The variation in behavioral features is much higher than the variation in contextual features because behavioral features are  Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile Advertising generated from the unique behaviors of over 700,000 users, whereas the total number of unique contexts is limited (to 1,200). Hence, the level of granularity of contextual features is much lower, and the Contextual model can only learn from aggregate outcome estimates across these limited contexts. Its ability to predict positive labels (i.e., clicks) is therefore much weaker than that of the Behavioral model. One possible critique of the preceding analysis is that it does not exploit the full capacity of contextual information because we treat all the nontop ads as one advertiser category and all the nontop apps as one app category during feature generation (see Section 4.3.1). To address this issue, we consider a subsample of the test data that only consists of impressions that were shown in a top app and showed a top ad and rerun all the preceding comparisons. This accounts for 63.5% of our test data. The performance of our Full model on this subset of the data is even better than that on the full sample because there is no information loss on the ads or apps. The findings on the relative value of behavioral versus contextual features are even stronger in this data set, which suggests that our results in the full sample were not driven by the lack of good contextual information.</p><p>Finally, in the last column of Table <ref type="table" target="#tab_4">4</ref>, we show the performance of our model on the filtered sample (described in Section 4.2.1), which is the sample that we use for conducting our counterfactual analysis. Our qualitative findings remain the same for this sample too.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Counterfactual Analysis: Efficiency Gains from a CTR-Maximizing Targeting Policy</head><p>We now focus on an important counterfactual question from the platform's perspective: if the platform employs an efficient targeting policy such that each impression is allocated to the ad with the highest predicted CTR in that impression, to what extent can it improve the CTR in the system?</p><p>Recall that τ 0 and τ * denote the current and efficient targeting policies, as defined in Equations ( <ref type="formula" target="#formula_3">4</ref>) and ( <ref type="formula" target="#formula_5">6</ref>), respectively. We can then use the following equation to calculate the gains in average CTR:</p><formula xml:id="formula_12">ρ τ * , τ 0 ; N F ( ) m τ * m τ 0 1 N F ∑ N F i 1m i,τ * i ( ) 1 N F ∑ N F i 1m i,τ 0 i ( ) ,<label>(11)</label></formula><p>where N F is the number of impressions in the filtered sample. It is crucial to conduct this counterfactual on the filtered sample (instead of the full sample) for the reasons discussed in Section 4.2.1. We find that an efficient targeting policy based on our machine learning model increases average CTR by 66.80% over the current regime. This is a substantial improvement and suggests that targeting based on behavioral and contextual features can lead to significant efficiency gains.</p><p>Next, we examine how efficiency gain varies by impression. Specifically, for each impression, we calculate the percentage improvement in CTR with efficient targeting as (m i,τ * (i) /m i,τ 0 (i) − 1) × 100 and examine the distribution of this metric over impressions. In Figure <ref type="figure" target="#fig_7">7</ref>, we show a histogram of this percentage improvement in CTR for the impressions in the filtered sample. We document considerable heterogeneity in CTR improvements across impressions: the median improvement in CTR is about 105.35%, implying that efficient targeting policy can make over half the impressions twice as clickable as the current system. The peak at the left side of the graph (at one) denotes cases where τ 0 (i) τ * (i), that is, where the platform happened to randomly select the ad that maximizes expected CTR.</p><p>This overlap between our efficient targeting policy and actual data allows us to evaluate the efficient targeting policy by inversely weighting the propensity scores for the actual outcomes in the overlapping area. This is a model-free approach known as importance sampling, which is commonly used in the policy evaluation literature <ref type="bibr" target="#b10">(Dudík et al. 2014)</ref>. We present the details of this approach in Online Appendix D and show that it establishes a 65.53% improvement in average CTR, which is similar to our findings based on Equation (11).</p><p>In sum, we find that an efficient targeting policy leads to significant gains in clicks for the platform using both model-based and model-free approaches. Nevertheless, a key question that remains unanswered is whether an efficient targeting policy is also revenue maximizing for the platform. Therefore, in Section 6, we incorporate competition and examine the relationship between efficiency and revenue. Marketing <ref type="bibr">Science, 2021</ref><ref type="bibr">, vol. 40, no. 2, pp. 193-218, © 2020</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Scalability and Robustness</head><p>We perform extensive checks on the robustness of all aspects of our machine learning approach and its scalability. We discuss these tests briefly here and refer readers to Online Appendix E for details.</p><p>First, in Online Appendix E.1, we show that our results are robust even if we use other evaluation metrics (AUC, MSE, 0/1 loss, and confusion matrix). Second, in Online Appendix E.2, we confirm that XGBoost is the best learning algorithm for our prediction task by comparing its performance with five other commonly used algorithms (least squares, least absolute shrinkage and selection operator (LASSO), logistic regression, classification and regression tree, and random forests). Third, in Online Appendix E.3, we run a few robustness checks on the feature-generation framework by considering alternative ways of aggregating over history as well as app-specific dummies. Again, we find no improvement in the model's predictive performance under these different specifications. Fourth, in Online Appendix E.4, we present some checks to establish that our data sample is sufficient and large enough to produce reliable results. Specifically, we find that the RIG gains start stabilizing with a sample of 100,000 users and that our sample of 728,340 users is more than sufficient for our purposes. Finally, in Online Appendix E.5, we show that our results are not sensitive to the validation procedure used to pick the tuning parameters by comparing with other methods, for example, hold-out validation and k-fold cross-validation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Analysis of Revenue-Efficiency Trade-off</head><p>In Section 5, we showed that the ad network can substantially increase CTR with efficient targeting. However, that analysis was silent on the ad network's incentives to target and agnostic to revenues. In this section, we seek to answer two sets of important questions by focusing on competition and incentives. First, to what extent is the ad network incentivized to allow targeting, and is there an optimal level of targeting from its perspective? Second, how does the total surplus accrued by advertisers vary with targeting levels, and is there heterogeneity in advertisers' preferences on the optimal level of targeting? Incentives are particularly important in this context because if the platform is incentivized to not allow behaviorally targeted bids, then we may naturally converge to a regime with higher consumer privacy protection. In contrast, if the platform is incentivized to allow behavioral targeting, then an external agency (e.g., government) may have to impose privacy regulations that balance consumers' need for privacy with the platform's profitability motives. Similarly, if a substantial portion of advertisers prefer a more restrictive targeting regime, then the mobile ad industry can self-regulate. So we seek to quantify the platform's and advertisers' profits under different levels of targeting.</p><p>We now present an analytical framework to quantify the ad network's revenue-efficiency trade-off. This section proceeds as follows. In Section 6.1, we present a simple example to fix ideas and highlight the platform's efficiency-revenue trade-off. In Section 6.2, we present a stylized analytical model that characterizes the total surplus and platform revenues under different targeting strategies. In Section 6.3, we take this analytical model to data and present an empirical analysis of auctions with targeting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">A Simple Example</head><p>In an important paper, <ref type="bibr" target="#b25">Levin and Milgrom (2010)</ref> argue that micro-level targeting can thin auction markets, which, in turn, can soften competition and make the platform worse off. In Figure <ref type="figure" target="#fig_8">8</ref>, we present a Notes. The platform sells two impressions. Ad 1 and Ad 2 have valuations 5 and 1 for impression 1 and valuation 1 and 3 for impression 2, respectively. When bundled together, advertisers cannot distinguish between ads, giving an aggregate value of 3 and 2 to Ads 1 and 2, respectively. The entire shaded area in each case shows the total surplus generated. The area on the top is the share of advertisers and that on the bottom goes to the platform. See Online Appendix F for a detailed analysis of this example.</p><p>Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile Advertising simple example to illustrate this idea. In this example, we consider a platform with two impressions and two advertisers whose valuations for these impressions do not align: advertiser 1 has a much higher valuation for impression 1 compared to impression 2, whereas the opposite is true for advertiser 2. Assume that the platform uses second-price auctions with cost-perimpression (CPI) pricing, where the highest bidder wins the impression and pays the bid of the secondhighest bidder. We consider two regimes. In the fulltargeting regime, the platform allows advertisers to submit targeted bids for each impression. In the notargeting case, advertisers cannot distinguish between the two impressions and therefore have to submit the same bid for both the impressions (i.e., no targeted bidding). As shown in Figure <ref type="figure" target="#fig_8">8</ref>, the platform cannot extract sufficient revenue if advertisers can distinguish between impressions (full targeting). However, the platform is able to extract more revenue by not revealing the identity of these impressions because advertisers are forced to rely on their aggregate valuation for both impressions together in this case. This example thus illustrates the platform's trade-off between value creation and value appropriation and highlights the platform's incentives to limit advertisers' ability to target.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.">Analytical Model of Auction with Targeting</head><p>We now develop a simple analytical model that captures the trade-offs discussed earlier. To reflect the idea of narrow targeting and thin markets, as envisioned by <ref type="bibr" target="#b25">Levin and Milgrom (2010)</ref>, we make two modeling choices. First, the idea that revenue loss in thin markets is due to the use of efficient auctions that guarantee that the highest valuation bidder will win <ref type="bibr" target="#b24">(Krishna 2009</ref>). Although efficiency is satisfied in many auction mechanisms, we focus on second-price auctions because they are the most commonly used auctions in online advertising. Moreover, second-price auctions have the truthtelling property that makes our analysis more tractable. Second, the idea of narrow targeting by advertisers requires the pricing mechanism to be per impression. In a CPC mechanism, advertisers do not care about the match value of impressions because they are charged per click. For these reasons, we consider a setting where the platform uses a second-price auction mechanism with CPI pricing. Nevertheless, it is worth noting that neither of these two assumptions is essential to our analysis. Later in this section, we discuss how our results can be extended to other efficient auction mechanisms and/or CPC pricing.</p><p>As before, we consider a platform that receives N impressions and serves A advertisers. Let v ia denote ad a's private valuation from impression i, and let V denote the value matrix</p><formula xml:id="formula_13">V v 1,1 v 1,2 . . . v 1,A v 2,1 v 2,2 . . . v 2,A . . . . . . . . . . . . v N,1 v N,2 . . . v N,A ⎡ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎢ ⎣ ⎤ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎥ ⎦ .<label>(12)</label></formula><p>If an advertiser a can distinguish between all the impressions, he or she will submit targeted bids for each impression i. In a second-price auction, this is equivalent to a's valuation for impression i, v i,a . However, the extent to which advertisers can target depends on the level of targeting allowed by the platform. If certain information is not disclosed, advertisers may not be able to distinguish two impressions i and j. In such cases, a risk-neutral bidder's valuation for both impressions is the same and is equal to the expected value from the bundle of i and j (Sayedi 2018). For example, if the platform does not allow targeting at the app level, then advertisers cannot distinguish between impressions in two different apps, and their optimal strategy would be to submit the same bids for the impressions in both apps. Formally, we have the following definition. Definition 3. Let I l denote the set of impressions in bundle l. A targeting regime ( {I 1 , I 2 , . . . , I L } denotes the platform's decision to bundle N impressions into L bundles such that advertisers can only bid for bundles and not impressions within the bundle. As such, impressions are only distinguishable across bundles, but not within a single bundle. That is, for bundle I j , the advertiser a has the valuation ( ∑ k∈I j v ka )/|I j |. This definition characterizes all targeting regimes from impression-level targeting to no targeting. Impression-level targeting occurs when each impression is a bundle (L N); that is, an advertiser can distinguish between all impressions and place targeted bids for each impression. By contrast, no targeting denotes the case where the platform bundles all impressions into one group (L 1), implying that an advertiser can only have one valuation aggregated over all impressions ( 1 N ∑ N i 1 v ia for any a). Any intermediate strategy where 1 &lt; L &lt; N can be interpreted as partial targeting. An example of partial targeting is app-level targeting, where each bundle is an app, and impressions are distinguishable across apps but not within apps.</p><p>We can characterize the relative granularity of two targeting regimes as follows.</p><p>Definition 4. Let ( (1) and ( (2) denote two targeting regimes such that ( (1) {I <ref type="bibr">(1)</ref> 1 ,...,I (1) L 1 } and ( (2) {I (2) 1 , . . . , I (2) L 2 }. Targeting regime ( (1) is at least as granular as ( (2)</p><p>Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile Advertising <ref type="bibr">Marketing Science, 2021</ref><ref type="bibr">, vol. 40, no. 2, pp. 193-218, © 2020</ref> if, for any I (1) j ∈ ( (1) , there exists a I (2) k ∈ ( (2) such that I (1) j ⊆ I (2) k . In words, if two impressions i and j are distinguishable in ( (2) , then they will be distinguishable in ( <ref type="bibr">(1)</ref> . We can use this definition to compare the granularity of two targeting regimes. For example, appuser-level targeting is more granular than app-level targeting. Now, the main question that the platform faces is at what level of granularity it should disclose information and allow targeting. Because we focus on the second-price auction, the highest-bidding ad in any impression wins that impression and pays the second-highest bid. This auction also guarantees the truth-telling property; that is, for each bundle, advertisers submit their aggregate valuation for that bundle as derived in Definition 3. The following proposition determines the relationship between the granularity level of targeting and market outcomes such as surplus and revenue.</p><p>Proposition 1. Consider two targeting regimes ( (1) and ( (2) such that ( (1) is at least as granular as ( (2) . Let S (j) and R <ref type="bibr">(j)</ref> denote the total surplus and platform's revenue under targeting regime j ∈ {1, 2}. Then, for any distribution of valuations, S (1) ≥ S (2) , but there is no fixed relationship between R (1) and R <ref type="bibr">(2)</ref> .</p><p>Proof. See Online Appendix G.1. □ As the granularity of targeting increases, the total surplus generated increases, but the platform's revenue can go in either direction (unless we impose strong distributional assumptions on match values). Thus, although the matches are more efficient with more granular targeting, the platform may not be able to appropriate these efficiency gains. It is worth emphasizing that our analysis of revenue and surplus holds for any efficient auction because of the revenue equivalence theorem <ref type="bibr">(Myerson 1981, Riley and</ref><ref type="bibr" target="#b37">Samuelson 1981)</ref>. Further in Online Appendix H, we show that the same qualitative findings hold for a CPC pricing mechanism. Finally, note that this proposition is not applicable to a quasi-proportional auction because this is not an efficient mechanism.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3.">Empirical Analysis of Auctions with Targeting</head><p>We now take this analytical model to data and examine market outcomes under different targeting regimes. Because the examination of the revenue-efficiency trade-off requires an efficient auction, our analytical model focuses on a second-price auction with a pay-per-impression payment scheme. However, notice that the mechanism in our data is a quasiproportional auction with a pay-per-click payment scheme. Thus, our empirical analysis involves coun-terfactual evaluation of settings different from the one in our data.</p><p>As illustrated in our analytical model, the primary estimand that we require for our empirical analysis of auctions with different levels of targeting is matrix V defined in Equation ( <ref type="formula" target="#formula_13">12</ref>). We can characterize each element in matrix V as follows:</p><formula xml:id="formula_14">v i,a v c ( ) a m i,a ,<label>(13)</label></formula><p>where v (c) a is the private valuation ad a gets from a click, and m i,a is the match valuations or expected CTR of ad a if shown in impression i.</p><p>In Section 6.3.1, we discuss how we can identify v i,a from our observed data. We then present our approach to obtain advertisers' click valuations in Section 6.3.2. Next, in Section 6.3.3, we explain how we can use our estimated match value matrixM from Section 4 to derive advertisers' match values under different targeting regimes. Finally, in Section 6.3.4, we discuss our empirical strategy to estimate the expected surplus, platform revenues, and advertisers' surplus.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3.1.">Identification Strategy and Counterfactual</head><p>Validity. To perform counterfactuals, we need to identify the elements of matrix V. Although we cannot directly identify v i,a from the data, we can separately identify both elements on the right-hand side of Equation ( <ref type="formula" target="#formula_14">13</ref>)-the click valuation of ad a (v <ref type="bibr">(c)</ref> a ) and the match valuation of ad a when shown in impression i (m i,a ). To the extent that these two elements are policyinvariant primitives, our counterfactual analysis is valid. We now describe the basis on which these two estimands are identified and the conditions under which these are policy-invariant primitives.</p><p>• Click valuations are identified given advertisers' strategic bidding behavior in the current auction environment. The main assumption required is that advertisers select the bid that maximizes their utility. We can then specify advertisers' utility functions under the current auction observed in the data and use a first-order condition (FOC) to invert their observed bids to obtain consistent estimates of their click valuations. This is the standard identification strategy employed in the auction literature <ref type="bibr">(Guerre et al. 2000, Athey and</ref><ref type="bibr" target="#b2">Haile 2007)</ref>. It is worth noting that click valuations are policy invariant, although advertisers' bidding strategy can change under different auction mechanisms.</p><p>• Match valuations are identified given the unconfoundedness assumption: controlling for observed covariates, ad allocation is random. Please see Section 4.2 for a detailed discussion. Intuitively, match value estimates are policy invariant as long as users' underlying utility model for clicking on ads does not change under a different policy or auction. <ref type="bibr">12</ref> In sum, the identification of both click and match valuations is possible in settings that satisfy the unconfoundedness assumption while preserving the linkage between bids and click valuations. Figure <ref type="figure" target="#fig_11">9</ref> presents a Venn diagram of settings where each component is identified. It also highlights how common settings such as a second-price auction or a fully randomized ad allocation fail in this dual identification task. In standard auction mechanisms (e.g., secondprice auctions), the identification problem stems from the deterministic allocation rule, which makes identification of match valuations impossible. In contrast, in a fully randomized experiment, there is no relationship between an advertiser's private click valuation and his or her observed bid, which makes the identification of click valuations impossible. To our knowledge, our setting (i.e., a quasi-proportional auction) is the only one in the literature that allows for the identification of both these components. 6.3.2. Estimation of Advertisers' Click Valuations. We now discuss the estimation of advertisers' click valuations v <ref type="bibr">(c)</ref> a based on the identification strategy discussed in Section 6.3.1. The standard approach in the structural auction literature is to assume that agents (advertisers in this case) are utility maximizing and derive the click valuations by inverting the equilibrium bidding function <ref type="bibr">(Guerre et al. 2000, Athey and</ref><ref type="bibr" target="#b2">Haile 2007)</ref>.</p><p>In our empirical setting, we observe that advertisers only submit one bid and do not change it (across impressions). Thus, we model advertiser a's bidding decision as a single-shot optimization, where he or she selects a bid b a to maximize his or her own expected utility across all the impressions on which he or she bids. Let &amp; a denote advertiser a's beliefs about the joint distribution of the click valuations and quality scores of other advertisers bidding on the impressions for which a is competing.</p><p>Next, we define advertiser a's cost function as the expected payment that he or she has to make for each click that he or she receives, given bid b a ; that is, c , where Q −a is a constant reflecting the competitors' bids and quality scores. <ref type="bibr">13</ref> We can then characterize advertisers' equilibrium bidding strategy on our platform by taking the first order condition (FOC) of their expected utility. This FOC can then be inverted to obtain the click valuations, as shown in Proposition 2. </p><p>Proof. See Online Appendix G.2. □</p><p>We can obtain consistent estimates of click valuations from Equation ( <ref type="formula" target="#formula_15">14</ref>) as long as we can observe/ infer costs and bids from our data. We make three simplifications that make this task straightforward in our setting: (1) advertisers' probability of winning is close to zero (i.e., π a ≈ 0), (2) advertisers' CPC is approximately their bid (i.e., c a (b a ) ≈ b a ), and (3) the FOC in Equation ( <ref type="formula" target="#formula_15">14</ref>) is satisfied for all advertisers, including reserve price bidders. 14 These three simplifications are reasonable in our empirical setting. First, as shown in Figure A.1 in Online Appendix A, even top ads that won the most impressions have a small probability of winning, justifying the first simplification. Second, on average, we find that an advertiser's CPC is over 92% of their bid, which provides support for the second simplification; that is, c a (b a ) ≈ b a . Finally, the third simplification is also reasonable: only 11 of 37 ads are reserve price bidders.</p><p>With the three simplifications just outlined, Equation ( <ref type="formula" target="#formula_15">14</ref>) can be approximated aŝ</p><formula xml:id="formula_16">v c ( ) a ≈ 2b * a . (<label>15</label></formula><formula xml:id="formula_17">)</formula><p>All the results presented in the main text are based on click valuations estimated based on Equation ( <ref type="formula" target="#formula_16">15</ref>). However, in Online Appendix I.1, we present six alternative methods to estimate click valuations that progressively relax the simplifications made to Marketing <ref type="bibr">Science, 2021</ref><ref type="bibr">, vol. 40, no. 2, pp. 193-218, © 2020</ref>. Table <ref type="table">A7</ref> in Online Appendix I.1 presents an overview of the simplifications relaxed in each of the alternative methods. In particular, the last alternative method employs <ref type="bibr" target="#b35">Rafieian's (2020b)</ref> recently proposed estimator for quasi-proportional auctions. His method is fully nonparametric and does not make any of the simplifications listed earlier. We find that the main results remain the same (qualitatively) even when we use these more complex estimators. Therefore, we stick with the simpler estimator in the main text and refer interested readers to Online Appendix I.1 for these robustness checks. 15 6.3.3. Recovering Match Values. We now discuss how we can use our estimate of matrix M from our targeting framework to recover match values for any targeting regime. To start, m i,a is ad a's match value for any impression i if all impressions are distinguishable to him or her, and he or she is competing for that impression. This follows naturally from our arguments on the accuracy of match value estimates in Section 4.2. However, if two impressions are not distinguishable, the advertiser needs to use the aggregate estimate for that bundle. That is, for any targeting regime ( {I 1 , I 2 , . . . , I L }, we can write the match value of advertiser a for impression i in bundle (, m ( i,a , as follows:</p><formula xml:id="formula_18">m ( i,a ∑ L j 1 1 i ∈ I j ( ) ∑ k∈I jm k,a e k,a ∑ k∈I j e k,a , ∀ i ∈ (,<label>(16)</label></formula><p>where e k,a are elements of the filtering matrix that allows us to disregard inaccurate estimates and take the average of the rest. Figure <ref type="figure" target="#fig_0">10</ref> illustrates how the bundling and aggregation are performed on the match value matrix in a simple example with five impressions and three ads.</p><p>Here we assume that for any targeting regime (, advertisers can infer their private match values for the bundles at that targeting regimem ( a . This is reasonable because if the platform allows impression-level targeting, the platform would automatically share the impression-level data of each advertiser a with that advertiser (but not other advertisers). If a has sufficient data, then a can accurately estimate the match value vector m i,a for impression i from his or her own data. Similarly, if the platform only allows targeting at level (, then advertisers would automatically have information on which bundle an impression belongs to as well as outcomes (whether impressions in a given bundle received clicks or not) and can therefore accurately infer their match values at the granularity of the bundle. Although this assumption always holds from a theoretical standpoint, it may not hold in practice because advertisers need sufficient data to obtain accurate estimates of their match values. Thus, the match value estimates of smaller advertisers and/or new advertisers can be noisy (though they will be consistent). In Online Appendix I.2, we show that our findings are robust even in situations where advertisers' match value estimates are noisy/imperfect.</p><p>Finally, the match value estimates derived from our quasi-proportional auction are assumed to remain the same under a second-price auction. This is reasonable because the match value simply indicates the click probability of a user in a given context for an ad. There is no economic rationale for users' click behavior to be a function of the auction, especially because users often do not know which auction is running on the back end. Intuitively, click and match valuations are treated as structural parameters.</p><p>6.3.4. Estimation of Revenue and Surplus. Given our estimates for click and match valuations, we can obtain estimates of the elements of the valuation matrix V asv i,a v <ref type="bibr">(c)</ref> ami,a . Further, we can estimate advertisers' expected value of impression i under targeting regime ( asv ( i,a v <ref type="bibr">(c)</ref> am ( i,a . We now formally discuss our procedure to estimate revenue and surplus for any targeting regime (.</p><p>First, we determine the winners of each impression as follows: whereâ * i (() is the winner for impression i under targeting regime (. Note that the multiplication by the element of the filtering matrix e i,a simply ensures that the ad is competing in the auction for impression i and that the counterfactual match value estimates are valid, as discussed in Section 4.2.1.</p><formula xml:id="formula_19">â * i ( ( ) argmax av ( i,a e i,a ,<label>(17)</label></formula><p>Even though the winner is determined using the advertisers' expected value of impression i under a specific targeting regime, the surplus is calculated using the actual valuation matrix because it denotes the expected value that would be realized in the system if advertiserâ * i (() is allocated impression i. So we can write the surplus under targeting granularity ( aŝ</p><formula xml:id="formula_20">S ( ∑ N F i 1v i,â * i ( ( ) .<label>(18)</label></formula><p>To estimate the platform revenues, however, we need to use advertisers' expected values under targeting regime ( because these values guide their bidding behavior. Further, we need to incorporate the fact that the revenue generated from impression i is the second-highest bid (or valuation) for it. Thus, the revenue under ( iŝ</p><formula xml:id="formula_21">R ( ∑ N F i 1 max a\â * i ( ( )v ( i,a e i,a .<label>(19)</label></formula><p>Finally, we can estimate advertiser a's surplus under targeting regime ( as follows:</p><formula xml:id="formula_22">W ( a ∑ N F i 1v i,â * i ( ( ) − max a\â * i ( ( )v ( i,a e i,a<label>(</label></formula><formula xml:id="formula_23">)</formula><formula xml:id="formula_24">1â * i ( ( ) a ( ) . (<label>20</label></formula><formula xml:id="formula_25">)</formula><p>This estimation is carried out on the filtered sample to ensure that our match value estimates are accurate, and hence, the averaging in the preceding equations is done over N F . Figure <ref type="figure" target="#fig_0">11</ref> presents a step-by-step procedure to estimate revenue and surplus for the example case shown in Figure <ref type="figure" target="#fig_0">10</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Counterfactual Results and Privacy Implications</head><p>Although we can analyze market outcomes for any targeting regime, we focus on the following four targeting regimes that have a one-to-one correspondence with our analysis in Section 5.1.3: <ref type="bibr">1)</ref> ). The platform allows no targeting. As such, there is only one bundle (which constitutes all impressions), and advertisers cannot distinguish between any impressions.</p><formula xml:id="formula_26">• No targeting ((<label>(</label></formula><p>• Contextual targeting (( <ref type="bibr">#)</ref> ). The platform only allows contextual targeting. Here advertisers can distinguish between impressions in different contexts (app and time). However, impressions from different users in the same context are not distinguishable.</p><p>• Behavioral targeting (( <ref type="bibr">@)</ref> ). The platform allows behavioral targeting, thereby allowing advertisers to distinguish between users but not contexts. Here advertisers can submit bids targeted at the user level but cannot distinguish two impressions by the same user in different contexts.</p><p>• Full targeting (( <ref type="bibr">^)</ref> ). The platform allows impressionlevel targeting; that is, each impression is a bundle and therefore distinguishable. Advertisers can submit targeted bids for each impression.</p><p>Using Proposition 1, we can show that S (^) ≥ S (1) and that S (#) and S <ref type="bibr">(@)</ref> lie in between because both contextual and behavioral targeting can be interpreted as imperfect targeting. However, we cannot theoretically pin down their relative magnitudes because these two types of information are orthogonal. (One cannot Marketing <ref type="bibr">Science, 2021</ref><ref type="bibr">, vol. 40, no. 2, pp. 193-218, © 2020</ref> be interpreted as being more granular than the other.) So we can only show that S (^) ≥ S (#) , S (@) ≥ S <ref type="bibr">(1)</ref> . Further, we have no theoretical guidance on which of these targeting regimes maximizes platform revenues. We therefore use the empirical framework described in Section 6.3 to derive estimates of platform revenue, advertisers' surplus, and total surplus under the four targeting regimes, and we answer the question, "What is the optimal level of targeting that maximizes the platform's revenue?". The results from this exercise are shown in Table <ref type="table" target="#tab_5">5</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1.">Platform's Revenue</head><p>Consistent with our theory model, our empirical results suggest that more granular targeting leads to higher efficiency in the market: the total surplus under full targeting is 13.02% higher than the notargeting case. Further, in line with our findings in Section 5.1.3, we find that the total surplus under behavioral targeting is 2.13% higher than under contextual targeting. However, platform revenues exhibit more of an inverted-U-shaped curve. They are maximized when the platform restricts targeting to the contextual level. When the platform allows behavioral targeting, advertisers achieve a greater ability to target. Although this increases the total surplus in the system, much of this surplus is appropriated by advertisers, and the platform's revenue suffers. <ref type="bibr">16</ref> Thus, the platform's incentives are not perfectly aligned with those of advertisers. Indeed, the platform's optimal targeting level is privacy preserving and aligned with consumers' preferences. We thus find support for the advertising industry's claim that the industry has natural economic incentives to limit user tracking/ targeting and that self-regulation is feasible.</p><p>Our findings give rise to many interesting suggestions/ ideas on optimal mechanism design and information revelation from the platform's perspective. Limiting targeting to the contextual level is an obvious strategy. However, this approach also reduces the total surplus and hence caps the platform's revenues. Thus, the optimal path for the platform may not be to restrict targeting but instead to consider mechanisms that can do both-increase efficiency and extract the revenue from winning advertisers by shrinking the informational rent.</p><p>For instance, the platform could allow behavioral targeting and also adopt the standard theoretical solution proposed for revenue extraction-optimal reserve prices <ref type="bibr" target="#b32">(Myerson 1981)</ref>. <ref type="bibr" target="#b33">Ostrovsky and Schwarz (2016)</ref> validate these theoretical findings using field experiments for search ads. However, they only consider optimal reserve prices for broad sets of keywords and assume CTRs to be homogeneous across advertisers. In contrast, we have a setting where each impression is a unique product, and advertisers' match values for an impression are heterogeneous. So, in our case, the platform has to develop a system that can set dynamic impression-specific optimal reserve prices.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2.">Advertisers' Surplus</head><p>We begin by comparing total advertiser surplus across the four targeting regimes. As shown in Table <ref type="table" target="#tab_5">5</ref>, total advertisers' surplus is increasing with more granular targeting. This validates our theoretical prediction that more granular targeting helps advertisers by allowing them to generate more accurate estimates of their match values and place targeted bids. Under full targeting, advertisers' surplus is 11.69% of the total surplus, whereas this share drops to 0.69% when no targeting is allowed. Further, the share of advertisers' surplus under behavioral targeting is 8.99%, which is considerably higher than 6.13%, their share under contextual targeting. Together, these findings emphasize the value of behavioral information for advertisers.</p><p>Next, we explore whether all advertisers benefit when their ability to target is enhanced. In a competitive environment, greater ability to target does not necessarily translate into higher profits. Instead, it is the ability to target relative to competitors that matters. In Table <ref type="table" target="#tab_6">6</ref>, we show how many advertisers benefit as we move from one targeting regime (column) to another (row).</p><p>In general, more advertisers benefit when the platform allows more granular targeting, especially when it allows behavioral targeting. Moving from behavioral, contextual, and no targeting to full targeting benefits 23, 33, and 35 advertisers, respectively (first row of Table <ref type="table" target="#tab_6">6</ref>). However, more granular targeting is not uniformly better for all advertisers. The first  <ref type="table" target="#tab_6">6</ref> depicts situations where advertisers go from the most granular to less granular targeting regimes. Interestingly, it is populated with positive numbers, which suggest that some advertisers actually benefit from less granular targeting. For example, there are 14 advertisers who prefer behavioral targeting to full targeting. Similarly, although the majority of advertisers prefer behavioral targeting, there is a small portion of advertisers (3) who prefer contextual targeting. We present a simple example to highlight the intuition behind this: a nutrition supplement ad that advertises on a fitness app can get all the slots in that app at a low cost because other advertisers would place low bids when only app-level targeting is allowed. However, this ad would be worse off if only behavioral targeting is allowed because the competition for users in this app becomes more intense, and this ad will no longer be able to extract a large informational rent. In sum, our findings offer some evidence that advertisers are likely to be differentially affected by privacy regulation on user tracking and behavioral targeting. Further research on the sources of heterogeneity in advertisers' incentives can help regulators craft the appropriate privacy policies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.3.">Robustness Checks and Limitations</head><p>We run a series of robustness checks on the two main components of our estimation-click valuations and match valuations. First, in Online Appendix I.1, we consider alternative approaches to estimate click valuations from observed bids and show the robustness of our results. Second, in Online Appendix I.2, we show that our results are robust to the addition of noise to all the match value estimates (to reflect the cases where advertisers realize a noisy version of match value estimates from our machine learning framework).</p><p>Finally, although we have tried to make our analysis as exhaustive and complete as possible, our results should nevertheless be interpreted as short-run counterfactuals with the necessary caveats. First, we assume that advertisers' enhanced ability to target is only reflected in their targeted bidding. In reality, however, there might be value creation through other decision variables as well. Second, we assume that the set of ads competing for an impression will not change under different targeting regimes. This implies that there is no entry of new ads or exit of existing ads for an impression. Although this assumption may not be realistic, it is unlikely to change the qualitative findings of this paper. Third, we consider the case where the platform is a monopolist, which reflects our empirical setting. The question of how upstream competition affects privacy-preserving equilibrium outcomes is an important one, but outside the scope of our empirical setting. Finally, all our analysis is static. However, ad networks can adopt a forward-looking approach to allocate and sell ads. We refer readers to the recent series of work on adaptive ad sequencing that provides frameworks to maximize user engagement <ref type="bibr" target="#b34">(Rafieian 2020a</ref>) and platform revenues (Rafieian 2020b).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">Conclusions</head><p>Mobile in-app advertising is now a dominant ad format in the digital advertising ecosystem. In-app ads have unique tracking properties: they allow advertisers and ad networks to access the device ID of users' mobile devices and thereby enable high-quality behavioral targeting. Although this has made them appealing to advertisers, consumer privacy advocates are concerned about their invasiveness. Therefore, marketers and policymakers are interested in understanding the relative effectiveness of behavioral targeting compared to contextual targeting, the incentives of ad networks to engage in behavioral targeting, and the role of regulation in preserving privacy.</p><p>We propose a unified framework that consists of two components: a machine learning framework for targeting and an analytical framework for targeting counterfactuals when considering the competition in the market. We apply our framework to data from the leading in-app ad network of an Asian country. Our machine learning model achieves a RIG of 17.95% over the baseline when we evaluate it on test data. This translates to a 66.80% increase in the average CTR over the current system if we were to deploy an efficient targeting policy based on our machine learning framework. These gains mainly stem from behavioral information, and the value of contextual information is relatively small. Next, we build an analytical model of targeting and theoretically prove that although total surplus grows with more granular targeting between the ad network and advertisers, the ad network's revenues are nonmonotonic in the granularity of targeting. We then take our analytical model to data and conduct a series of targeting counterfactuals and show that the platform prefers to not allow behavioral targeting. There is also some  <ref type="bibr">Marketing Science, 2021</ref><ref type="bibr">, vol. 40, no. 2, pp. 193-218, © 2020</ref> heterogeneity among advertisers on their preferred level of targeting. Our findings suggest that ad networks have economic incentives to preserve users' privacy in the mobile advertising domain.</p><p>Our paper makes several contributions to the literature. First, from a methodological standpoint, we propose a unified framework for targeting that provides counterfactual estimates of platform revenues and efficiency under various targeting regimes. Our framework is generalizable and can be applied to a wide variety of advertising platforms as long as we are able to recover both match valuations and click valuations. In our setting, this is facilitated by the quasi-proportional auction, which induces randomness in the allocation of ads over impressions while preserving the linkage between observed bids and click valuations. However, other ad networks that employ deterministic auctions can also use our framework as long as they randomize ad allocation for a small portion of their traffic. <ref type="bibr">17</ref> In such cases, (1) the data from the auctions can be used to recover click valuations, and (2) the data from the randomized traffic would satisfy the unconfoundedness assumption because of the exogenous variation in the allocation of ads and can be used to recover match valuations using our machine learning framework that combines ideas from causal inference and large-scale prediction tasks. Once these two primitives are available, our framework on revenue-efficiency analysis is directly applicable to evaluate market outcomes under different targeting scenarios.</p><p>Next, from a substantive perspective, our paper provides new insights on contextual and behavioral targeting. To our knowledge, this is the first paper to study both revenue and efficiency under these two types of targeting. Finally, from a policy point of view, we examine the incentives to target for the two major parties in the advertising ecosystem: the platform and advertisers. We expect our model and findings to speak to the debate on privacy regulations in the advertising industry. intersection of all targeting variables) as the match value for all impressions within that targeting area. With these benchmark models as the denominator in Equation ( <ref type="formula" target="#formula_10">10</ref>), we find that the Full model has a RIG of 16.86% over the ad-specific model and 10.06% over the targeting-area-specific model. <ref type="bibr">10</ref> We can also specify Behavioral and Contextual models that ignore ad-specific information. The qualitative results on the relative value of behavioral and contextual information for that case are similar to those presented here. 11 As discussed in Section 5.1.1, RIG values are not directly comparable across different data sets. Simply put, in Table <ref type="table" target="#tab_4">4</ref>, comparisons within a column are interpretable, but comparisons across a row are not.</p><p>12 Although we learn users' utility model flexibly using XGBoost without imposing a restrictive functional form on the utility function, we still require the underlying utility model to be policy invariant. This is equivalent to treating potential outcomes as structural parameters in the potential outcome framework <ref type="bibr" target="#b22">(Imbens and Rubin 2015)</ref>. <ref type="bibr">13</ref> Although there is no guarantee that π a (b a ) has the quasiproportional form, it is easy to show by simulated experiments that it is a very accurate approximation. Further, advertisers know that the platform runs a quasi-proportional auction, so it is reasonable to assume that they rely on this functional form. <ref type="bibr">14</ref> The equality in Equation ( <ref type="formula" target="#formula_15">14</ref>) may be invalid for reserve bidders because they may have submitted a reserve price bid because the platform did not allow them to submit a lower bid. Thus, in the presence of reserve price bidders, the distribution of bids that we see is truncated at the reserve price. In such a situation, we can only infer the truncated distribution of valuations. In Online Appendix I.1, we discuss how we can address this issue. <ref type="bibr">15</ref> The underlying theory behind our findings relates to match valuations and not click valuations: with more granular targeting, advertisers have more accurate match valuations, which, in turn, softens the competition and hurts platform's revenues. As such, the heterogeneity induced by allowing more granular targeting comes from the heterogeneity in match valuations, and click valuations are invariant to targeting scenarios. Therefore, using an approximate method to quantify the distribution of click valuations is sufficient for our purpose and does not change the main findings. <ref type="bibr">16</ref> Nevertheless, our findings are weaker than those predicted by theory models; that is, although revenues decrease with more granular targeting, the drop is not very large. This suggests that the strong distributional assumptions on the match values in earlier theory papers (e.g., <ref type="bibr" target="#b21">Hummel and McAfee 2016)</ref> may not hold in real ad auctions. 17 Indeed, this is standard practice in large ad networks; for example, Bing always randomizes ads for a small portion of its traffic <ref type="bibr" target="#b27">(Ling et al. 2017)</ref>. More broadly, all prominent ad networks now run A/B tests on portions of their data, and this portion of the traffic can be used to infer match valuations.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. (Color online) Schema for Data Generation</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. (Color online) Cumulative Fraction of Impressions Associated with the Top 100 Ads and Top 100 Apps</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. (Color online) Histogram of CTR for Different Contexts</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. (Color online) Empirical CDF of the Length of User History for Impressions and Clicks (Truncated at 5,000)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Rafieian and Yoganarasimhan :</head><label>Yoganarasimhan</label><figDesc>Targeting and Privacy in Mobile Advertising two main challenges in evaluating counterfactual targeting policies.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. (Color online) Empirical CDF of the Number of Competitors (of the Top 37 Advertisers) per Impression for the Filtered Sample</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. (Color online) Venn Diagram of the Three Feature Sets, with the Number of Features in Each Region</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 7 .</head><label>7</label><figDesc>Figure 7. (Color online) Histogram of Percentage Improvement in CTR over the Current System Using the Efficient Targeting Policy</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 8 .</head><label>8</label><figDesc>Figure 8. (Color online) Market Outcomes Under Full vs. No Targeting</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head></head><label></label><figDesc>a (b a ) E &amp; a [CPC ia ]. Similarly, let π a (b a ) denote advertiser a's expected probability of winning an impression given bid b a ; that is, π a (b a ) E &amp; a [π ia ]. Because the allocation function is proportional, we assume that π a (b a ) b a q a /(b a q a + Q −a )</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Proposition 2 .</head><label>2</label><figDesc>Consider a platform which runs quasiproportional auctions where the allocation rule and CPC are given in Equations (1) and (2), respectively. Suppose that the cost function c a (b a ) is twice differentiable, {b * a } a∈! is the set of observed bids, and b * a c" a (b * a )/c' a (b * a ) + 2 ≥ 0 for all ads. Then we can write the click valuation</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Figure 9 .</head><label>9</label><figDesc>Figure 9. (Color online) Venn Diagram Depicting Settings Where Click Valuations and Match Valuations Are Identified</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>Figure 10 .</head><label>10</label><figDesc>Figure 10. (Color online) Construction of Match Value Matrix Under Targeting in a Simple Example with Five Impressions and Three Ads</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Figure 11 .</head><label>11</label><figDesc>Figure 11. (Color online) Step-by-Step Procedure to Estimate Revenue and Surplus in a Simple Example</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Summary Statistics for the Categorical Variables</figDesc><table><row><cell></cell><cell></cell><cell cols="3">Share of top categories</cell><cell></cell></row><row><cell>Variable</cell><cell>Number of categories</cell><cell>1st</cell><cell>2nd</cell><cell>3rd</cell><cell>Number of impressions</cell></row><row><cell>App</cell><cell>9,709</cell><cell>37.12%</cell><cell>13.56%</cell><cell>3.05%</cell><cell>27,482,444</cell></row><row><cell>Ad</cell><cell>263</cell><cell>18.89%</cell><cell>6.71%</cell><cell>6.31%</cell><cell>27,482,444</cell></row><row><cell>Hour of the day</cell><cell>24</cell><cell>7.39%</cell><cell>7.32%</cell><cell>6.90%</cell><cell>27,482,444</cell></row><row><cell>Province</cell><cell>31</cell><cell>25.25%</cell><cell>6.65%</cell><cell>6.51%</cell><cell>21,567,898</cell></row><row><cell>Smartphone brand</cell><cell>8</cell><cell>46.94%</cell><cell>32.30%</cell><cell>9.53%</cell><cell>25,270,463</cell></row><row><cell>Connectivity Type</cell><cell>2</cell><cell>54.64%</cell><cell>45.36%</cell><cell></cell><cell>27,482,444</cell></row><row><cell>ISP</cell><cell>9</cell><cell>68.03%</cell><cell>14.02%</cell><cell>7.09%</cell><cell>10,701,303</cell></row><row><cell>MSP</cell><cell>3</cell><cell>48.57%</cell><cell>43.67%</cell><cell>7.76%</cell><cell>26,051,042</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Feature Functions</figDesc><table><row><cell>Function</cell></row></table><note>AppCount Number of distinct apps used by a given set of inputs over a prespecified history TimeVariability Variance in the user's CTR at different hours of the day over a prespecified history AppVariability Variance in the user's CTR across different apps over a prespecified history Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile AdvertisingMarketing Science, 2021, vol. 40, no. 2, pp. 193-218, © 2020 </note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3</head><label>3</label><figDesc>The first row depicts the log loss for the Full model (which uses the set of all features and Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile AdvertisingMarketing Science, 2021, vol. 40, no. 2, pp. 193-218, © 2020 </figDesc><table><row><cell>shows the gains in</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Log Loss and Relative Information Gain(RIG, in Percentage)    </figDesc><table><row><cell>Evaluation metric</cell><cell>Training and validation</cell><cell>Test</cell></row><row><cell>Log loss for Full model</cell><cell>0.041927</cell><cell>0.044364</cell></row><row><cell>Log loss for baseline model</cell><cell>0.051425</cell><cell>0.054070</cell></row><row><cell>RIG of Full model</cell><cell>18.47%</cell><cell>17.95%</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 4 .</head><label>4</label><figDesc>Comparison of Behavioral and Contextual Models for Different Samples of Test Data</figDesc><table><row><cell>Relative information gain over baseline</cell><cell>Full sample</cell><cell>Top ads and top apps</cell><cell>Filtered sample</cell></row><row><cell>Behavioral model</cell><cell>12.14%</cell><cell>14.82%</cell><cell>14.74%</cell></row><row><cell>Contextual model</cell><cell>5.25%</cell><cell>5.98%</cell><cell>6.77%</cell></row><row><cell>Full model</cell><cell>17.95%</cell><cell>22.85%</cell><cell>22.45%</cell></row><row><cell>No. of impressions</cell><cell>9,625,835</cell><cell>6,108,511</cell><cell>4,454,634</cell></row><row><cell>Percent of test data</cell><cell>100%</cell><cell>63.5%</cell><cell>46.28%</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 5 .</head><label>5</label><figDesc>Platform Revenues, Advertisers' Surplus, and Total Surplus for Different Levels of Targeting.Note. The numbers are reported in terms of the average monetary unit per impression.</figDesc><table><row><cell>Targeting</cell><cell>Total surplus</cell><cell>Platform revenue</cell><cell>Advertisers' surplus</cell></row><row><cell>Full</cell><cell>9.45</cell><cell>8.35</cell><cell>1.10</cell></row><row><cell>Behavioral</cell><cell>9.18</cell><cell>8.35</cell><cell>0.84</cell></row><row><cell>Contextual</cell><cell>8.99</cell><cell>8.44</cell><cell>0.55</cell></row><row><cell>No targeting</cell><cell>8.36</cell><cell>8.30</cell><cell>0.06</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 6 .</head><label>6</label><figDesc>Number of Advertisers Who Benefit by Moving From One Targeting Regime (Column) to Another (Row) (Of 37 Top Advertisers). Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile Advertising</figDesc><table><row><cell>To/from</cell><cell>Full</cell><cell>Behavioral</cell><cell>Contextual</cell><cell>Baseline</cell></row><row><cell>Full</cell><cell>NA</cell><cell>23</cell><cell>33</cell><cell>35</cell></row><row><cell>Behavioral</cell><cell>14</cell><cell>NA</cell><cell>34</cell><cell>36</cell></row><row><cell>Contextual</cell><cell>4</cell><cell>3</cell><cell>NA</cell><cell>33</cell></row><row><cell>Baseline</cell><cell>2</cell><cell>1</cell><cell>4</cell><cell>NA</cell></row><row><cell cols="2">Note. NA, not applicable.</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">MarketingScience, 2021, vol. 40, no. 2, pp. 193-218, © 2020 </note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors are grateful to an anonymous firm for providing the data and to the University of Washington-Foster High Performance Computing Laboratory for providing us with computing resources. The authors also thank Daria Dzyabura, Avi Goldfarb, Clarence Lee, Simha Mummalaneni, Puneet Manchanda, Sridhar Narayanan, Amin Sayedi, K. Sudhir, and Daniel Zantedeschi for detailed comments that have improved the paper. </p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Endnotes</head><p>1 Advertisers and ad networks have access to a unique device ID associated with the mobile device referred to as IDFA (ID for advertisers) in iOS devices and AAID (Android advertiser ID) in Android devices. This device ID is highly persistent and remains the same unless actively reset by the user.</p><p>2 An impression lasts one minute. If a user continues using the app beyond one minute, it is treated as a new impression, and the platform runs a new auction to determine the next ad to show the user.</p><p>3 From a practical perspective, probabilistic auctions ensure that individual users are not exposed to the same ad repeatedly within the same app session (which can be irritating). By contrast, in a deterministic auction, the same advertiser would win all the impressions until his or her budget runs out. <ref type="bibr">4</ref> Another approach would be to randomly sample impressions in each split of the data. However, this would not give us the complete user history for each impression in the training, validation, and test data sets. This, in turn, would lead to significant loss of accuracy in user-level features, especially because user history is sparse. By contrast, our user-based sampling approach gives us unbroken user history. <ref type="bibr">5</ref> Only six ads experience budget exhaustion (at least once) in the training data, four of which are entirely unavailable in the test data. 6 Note that this information is not directly observed but inferred from advertisers' targeting decisions and campaign availability. 7 Boosted trees in general, and XGBoost in particular, perform exceptionally well in tasks involving prediction of human behavior. Examples include store sales prediction, customer behavior prediction, product categorization, ad CTR prediction, and course dropout rate prediction. Indeed, almost all the Knowledge Discovery in Database (KDD) Cup winners have used XGBoost as their learning algorithm (either as a standalone model or in ensembles) since 2015. 8 First, from a methodological standpoint, XGBoost can be interpreted as performing Newton boosting in the function space (as opposed to gradient descent) and thereby uses information from the Hessian as well. Thus, both the quality of the leaf structure and the leaf weights learned are more accurate in each step. Second, XGBoost uses a trick commonly used in random forests-column subsampling-which reduces the correlation between subsequent trees. Third, XGBoost employs a sparsity-aware split finding, which makes the algorithm run faster on sparse data. Finally, from an implementation perspective, XGBoost is highly parallelized, which makes it fast and scalable. <ref type="bibr">9</ref> One could argue that the significant predictive power of the Full model is due to the weak benchmark, which simply predicts average CTR for all impressions. Therefore, we also evaluate the performance of the Full model against two other baseline models: (1) ad-specific CTR and (2) targeting-area-specific CTR. The first model relates to ad networks' quality scoring practice; it predicts the average CTR for each ad as the match value for impressions showing that ad. The second model resembles the current targeting practice in the platform and predicts the average CTR for each targeting area (defined as the Rafieian and Yoganarasimhan: Targeting and Privacy in Mobile Advertising</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The economics of privacy</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Acquisti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Taylor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wagman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom. Literature</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="442" to="492" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Keyword management costs and broad match in sponsored search advertising</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Amaldoss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jerath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sayedi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="259" to="274" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Nonparametric approaches to auctions</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Athey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Haile</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Handbook of Econometrics</title>
+				<editor>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Heckman</surname></persName>
+			<persName><forename type="first">E</forename><forename type="middle">E</forename><surname>Leamer</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Amsterdam</addrLine></address></meeting>
+		<imprint>
+			<publisher>Elsevier</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="3847" to="3965" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A structural model of sponsored search advertising auctions</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Athey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Nekipelov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Sixth Ad Auctions Workshop</title>
+				<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="volume">15</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Targeting in advertising markets: Implications for offline vs. online media</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bergemann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bonatti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="417" to="443" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Arcing classifier</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Breiman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="801" to="849" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Buy-it-now or take-a-chance: Price discrimination through randomized auctions</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">E</forename><surname>Celis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mobius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Nazerzadeh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2927" to="2948" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Simple and scalable response prediction for display advertising</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Chapelle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Manavoglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rosales</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Intelligent Systems Tech</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page">61</biblScope>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Xgboost: A scalable tree boosting system. Krishnapuram B</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 22nd ACM SIKDD Internat. Conf. Knowledge Discovery Data Mining</title>
+				<meeting>22nd ACM SIKDD Internat. Conf. Knowledge Discovery Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="785" to="794" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Online advertising and privacy</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>De Corniere</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Econom</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="48" to="72" />
+			<date type="published" when="2016" />
+			<publisher>De Nijs R</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Doubly robust policy evaluation and optimization</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Dudík</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Erhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Langford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Sci</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="485" to="511" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Machine learning and marketing</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Dzyabura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yoganarasimhan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Handbook of Marketing Analytics</title>
+				<editor>
+			<persName><forename type="first">N</forename><surname>Mizik</surname></persName>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Hanssens</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Northampton, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Edward Elgar Publishing</publisher>
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Apple has quietly started tracking iPhone users again, and it&apos;s tricky to opt out</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Edwards</surname></persName>
+		</author>
+		<ptr target="http://www.businessinsider.com/ifa-apples-iphone-tracking-in-ios-6-2012-10" />
+	</analytic>
+	<monogr>
+		<title level="j">Bus. Insider</title>
+		<imprint>
+			<date type="published" when="2012-10-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Even Trump voters hate this bill he just signed</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Edwards-Levy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liebelson</surname></persName>
+		</author>
+		<ptr target="https://www.huffpost.com/entry/trump-online-privacy-poll_n_58e295e7e4b0f4a923b0d94a" />
+	</analytic>
+	<monogr>
+		<title level="j">Huffington Post</title>
+		<imprint>
+			<date type="published" when="2017-04-03" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Digital ad spending</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Enberg</surname></persName>
+		</author>
+		<ptr target="https://content-na1.emarketer.com/us-digital-ad-spending-2019" />
+		<imprint>
+			<date type="published" when="2019-03-28" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Greedy function approximation: A gradient boosting machine</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Friedman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1189" to="1232" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">What is different about online advertising?</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goldfarb</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Rev. Indust. Organ</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="115" to="129" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Advertising bans and the substitutability of online and offline advertising</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goldfarb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tucker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="207" to="227" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Online display advertising: Targeting and obtrusiveness</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goldfarb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tucker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="389" to="404" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Optimal nonparametric estimation of first-price auctions</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Guerre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Perrigne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Vuong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Econometrica</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="525" to="574" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Practical lessons from predicting clicks on ads at Facebook</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jin</forename><forename type="middle">O</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 8th Internat. Workshop Data Mining Online Advertising</title>
+				<meeting>8th Internat. Workshop Data Mining Online Advertising<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1" to="9" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">When does improved targeting increase revenue?</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hummel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Mcafee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Econom. Comput</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">4</biblScope>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Imbens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+		<title level="m">Causal Inference in Statistics, Social, and Biomedical Sciences</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Opinion: Europe&apos;s strict new privacy rules are scary but right</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kint</surname></persName>
+		</author>
+		<ptr target="http://adage.com/article/digitalnext/europe-s-strict-privacy-rules-terrifying-apple/309155/" />
+	</analytic>
+	<monogr>
+		<title level="j">AdAge</title>
+		<imprint>
+			<date type="published" when="2017-05-25" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Auction Theory</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Krishna</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>Academic Press</publisher>
+			<pubPlace>Burlington, MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Online advertising: Heterogeneity and conflation in market design</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Levin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Milgrom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. Econom. Rev</title>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="603" to="607" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Attributing conversions in a multichannel online marketing environment: An empirical model and a field experiment</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kannan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="40" to="56" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Model ensemble for click prediction in Bing search ads</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 26th Internat. Conf. World Wide Web Companion</title>
+				<meeting>26th Internat. Conf. World Wide Web Companion<address><addrLine>Barret R; New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="689" to="698" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">A tutorial on propensity score estimation for multiple treatments using generalized boosted models</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F</forename><surname>Mccaffrey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Griffin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Almirall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Slaughter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ramchand</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">F</forename><surname>Burgette</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Medicine</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="3388" to="3414" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Ad click prediction: A view from the trenches. Dhillon I</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">B</forename><surname>Mcmahan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Holt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sculley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Young</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ebner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Grady</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Nie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 19th ACM SIGKDD Internat</title>
+				<meeting>19th ACM SIGKDD Internat</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<author>
+			<persName><forename type="first">Yoganarasimhan</forename><surname>Rafieian</surname></persName>
+		</author>
+		<title level="m">Targeting and Privacy in Mobile Advertising Marketing Science</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2021" />
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="page" from="1222" to="1230" />
+		</imprint>
+	</monogr>
+	<note>© 2020 INFORMS Conf. Knowledge Discovery Data Mining</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Quasi-proportional mechanisms: Prior-free revenue maximization</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Mirrokni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Muthukrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Nadav</surname></persName>
+		</author>
+		<editor>Lopez-Ortiz A, ed. Latin Amer. Sympos. Theoret. Informatics</editor>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="565" to="576" />
+			<pubPlace>Berlin</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Optimal auction design</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Myerson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="58" to="73" />
+			<date type="published" when="1981" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title level="m" type="main">Reserve prices in internet advertising auctions: A field experiment. Working paper</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ostrovsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Schwarz</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<pubPlace>Stanford, CA</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Stanford Graduate School of Business, Stanford University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Optimizing user engagement through adaptive ad sequencing. Working paper</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Rafieian</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020" />
+			<pubPlace>New York</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Cornell Tech and Cornell University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">Revenue-optimal dynamic auctions for adaptive ad sequencing. Working paper, Cornell Tech and Cornell University</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Rafieian</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020" />
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<monogr>
+		<title level="m" type="main">How does variety of previous ads influence consumers ad response? Working paper</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Rafieian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yoganarasimhan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020" />
+			<pubPlace>New York</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Cornell Tech and Cornell University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Optimal auctions</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G</forename><surname>Riley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">F</forename><surname>Samuelson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. Econom. Rev</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="381" to="392" />
+			<date type="published" when="1981" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Are loss functions all the same?</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Rosasco</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">De</forename><surname>Vito</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Caponnetto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Piana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Verri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1063" to="1076" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">The central role of the propensity score in observational studies for causal effects</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">R</forename><surname>Rosenbaum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="41" to="55" />
+			<date type="published" when="1983" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">The research firm that once thought Microsoft would beat the iPhone has given up on Windows Phone</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rosoff</surname></persName>
+		</author>
+		<ptr target="https://www.businessinsider.com/idc-smartphone-os-market-share-2015-12" />
+	</analytic>
+	<monogr>
+		<title level="j">Bus. Insider</title>
+		<imprint>
+			<date type="published" when="2015-12-07" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+		<title level="m" type="main">Effect of temporal spacing between advertising exposures: Evidence from online field experiments. Quant. Marketing Econom</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">S</forename><surname>Sahni</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="203" to="247" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Real-time bidding in online display advertising</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sayedi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="553" to="568" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Optimization-based and machine-learning methods for conjoint analysis: Estimation and question design</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Toubia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Evgeniou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hauser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conjoint Measurement: Methods and Applications</title>
+				<editor>
+			<persName><forename type="first">A</forename><surname>Gustafsso</surname></persName>
+			<persName><forename type="first">A</forename><surname>Herrmann</surname></persName>
+			<persName><forename type="first">F</forename><surname>Huber</surname></persName>
+		</editor>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="231" to="258" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Social networks, personalized advertising, and privacy controls</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Tucker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="546" to="562" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<title level="m" type="main">Econometric Analysis of Cross Section and Panel Data</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Wooldridge</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge, MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">A dynamic model of sponsored search advertising</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Mela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="447" to="468" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Predictive model performance: Offline and online evaluations. Dhillon I</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">W</forename><surname>Yan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 19th ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining</title>
+				<meeting>19th ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1294" to="1302" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Search personalization using machine learning</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yoganarasimhan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1045" to="1070" />
+			<date type="published" when="2020" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

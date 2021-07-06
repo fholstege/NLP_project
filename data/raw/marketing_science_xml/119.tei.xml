@@ -1,0 +1,1514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Identifying Customer Needs from User-Generated Content</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2019-01-30">January 30, 2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Artem</forename><surname>Timoshenko</surname></persName>
+							<email>artem.timoshenko@sloan.mit.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">MIT Sloan School of Management</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<postCode>02139</postCode>
+									<settlement>Cambridge</settlement>
+									<region>Massachusetts</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">John</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+							<email>hauser@mit.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">MIT Sloan School of Management</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<postCode>02139</postCode>
+									<settlement>Cambridge</settlement>
+									<region>Massachusetts</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Identifying Customer Needs from User-Generated Content</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2019-01-30">January 30, 2019</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2018.1123</idno>
+					<note type="submission">Received: April 26, 2017 Revised: November 20, 2017; April 12, 2018 Accepted: June 4, 2018</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Firms traditionally rely on interviews and focus groups to identify customer needs for marketing strategy and product development. User-generated content (UGC) is a promising alternative source for identifying customer needs. However, established methods are neither efficient nor effective for large UGC corpora because much content is noninformative or repetitive. We propose a machine-learning approach to facilitate qualitative analysis by selecting content for efficient review. We use a convolutional neural network to filter out noninformative content and cluster dense sentence embeddings to avoid sampling repetitive content. We further address two key questions: Are UGC-based customer needs comparable to interview-based customer needs? Do the machine-learning methods improve customer-need identification? These comparisons are enabled by a custom data set of customer needs for oral care products identified by professional analysts using industry-standard experiential interviews. The analysts also coded 12,000 UGC sentences to identify which previously identified customer needs and/or new customer needs were articulated in each sentence. We show that (1) UGC is at least as valuable as a source of customer needs for product development, likely more valuable, compared with conventional methods, and (2) machine-learning methods improve efficiency of identifying customer needs from UGC (unique customer needs per unit of professional services cost).</p><p>History: K. Sudhir served as the editor-in-chief and Oded Netzer served as associate editor for this article.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Marketing practice requires a deep understanding of customer needs. In marketing strategy, customer needs help segment the market, identify strategic dimensions for differentiation, and make efficient channel management decisions. For example, <ref type="bibr" target="#b45">Park et al. (1986)</ref> describe examples of strategic positioning based on fulfilling customer needs: "attire for the conservative professional" (Brooks Brothers) or "a world apart-let it express your world" (Lenox China). In product development, customer needs identify new product opportunities <ref type="bibr">(Herrmannet al. 2000)</ref>, improve the design of new products <ref type="bibr" target="#b53">(Sullivan 1986</ref><ref type="bibr" target="#b30">, Krishnan and Ulrich 2001</ref><ref type="bibr" target="#b58">, Ulrich and Eppinger 2016</ref>, help manage product portfolios <ref type="bibr" target="#b52">(Stone et al. 2008)</ref>, and improve existing products and services <ref type="bibr" target="#b37">(Matzler and Hinterhuber 1998)</ref>. In marketing research, customer needs help to identify the attributes used in the conjoint analysis <ref type="bibr" target="#b44">(Orme 2006)</ref>.</p><p>Understanding of customer needs is particularly important for product development <ref type="bibr">(Kano et al. 1984, Mikulić and</ref><ref type="bibr" target="#b41">Prebežac 2011)</ref>. For example, consider the breakthrough laundry detergent "Attack," developed by the Kao Group in Japan. Before Kao's innovation, firms such as Procter &amp; Gamble competed in fulfilling the (primary) customer needs of excellent cleaning, ready to wear after washing, value (quality and quantity per price), ease of use, smell good, good for me and the environment, and personal satisfaction. New products developed formulations to compete on these identified primary customer needs (e.g., the products that would clean better, smell better, be gentle for delicate fabrics, and not harm the environment). The market was highly competitive; perceived value played a major role in marketing, and detergents were sold in large "high-value" boxes. Kao Group was first to recognize that Japanese customers wanted "a detergent that is easy to transport home by foot or bicycle," "in a container that fits in limited apartment space," but "gets my clothes fresh and clean." Guided by this insight, Kao launched a highly concentrated detergent in an easy-to-store and easy-to-carry package. Despite a premium price, Attack quickly commanded almost 50% of the Japanese laundry market (Kao <ref type="bibr" target="#b25">Group 2016)</ref>. American firms soon introduced their own concentrated detergents, but by being the first to identify an unfulfilled and previously unrecognized customer need, Kao gained a competitive edge.</p><p>There is an important distinction between customer needs and product attributes. A customer need is an abstract context-dependent statement describing the benefits, in the customer's own words, that the customer seeks to obtain from a product or service <ref type="bibr" target="#b4">(Brown and</ref><ref type="bibr">Eisenhardt 1995, Griffin et al. 2009</ref>). Product attributes are the means to satisfying the customer needs. For example, when describing their experience with mouthwashes, a customer might express the need "to know easily the amount of mouthwash to use." This customer need can be satisfied by various product attributes (solutions), including ticks on the cap and textual or visual descriptions on the bottle.</p><p>To effectively capture rich information, customer needs are typically described with sentences or phrases that describe in detail the benefits the customers wish to obtain from products. Complete formulations communicate more-precise messages compared with "bags of words," such as developed by latent Dirichlet allocation (LDA), word counts, or word co-occurrence (e.g., <ref type="bibr" target="#b35">Lee and Bradlow 2011</ref><ref type="bibr" target="#b42">, Netzer et al. 2012</ref><ref type="bibr" target="#b50">, Schweidel and Moe 2014</ref><ref type="bibr" target="#b5">, Büschken and Allenby 2016</ref>. For example, consider one "bag of words" from <ref type="bibr" target="#b5">Büschken and Allenby (2016)</ref>:</p><p>"Real pizza:" pizza, crust, really, like, good, Chicago, Thin, Style, Best, One, Just, New, Pizzas, Great, Italian, Little, York, Cheese, Place, Get, Know, Much, Beef, Lot, Sauce, Chain, Got, Flavor, Dish, Find Word combinations give insight into dimensions of Italian restaurants-combinations that are useful to generate attributes for conjoint analysis. However, for new product development, product-development teams want to know how the customers use these words in context. For example:</p><p>• Pizza arrives to the table at the right temperature (e.g., not too hot and not cold).</p><p>• Pizza that is cooked all the way through (i.e., not too doughy).</p><p>• Ingredients (e.g., sauce, cheese, etc.) are neither too light nor too heavy.</p><p>• Crust that is flavorful (e.g., sweet).</p><p>• Toppings stay on the pizza as I eat it.</p><p>Our paper focuses on the problem of identifying the customer needs. Although relative importances of customer needs are valuable to product-development teams, methods such as conjoint analysis and self-explicated measures are well-studied and in common use. We assume that preference measures are used later in product development to decide among product concepts <ref type="bibr" target="#b59">(Urban and</ref><ref type="bibr">Hauser 1993, Ulrich and</ref><ref type="bibr" target="#b58">Eppinger 2016)</ref>.</p><p>The identification of customer needs in context requires a deep understanding of a customer's experience. Traditional methods rely on human interactions with customers, such as experiential interviews and focus groups. However, traditional methods are expensive and time-consuming, often resulting in delays in time to market. To avoid the expense and delays, some firms use heuristics, such as managerial judgment or a review of web-based product comparisons. However, such heuristic methods often miss customer needs that are not fulfilled by any product that is now on the market.</p><p>User-generated content (UGC), such as online reviews, social media, and blogs, provides extensive rich textual data and is a promising source from which to identify customer needs more efficiently. UGC is available quickly and at a low incremental cost to the firm. In many categories, UGC is extensive-for example, there are more than 300,000 reviews on health and personal care products on Amazon alone. If UGC can be mined for customer needs, UGC has the potential to identify as many, or perhaps more, customer needs than direct customer interviews and to do so more quickly with lower cost. UGC provides additional advantages: (1) it is updated continuously, enabling the firm to update its understanding of customer needs; and (2) unlike customer interviews, firms can return to UGC at low cost to explore new insights further.</p><p>There are multiple concerns with identifying customer needs from UGC. First, the very scale of UGC makes it difficult for human readers to process. We seek methods that scale well and, possibly, make human readers more efficient. Second, much UGC is repetitive or not relevant. Sentences such as "I highly recommend this product" do not express customer needs. Repetitive and irrelevant content make a traditional manual analysis inefficient. Third, we expect, and our analysis confirms, that most of UGC concentrates on a relatively few customer needs. Although such information might be useful, we seek methods to efficiently search more broadly, to obtain a reasonably complete set of customer needs (within cost and feasibility constraints), including rarely mentioned customer needs. Fourth, UGC data are unstructured and mostly text-based. To identify abstract context-dependent customer needs, researchers need to understand rich meanings behind the words. Finally, unlike traditional methods based on a representative sample of customers, customers selfselect to post UGC. Self-selection might cause analysts to miss important categories of customer needs.</p><p>Our primary goals in this paper are two-fold. First, we examine whether a reasonable corpus of UGC provides sufficient content to identify a reasonably complete set of customer needs. We construct and analyze a custom data set in which we persuaded a professional marketing consulting firm to provide (a) customer needs identified from experiential interviews with a representative set of customers, and (b) a complete coding of a sample of sentences from Amazon reviews in the oral-care category. Second, we develop and evaluate a machine-learning hybrid approach to identify customer needs from UGC. We use machine learning to identify relevant content and remove redundancy from a large UGC corpus, and then rely on human judgment to formulate customer needs from selected content. We draw on recent research in deep learning, in particular, convolutional neural networks (CNNs; <ref type="bibr" target="#b8">Collobert et al. 2011</ref><ref type="bibr" target="#b28">, Kim 2014</ref> and dense word and sentence embeddings <ref type="bibr" target="#b39">(Mikolov et al. 2013a</ref><ref type="bibr" target="#b51">, Socher et al. 2013</ref>. The CNN filters out noninformative content from a large UGC corpus. Dense word and sentence embeddings embed semantic content in a real-valued vector space. We use sentence embeddings to sample a diverse set of nonredundant sentences for manual review. Both the CNN and word and sentence embeddings scale to large datasets. Manual review by professional analysts remains necessary in the last step because of the contextdependent nature of customer needs.</p><p>We evaluate UGC as a source of customer needs in terms of the number and variety of customer needs identified in a feasible corpus. We then evaluate the efficiency improvements achieved by the machinelearning methods in terms of the expected number of unique customer needs identified per unit of professional services costs. Professional services costs, or the billing rates of experienced professionals, are the dominant costs in industry for identifying customer needs. Our comparisons suggest that if we limit costs to that required to review experiential interviews, then UGC provides a set of customer needs comparable to those obtained from experiential interviews. Despite the potential for self-selection, UGC does at least as well (in the tested category) as traditional methods based on a representative set of customers. When we relax the professional services constraint for reviewing sentences but maintain professional services costs to be less than would be required to interview and review, then UGC is a better source of customer needs. We further demonstrate that machine learning helps to eliminate irrelevant and redundant content and, hence, makes professional services investments more efficient. By selecting a more-efficient content for review, machine learning increases a probability of identifying low-frequency customer needs. UGC-based analyses reduce research time substantially, avoiding delays in time to market.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Related Research</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Traditional Methods to Identify Customer Needs</head><p>(and Link Needs to Product Attributes) Given a set of customer needs, product-development teams use a variety of methods, such as quality function deployment, to identify customer solutions or product attributes that address customer needs <ref type="bibr" target="#b53">(Sullivan 1986</ref><ref type="bibr" target="#b18">, Hauser and Clausing 1988</ref><ref type="bibr" target="#b0">, Akao 2004</ref>. For example, <ref type="bibr" target="#b6">Chan and Wu (2002)</ref> review 650 research articles that develop, refine, and apply Quality Function Deployment to map customer needs to solutions. <ref type="bibr" target="#b63">Zahay et al. (2004)</ref> review the use of customer needs in the "fuzzy front end," product design, product testing, and product launch. Customer needs can also be used to identify attributes for conjoint analysis <ref type="bibr" target="#b14">(Green and</ref><ref type="bibr">Srinivasan 1978, Orme 2006)</ref>. <ref type="bibr" target="#b27">Kim et al. (2017)</ref> propose a benefitbased conjoint-analysis model that maps product attributes to latent customer needs before estimation.</p><p>Researchers in marketing and engineering have developed and refined many methods to elicit customer needs directly from customers. The most common methods rely on focus groups, experiential interviews, or ethnography as input. Trained professional analysts then review the input, manually identify customer needs, remove redundancy, and structure the customer needs <ref type="bibr" target="#b26">(Kaulio 1998</ref><ref type="bibr" target="#b1">, Alam and Perry 2002</ref><ref type="bibr" target="#b16">, Griffin et al. 2009</ref>. Some researchers augment interviews with structured methods, such as repertory grids <ref type="bibr" target="#b61">(Wu and Shich 2010)</ref>.</p><p>Typically, customer-need identification begins with 20-30 qualitative experiential interviews. Multiple analysts review transcripts, highlight customer needs, and remove redundancy ("winnowing") to produce a basic set of approximately 100 abstract contextdependent customer-need statements. Affinity groups or clustered customer-card sorts then provide structure for the customer needs, often in the form of a hierarchy of primary, secondary, and tertiary customer needs <ref type="bibr">Hauser 1993, Jiao and</ref><ref type="bibr" target="#b22">Chen 2006)</ref>. Together, identification and structuring of customer needs are often called voice-of-the-customer (VOC) methods. Recently, researchers have sought to explore new sources of customer needs to supplement or replace common methods. For example, <ref type="bibr">Kowalewski (2015, 2016)</ref> proposed using a web interface to ask customers to enter customer needs and stories directly. They then rely on human judgment to structure the customer needs and remove redundancy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">UGC Text Analysis in Marketing and</head><p>Product Development Researchers in marketing have developed a variety of methods to mine unstructured textual data to address managerial questions. See reviews in <ref type="bibr" target="#b13">Fader and Winer (2012)</ref> and <ref type="bibr" target="#b5">Büschken and Allenby (2016)</ref>. The research closest to our goals uses word co-occurrences and variations of LDA to identify word groupings in product discussions <ref type="bibr" target="#b5">(Büschken and Allenby 2016</ref><ref type="bibr" target="#b35">, Lee and Bradlow 2011</ref><ref type="bibr" target="#b42">, Netzer et al. 2012</ref><ref type="bibr" target="#b57">, Tirunillai and Tellis 2014</ref><ref type="bibr" target="#b2">, Archak et al. 2016</ref>. Some researchers analyze these word groupings further by linking them to sales, sentiment, or movie ratings <ref type="bibr" target="#b62">(Ying et al. 2006</ref><ref type="bibr" target="#b50">, Schweidel and Moe 2014</ref><ref type="bibr" target="#b2">, Archak et al. 2016</ref>. The latter two papers deal explicitly with self-selection or missing ratings by analyzing UGC from the same person over Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content <ref type="bibr">Marketing Science, 2019</ref><ref type="bibr">, vol. 38, no. 1, pp. 1-20, © 2019</ref> different movies or from multiple sources, such as different venues. We address the self-selection concern by comparing customer needs identified from UGC with the customer needs identified from the interviews with a representative sample of customers. We assume that researchers can rely on standard methods to map customer needs to the outcome measures such as preferences for product concepts in each customer segment <ref type="bibr">Hauser 1993, Orme 2006)</ref>.</p><p>In engineering, the product attribute elicitation literature is closest to the goals of our paper, although the focus is primarily on physical attributes rather than more-abstract context-dependent customer needs. <ref type="bibr" target="#b46">Peng et al. (2012)</ref> and <ref type="bibr" target="#b23">Jin et al. (2015)</ref> propose automated methods to identify engineering characteristics. These papers focus on particular parts of speech or manually identified word combinations and use clustering techniques or LDA to identify product attributes and levels to be considered in product development. <ref type="bibr" target="#b31">Kuehl (2016)</ref> proposes identifying intangible attributes together with physical product attributes with supervised classification techniques. Our methods augment the literatures in both marketing and engineering by focusing on the more-context-dependent, deepersemantic nature of customer needs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Deep Learning for Natural</head><p>Language Processing We draw on two literatures from natural language processing (NLP): CNNs and dense word and sentence representations. A CNN is a supervised prediction technique that is particularly suited to computer vision and NLP tasks. A CNN often contains multiple layers, which transform numerical representations of sentences to create input for a final logit-based layer, which makes the final classification. CNNs demonstrate stateof-the-art performance with minimum tuning in such problems as relation extraction <ref type="bibr" target="#b43">(Nguyen and Grishman 2015)</ref>, named entity recognition <ref type="bibr" target="#b7">(Chiu and Nichols 2016)</ref>, and sentiment analysis (dos <ref type="bibr" target="#b12">Santos and Gatti 2014)</ref>. We demonstrate that, on our data, CNNs do at least as well as a support-vector machine, a multichannel CNN <ref type="bibr" target="#b28">(Kim 2014)</ref>, and a recurrent neural network with long short-term memory cells (LSTM; <ref type="bibr" target="#b20">Hochreiter and Schmidhuber 1997)</ref>.</p><p>Dense word and sentence embeddings are real-valued vector mappings (typically 20-300 dimensions), which are trained such that vectors for similar words (or sentences) are close in the vector space. The theory of dense embeddings is based on the distributional hypothesis, which states that words that appear in a similar context share semantic meaning <ref type="bibr" target="#b17">(Harris 1954)</ref>. High-quality word and sentence embeddings can be used as an input for downstream NLP applications and models <ref type="bibr" target="#b28">(Kim 2014</ref><ref type="bibr" target="#b32">, Lample et al. 2016</ref>. Somewhat unexpectedly, high-quality word embeddings capture not only semantic similarity but also semantic relationships <ref type="bibr" target="#b40">(Mikolov et al. 2013b)</ref>. Using the convention of bold type for vectors, then if v('word ' ) is the word embedding for 'word, <ref type="bibr" target="#b40">' Mikolov et al. (2013b)</ref> demonstrate that word embeddings trained on the Google News Corpus have the following properties:</p><formula xml:id="formula_0">v(king) − v(man) + v(woman) ≈ v(queen), v(walking) − v(swimming) + v(swam) ≈ v(walked), v ( Paris) − v (France) + v(Italy) ≈ v(Rome).</formula><p>We train word embeddings using a large unlabeled corpus of online reviews. We then apply the trained word embeddings (1) to enhance the performance of the CNN, and (2) to avoid repetitiveness among the sentences selected for manual review.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">A Proposed Machine-Learning Hybrid Method to Identify Customer Needs</head><p>We propose a method that uses machine learning to screen UGC for sentences rich in a diverse set of context-dependent customer needs. Identified sentences are then reviewed by professional analysts to formulate customer needs. Machine-human hybrids have proven effective in a broad set of applications. For example, <ref type="bibr" target="#b47">Qian et al. (2001)</ref> combine machine learning and human judgment to locate research when authors' names are ambiguous (e.g., there are 117 authors with the name Lei Zhang). Supervised learning identifies clusters of similar publications, and human readers associate authors with the clusters. The resulting hybrid is more accurate than machine learning alone and more efficient than human classification. <ref type="bibr" target="#b9">Colson (2016)</ref> describes Stitch Fix's machine-human hybrid, in which machine learning helps create a short list of apparel from vast catalogues, then human curators make the final recommendations to consumers. Figure <ref type="figure" target="#fig_0">1</ref> summarizes our approach. The proposed method consists of five stages:</p><p>1. Preprocess UGC. We harvest readily available UGC from either public sources or propriety company databases. We split UGC into sentences, eliminate stopwords, numbers, and punctuation, and concatenate frequent combinations of words.</p><p>2. Train Word Embeddings. We train word embeddings using a skip-gram model (Section 3.2) on preprocessed UGC sentences and use word embeddings as an input in the following stages.</p><p>3. Identify Informative Content. We label a small set of sentences into informative/noninformative and then train and apply a CNN to filter out noninformative sentences from the rest of the corpus. Without the CNN, human readers would sample content randomly and likely review many uninformative sentences.</p><p>4. Sample Diverse Content. We cluster sentence embeddings and sample sentences from different clusters Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content to select a set of sentences likely to represent diverse customer needs. This step is designed to identify customer needs that are different from one another so that (1) the process is more efficient, and (2) hard-to-identify customer needs are less likely to be missed.</p><p>5. Manually Extract Customer Needs. Professional analysts review the diverse, informative sentences to identify customer needs. The customer needs are then used to identify new opportunities for product development.</p><p>Figure A.1 illustrates each of the four steps with an example drawn for one product review. Our architecture achieves the same goals as voice-of-the-customer approaches in industry (Section 2.1). The preprocessed UGC replaces experiential interviews, the automated sampling of informative sentences is analogous to manual highlighting of informative content, and the clustering of word embeddings is analogous to manual winnowing to identify as many distinct customer needs as feasible. Methods to identify a hierarchical structure of customer needs and/or methods to measure the tradeoffs (preferences) among customer needs, if required, can be applied equally well to customer needs generated from UGC or from experiential interviews.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Stage 1: Preprocessing Raw UGC</head><p>Prior experience in the manual review of UGC by professional analysts suggests that sentences are most likely to contain customer needs and are a natural unit by which analysts process experiential interviews and UGC. We preprocess raw UGC to transform the UGC corpus into a set of sentences using an unsupervised sentence tokenizer from the natural language toolkit <ref type="bibr" target="#b29">(Kiss and Strunk 2006)</ref>. We automatically eliminate stop-words (e.g., "the" and "and") and nonalphanumeric symbols (e.g., question marks and apostrophes) and transform numbers into number signs and letters to lowercase.</p><p>We join words that appear frequently together with the "_" character. For example, in oral care, the bigram "Oral B" is treated as a combined word pair, "oral_b." We join words "a" and "b" into a single phrase if they appear together relatively often in the corpus. The specific criterion is:</p><formula xml:id="formula_1">count(a, b) − δ count(a) • count(b) • M &gt; τ,</formula><p>where M is the total vocabulary size. The tuning parameter δ prevents concatenating very infrequent words, and the tuning parameter τ is balanced so that the number of bigrams is not too few or too many for the corpus. Both parameters are set by judgment. For our initial test, we set (δ, τ) (5, 10). We drop sentences that are less than four words or longer than 14 words after preprocessing. The bounds are selected to drop approximately 10% of the shortest and 10% of the longest sentences. (Long sentences are usually an artifact of missing punctuation. In our case, the dropped Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">, vol. 38, no. 1, pp. 1-20, © 2019</ref> sentences were subsequently verified to contain no customer needs that were not otherwise identified.) As is typical in machine-learning systems, our model has multiple tuning parameters. We indicate which are set by judgment and which are set by cross-validation. When we set tuning parameters by judgment, we draw on the literature for suggestions, and we choose parameters likely to work in many categories. When there are sufficient data, these parameters can also be set by cross-validation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Stage 2: Training Word Embeddings with</head><p>a Skip-Gram Model Word embeddings are the mappings of words onto a numerical vector space, which incorporate contextual information about words and serve as an input to Stages 3 and 4 <ref type="bibr" target="#b3">(Baroni et al. 2014)</ref>. To account for product-category and UGC-source-specific words, we train our word embeddings on the preprocessed UGC corpus using a skip-gram model <ref type="bibr" target="#b39">(Mikolov et al. 2013a</ref>). The skip-gram model is a predictive model that maximizes the average log-likelihood of words appearing together in a sequence of c words. Specifically, if I is the number of words in the corpus, V is the set of all feasible words in the vocabulary, and v i are d-dimensional realvector word embeddings, we select the v i to maximize:</p><formula xml:id="formula_2">1 I I i 1 −c≤j≤c j≠0 log p word i+j |word i p(word j |word i ) exp v j v ′ i |V| k 1 exp v k v ′ i .</formula><p>To make calculations feasible, we use 10-word negative sampling to approximate the denominator in the conditional probability function. (See <ref type="bibr" target="#b40">Mikolov et al. 2013b</ref> for details on negative sampling.) For our application, we use d 20 and c 5.</p><p>The trained word embeddings in our application capture semantic meaning in oral care. For example, the three words closest to "toothbrush" are "pulsonic," "sonicare," and "tb," with the last being a commonly used abbreviation for toothbrush. Similarly, variations in spelling such as "recommend," "would_recommend," "highly_recommend," "reccommend," and "recommend" are close in the vector space.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Stage 3: Identifying Informative Sentences with</head><p>a CNN Depending on the corpus, UGC can contain substantial amounts of content that does not represent customer needs. Such noninformative content includes evaluations, complaints, and noninformative lists of features, such as "This product can be found at CVS." or "It really does come down to personal preference." Informative content might include: "This product can make your teeth super-sensitive" or "The product is too heavy and it is difficult to clean." Machine learning improves the efficiency of manual review by eliminating noninformative content. For example, suppose that only 40% of the sentences are informative in the corpus, but after machine-learning screening, 80% are informative. If analysts are limited in the number of sentences they can review (professional services costs constraint), they can identify customer needs much more efficiently by focusing on a sample of Y prescreened sentences rich in informative content than on Y randomly selected sentences. With higher concentration of informative sentences, low-frequency customer needs are more likely be found in the Y prescreened sentences than in the Y randomly selected sentences.</p><p>To train the machine-learning classifier, some sentences must be labeled by professional analysts as informative (y 1) or noninformative (y 0). There are efficiency gains because such labeling requires substantially lower professional services costs than formulating customer needs from informative sentences. Moreover, in a small-sample study, we found that Amazon Mechanical Turk (AMT) has a potential to identify informative sentences for training data at a cost below that of using professional analysts. With further development to reduce costs and enhance accuracy, AMT might be a viable source of training data.</p><p>We use a convolutional neural network to identify informative sentences. A major advantage of the CNN is that CNNs quantify raw input automatically and endogenously on the basis of the training data. CNNs apply a combination of convolutional and pooling layers to word representations to generate "features," which are then used to make a prediction. ("Features" in the CNN should not be confused with product features.) In contrast, traditional machine-learning classification techniques, such as a support-vector machine or decision trees, depend critically on handcrafted features, which are the transformations of the raw data designed by researchers to improve prediction in a particular application. High-quality features require substantial human effort for each application. CNNs have been proven to provide performance comparable to traditional handcraftedfeature methods, but without substantial applicationspecific human effort <ref type="bibr" target="#b28">(Kim 2014</ref><ref type="bibr" target="#b36">, Lei et al. 2015</ref>.</p><p>A typical CNN consists of multiple layers. Each layer has hyperparameters, such as the number of filters and the size of the filters. We custom select these hyperparameters, and the number and type of layers, by cross-validation. Each layer also has numerical parameters, such as the parameters of the filters used in the convolutional layers. These parameters are calibrated during training. We train the CNN by selecting the parameter values that maximize the CNN's ability to label sentences as informative versus noninformative.</p><p>Figure <ref type="figure" target="#fig_1">2</ref> illustrates the architecture of the CNN in our application. We stack a convolutional layer, a pooling layer, and a softmax layer. This specification modifies <ref type="bibr" target="#b28">Kim's (2014)</ref> architecture for sentence classification task to account for the amount of training data available in customer-need applications.</p><p>3.3.1. Numerical Representations of Words for Use in the CNN. For every word in the text corpus, the CNN stores a numerical representation of the word. Numerical representations of words are the real vector parameters of the model, which are calibrated to improve prediction. To facilitate training of the CNN, we initialize representations with word embeddings from Stage 2. However, we allow the CNN to update the numerical representations to enhance predictive ability <ref type="bibr" target="#b32">(Lample et al. 2016</ref>). In our application, this flexibility enhances out-of-sample accuracy of prediction.</p><p>The CNN quantifies sentences by concatenating word embeddings. If v i is the word embedding for the i th word in the sentence, then the sentence is represented by a vector</p><formula xml:id="formula_3">v v [v 1 , . . ., v n ] ∈ R d×n ,</formula><p>where n is the number of words in the sentence and d 20 is the dimensionality of the word embeddings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.2.">Convolutional Layer.</head><p>Convolutional layers create multiple feature maps by applying convolutional operations with varying filters to the sentence representation. A filter is a real-valued vector, w t ∈ R d×h t , where h t is a size of the filter. Filters are applied to different parts of the vector v to create feature maps (c t ):</p><formula xml:id="formula_4">c t [c t 1 , . . ., c t n−h t +1 ], c t i σ w t • v i:i+h t −1 + b t ,</formula><p>where t indexes the feature maps, σ( • ) is a nonlinear activation function where σ(x) max(0, x), b t ∈ R is an intercept, and v i : i+h t −1 is a concatenation of representations of words i to i + h t − 1 in the sentence:</p><formula xml:id="formula_5">v i:i+h t −1 [v i , . . ., v i+h t −1 ].</formula><p>We consider filters of the size h t ∈ {3, 4, 5} and use three filters of each size. The number of filters and their size are selected to maximize prediction on the validation set. The numerical values for filters, w t , and intercepts, b t , are calibrated when the CNN is trained. As an illustration, Figure <ref type="figure" target="#fig_2">3</ref> shows how a feature map is generated with a filter of size h t 3. On the left is a sentence, v, consisting of five words. Each word is a 20-dimenional vector (only five dimensions are shown). Sentence v is split into triplets of words as shown in the middle.</p><p>Representations of word triplets are then transformed to the real-valued c t i 's in the next column. The t th feature map, c t , is the vector of these values. Processing sentences in this way allows the CNN to interpret words that are next to one another in a sentence together.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.3.">Pooling Layer.</head><p>The pooling layer transforms feature maps into shorter vectors. The role of the pooling layer is to reduce dimensionality of the output of the convolutional layer to be used in the next layer. Pooling to the k th largest features or simply using the largest feature has proven effective in NLP applications <ref type="bibr" target="#b8">(Collobert et al. 2011)</ref>. We selected k 1 with crossvalidation. The output of the pooling layer is a vector, z, that summarizes the results of pooling operators applied to the feature maps:</p><formula xml:id="formula_6">z t max[c t 1 , . . ., c t n−h t +1 ], z [z 1 , z 2 , . . ., z 9 ].</formula><p>The vector, z ∈ R 9 , is now an efficient numerical representation of the sentence and can be used to classify the sentence as either informative or not informative. The nine elements in z represent filter sizes (3) times the number of filters (3) within each size.</p><p>3.3.4. Softmax Layer. The final layer of the CNN is called the softmax layer. The softmax layer transforms the output of the pooling layers, z, into a probabilistic prediction of whether the sentence is informative or not informative. Marketing researchers will recognize the softmax layer as a binary logit model that uses the z vector as explanatory variables. The estimate of the probability that the sentence is informative, P( y 1|z), is given by:P</p><formula xml:id="formula_7">( y 1|z) 1 1 + e −θz .</formula><p>The parameters of the logit model, θ, are determined when the CNN is trained. In our application, we declare a sentence to be informative if P ( y 1|z) &gt; 0.5, although other criteria could be used and tuned to a target tradeoff.</p><p>3.3.5. Calibration of the Parameters of the CNN. For our application, we calibrate the nine filters, w t ∈ R d×h t , and the nine intercepts, b t , in the convolutional layer, and the vector θ in the softmax layer. In addition, we finetune the word embeddings, v i , to enhance the ability of the CNN's predictions (e.g., <ref type="bibr" target="#b28">Kim 2014)</ref>. We calibrate all parameters simultaneously by minimizing the crossentropy error on the training set of professionally labeled sentences (w is a concatenation of the w t 's):</p><formula xml:id="formula_8">w,b,θ,v argmax w,b,θ,v L(w, b, θ, v), L(w, b, θ, v) − 1 N N n 1 [γy n logŷ n + (1 − y n )log(1 −ŷ n )].</formula><p>N is the size of the training set, y n are the manually assigned labels, andŷ n are the predictions of the CNN. The parameter, γ, enables the user to weight false negatives more (or less) than false positives. We initially set γ 1 so that identifying informative sentences and eliminating noninformative sentences are weighed equally, but we also examine asymmetric costs (γ &gt; 1) in which we place more weight on identifying informative sentences than eliminating uninformative sentences. We solved the optimization problem iteratively with the RMSProp optimizer on mini-batches of size 32 and a drop rate of 0.3. Optimization terminated when the cross-entropy error on the validation set did not decrease over five consecutive iterations. See Tieleman and Hinton (2012) for details and definitions of terms such as "drop rate."</p><p>3.3.6. Evaluating the Performance of the CNN. We evaluate the quality of the CNN classifier using an F 1score <ref type="bibr" target="#b60">(Wilson et al. 2005)</ref>:</p><formula xml:id="formula_9">F 1 precision • recall 1 2 ( precision + recall) ,</formula><p>where precision is the share of informative sentences among the sentences identified as informative, and recall is the share of informative sentences correctly identified by the classifier. Accuracy, when reported, is the percentage of classifications that were correct.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.">Stage 4: Clustering Sentence Embeddings and</head><p>Sampling to Reduce Redundancy UGC is repetitive and often focuses on a small set of customer needs. Consider the following sentences:</p><p>• "When I am done, my teeth do feel 'squeaky clean.'"</p><p>• "Every time I use the product, my teeth and gums feel professionally cleaned."</p><p>• "I am still shocked at how clean my teeth feel." These three sentences are different articulations of a customer need that could be summarized as "My mouth feels clean." Manual review of such repetitive content is inefficient. Moreover, repetitiveness makes the manual review onerous and boring for professional analysts, causing analysts to miss excitement customer needs that are mentioned rarely. If the analysts miss excitement customer needs, then the firm misses valuable new product opportunities and/or strategic positionings. To avoid repetitiveness, we seek to "span the set" of customer needs. We construct sentence embeddings that encode semantic relationships between sentences and use sentence embeddings to reduce redundancy by sampling content for manual review from maximally different parts of the space of sentence embeddings. Researchers often create sentence embeddings by taking a simple average of word embeddings corresponding to the words in the sentence <ref type="bibr" target="#b21">(Iyyer et al. 2015)</ref>, explicitly modeling semantic and syntactic structure of the sentences with neural methods <ref type="bibr" target="#b54">(Tai et al. 2015)</ref> or training sentence embeddings together with word embeddings <ref type="bibr" target="#b34">(Le and Mikolov 2014)</ref>. Because averaging demonstrates performance similar to other methods and is both scalable and transferable <ref type="bibr" target="#b21">(Iyyer et al. 2015)</ref>, we use averaging in our application.</p><p>Being the average of word embeddings, sentence embeddings represent semantic similarity among sentences. For example, the three similar sentences mentioned above have sentence embeddings that are reasonably close to one another in the sentence-embedding vector space. Using this property, we group sentences into clusters. We choose Ward's hierarchical clustering method because it is commonly used in VOC studies <ref type="bibr" target="#b15">(Griffin and Hauser 1993</ref>) and other areas of marketing research <ref type="bibr" target="#b11">(Dolnicar 2003)</ref>. To identify Y sentences for professional analysts to review, we sample one sentence randomly from each of Y clusters. If the clustering worked perfectly, sentences within each of the Y clusters would articulate the same customer need, and each of the Y clusters would produce a sentence that an analyst would recognize as a distinct customer need. In real data, redundancy remains, but hopefully less redundancy than that which would be present in Y randomly sampled sentences.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5.">Stage 5: Manually Extracting Customer Needs</head><p>To achieve high relevancy in formulating abstract contextdependent customer needs, the final extraction of customer needs is best done by trained analysts. We evaluate in Section 5 whether manual extraction becomes more efficient using informative, diverse sentences identified with the CNN and sentence-embedding clusters.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Evaluation of UGC's Potential in the</head><p>Oral-Care Product Category</p><p>We use empirical data to examine two questions: (Section 4) Does UGC contain sufficient raw material from which to identify a broad set of customer needs?; and (Section 5) Do each of the machine-learning steps enhance efficiency? We address both questions with a custom data set in the oral-care category. We selected oral care because oral-care customer needs are sufficiently varied but not so numerous as to overcomplicate comparisons. As a proof-of-concept test, our analyses establish a key example. We discuss applications in other categories in Section 6.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Baseline Comparison: Experiential Interviews in Oral Care</head><p>We obtained a detailed set of customer needs from an oral-care voice-of-the-customer analysis that was undertaken by a professional market research consulting firm. The firm has almost 30 years of VOC experience spanning hundreds of successful productdevelopment applications across a wide variety of industries. The oral-care VOC provided valuable insights to the client and led to successful new products. The VOC was based on standard methods: experiential interviews, with transcripts highlighted by experienced analysts aided by the firm's proprietary software. After winnowing, customer needs were structured by a customer-based affinity group. The output is 86 customer needs structured into six primary and 22 secondary need groups. Table <ref type="table" target="#tab_3">A</ref>.1 in the appendix lists the primary and secondary need groups and provides an example of a tertiary need from each secondaryneed group. Examples of customer needs include: "Oral care products that do not create any odd sensations in my mouth while using them (e.g. tingling, burning, etc.)" or "My teeth feel smooth when I glide my tongue over them." Such customer needs are more than their component words; they describe a desired outcome in the language that the customer uses to describe the desired outcome.</p><p>The underlying experiential interview transcripts were based on a representative sample of oral care customers and were not subject to self-selection biases. If UGC can identify a set of customer needs that is comparable to the benchmark, then we have initial evidence in at least one product category that UGC self-selection does not undermine the basic goals of finding a reasonably complete set of customer needs.</p><p>Professional analysts estimate that the professionalservice costs necessary to review, highlight, and winnow customer needs from experiential interview transcripts is slightly more than the professional services costs required to review 8,000 UGC sentences to identify customer needs. The professional services costs required to review, highlight, and winnow customer needs is approximately 40%-55% of the professional services costs required for a typical VOC study. At this rate, professional analysts could review approximately 14,500 to 20,000 UGC sentences using the methods and professional services costs involved in a typical VOC study.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Fully Coded UGC Data from the Oral-</head><p>Care Category To compare UGC with experiential interviews and evaluate a proposed machine-learning method, we needed a fully coded sample of a UGC corpus. In particular, we needed to know and classify every customer need in every sentence in the UGC sample. We received in-kind support from professional analysts to generate a custom data set to evaluate UGC and the machinelearning efficiencies. The in-kind support was approximately that which the firm would have allocated to From the 115,099 oral-care reviews on Amazon spanning the period from 1996 to 2014, we randomly sampled 12,000 sentences split into an initial set of 8,000 sentences and a second set of 4,000 sentences <ref type="bibr" target="#b38">(McAuley et al. 2015)</ref>. To maintain a common level of training and experience for reviewing UGC and experiential interview transcripts, the sentences were reviewed by a group of three experienced analysts from the same firm that provided the interview-based VOC. These analysts were not involved in the initial interviewbased VOC. Using a team of analysts is recommended by <ref type="bibr">Griffin and Hauser (1993, p. 11)</ref>.</p><p>We chose 8,000 sentences for our primary evaluation because the professional services costs to review 8,000 sentences are comparable, albeit slightly less than, the professional services costs to review a typical set of experiential interview transcripts. For these sentences, the analysts fully coded every sentence to determine whether it contained a customer need and, if so, whether the customer need could be mapped to a customer need identified by the VOC, or whether the customer need was a newly identified customer need. Matching needs from the UGC to the interview-based needs is fuzzy. For example, the three sentences that were mapped to "My mouth feels clean." were judged by the analysts to articulate that customer need even though the wording was not exact (Section 3.4).</p><p>In addition to the fully coded 8,000 sentences, we were able to persuade the analysts to examine an additional 4,000 sentences to focus on any customer needs that were identified by the traditional VOC but not identified from the UGC. This second data set enables us to address whether there exist customer needs that are not in UGC per se, or whether the customer needs are sufficiently rare that more than 8,000 sentences are required to identify them. Finally, to assess coding reliability, we asked another analyst, blind to the prior coding, to recode 200 sentences using two different task descriptions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Descriptive Statistics and Comparisons</head><p>Using Amazon reviews, the three human coders determined that 52% of the 8,000 sentences contained at least one customer need, and 9.2% of the sentences contained two or more customer needs. However, the corpus was highly repetitive; 10% of the most frequent customer needs were articulated in 54% of the informative sentences. On the other hand, 17 customer needs were articulated no more than five times in the corpus of 8,000 sentences.</p><p>We consider first the 8,000 sentences-in this scenario analysts allocate at most as much time coding UGC as they would have allocated to review experiential interview transcripts. This section addresses the potential of the UGC corpus; hence, for this section we do not yet exploit machine-learning efficiencies. From the 8,000 sentences, analysts identified 74 of the 86 tertiary experiential interview-based customer needs but also identified an additional eight needs.</p><p>We now consider the set of 4,000 sentences as a supplement to the fully coded 8,000 sentences-in this scenario analysts still allocate substantially less time than they would to interview customers and review transcripts. From the second set of 4,000 sentences, the analysts identified nine of 12 missing customer needs. With 12,000 sentences, that brings the total to 83 of the 86 experiential interview-based customer needs and 91 of the 94 total needs (97%). In the second set of 4,000 sentences, the analysts did not try to identify any customer needs other than the 12 missing needs. Had we had the resources to do so, we would likely have increased the number of UGC-based incremental customer needs. Overall, analysts identified 91 customer needs from UGC and 86 customer needs from experiential interviews. These results are summarized in Figure <ref type="figure" target="#fig_3">4</ref>. At least in oral care, analyzing UGC has the potential to identify at least as many, possibly more, customer needs at a lower overall cost of professional services, even without machine-learning efficiencies. Furthermore, because the experiential interview benchmark is drawn from a representative sample of consumers, the potential for self-selection in UGC oral-care postings does not seem to impair the breadth of customer needs contained in UGC sentences. We cannot rule out self-selection issues for other product categories. When self-selection is feared, we recommend analyses that build on multiple sources, such as the methods developed by <ref type="bibr" target="#b50">Schweidel and Moe (2014)</ref>.</p><p>Whether customer needs are based on interviews or UGC, the final identification of customer needs is based on imperfect human judgment. We asked an analyst, blind to the prior coding, to evaluate 200 sentences using two different approaches. For the first evaluation, the analyst (1) explicitly formulated customer needs from each sentence, (2) winnowed the customer needs to remove duplicates, (3) matched the identified customer needs to the interview-based hierarchy, (4) added new needs to the hierarchy if necessary, and (5) mapped each of the 200 sentences to the customer needs. For the second evaluation, the analyst followed the same procedures that produced Figure <ref type="figure" target="#fig_3">4</ref>. These two evaluations were conducted two weeks apart.</p><p>We compare the codes produced by the additional analyst versus the codes produced by the three analysts. Intertask accuracy (first versus second evaluation by the new analyst) was 80%, which is better than the intercoder accuracy (new analyst versus previous analysts) of 70%. The additional analyst identified 71.4% of the customer needs that were previously identified by the three analysts. The additional analyst's hit rate compares favorably to <ref type="bibr">Griffin and Hauser (1993, p. 8)</ref>, who report that their individual analysts identified 45%-68% of the needs, where the universe was all customer needs identified by the seven analysts who coded their data. This evidence suggests that Figure <ref type="figure" target="#fig_3">4</ref> is a conservative estimate of the potential of the UGC as a source of customer needs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.">Prioritization of Customer Needs</head><p>To address whether the eight incremental UGC customer needs and/or the three incremental experiential interview customer needs were important, we conducted a prioritization survey. We randomly selected 197 customers from a professional panel (PureSpectrum), screened for interest in oral care, and asked customers to rate the importance of each tertiary customer need on a 0-to-100 scale. Customers also rated whether they felt that their current oral-care products performed well on these customer needs on a 0-to-10 scale. Such measures are used commonly in VOC studies and have been proven to provide valuable insights for product <ref type="bibr">development. (review citations in Section 2.1.)</ref> Table <ref type="table" target="#tab_1">1</ref> summarizes the survey results. On average, the customer needs identified in both the interviews and UGC are the most important customer needs. Those that are unique to UGC or unique to experiential interviews are of lower importance and performance. We gain further insight by categorizing the customer needs into quadrants via median splits. High-importance-low-performance customer needs are almost perfectly identified by both data sources. Such customer needs provide insight for product improvement.</p><p>Focusing on highly important customer needs is tempting, but we cannot ignore low-importance customer needs. In new product development, identifying hidden opportunities for innovation often leads to successful new products. Customers often evaluate needs below the medians on importance and performance when they anticipate that no current product fulfills those customer needs (e.g., <ref type="bibr" target="#b10">Corrigan 2013)</ref>. If the new product satisfies the customer need, customers reconsider its importance, and the innovator gains a valuable strategic advantage. Thus, we define lowimportance-low-performance customer needs as hidden opportunities. By this criterion, the UGC-unique customer needs identify 20% of the hidden opportunities, and the interview-unique needs identify 8% of the hidden opportunities. For example, two UGCunique hidden opportunities are "An oral-care product that does not affect my sense of taste," and "An oral care product that is quiet." An interview-based hidden opportunity is "Oral care tools that can easily be used by left-handed people."</p><p>In summary, UGC identifies the vast majority of customer needs (97%), opportunities for product improvement (92%), and hidden opportunities (92%). UGC-unique needs identify at least seven hidden opportunities, whereas interview-only needs identify two hidden opportunities. We have not been able to identify any qualitative insights from the comparison of the customer needs between two sources, suggesting that there is nothing systematic that is missing in the UGC. Table <ref type="table" target="#tab_3">A</ref>.2 lists all 11 customer needs that are unique to either UGC or experiential interviews.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5.">Tests of Non-Machine-Learning Prescreening</head><p>of UGC Data 4.5.1. Helpfulness Ratings. Reviews are often rated by other users on the basis of their helpfulness. In our data, 41% of the reviews are rated on helpfulness. Because helpful reviews tend to be longer, this corresponds to 52% of the sentences. We examine whether helpful reviews are particularly informative using the 8,000  <ref type="bibr">, 2019</ref><ref type="bibr">, , vol. 38, no. 1, pp. 1-20, © 2019</ref> fully coded sentences. Fifty-four percent (54%) of nonrated reviews contain a customer need, compared with 51% of rated reviews, 48% of reviews with rating above the median, and 48% of reviews with rating in the upper quartile. Helpfulness is not correlated with informativeness (ρ −0.01, p 0.56). When we examine individual sentences, we see that a sentence can be rated as helpful but not necessarily describe a customer need (be informative). Two examples of helpful but uninformative sentences are: "I finally got this toothbrush after I have seen a lot of people use them." or "I'm so happy I'm just about beside myself with it!" Overall, helpfulness does not seem to imply informativeness.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5.2.">Number of Times a Customer Need is Mentioned.</head><p>For experiential interviews, the frequency with which a customer need is mentioned is not correlated with the measured importance of the customer need <ref type="bibr">(Griffin and Hauser 1993, p. 13</ref>). However, in experiential interviews, the interviewer probes explicitly for new customer needs. The lack of correlation may be due to endogeneity in the interviewing process. In UGC, customers decide whether to post, hence frequency might be an indicator of the importance of a customer need. For oral care, frequency of mention is marginally significantly correlated with importance (ρ 0.21, p 0.06). Frequency of mention is not significantly correlated with performance (ρ 0.09, p 0.44). However, if we were to focus only on customer needs with frequency above the median of 7.9 mentions, we would miss 29% of the high-importance customer needs, 44% of the highperformance customer needs, and 72% of the hidden opportunities. Thus, although frequency is related to importance, it does not enhance the efficiency with which customer needs or new-product ideas can be identified.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Oral Care: Evaluation of Machine-Human Hybrid Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">CNN to Eliminate Noninformative Sentences</head><p>There is a tradeoff to be made when training a CNN. With a larger training sample, the CNN is better at identifying informative content, but there is an opportunity cost to using analysts to classify informative sentences. Fortunately, labeling sentences as informative or not is faster and easier than identifying abstract context-dependent customer needs from sentences. The ratio of time spent on identifying informative sentences versus formulating customer needs is approximately 20%. Furthermore, as described earlier, exploratory research suggests that Amazon Mechanical Turk might be used as a lower-cost way to obtain a training sample. Figure <ref type="figure">5</ref> plots the F 1 -score of the CNN as a function of the size of the training sample. We conduct 100 iterations where we randomly draw a training set, train the CNN with the architecture described in Section 3.3, and measure performance on the test set. Figure <ref type="figure">5</ref> suggests that performance of the CNN stabilizes after 500 training sentences, with some slight improvement after 500 training sentences. We plot precision and recall as a function of the size of the training sample in the appendix <ref type="bibr">(Figure A.2)</ref>.</p><p>To test whether we might improve performance using alternative natural-language processing methods, we train a multichannel CNN <ref type="bibr" target="#b28">(Kim 2014</ref>), a support-vector machine, and a recurrent neural network with long shortterm memory cells (LSTM; <ref type="bibr" target="#b20">Hochreiter and Schmidhuber 1997)</ref>. We also train a CNN with a higher penalty for false positives (γ = 3) to investigate the effect of asymmetric costs on the performance of the model. The evaluation is based on the 6,700 of 8,000 fully coded sentences that remain after we eliminated sentences that were too short and too long. From the 6,700 sentences, we randomly select 3,700 sentences to train the methods and 3,000 to act as holdout sentences to test the performance of the alternative methods. We summarize the results in Table <ref type="table" target="#tab_2">2</ref>.</p><p>Focusing on F 1 , the CNN outperforms the other methods, although the other deep-learning methods do reasonably well. Conditioned on a given F 1 , we favor methods that miss fewer informative sentences (higher recall, at the expense of a lower precision). Thus, in subsequent analyses, we use the CNN with asymmetric costs.</p><p>The deep-learning methods achieve accuracies in the range of 70%-74%, which is lower than that achieved in some sentence-classification tasks. For example, <ref type="bibr" target="#b28">Kim (2014)</ref> reports accuracies in the range of 45%-95% across seven datasets and 18 methods (average 80%). A more-relevant benchmark is the capabilities of the human coders on which the deep-learning models are trained. The deep-learning models achieve higher accuracy identifying informative sentences than the intercoder accuracy of 70%. The abstract contextdependent nature of the customer needs seems to make identifying informative content more difficult than typical sentence-classification tasks.</p><p>To be effective, the CNN should be able to correctly identify both sentences that contain frequently mentioned customer needs and sentences that contain rarely mentioned customer needs. We conduct iterations to evaluate this property. In each iteration, we randomly split the 6,700 preprocessed sentences into 3,700 training and 3,000 holdout sentences and train the CNN using the training set. We then compare the needs in the holdout sentences and the needs in the sentences identified by the CNN as informative. On average over iterations, the CNN identified sentences with 100% of the frequently mentioned customer needs, 91% of the rarely mentioned customer needs, and 84% of the customer needs that were new to the holdout data. Because all customer needs were identified in at least one iteration, we expect these percentages to approach 100% if it were feasible to expand the holdout set from 3,000 sentences to a larger Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content number of sentences, such as the 12,000 sentences used in Figure <ref type="figure" target="#fig_3">4</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Clustering Sentence Embeddings to</head><p>Reduce Redundancy In Stage 4 of the proposed hybrid approach, we encode informative sentences into a 20-dimensional real-valued vector space (sentence embeddings), group sentence embeddings into Y clusters, and sample one sentence from each cluster. To visualize whether sentence embeddings separate the customer needs, we use a principle components analysis to project the 20-dimensional sentence embeddings onto two dimensions. Information is lost when we project from 20 dimensions to two dimensions, but the two-dimensional plot enables us to visualize whether sentence embeddings separate sentences articulating different customer needs. (We use principle components analysis purely as a visualization tool to evaluate Stage 4. The dimensionality reduction is not a part of our approach.) Figure <ref type="figure" target="#fig_4">6</ref> reports the projection for two primary needs. The axes correspond to the first two principal components. The dots are the projections of sentence embeddings that were coded (by analysts) as belonging to the primary customer need, "strong teeth and gums." The crosses are sentence embeddings that were coded as "shopping/product choice." (Review Table <ref type="table" target="#tab_3">A</ref>.1 in the appendix.) The ovals represent the smallest ellipses inscribing 90% of the corresponding set. Figure <ref type="figure" target="#fig_4">6</ref> suggests that, although not perfect, the clusters of sentence embeddings achieved separation among primary customer needs and, hence, are likely to reduce redundancy and enable analysts to identify a diverse set of customer needs when they analyze Y sentences, each chosen from one of Y clusters. Sampling diverse sentences likely increases the probability that lowfrequency customer needs are contained in a sample of Y sentences.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Gains in Efficiency Due to Machine Learning</head><p>We seek to determine whether the proposed combination of machine-learning methods improves efficiency of identifying customer needs from UGC. Efficiency is important because the reduced time and costs enable more firms to use advanced VOC methods to identify new product opportunities. Efficiency is also important because it enhances the probability of identifying lowfrequency needs given a constraint on the number of sentences that analysts can process.</p><p>In our approach, machine learning helps to identify content for review by professional analysts. We compare content selection approaches in terms of the expected number of unique customer needs identified in Y sentences. The baseline method for selecting  <ref type="bibr">, 2019</ref><ref type="bibr">, , vol. 38, no. 1, pp. 1-20, © 2019</ref> sentences for review is current practice-a random draw from the corpus. The second method uses the CNN to identify informative sentences and then randomly samples informative sentences for review. The third method uses the sentence-embedding clusters to reduce redundancy among sentences identified as informative by the CNN. For each method, and for each value of Y, we (1) randomly split the 6,700 preprocessed sentences, which are neither too short nor too long, into 3,700 training and 3,000 holdout samples, (2) train the CNN using the training sample, and (3) draw Y sentences from the holdout sample for review. We count the unique needs identified in the Y sentences and repeat the process 10,000 times. An upper bound for the number of customer needs identified in the Y sentences is the number of customer needs contained in 3,000 holdout sentences-this is fewer customer needs than are contained in the entire corpus. From 3,000 sentences in the holdout sample, the largest possible value of Y for which we can evaluate the CNN is the number of sentences that the CNN classified as informative. The number of sentences identified by the CNN as informative varies across iterations, and in our experiment the minimum is 1,790 sentences. Although it is tempting to consider Y in the full range from 0 to 1,790, it would be misleading to do so. At Y = 1,790, there would be 1,790 clusters-the same number as if we sampled all available informative sentences. To minimize this saturation effect on the oral-care corpus, we consider Y = {200, 300, . . ., 1200} to evaluate efficiency.</p><p>The dashed line in Figure <ref type="figure" target="#fig_5">7</ref> reports benchmark performance. The CNN improves efficiency as indicated by the dotted line. Using the CNN and clustering sentence embeddings increases efficiency further, as indicated by the solid black line. Over the range of Y, there are gains due to using the CNN to eliminate noninformative sentences and additional gains due to using sentence embeddings to reduce redundancy within the corpus.</p><p>We also interpret Figure <ref type="figure" target="#fig_5">7</ref> horizontally. The benchmark requires, on average, 824.3 sentences to identify 62.4 customer needs. If we prescreen with machine learning to select nonredundant informative sentences, analysts can identify the same number of customer needs from approximately 700 sentences-85% of the sentences required by the baseline. The efficiencies are even greater at 200 sentences (78%) and 400 sentences (79%). At professional billing rates across many categories, this represents substantial time and cost savings and could expand the use of VOC methods in product development. VOC customer-need identification methods have been optimized over almost 30 years of continuous improvement; we expect the machine-learning methods, themselves, to be subject to continuous improvement as they are applied in the field.</p><p>Figure A.3 in the appendix provides comparable analyses for lower-frequency and for higher-frequency customer needs using a median split to define frequency. As expected, efficiency gains are greater for lowerfrequency customer needs. Figure A.4 pushes the comparison further to the least-frequent customer needs (lowest 10%) and for those customer needs unique to UGC. As expected, machine-learning efficiencies are even greater for the least-frequent customer needs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4.">Scalability of the Machine-Learning Methods</head><p>The proposed methods scale well. With a training sample size of 1,000-4,000, the CNN typically converges in 20-30 epochs (stochastic gradient descent iterations) and does so in less than one minute on a standard MacBook Pro. We use the fastcluster package implementation of the Ward's clustering algorithm. The asymptotic worst-case time complexity is O N 2 . In our experiments, clustering of 500,000 informative sentences was completed in less than 5 minutes. Once programmed, the methods are relatively easy to apply, as indicated by the applications in Section 6.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.5.">Efficiency Gains in Terms of the Professional</head><p>Services Costs Professional services costs dominate the expenses in a typical VOC study. Analysts and managers estimate that these costs are allocated approximately 40% to interviewing customers, 40%-55% to identifying and winnowing customer needs from transcripts, and 5%-20% to organizing customer needs into a hierarchy and preparing the final report (Section 4.1). UGC eliminates the first 40% (Section 4.2). The proposed machine-learning hybrid approach allows a 15%-22% Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content reduction in the time allocated to identifying and winnowing customer needs (Section 5.3). Applying our methods thus eliminates approximately 46%-52% of the overall professional services costs. These are the substantial savings to the firm and its clients, which can facilitate market research for new product development. Furthermore, machine-learning methods enhance the probability that the lowest-frequency customer needs are identified within a given cost constraint. The lowestfrequency customer needs may be the customer needs that lead to new product success.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Additional Applications</head><p>The proposed human-machine hybrid methods have been applied three more times for product development. In all cases, the firm identified attractive new product ideas.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">Kitchen Appliances</head><p>During this application, the firm identified 7,000 online product reviews containing more than 18,000 sentences. The firm wanted to evaluate the efficiency of the machine-learning method and devoted sufficient resources to manually review 4,000 sentences. From these, 2,000 sentences were selected randomly from the corpus, and 2,000 were selected using machine-learning methods. The two sets of sentences were merged, processed to identify unique customer needs (blind to source), and then resplit by source. Ninety-seven (97) customer needs were identified in the machine-learning corpus, and 84 customer needs were identified in the random corpus. Although 66 customer needs were in both corpora, more unique customer needs (31) were identified from the machine-learning corpus than from the random corpus (18). The firm found the combined customer needs extremely helpful and will continue to use UGC in the future. In particular, insights obtained from UGC tended to be closer to the customer's moment of experience. Customers post when the experience is fresh in their minds. These posts are more likely to describe malfunctions, difficulties in use or repair, challenges with customer service, or unique surprises. Such customer needs are often among the most useful customer needs for product development.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.">Skin Treatment</head><p>This was a pure application in which the firm identified a relevant set of more than 11,000 online reviews, used machine learning to select sentences for review, and then identified customer needs from the selected sentences. The firm used a follow-up quantitative study to assess the importances of the customer needs. Important customer needs, which were previously unmet by any competitor, provided the basis for the firm to optimize its product portfolio with new product introductions. The firm feels that it has enhanced its ability to compete successfully in the market for skin treatment.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3.">Prepared Foods</head><p>One of the largest prepared-food firms in North America applied machine learning to analyze a combined corpus of more than 500,000 sentences extracted from its social-listening tool and more than 10,000 sentences from product reviews. The social-listening sources included forums, blogs, microblogs, and social media. The product reviews were obtained from five difference sources. In this application, there were synergies between social-listening UGC and product-review UGC, with approximately two-thirds of the customer needs coming from one or the other source. By combining the two UGC corpora, the firm identified more than 30 categories of customer needs to provide valuable insight for both new product development and marketing  <ref type="bibr">, 2019</ref><ref type="bibr">, , vol. 38, no. 1, pp. 1-20, © 2019</ref> communications. As a result, the firm is now applying the machine-human hybrid method to adjacent categories.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Discussion, Summary, and Future Research</head><p>We addressed two questions: (1) Can UGC be used to identify abstract customer needs? and (2) can machine learning enhance the process? The answer to both questions is yes. UGC is at least a comparable source of customer needs to experiential interviews-likely a better source. The proposed machine-learning architecture successfully eliminates noninformative content and reduces redundancy. In our initial test, machinelearning efficiency gains are 15%-22%, but such gains are likely to increase with more research. Overall gains of analyzing UGC with our approach over the traditional interview-based VOC are 46%-52%. Answering these questions is significant. Every year thousands of firms rely on voice-of-the-customer analyses to identify new opportunities for product development, to develop strategic positioning strategies, and to select attributes for conjoint analysis. Typically, VOC studies, although valuable, are expensive and time-consuming. Time-to-market savings, such as those made possible with machine learning applied to UGC, are extremely important to product development. In addition, UGC seems to contain customer needs not identified in experiential interviews. New customer needs mean new opportunities for product development and/or new strategic positioning.</p><p>Although we are enthusiastic about UGC, we recognize that UGC is not a panacea. UGC is readily available for oral care, but UGC might not be available for every product category. For example, consider specialized medical devices or specialized equipment for oil exploration. The number of customers for such products is small, and such customers may not blog, tweet, or post reviews. On the other hand, UGC is extensive for complex products, such as automobiles or cellular phones. Machine-learning efficiencies in such categories may be necessary to make the review of UGC feasible.</p><p>Although our research focuses on developing and testing new methods, we are beginning to affect industry. Further research will enhance our ability to identify abstract context-dependent customer needs with UGC. For example,</p><p>• Deep neural networks and sentence embeddings are active areas of research in the NLP community. We expect the performance of the proposed architecture to improve significantly with new developments in machine learning.</p><p>• UGC is updated continuously. Firms might develop procedures to monitor UGC continuously. Sentence embeddings can be particularly valuable. For example, firms might concentrate on customer needs that are distant from established needs in the 20-dimenional vector space.</p><p>• Future developments might automate the final step, or at least enhance the ability of analysts to abstract customer needs from informative, nonredundant content.</p><p>• Other forms of UGC, such as blogs and Twitter feeds, may be examined for customer needs. We expect blogs and Twitter feeds to contain more noninformative content, which makes machine-learning filtering even more valuable.</p><p>• Self-selection to post UGC is a concern and an opportunity with UGC. For oral care, the effectiveness of product reviews did not seem to be diminished by self-selection, at least compared with experiential interviews of a representative set of customers. In other categories, such as the food category in Section 6, self-selection and a nonrepresentative sample issues might have a larger effect. Firms might examine multiple channels for a complete set of customer needs.</p><p>• Field experiments might assess whether, and to what degree, abstract context-dependent customer needs provide more insights for product development than insights obtained from lists of words.</p><p>• Amazon Mechanical Turk is a promising means to replace analysts for labeling training sentences, but further research is warranted.   Oral care tools that can be easily used by left-handed people. An oral care product that is quiet.</p><p>I am able to tell if I have bad breath. Responsive customer service (e.g., always answers my call or e-mail, doesn't make me wait long for a response).</p><p>Advice that is regularly updated so that it is relevant to my current oral care needs-recognizes that needs change as I age. An oral care product that does not affect my sense of taste (e.g., doesn't affect my taste buds). Oral care that helps me quit smoking. Easy to store products. Maintenance and repairs are simple and quick. Customer service can always resolve my issue. Notes. Twenty-two examples of the 86 tertiary customer needs are shown-one for each secondary group. A full list of tertiary customer needs is available from the authors. Each customer need is based on analysts' fuzzy matching. For example, the customer need of "I want to be motivated to be more involved with my oral care" is based on 14 sentences in the UGC, including "Saves money and time (and motivates me to floss more)..." "This floss was able to do the impossible: get me to floss every day." "Makes flossing much more enjoyable err...tolerable . . ." ". . .this tool is the lazy person's answer to flossing."</p><p>Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content</p><p>Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">, vol. 38, no. 1, pp. 1-20, © 2019</ref> </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. System Architecture for Identifying Customer Needs from UGC</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. Convolutional Neural Network Architecture for Sentence Classification</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 .</head><label>3</label><figDesc>Figure3. Example Feature Map, c t , Generated with a Filter, w t , of Size h t 3</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. Comparison of Customer Needs Obtained from Experiential Interviews with Customer Needs Obtained from an Exhaustive Review of a UGC Sample</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. Projections of 20-Dimensional Embeddings of Sentences onto Two Dimensions (PCA)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 7 .</head><label>7</label><figDesc>Figure 7. Efficiencies Among Various Methods to Select UGC Sentences for Review</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure A. 4 .</head><label>4</label><figDesc>Figure A.4. Machine-Learning Hybrid Can Efficiently Identify the Least Frequent Customer Needs and Customer Needs Unique to UGC</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content Marketing Science, 2019, vol. 38, no. 1, pp. 1-20, © 2019 INFORMS a typical VOC study-a substantial time and cost commitment from the firm.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Importance and Performance Scores for Customer Needs Identified from UGC and from Experiential Interviews</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">Quadrant (median splits)</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell>High imp</cell><cell>High imp</cell><cell>Low imp</cell><cell>Low imp</cell></row><row><cell>Source of customer need</cell><cell>Count</cell><cell>Average imp</cell><cell>Average per</cell><cell>High per</cell><cell>Low per</cell><cell>High per</cell><cell>Low per</cell></row><row><cell>Interviews ∩ 8,000 UGC a</cell><cell>74</cell><cell>65.5</cell><cell>7.85</cell><cell>29</cell><cell>11</cell><cell>11</cell><cell>23</cell></row><row><cell>Interviews ∩ 4,000 UGC b</cell><cell>9</cell><cell>63.9</cell><cell>7.97</cell><cell>6</cell><cell>0</cell><cell>0</cell><cell>3</cell></row><row><cell>UGC only</cell><cell>8</cell><cell>50.3</cell><cell>7.12</cell><cell>0</cell><cell>0</cell><cell>1</cell><cell>7</cell></row><row><cell>Interviews only</cell><cell>3</cell><cell>52.8</cell><cell>7.47</cell><cell>0</cell><cell>1</cell><cell>0</cell><cell>2</cell></row><row><cell cols="2">Note. Imp, importance; per, performance.</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table><note>a Based on the first 8,000 UGC sentences that were fully coded. b Based on the second 4,000 UGC sentences that were coded to test for interview-identified customer needs.Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content Marketing Science</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Alternative Machine-Learning Methods to Identify Informative Sentences Figure 5. F 1 -score as a Function of the Size of the Training Sample Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content</figDesc><table><row><cell>Marketing Science</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Method</cell><cell>Precision (%)</cell><cell>Recall (%)</cell><cell>Accuracy (%)</cell><cell>F 1 (%)</cell></row><row><cell>Convolutional neural network (CNN)</cell><cell>74.4</cell><cell>73.6</cell><cell>74.2</cell><cell>74.0</cell></row><row><cell>CNN with asymmetric costs (γ = 3)</cell><cell>65.2</cell><cell>85.3</cell><cell>70.0</cell><cell>74.0</cell></row><row><cell>Recurrent neural network-LSTM</cell><cell>72.8</cell><cell>74.0</cell><cell>73.2</cell><cell>73.4</cell></row><row><cell>Multichannel CNN</cell><cell>70.5</cell><cell>74.9</cell><cell>71.8</cell><cell>72.6</cell></row><row><cell>Support vector machine</cell><cell>63.7</cell><cell>67.9</cell><cell>64.6</cell><cell>65.7</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table A .</head><label>A</label><figDesc>1. Voice of the Customer for Oral Care as Obtained from Experiential Interviews Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content18MarketingScience, 2019, vol. 38, no. 1, pp. 1-20, © 2019 </figDesc><table><row><cell></cell><cell></cell><cell>No. of</cell><cell>Examples of tertiary customer needs</cell></row><row><cell>Primary group</cell><cell>Secondary group</cell><cell>needs</cell><cell>(22 of 86 shown)</cell></row><row><cell>Feel clean and fresh</cell><cell>Clean feeling in my mouth</cell><cell>4</cell><cell>My mouth feels clean</cell></row><row><cell>(sensory)</cell><cell>Fresh breath all day long</cell><cell>4</cell><cell>I wake up without feeling like I have morning breath</cell></row><row><cell></cell><cell>Pleasant taste and texture</cell><cell>3</cell><cell>Oral care liquids, gels, pastes, etc., are smooth (not</cell></row><row><cell></cell><cell></cell><cell></cell><cell>gritty or chalky)</cell></row><row><cell>Strong teeth and gums</cell><cell>Prevent gingivitis</cell><cell>5</cell><cell>Oral care products and procedures that minimize gum</cell></row><row><cell></cell><cell></cell><cell></cell><cell>bleeding</cell></row><row><cell></cell><cell>Able to protect my teeth</cell><cell>5</cell><cell>Oral care products and procedures that prevent cavities</cell></row><row><cell></cell><cell>Whiter teeth</cell><cell>4</cell><cell>Can avoid discoloration of my teeth</cell></row><row><cell>Product efficacy</cell><cell>Effectively clean hard to reach areas</cell><cell>3</cell><cell>Able to easily get all particles, even the tiniest, out from</cell></row><row><cell></cell><cell></cell><cell></cell><cell>between my teeth</cell></row><row><cell></cell><cell>Gentle oral care products</cell><cell>4</cell><cell>Oral care items are gentle and don't hurt my mouth</cell></row><row><cell></cell><cell>Oral care products that last</cell><cell>3</cell><cell>It's clear when I need to replace an oral care product (e.g.,</cell></row><row><cell></cell><cell></cell><cell></cell><cell>toothbrush, floss)</cell></row><row><cell></cell><cell>Tools are easy to maneuver</cell><cell>6</cell><cell>Easy to grasp any oral care tool-it won't slip out of my</cell></row><row><cell></cell><cell>and manipulate</cell><cell></cell><cell>hand</cell></row><row><cell>Knowledge and</cell><cell>Knowledge of proper techniques</cell><cell>5</cell><cell>I know the right amount of time to spend on each step of</cell></row><row><cell>confidence</cell><cell></cell><cell></cell><cell>my oral care routine</cell></row><row><cell></cell><cell>Long-term oral care health</cell><cell>4</cell><cell>I am aware of the best oral care routine for me</cell></row><row><cell></cell><cell>Motivation for good check-ups</cell><cell>4</cell><cell>I want to be motivated to be more involved with my oral</cell></row><row><cell></cell><cell></cell><cell></cell><cell>care</cell></row><row><cell></cell><cell>Able to differentiate products</cell><cell>3</cell><cell>I know which products to use for any oral care issue I'm</cell></row><row><cell></cell><cell></cell><cell></cell><cell>trying to address</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head></head><label></label><figDesc>Table A.2. Complete Set of Customer Needs That Were Unique to Either UGC or Experiential Interviews Customer needs unique to UGC Customer needs unique to experiential interviews Easy way to charge toothbrush.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head></head><label></label><figDesc>Table A.1. (Continued)</figDesc><table><row><cell></cell><cell></cell><cell>No. of</cell><cell>Examples of tertiary customer needs</cell></row><row><cell>Primary group</cell><cell>Secondary group</cell><cell>needs</cell><cell>(22 of 86 shown)</cell></row><row><cell>Convenience</cell><cell>Efficient oral care routine</cell><cell>7</cell><cell>Oral care tasks do not require much physical effort</cell></row><row><cell></cell><cell>(effective, hassle-free, and quick)</cell><cell></cell><cell></cell></row><row><cell></cell><cell>Oral care "away from the bathroom"</cell><cell>5</cell><cell>The oral care items I carry around are easy to keep clean</cell></row><row><cell>Shopping/product</cell><cell>Faith in the products</cell><cell>5</cell><cell>Brands of oral care products that are well known and</cell></row><row><cell>choice</cell><cell></cell><cell></cell><cell>reliable</cell></row><row><cell></cell><cell>Provides a good deal</cell><cell>2</cell><cell>I know I'm getting the lowest price for the products I'm</cell></row><row><cell></cell><cell></cell><cell></cell><cell>buying</cell></row><row><cell></cell><cell>Effective storage</cell><cell>1</cell><cell>Easy to keep extra products on hand (e.g., packaged</cell></row><row><cell></cell><cell></cell><cell></cell><cell>securely, doesn't spoil)</cell></row><row><cell></cell><cell>Environmentally friendly products</cell><cell>1</cell><cell>Environmentally friendly products and packaging</cell></row><row><cell></cell><cell>Easy to shop for oral care items</cell><cell>3</cell><cell>Oral care items I want are available at the store where</cell></row><row><cell></cell><cell></cell><cell></cell><cell>I shop</cell></row><row><cell></cell><cell>Product aesthetics</cell><cell>5</cell><cell>Products that have a "cool" or interesting look</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">MarketingScience, 2019, vol. 38, no. 1, pp. 1-20, © 2019 </note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors thank John Mitchell, Steven Gaskin, Carmel Dibner, Andrea Ruttenberg, Patti Yanes, Kristyn Corrigan, and Meaghan Foley for their help and support; Regina Barzilay, Clarence Lee, Daria Dzyabura, Dean Eckles, Duncan Simester, Evgeny Pavlov, Guilherme Liberali, Theodoros Evgeniou, and Hema Yoganarasimhan for helpful comments and discussions; and Ken Deal and Ewa Nowakowska for suggestions on earlier versions of this paper. This paper has benefited from presentations at the 2016 Sawtooth Software Conference in Park City, Utah, the MIT Marketing Group Seminar, the 39th ISMS Marketing Science Conference, and presentations at Applied Marketing Science, Inc. and Cornerstone Research, Inc. The applications in Section 6 were completed by Applied Marketing Science, Inc. Finally, the authors thank the anonymous reviewers and the associate editor for constructive comments that enabled them to improve their research.</p><p>Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix</head><p>Notes. Below 500 sentences, the confidence bounds on recall are large. The effect on the confidence bounds on F 1 (Figure <ref type="figure">5</ref>) is asymmetric. F 1 is a compromise between precision and recall. When either precision or recall is low, F 1 is low. When recall is extremely high, precision is likely to be low, hence F 1 will also be low. This explains why the lower confidence bound for 500 sentences in Figure <ref type="figure">5</ref> is extremely low, but the upper confidence bound tracks the median well.</p><p>Timoshenko and Hauser: Identifying Customer Needs from User-Generated Content <ref type="bibr">Marketing Science, 2019</ref><ref type="bibr">, vol. 38, no. 1, pp. 1-20, © 2019</ref> </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Quality Function Deployment (QFD): Integrating customer requirements into product design</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Akao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<publisher>Productivity Press</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A customer-oriented new service development process</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Alam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Perry</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Services Marketing</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="515" to="534" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Deriving the pricing power of product features by mining consumer reviews</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Archak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ghose</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Ipeirotis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1485" to="1509" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Don&apos;t count, predict! A systematic comparison of context-counting vs. context-predicting semantic vectors</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Baroni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Dinu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kruszewski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 52nd Annual Meeting Assoc. Comput. Linguistics</title>
+				<meeting>52nd Annual Meeting Assoc. Comput. Linguistics<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="238" to="247" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Product development: Past research, present findings, and future directions</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Eisenhardt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Acad. Management Rev</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="343" to="378" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Sentence-based text analysis for consumer reviews</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Büschken</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="953" to="975" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Quality function deployment: A literature review</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">K</forename><surname>Chan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. J. Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">143</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="463" to="497" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Named entity recognition with bidirectional LSTM-CNNs</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Chiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Nichols</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trans. Assoc. Comput. Linguistics</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="357" to="370" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Natural language processing (almost) from scratch</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Collobert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bottou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Karlen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kavukcuoglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kuksa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="2493" to="2537" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Human machine algorithms: Interview with Eric Colson</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Colson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Wise choice: The six most common product development pitfalls and how to avoid them</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">D</forename><surname>Corrigan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013-09" />
+			<publisher>Marketing News</publisher>
+			<biblScope unit="page" from="39" to="44" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Using cluster analysis for market segmentationtypical misconceptions, established methodological weaknesses and some recommendation for improvement</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dolnicar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Australasian J. Market Res</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="5" to="12" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Deep convolutional neural networks for sentiment analysis of short texts</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">N</forename><surname>Santos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gatti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 25th Internat. Conf. Comput. Linguistics: Tech. Papers</title>
+				<meeting>25th Internat. Conf. Comput. Linguistics: Tech. Papers<address><addrLine>Dublin, Ireland</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="69" to="78" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Introduction to the special issues on the emergence can impact of user-generated content</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Winer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="369" to="371" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Conjoint analysis in consumer research: Issues and outlook</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Green</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="103" to="123" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">The voice of the customer</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Griffin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="27" />
+			<date type="published" when="1993" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Voices from the field: How exceptional electronic industrial innovators innovate</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Griffin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Maloney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Vojak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">W</forename><surname>Sim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Product Innovation Management</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="222" to="240" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Distributional structure</title>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">S</forename><surname>Harris</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1954" />
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="146" to="162" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">The house of quality</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Clausing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Harvard Bus. Rev</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="63" to="73" />
+			<date type="published" when="1988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Market-driven product and service design: Bridging the gap between customer needs, quality management, and customer satisfaction</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Herrmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Huber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Braunstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. J. Production Econom</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="77" to="96" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Long short-term memory</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hochreiter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schmidhuber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1735" to="1780" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Deep unordered composition rivals syntactic methods for text classification</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Iyyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Manjunatha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Boyd-Graber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Daumé</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Iii</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 53rd Annual Meeting Assoc. Comput. Linguistics 7th Internat. Joint Conf. Natl. Language Processing</title>
+				<meeting>53rd Annual Meeting Assoc. Comput. Linguistics 7th Internat. Joint Conf. Natl. Language essing<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1681" to="1691" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Customer requirement management in product development: A review of research issues</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Concurrent Engrg. Res. Appl</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="173" to="185" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Translating online customer opinions into engineering characteristics in QFD: A probabilistic language analysis approach</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Scj</forename><surname>Lim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Engrg. Appl. Artificial Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="115" to="127" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Attractive quality and must-be quality</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Seraku</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Takahashi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tsuji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Japanese Soc. Quality Control</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="39" to="48" />
+			<date type="published" when="1984" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Kao</forename><surname>Group</surname></persName>
+		</author>
+		<ptr target="http://www.company-histories.com/Kao-Corporation-Company-History.html" />
+		<imprint>
+			<date type="published" when="2016-10-15" />
+			<publisher>Kao Corporation</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Customer, consumer and user involvement in product development: A framework and a review of selected methods</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Kaulio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Total Quality Management</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="141" to="149" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Benefit-based conjoint analysis</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Bailey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="54" to="69" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Convolutional neural networks for sentence classification</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 2014 Conf. Empirical Methods Natl. Language Processing</title>
+				<meeting>2014 Conf. Empirical Methods Natl. Language essing<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1746" to="1751" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Unsupervised multilingual sentence boundary detection</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Strunk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Linguistics</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="485" to="525" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Product development decisions: A review of the literature</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Krishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">T</forename><surname>Ulrich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="21" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Needmining: Toward analytical support for service design</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kuehl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internat. Exploring Services Sci</title>
+		<imprint>
+			<biblScope unit="volume">247</biblScope>
+			<biblScope unit="page" from="187" to="200" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Neural architectures for named entity recognition</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lample</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ballesteros</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Subramanian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kawakami</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Dyer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc</title>
+				<meeting>null</meeting>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title/>
+		<author>
+			<persName><forename type="first">Conf</forename><forename type="middle">North</forename><surname>Amer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Chapter Assoc. Comput. Linguistics: Human Language Tech</title>
+		<imprint>
+			<biblScope unit="page" from="260" to="270" />
+			<publisher>Association for Computational Linguistics</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Distributed representations of sentences and documents</title>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="1188" to="1196" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Automated marketing research using online customer reviews</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Bradlow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="881" to="894" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Molding CNNs for text: Non-linear, non-consecutive convolutions</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Barzilay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Jaakkola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 2015 Conf. Empirical Methods Natl. Language Processing (Association for Computational Linguistics</title>
+				<meeting>2015 Conf. Empirical Methods Natl. Language essing (Association for Computational Linguistics<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="1565" to="1575" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">How to make product development projects more successful by integrating Kano&apos;s model of customer satisfaction into quality function deployment</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Matzler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">H</forename><surname>Hinterhuber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Technovation</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="25" to="38" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Inferring networks of substitutable and complementary products</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mcauley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pandey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 21st ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining</title>
+				<meeting>21st ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="785" to="794" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">Efficient estimation of word representations in vector space</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Corrado</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dean</surname></persName>
+		</author>
+		<idno type="arXiv">https://arXiv:1301.3781v3</idno>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+	<note>cs.CL</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Distributed representations of words and phrases and their compositionality</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Sutskever</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">S</forename><surname>Corrado</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="3111" to="3119" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">A critical review of techniques for classifying quality attributes in the Kano model</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mikulić</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Prebežac</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Managing Service Quality</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="46" to="66" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Mine your own business: Market-structure surveillance through text mining</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Netzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Feldman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Goldenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fresko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="521" to="543" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Relation extraction: Perspective from convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Grishman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 2015 Conf. North Amer. Chapter Assoc. Comput. Linguistics: Human Language Tech</title>
+				<meeting>2015 Conf. North Amer. Chapter Assoc. Comput. Linguistics: Human Language Tech<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="39" to="48" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Getting Started with Conjoint Analysis: Strategies for Product Design and Pricing Research</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">K</forename><surname>Orme</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2006" />
+			<publisher>Research Publishers</publisher>
+			<pubPlace>Madison, WI</pubPlace>
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Strategic brand conceptimage management</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>Jaworski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Macinnis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="135" to="145" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Mining the &apos;voice of the customer&apos; for business prioritization</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Revankar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Intelligent Systems Tech</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="38" to="39" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Combining machine learning and human judgment in author disambiguation</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">N</forename><surname>Qian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Nie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 20th ACM Internat. Conf. Inform. Knowledge Management</title>
+				<meeting>20th ACM Internat. Conf. Inform. Knowledge Management<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="1241" to="1246" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Large-scale needfinding methods of increasing user-generated needs from large populations</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Schaffhausen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Kowalewski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mech. Design</title>
+		<imprint>
+			<biblScope unit="volume">137</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">71403</biblScope>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Assessing quality of unmet user needs: Effects of need statement characteristics</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Schaffhausen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Kowalewski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Design Stud</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="page" from="1" to="27" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Listening in on social media: A joint model of sentiment and venue format choice</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Schweidel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">W</forename><surname>Moe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="387" to="402" />
+			<date type="published" when="2014-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Recursive deep models for semantic compositionality over a sentiment treebank</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Perelygin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chuang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Potts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 2013 Conf. Empirical Methods Natl. Language Processing (Association for Computational Linguistics</title>
+				<meeting>2013 Conf. Empirical Methods Natl. Language essing (Association for Computational Linguistics<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1631" to="1642" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">A customer needs motivated conceptual design methodology for product portfolio planning</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Stone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kurtadikar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Villanueva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Arnold</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Engrg. Design</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="489" to="514" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Quality function deployment</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">P</forename><surname>Sullivan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quality Progress</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="39" to="50" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<monogr>
+		<title level="m" type="main">Improved semantic representations from tree-structured long short-term memory networks</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">S</forename><surname>Tai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<monogr>
+		<title level="m">Proc. 53rd Annual Meeting Assoc. Comput. Linguistics</title>
+				<meeting>53rd Annual Meeting Assoc. Comput. Linguistics<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<biblScope unit="page" from="1556" to="1566" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Lecture 6.5-rmsprop: Divide the gradient by a running average of its recent magnitude. Online lecture</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tieleman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Neural Networks for Machine Learning</title>
+				<meeting><address><addrLine>Coursera</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Mining marketing meaning from online chatter: Strategic brand analysis of big data using Latent Dirichlet Allocation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tirunillai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Tellis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="463" to="479" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<monogr>
+		<title level="m" type="main">Product Design and Development</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">T</forename><surname>Ulrich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Eppinger</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<publisher>McGraw-Hill</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+	<note>6th ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<monogr>
+		<title level="m" type="main">Design and Marketing of New Products</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">L</forename><surname>Urban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Hauser</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1993" />
+			<publisher>Prentice-Hall</publisher>
+			<pubPlace>Englewood Cliffs, NJ</pubPlace>
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Recognizing contextual polarity in phrase-level sentiment analysis</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wilson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wiebe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hoffmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Conf. Human Language Tech. Empirical Methods Natl. Language Processing</title>
+				<meeting>Conf. Human Language Tech. Empirical Methods Natl. Language essing<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="347" to="354" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Applying repertory grids technique for knowledge elicitation in Quality Function Deployment</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">I</forename><surname>Shich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quality Quantity</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1139" to="1149" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Leveraging missing ratings to improve online recommendation systems</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ying</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Feinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="355" to="365" />
+			<date type="published" when="2006-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Sources, uses, and forms of data in the new product development process</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zahay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Griffin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fredericks</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Indust. Marketing Management</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="657" to="666" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

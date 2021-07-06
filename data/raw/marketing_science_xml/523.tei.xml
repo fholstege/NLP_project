@@ -1,0 +1,1642 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Scalable Inference of Customer Similarities from Interactions Data Using Dirichlet Processes</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Michael</forename><surname>Braun</surname></persName>
+							<email>braunm@mit.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">MIT Sloan School of Management</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<postCode>02139</postCode>
+									<settlement>Cambridge</settlement>
+									<region>Massachusetts</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">André</forename><surname>Bonfrer</surname></persName>
+							<email>andre.bonfrer@anu.edu.au</email>
+							<affiliation key="aff1">
+								<orgName type="department">School of Management, Marketing and International Business</orgName>
+								<orgName type="institution">Australian National University</orgName>
+								<address>
+									<postCode>0200</postCode>
+									<settlement>Canberra</settlement>
+									<region>Australian Capital Territory</region>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Scalable Inference of Customer Similarities from Interactions Data Using Dirichlet Processes</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.1110.0640</idno>
+					<note type="submission">Received: May 18, 2009; accepted: November 30, 2010; Fred Feinberg served as the guest</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>social networks</term>
+					<term>nonparametric Bayes</term>
+					<term>Dirichlet processes</term>
+					<term>word of mouth</term>
+					<term>homophily</term>
+					<term>probability models</term>
+					<term>Bayesian networks</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>U nder the sociological theory of homophily, people who are similar to one another are more likely to interact with one another. Marketers often have access to data on interactions among customers from which, with homophily as a guiding principle, inferences could be made about the underlying similarities. However, larger networks face a quadratic explosion in the number of potential interactions that need to be modeled. This scalability problem renders probability models of social interactions computationally infeasible for all but the smallest networks. In this paper, we develop a probabilistic framework for modeling customer interactions that is both grounded in the theory of homophily and is flexible enough to account for random variation in who interacts with whom. In particular, we present a novel Bayesian nonparametric approach, using Dirichlet processes, to moderate the scalability problems that marketing researchers encounter when working with networked data. We find that this framework is a powerful way to draw insights into latent similarities of customers, and we discuss how marketers can apply these insights to segmentation and targeting activities.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Marketers have long been interested in the notion that interactions among customers will affect behavior. For example, knowledge of how customers relate to one another improves our understanding on how preferences are formed <ref type="bibr" target="#b58">(Reingen et al. 1984)</ref>, how preferences are correlated within groups <ref type="bibr" target="#b69">(Witt and Bruce 1972</ref><ref type="bibr">, Park and Lessig 1977</ref><ref type="bibr" target="#b23">, Ford and Ellis 1980</ref><ref type="bibr" target="#b7">, Bearden and Etzel 1982</ref>, or how useful referrals are for marketers when developing new markets <ref type="bibr" target="#b57">(Reingen and Kernan 1986)</ref>. Connections among customers are opportunities for preference influence (e.g., contagion in diffusion; see <ref type="bibr" target="#b6">Bass 1969)</ref>. Marketers can leverage word of mouth (WOM) to amplify the efficacy of their communication campaigns <ref type="bibr" target="#b29">(Goldenberg et al. 2001</ref><ref type="bibr" target="#b53">, Nam et al. 2010</ref><ref type="bibr" target="#b37">, Iyengar et al. 2011</ref><ref type="bibr" target="#b28">, Godes and Mayzlin 2009</ref>. Incorporating network information into marketing models has also been shown to improve forecasts of both new product adoption <ref type="bibr" target="#b31">(Hill et al. 2006</ref>) and customer churn <ref type="bibr" target="#b15">(Dasgupta et al. 2008)</ref>.</p><p>Similar customers are more likely to interact with one another, so given the need for marketers to find efficient ways to attract and cultivate customers, there exists vast opportunity in leveraging interactions data to infer similarity and connect this to marketing behavior (e.g., <ref type="bibr" target="#b70">Yang and Allenby 2003</ref><ref type="bibr" target="#b8">, Bell and Song 2007</ref><ref type="bibr" target="#b53">, Nam et al. 2010</ref>. This link between similarity and interactions is the sociological theory of homophily <ref type="bibr" target="#b0">(Akerlof 1997</ref><ref type="bibr" target="#b10">, Blau 1977</ref><ref type="bibr" target="#b46">, Lazarsfeld and Merton 1954</ref> and is the basis for many marketing studies that examine or accommodate interactions among customers (e.g., <ref type="bibr" target="#b24">Gatignon and Robertson 1985</ref><ref type="bibr" target="#b13">, Brown and Reingen 1987</ref><ref type="bibr" target="#b14">, Choi et al. 2010</ref>. Put simply, homophily implies that customers who are similar to one another are more likely to interact with one another, and to share information and influence, than customers who are dissimilar. There is a substantial volume of literature that links similarities to interactions (see <ref type="bibr" target="#b49">McPherson et al. 2001</ref> for a review), but interactions and similarities are not the same thing. We consider interactions to be the "data" that record some observable action between two individuals, whereas similarities form a latent unobserved construct (though possibly correlated with other observed measurements) that determines which individuals are more likely to interact with others. In this paper, we present an illustrative yet parsimonious model, grounded in the theory of homophily, that allows marketers to infer latent similarities from observed interactions. The idea is 514 Marketing Science 30(3), pp. <ref type="bibr">513-531, © 2011 INFORMS</ref> to develop a probability model that uses interactions data to infer latent similarities and generates output that can help marketers better understand why customers interact with whom they do, or why they behave the way they do, in terms that are useful to marketers.</p><p>We build on a class of probability models known as latent space models <ref type="bibr" target="#b34">(Hoff et al. 2002</ref><ref type="bibr" target="#b30">, Handcock et al. 2007</ref>). The fundamental idea behind latent space models is that each individual is characterized as occupying some unobserved point on a multidimensional space. When estimated on relationship data (e.g., a list of self-reported friendships, as in <ref type="bibr" target="#b58">Reingen et al. 1984, Brown and</ref><ref type="bibr" target="#b13">Reingen 1987</ref>; or working relationships, as in <ref type="bibr" target="#b37">Iyengar et al. 2011)</ref>, the distance among points in latent space determines the probabilities for the incidence of these relationships. <ref type="bibr">1</ref> What is becoming increasingly available to marketers, however, are clean observational data on the interactions among customers, such as phone call records or online social networking transactions, but with no observed information about the content of the interaction (who these people are and what they talk about) or the nature of the relationship between these individuals (what it is about these two particular people that generates an interaction between them).</p><p>When latent space models are estimated on interactions data, we can interpret the distance among points as relative similarity. Homophily gives us the theoretical foundation on which we can make this claim. The managerial usefulness of estimating latent space models on interactions data comes from identifying and inferring these similarities. Sometimes, such as our application in telecommunication services, interactions generate revenue directly. There are many examples, like those mentioned in the first paragraph, where marketers deliberately target customers who will contact, and they hope influence, others. In other cases, however, the marketing activities themselves might have nothing at all to do with "following network links," or generating word of mouth. Knowing how similar customers are to one another is of direct relevance to marketing practitioners because it forms the basis of segmentation and targeting across a heterogeneous population. Once we have inferences about relative similarities of customers in hand (through posterior distributions of latent distances), we can segment and target customers accordingly. Ordinarily, this segmentation is done based on observed characteristics of individuals.</p><p>Very little attention has been paid to how marketers might be able to exploit the information contained in interactions data for traditional, nonnetworked marketing tactics, such as deciding in which publications (online or otherwise) to advertise. Indeed, the company that uses interactions data for segmentation and targeting (e.g., an online retailer) does not necessarily have to be the same company that collects it (e.g., the cell phone provider).</p><p>One reason modelers have not been able to apply latent space models to marketing data in a general sense is that it can be a daunting computational challenge. One of the key tenets of probability modeling is that we need to take all data into account, including pairs of individuals for whom we do not observe any interactions at all (the "zeros" in the data offer valuable information about relative similarities). Thus, there has been a formidable obstacle to using probability models for larger observational network data sets. A data set with N individuals involves N 2 dyads (the binomial coefficient N</p><p>x is defined as N !/ x! N − x ! ). For the exemplar data set that we use in this paper, there are 11,426,590 sets of dyad-specific parameters that we need to consider, and this is for a data set of only 4,781 individuals. Unless we want to break the interdependencies among dyads, ignore unobserved heterogeneity, or make other assumptions that are similarly restrictive, we need to compute all of these N 2 dyad-specific likelihoods, and the same number of dyad-specific parameters, at each iteration of our estimation algorithm. The problem with scale makes probability models of social interactions computationally intractable for all but the smallest data sets.</p><p>The modeling challenge is therefore to reveal similarities in heterogeneous characteristics from customers' interaction data in a scalable and interpretable way. We accomplish this by applying a Bayesian nonparametric prior, the Dirichlet process (DP), as the distribution of locations on the latent space. The DP is essentially a distribution over distributions (as opposed to over scalars or vectors), and for our purposes, its most salient characteristic is that each realized distribution is discrete. Consequently, individuals in the network are clustered on common locations on the latent space. Thus if this discrete distribution has k mass points, there are only k 2 + 1 distinct distances on the latent space (the +1 comes from the zero distance between two individuals at the same latent coordinate). Since k must be smaller than N , there are substantially fewer distinct likelihoods to compute and parameters to estimate.</p><p>In this research, we show how marketers could use latent space models to segment customers based on posterior inferences of latent similarities, using this more efficient Bayesian nonparametric approach. An output of our algorithm is a posterior estimate of the latent space that is inferred from the interactions data. Our probabilistic approach to modeling these data allows for the fact that similar individuals may not interact, even though they may have similar characteristics and travel in the same social circles. Also, we recognize that although interactions typically occur among similar customers, there is also the possibility that dissimilar customers (who may have different purchase patterns and preferences) may interact at some time. To demonstrate the power and utility of this approach to modeling interactions data, we apply it to a data set of observed interactions from a cellular communication network. We propose a probability specification for this particular data set in which the incidence and rates of interactions are functions of distances in latent space. We validate the approach in two ways: by showing that adding the latent space structure to the probability model improves the fit of the model, with respect to several metrics commonly used in the social networking literature; and by showing that the latent space model can distinguish among pairs of individuals for whom the observed number of interactions are all identically zero during a calibration period, in terms of how well the model predicts which of those pairs will eventually interact in a future holdout period. These tests demonstrate that failing to account for the unobserved heterogeneous interdependencies among individuals leads to a model that simply does not represent the observed patterns in interactions.</p><p>We then assess the computational improvements and scalability issues surrounding our Bayesian nonparametric approach and the managerial insights that one can get from estimates of the latent space itself. By using a graphical representation of the latent space, we show how marketers can augment network-based practices that follow observed interaction paths with tactics that segment and target customers according to inferred latent similarities. The data that are available to us do not let us offer hard evidence of a correlation between similarities and purchase preferences, but given the findings in the marketing literature that show the importance of similarities and interactions in customer behavior, it is reasonable to expect that marketing mix efforts benefit from being able to distinguish interactions among similar customers from interactions among dissimilar customers. The computational improvements from using a DP prior for the latent space make these inferences attainable for the data sets that marketers typically encounter.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">General Model Formulation</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Intuitive Description</head><p>In a probability model of network data, each dyad in the network generates some vector of data, which can represent a wide variety of behavior. Examples include binary indicators of relationships, counts of transactions (among customers), times between interactions, or combinations thereof. However simple or complicated the data are, they should be treated as some output of a stochastic process that is governed by dyad-specific parameters (and possibly some additional population-level parameters). Data generated from a network of customers differ from individually generated data, such as household purchase data, in that we can no longer assume that the data-generating processes are independent across dyads. For example, if we were to observe telephone calls between members of a dyad, the rate at which A calls B, and B calls C, can provide information about how often A calls C. However, we do assume that the dyadlevel processes are conditionally independent, so the only correlation among dyads is what occurs because of similarities in parameters. This means that even though frequencies of phone calls might be dependent across dyads, the specific times at which those calls ultimately take place are independent, conditional on the rate of interactions.</p><p>We determine dyad-level parameters so that similar individuals will have a higher incidence of interaction than dissimilar individuals. The characteristics on which this similarity is based are likely unobservable by the researcher. Therefore, we represent unobserved, exogenous characteristics of the individual (and thus, the individual himself), as a D-dimensional vector on some latent space <ref type="bibr" target="#b34">(Hoff et al. 2002</ref><ref type="bibr" target="#b30">, Handcock et al. 2007</ref><ref type="bibr" target="#b11">, Bradlow and Schmittlein 2000</ref><ref type="bibr" target="#b64">, Van Alstyne and Brynjolfsson 2005</ref>. Similarity between two individuals is measured by the distance between their latent coordinates across this latent space, and we can express the rates or probabilities of interaction between two people as a decreasing function of the latent distance between them. Note that these distances and locations do not directly represent physical or geographic locations in any way (although they may, of course, be incidentally correlated with them). Instead, they are individual-level parameters to be estimated, based on observed patterns of interaction. For the purposes of this paper, we treat the location of each latent coordinate as persistent and stationary. Thus even though interactions among people may appear and disappear periodically (a nonstationary observed phenomenon that Kossinets and Watts 2006 describe as evolving), the underlying rates and probabilities of these incidences remain the same. Thus, our stationary model can still capture nonstationary behavior in the observed data. Also, we want to emphasize that a latent space model is an abstraction of reality, and we caution researchers not to place too much concrete meaning on any one dimension. It Marketing Science 30(3), pp. 513-531, © 2011 INFORMS is the relative distances among individual latent coordinates, and not the absolute positioning in the latent space, that matter.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Formal Model</head><p>A more formal definition of the general model is as follows. Let y ij be a vector of observed data that is attributable to the dyad of persons i and j, and let f y ij ij be the likelihood of observing y ij , given the dyad-specific parameter vector ij . Next, let ij be heterogeneous across dyads, with each ij drawn randomly from a dyad-specific prior distribution g ij ij . A model in which ij is common across all dyads, or itself distributed independently (drawn from its own mixing distribution), would imply cross-dyad independence of ij , which may not make sense in a network setting. To incorporate some network-based dependence in the distribution of ij , we instill a pattern of heterogeneity of ij that allows for a useful, intuitive interpretation of the similarities. Thus, there are two sources of heterogeneity that generate ij : independent dyad-level variation from g ij ij and network-induced interdependence in the distribution of ij .</p><p>Before explaining how we model heterogeneity in ij , let us shift our focus from the level of the dyad to the level of the individual. Each dyad is made up of two individuals, each of whom has its own, mostly unobserved, traits and characteristics. Let z i be a D-dimensional vector that is associated with person i, and let z be the collection of all N of these vectors. Since each z i is unobserved, we call it a "latent coordinate," and the D-dimensional space on which it lies a "latent space," as in <ref type="bibr" target="#b34">Hoff et al. (2002)</ref> and <ref type="bibr" target="#b30">Handcock et al. (2007)</ref>. Even if the N vectors in z are distributed independently on the latent space, the distances between every pair of z i (the "latent distances") are not. By expressing ij as a monotonic function of the distance between z i and z j , we induce dependency among all the ij and, in turn, all the ij . For example, suppose that ij represents a rate of contact between i and j, and the distribution of ij depends positively on ij (for example, the mean of g ij ij increases with ij ). We determine ij by evaluating a monotonically decreasing function of the latent distance, so as i and j are less similar (the distance between z i and z j goes up), the rate of interaction between i and j goes down. However, we never need to estimate ij or ij directly. We need only to estimate the locations of z i for all N people to get the values of ij for all N 2 adyads.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Mixtures of Dirichlet Processes: What They</head><p>Are and How to Use Them to Model the Latent Space Even if we model ij as a function of the latent distance among the z i s, we still have the issue that there are many z i s, and thus a large number of latent distances, to model. This means that at each iteration of our estimation algorithm, we need to compute N 2 values of ij and N 2 corresponding data likelihoods. When N is small, scalability becomes less of a problem, and one could use the original parametric formulation of the latent space model. As N becomes even moderately large, however, estimating the latent coordinates becomes computationally infeasible. We reduce the number of distinct values of z i by using a discrete distribution, H z i • for the distribution of z i on the latent space. If this discrete distribution has k mass points, then there are only k 2 + 1 distinct latent distances. For a given network size, a larger difference between k and N leads to a greater computational savings by having fewer distinct values of ij to consider. To avoid having to estimate each ij directly, we choose f y ij ij and g ij ij such that we can integrate over ij analytically, and we express the marginal distribution f y ij ij in a closed form. However, we do not want to prespecify the functional form of H , because we do not know for certain what it is, nor do we want to prespecify k, because we do not know what the "correct" number of mass points for H is.</p><p>Our approach is to use a mixture of Dirichlet processes as a Bayesian nonparametric prior distribution for the points on the latent space. Although the properties of Dirichlet processes (DPs) have been known for a while (dating back to <ref type="bibr" target="#b22">Ferguson 1973)</ref>, they are still relatively new to marketing. The few examples include <ref type="bibr" target="#b1">Ansari and Mela (2003)</ref> (as a Bayesian alternative to collaborative filtering), <ref type="bibr" target="#b42">Kim et al. (2004)</ref> (identifying clusters of customers in discrete choice models), <ref type="bibr" target="#b68">Wedel and Zhang (2004)</ref> (analyzing brand competition across subcategories), and <ref type="bibr" target="#b12">Braun et al. (2006)</ref> (estimating thresholds of claiming behavior for homeowners' insurance). In our context, a Dirichlet process is a probability distribution over distributions (as opposed to a distribution over a scalar or vector). Accordingly, a single draw from a Dirichlet process is itself a random distribution from which we can draw samples of a variable of interest. An important feature for our context is that each realization of a DP is a discrete distribution, with its support having a finite number of mass points (k in the previous paragraph), so the DP can be thought of as a prior distribution on discrete distributions. <ref type="bibr">2</ref> There are, of course, many ways to model discrete points on a space; a traditional latent class model with a prespecified number of locations is an extreme example. What makes the DP more useful in this context is that it has a parsimonious representation, with straightforward sampling properties, and does not require a prespecification of the number of mass points. In our latent space framework, we let H be a realization from DP H 0 and then have each z i be a draw from H . The first parameter, H 0 , is itself a probability distribution, and it is the "mean" of the distributions that the DP generates. A scalar controls the variance of the realizations of the DP around H 0 . This variance is low when is high, so for high , realizations from DP H 0 will look a lot like the distribution function of H 0 . This concentration of the DP toward H 0 results from a DP that generates a discrete distribution with a lot of mass points (a high k). When is low, realizations from DP H 0 look much less like H 0 (high variance), because this DP generates discrete distributions with fewer mass points. Thus plays an important role in determining just how discrete (i.e., value of k), or clustered, a DPgenerated distribution really is. Reasonable choices for H 0 are those distributions for z i that one might use in a purely parametric model (note that H 0 could have parameters of its own, with their own priors, that need to be estimated). Depending on the application, one can either put a prior on or set it directly.</p><p>Given H 0 and , we need to know how to simulate H from DP H 0 and then each z i from H . Since H is nonparametric, even though we know it was generated by the DP H 0 , the posterior distribution of any new z i depends on all the other z −i . Consequently, there is no obvious way to draw a z i from H directly. The "trick" is to integrate out H analytically and treat z i as if it were drawn from this marginal distribution, a mixture of Dirichlet processes MDPs; see <ref type="bibr" target="#b3">Antoniak (1974)</ref>. The probability of any one z i , given the empirical distribution ED • of all the other z −i , is <ref type="bibr" target="#b9">(Blackwell and</ref><ref type="bibr">MacQueen 1973, Escobar 1994</ref>)</p><formula xml:id="formula_0">Pr z i z −i H 0 = H 0 + ED z −i + N − 1 (1)</formula><p>Thus in the estimation algorithm, determines how likely it is that any new draw of z i comes from one of the existing, distinct values already possessed by another individual in the data set (if this is likely, then there are few mass points, with lots of clustering) or from the baseline distribution H 0 as a new value.</p><p>To illustrate how this works, Figure <ref type="figure">1</ref> shows simulations from an MDP when H 0 is a univariate standard normal distribution, for different values of . In the figure, the heavy black line is the standard normal cumulative distribution function (cdf), and each thinner line is a single realization from the MDP. We see that when is low, there are fewer mass points in each realization, and when is high, the higher number of mass points allows the realizations to approximate the normal cdf. In Figure <ref type="figure">1</ref>(b), for each we present histograms from draws of a single realization of the MDP (so these are draws from a distribution that the MDP generated). Again, we see fewer distinct clusters (low k) when is low and more clusters when is high. In our network model, we are dealing with more dimensions and a richer specification of H 0 , but the basic idea remains the same.</p><p>Marketing Science 30(3), pp. 513-531, © 2011 INFORMS How we select H 0 and , and the priors we place on them, is described in more detail in Appendix B. Selection of an appropriate distribution for H 0 requires that we introduce some identifying restrictions on the location vectors (z i ). The concern is that we cannot simultaneously and uniquely identify both the scale of the latent space and the parameters of the distance function determining ij . To handle this problem, we constrain the prior distribution of z i , so the mean distance of any z i from the origin is 1. However, we need to do this without introducing too much "incorrect" prior information. For example, a simple choice for H 0 could be a standard multivariate normal distribution; setting the mean at the origin and the variance at 1 addresses the translation and scale identification issues. The problem with defining H 0 as a multivariate normal is that it implies that our prior on the distribution of z i has a mode at the origin. This prior turns out to be informative, as it generates artifactual clusters of individuals around the origin in the posterior. An alternative specification for H 0 could be a bounded uniform distribution (so the mean distance from the origin remains 1), but that would constrain all z i to be inside a hypersphere, effectively placing an upper bound on the latent distance between customers. This, too, seems like an unreasonable expression of prior information. Our solution involves using spherical coordinates for z i , consisting of two components: a radius representing the distance from the origin and the location on the surface of a hypersphere that has that radius. We show in Appendix B that H 0 can be factored into priors for these two components from which it is straightforward to draw samples.</p><p>This prior on z i , combined with the data likelihood, leads to conditional posterior distributions that are easily incorporated into Gibbs samplers. <ref type="bibr" target="#b17">Escobar (1994)</ref> and <ref type="bibr" target="#b19">Escobar and West (1998)</ref> describe some of the theory and derivations behind this, and <ref type="bibr" target="#b54">Neal (2000)</ref> details step-by-step instructions on how to add MDPs to Gibbs samplers for both conjugate and nonconjugate models. 3 Thus, MDPs allow marketing modelers to relax many of their distributional assumptions by adding only one additional step to the parametric Gibbs sampling algorithm. We give details of our estimation algorithm in Appendix C. Our exploitation of the discreteness property of Dirichlet processes also lets us reduce the computational burden substantially, as we demonstrate in §4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Example: Telephone Calls</head><p>We now turn to a specific application of our model using a data set provided by Chongqing Mobile, a subsidiary of China Mobile, the largest cellular phone operator in China. Cellular phone networks have been reported to be highly representative of selfreported friendships <ref type="bibr" target="#b16">(Eagle et al. 2009</ref>), making such data ideal for studies of network-based interdependencies among customers. The data consist of contact record information (for phone calls and SMS messages) for a panel of 4,781 residents of Chongqing who are members of the "silver tier," "gold tier," or "diamond tier" of the company's preferred customer program. Each record contains the identifiers for both parties in the contact and the date of when the contact takes place. For the purposes of this example, we ignore contacts with people outside this Nperson network. <ref type="bibr">4</ref> The observed geodesic distance is finite for all dyads (i.e., all customers are connected to every other customer in a finite number of steps). We divide the observation period into a six-month calibration period and a six-month holdout period. Descriptive statistics for this data set are summarized in Table <ref type="table" target="#tab_0">1</ref>. Of the 18,078 nonempty dyads in the data set, only 7,559 appear in both the calibration and holdout samples, 5,058 dyads are nonempty in calibration but empty in holdout, and 5,461 are empty in calibration but nonempty in holdout.</p><p>One way to describe the structure of the observed network is to compare it to the "small-world" networks described in <ref type="bibr" target="#b67">Watts and Strogatz (1998)</ref> and <ref type="bibr" target="#b65">Watts (1999)</ref>. Generally speaking, a small-world network is one in which everyone in the network is connected to everyone else through a relatively small number of intermediaries (i.e., a low mean geodesic distance) and a relatively large number of common friends who are connected among themselves (i.e., a high clustering coefficient). We can assess the extent to which a network is a small world by comparing the mean geodesic distances and clustering coefficients to those that we would expect to see from a network in which connections are determined at random for the same number of people (4,781) and average number of "friends" per person (7.6). Using the asymptotic approximations in <ref type="bibr" target="#b65">Watts (1999)</ref>, the mean geodesic distance we would expect from a random graph of this size is about 4.2, and the expected clustering coefficient is about 0.002. In the observed Chongqing Mobile network, we observe quite a bit more clustering than we expect to see from a random graph, and the mean geodesic path is slightly longer than what we would expect. One possible reason that our mean geodesic distance is not smaller is that we could have a large number of small clusters, and not all small clusters are connected to each other. In fact, our estimates of k (illustrated later in Figure <ref type="figure">4</ref>) will bear this out. We also note that our network would not qualify as a "scale-free" network, in that the degree distribution clearly does not follow a power law-type distribution (we show the observed degree distribution in Figure <ref type="figure">2</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Model Specifics</head><p>Using the notation introduced in §2, y ij is the vector of intercontact times, ending with the survival time (the duration between the last observed contact and the end of the observation period). If there are no observed contacts in the dyad, y ij is the length of the observation period, and we call that dyad "empty." If there are observed calls, the dyad is "nonempty." The definition of f y ij ij follows the logic of the "exponential never-triers" model in <ref type="bibr" target="#b20">Fader et al. (2003)</ref>, which, in turn, draws from the "hard-core neverbuyers" model in <ref type="bibr" target="#b50">Morrison and Schmittlein (1981)</ref> and <ref type="bibr" target="#b51">Morrison and Schmittlein (1988)</ref>. First, there is a probability p ij that a dyad will remain forever empty, no matter how long we wait. We call dyads like this "closed." Next, for dyads that are "open" (with a probability 1 − p ij ), intercontact times follow an exponential distribution with rate ij . To link these specifics with our general model, ij = p ij ij . Note that there are two ways we could observe an empty dyad. The dyad is either closed, or it is open but with a contact rate that is sufficiently low that we just happened to not observe any contacts during the observation period.</p><p>Whether the exponential distribution is appropriate for this data set is ultimately an empirical question, but we choose it for four reasons. First, we do not need to make special provisions for left-censoring because of the memorylessness property. Second, the number of contacts is a sufficient statistic for the individual elements in y ij . We were able to exploit these two features of the exponential distribution to gain computational savings without compromising the fundamental purpose of the research. Third, we did run the model on a much smaller data set, where f • is governed by a "Weibull never-triers" model, to allow for duration dependence, and we found that because the shape parameter of the Weibull was close to 1, it reduced to the exponential distribution anyway. Finally, we chose the exponential distribution because it forms a conjugate pair with our choice of g ij ij , a gamma distribution for ij with dyadspecific mean ij and common variance v, and a degenerate distribution over p ij , so that at this level of the hierarchy, p ij is homogeneous for all dyads (we will add heterogeneity to p ij later through the latent space). The exponential-gamma pair lets us integrate over ij analytically, further easing computational effort. The vector ij therefore contains three elements, p ij , ij , and v p ij is contained in both ij and ij ).</p><p>To evaluate whether latent space is worth adding to a model of interactions data, we estimated the model with three different definitions of the elements of ij . For a "Baseline" model, we let ij = , a common value for all dyads (note that we still maintain dyad-level heterogeneity in , but it does not appear explicitly in the data likelihood). For a second model, HMCR (for "Homogeneous Mean Contact Rate"), ij and v remain homogeneous across dyads, but p ij is now determined by the distribution on the latent space. Specifically, we define</p><formula xml:id="formula_1">logit p ij = 1p − 2p d 3p ij (2)</formula><p>where the s are coefficients to be estimated, and d ij is the latent distance between z i and z j . For a third model, named "Full," p ij retains the same definition as in Equation ( <ref type="formula">2</ref>), except that ij is now heterogeneous across dyads, defined as <ref type="formula">2</ref>) and (3) allow the respective relationships to latent distance to be concave, linear, or convex. The parameters 2p 3p 2 and 3 are constrained to be nonnegative, because as latent distance increases, the probability of contact, and the rate of contact, should decrease. We selected Euclidean distance as our distance measure, after experimenting   <ref type="bibr" target="#b11">Bradlow and Schmittlein 2000)</ref>, which weights some dimensions more than others in the computation of the distance among individuals. However, the nonparametric nature of the estimated latent space means the dimensions are already differentially scaled. Also, the Euclidean distance is computationally more efficient. As with the parametric specification, the functions in Equations ( <ref type="formula">2</ref>) and (3), and the distance measure, are subject to empirical testing and may not be appropriate in all contexts.</p><formula xml:id="formula_2">log ij = 1 − 2 d 3 ij (3) Equations (</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Assessing Contribution of the Latent Space</head><p>So far, we have assumed that parameter interdependence is an important characteristic of a model of customer interactions. However, one could falsify this claim by showing that models in which dyad-level parameters are independent fit no worse than models that incorporate a latent space. We ran our algorithm with latent spaces of different dimensionality, and based on estimates of log marginal likelihoods, we decided that the parsimonious choice of D = 2 is most appropriate (see Appendix A). As evidence that the latent space models do better than independent models, we evaluate the contribution of latent space based on both posterior predictive checks (PPCs) and on forecasting interactions in empty dyads.</p><p>Posterior predictive checks allow us to evaluate how well our model represents the data-generating process <ref type="bibr" target="#b60">(Rubin 1984</ref><ref type="bibr" target="#b26">, Gelman et al. 1996</ref>. Three of our PPC test statistics are the same as those used by <ref type="bibr" target="#b35">Hunter et al. (2008)</ref> to assess goodness of fit for social networking data: the degree distribution, the dyadwise shared-partner distribution, and the distribution of geodesic distances. We also examine the histogram of the number of calls made within nonempty dyads, the density of the network, and the clustering coefficient for the network. All of our PPCs in this paper are with respect to the 26-week holdout sample. Figure <ref type="figure">2</ref> shows the results for the distributional PPCs, and Figure <ref type="figure">3</ref> shows the PPCs for the density and clustering coefficients. The x axis in each panel is the count of individuals or dyads, and the y axis is the log proportion of those individuals with each count. The dark dots represent the log probabilities generated from the actual data set, and the box-and-whisker plot represents the distribution of log probabilities across the simulated data sets. Figure <ref type="figure">3</ref> shows the PPCs for the network density and clustering coefficients; the vertical line is the observed value.</p><p>At first glance, it might appear that all of the models replicate the actual data sets rather well. The reason that even the Baseline model does as well as it does is that most of the value from posterior prediction comes from inferring whether a dyad is open or closed. Simply looking at whether a dyad is empty or nonempty provides a lot of information about the likelihood of future emptiness, because nonempty dyads must be open. However, closer examination reveals that the Baseline model is not well calibrated at all. The "actual" dots lie far outside the whiskers for the predictive distributions for many of the counts.  The two models that involve some kind of latent space structure fit better on these test statistics. However, we do not see much difference between the HMCR and Full models. This suggests that the value of the latent space is more in predicting the potential existence of an interaction (whether the dyad is open or closed) than in predicting the contact rate.</p><p>In addition to assessing model fit in aggregate, we also care about how well the model performs at the dyad level. Our approach here is to predict which of the dyads that are empty during the calibration period become nonempty in the holdout period. Empty dyads all have the same observed data pattern, so there is no obvious way to differentiate among them. We can, however, use the latent space structure and a straightforward application of Bayes's theorem to compute posterior distributions of unobserved parameters, and we then use those probabilities to rank dyads in terms of those most likely to generate interactions during some future period of any duration we want. To assess the predictive ability of a model, we first identify, individual by individual, the top Q% lift (or the top q lift, where q = Q/100) most likely, previously uncontacted individuals observed to contact during the holdout period. <ref type="bibr">6</ref> For a completely random or naive model, the percentage of the top Q% most likely empty dyads to become nonempty should be equal to q. For any other model, if the value for the top Q% metric is greater than q, then the model provides some "better-than-chance" predictive value. The use of the Q% lift metric ensures that the maximum of this value is always equal to 1.</p><p>Table <ref type="table" target="#tab_2">2</ref> presents these lift metrics for different models and values of Q%, and different calibration/holdout samples. Results are presented for all <ref type="bibr">6</ref> For any individual i, the top q lift requires rank ordering all potential customers j = i based on the predicted probability of interaction. For a holdout sample, the top q lift of this rank-ordered list is equal to the proportion of the top q customers for whom we observe interactions with i, divided by the proportion of total interactions made by customer i.</p><p>three model variants, with D = 2 for the latent space models. In addition, we present results for a "Condition on observed" prediction rule, under which empty dyads are to remain empty in holdout and nonempty dyads remain nonempty in holdout. The "Geodesic distance" model ranks dyads according to their geodesic distances, as in <ref type="bibr" target="#b43">Kossinets and Watts (2006)</ref> (we break ties in two different ways: randomly or based on the total number of observed interactions along the path). The lift metrics suggest that both the Baseline model and the Condition on observed rule do exactly as well as one would expect from random selection. This is because they both assume that there is no network structure among individuals in the data set, and thus all empty dyads are considered to be identical. In contrast, in the two latent space models, some dyads are more likely to contact each other than others. By sorting the empty dyads according to their posterior latent distances, we no longer assume that all empty dyads are the same. Thus, we can improve on dyad-level prediction dramatically. We do not, however, see any substantive differences between the HMCR and Full models, suggesting that, in this application, all of the action is on the open/closed probability and not on the contact rates. Nevertheless, our results indicate that the use of the latent space structure for networked data is a better model than assuming independence across dyads. 7</p><p>7 There are, of course, many different ways to predict link formation (known in the machine learning community as "link mining"), such as the Katz score <ref type="bibr" target="#b40">(Katz 1953</ref>) and the SimRank algorithm <ref type="bibr" target="#b38">(Jeh and Widom 2003)</ref>. <ref type="bibr" target="#b27">Getoor and Diehl (2005)</ref> provide a detailed review of link mining methods, and Liben-Nowell and Kleinberg (2007) compare the performance of some of them. We compared the predictive ability of our latent space approach against some of these methods and found that, whereas our model did best when tests were more discriminating (low Q), the other models "caught up" when Q was increased. However, our model offers behavioral intuition (see §5) that machine-learning algorithms cannot provide, and we are willing to trade off some predictive power for managerial interpretability. Nevertheless, our objective in predicting future link formation is only to demonstrate the value of accounting for latent network structure when modeling interactions data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Scalability and Computation</head><p>Having demonstrated the contribution of latent space models, we now turn to the issue of scalability and computation. The amount of computational improvement one can expect from using DP priors on the latent space depends on how well we can cluster dyads into groups that have the same data and parameters. In networks in which every dyad generates a different observed outcome (e.g., if the network is dense and the observed value is continuous), the likelihood for each dyad will have to be computed separately, and a discrete representation of the latent space will have little effect. However, the density of many (if not most) social networks tends to be very low. Even if nonempty dyads generate data on a continuous domain (as in our China Mobile example), there are so many empty dyads, all with the same data, that the number of distinct likelihoods to compute is much lower than the total number of dyads in the network. If the observed data are discrete, then even more aggregation is possible. Of course, aggregation according to observed data is standard practice when a model is homogeneous or marginal likelihoods are available in closed form. The DP prior lets us group observations with similar latent parameters as well.</p><p>The number of likelihood evaluations at each Markov chain Monte Carlo (MCMC) iteration depends on two factors: (i) the number of groups with distinct data patterns (which, in turn, depends on the size and density of the network) and (ii) the number of mass points for each realization from the Dirichlet process. Dyads with the same z i z j pair, and the same value of y ij , must have the same likelihood, because they have the same data and same parameters. As long as we keep track of the number of dyads with each z i z j pair, we can compute the log likelihood for that pair once for each y and multiply by the number of dyads with that pair and that y. Among all the data zeros, there are only k 2 + 1 possible likelihood values. If k is less than N , there is computational saving, even if all of the nonzero values of y are different (as happens when y is continuous). If y is discrete (so that y is the number of distinct values of y), there are at most k 2 + 1 y possible likelihoods. For a continuous y, but with a large number of zeros, the number of possible likelihoods is k 2 + 1, plus the number of nonzero ys. Clearly, the more distinct observed data patterns there are, the less one can take advantage of the discretization of the latent space that is generated by the DP. In the social networking applications that are common in marketing, however, networks are often very sparse, so we have at least one very large group of dyads with the same data.</p><p>To assess just how much computational savings there is, consider the Full model in the telephone call example. The calibration data set has 12,617 nonempty dyads; likelihoods for each of these dyads must be computed individually. The mean of k is 530, so there are 140,186 distinct distances between mass points on the latent space. Instead of computing 11,413,973 separate likelihoods for each of the empty dyads, we only need to compute 140,186 of them. Thus, the number of likelihoods to compute at each MCMC iteration is 152,803. This represents a 98 7% reduction in computational requirements.</p><p>The extent to which our method can scale for data sets with many more individuals (large N ) depends on how both the network density and k change as N increases. Ultimately, these are both empirical questions, the second of which we cannot know up front because not only is k unobserved, but it can be influenced by the choice of H 0 and . However, the expected number of mass points can be asymptotically approximated as E k ≈ log + N / <ref type="bibr" target="#b3">(Antoniak 1974</ref><ref type="bibr" target="#b17">, Escobar 1994</ref>. Thus, if is small, the expected number of mass points is also expected to be small, but it will grow for larger data sets. If is large, the number of mass points for smaller data sets might be larger, but this number will not grow as quickly for larger data sets. To test how well this approximation works in practice, we estimated the full model using successively larger subsets of our original network. We then fixed at three different values: 0.5, 20, and 300 (instead of placing a weakly informative prior on , as we did in the main analysis). We also computed the total number of likelihood computations for each sweep of the Gibbs sampler, which is just k 2 , plus the number of nonempty dyads in the data set.</p><p>Figure <ref type="figure">4</ref> plots the posterior mean of k (the number of mass points) and the total number of likelihood evaluations against the size of the network. For the number of mass points, we observe the expected pattern. For small , the number of mass points is small, but the incremental number of mass points grows with network size. For large , the number of mass points is large, but the incremental change goes down with network size. The asymptotic approximation suggests that incremental computational effort would decrease more for even larger values of N , even though the number of total dyads continues to grow quadratically. In terms of total computation, for low , the number of computations increases more rapidly with N than for higher values of , but when is high, the relationship becomes more linear. Even though the number of dyads grows quadratically with k, larger networks will tend to have a larger number of nonempty dyads. For low , computation grows faster than linear, but the number of latent dyads is low to begin with because of the increased clustering. Collectively, our results suggest that, if </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Interpretation and Usefulness of the Latent Space</head><p>In Figure <ref type="figure">5</ref>(a), we plot a single draw from the joint posterior distribution of the latent coordinates from the Full model with D = 2 (we chose the draw with the largest conditional likelihood). Each person in the network occupies a position in the latent space, and we define a cluster as all individuals who share the same coordinates in the latent space (this is akin to two observations having the same mass point in a realization from a mixture of Dirichlet processes, and we counted 593 such clusters in this realization). However, because multiple individuals are located at the same coordinates, to aid visualization, we "jitter" the individual locations of customers by adding a small amount of random noise (drawn from a Uniform(−0 03 0 03) distribution) to each coordinate. The scale labels on the axes are included to help reference certain parts of the space and do not have a concrete interpretation themselves. In Figure <ref type="figure">5</ref>(a), we see that there is considerable clustering, with distinct "superclusters" (clusters of clusters, or clusters closer to other clusters) of individuals on the latent space. Also, there are some clusters that contain only a few customers and that are quite separate from the rest of the network of customers such as the one at x y coordinate (−0 9 −2 2). Note that the latent space is a random variable, so this figure represents just one possible configuration of the individuals into clusters. Figure <ref type="figure">5</ref>(b) "zooms in" on a small partition of the latent space. Having provided and discussed a graphical depiction of latent space, the next question becomes, what use is this to marketers? We examine this in the context of segmentation and targeting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Segmentation and Targeting Using Interactions Data</head><p>Segmentation and targeting is central to the development of effective marketing strategy. The fundamental idea behind segmentation is to find people who are similar to one another, with the assumption that they will respond in similar ways and therefore can be targeted using similar methods (e.g., the same price discount, same promotion, or same advertising copy). In our study, we reveal two ways marketers can use network-based data (our interaction observations) in practice. As is well documented by authors such as <ref type="bibr" target="#b55">Novak et al. (1992)</ref> and <ref type="bibr" target="#b31">Hill et al. (2006)</ref>, following observed interactions to or from customers who have already adopted a product or service can help identify other potential customers. Their results show improvements in response rates compared with methods using observed, traditional segmentation and targeting bases. Although these network-based methods are powerful tools for eliciting new customers, our graphical representation of the latent space highlights that there are sometimes interactions among customers who are quite different from one another. We see this in Figure <ref type="figure">5</ref>(b). In this figure, we identify five individuals for whom a marketer might have some specific information (e.g., an </p><formula xml:id="formula_3">A B C D E 1 1 -1 -1 -2 -2 -0.2 -0.2 -0.4 -0.4 -0.6 -0.6 -0.8 x coordinate x coordinate y coordinate</formula><p>Notes. In both panels, the black dots represent jittered locations for individual customers on x y coordinates. Lines represent observed connections among customers. In (b), we labeled several customers who have hypothetically adopted a new product. Circles around customers are used to identify other customers who may be similar to the targeted customers and therefore have similar adoption likelihoods.</p><p>existing customer, or a respondent to a promotion).</p><p>The lines radiating from these individuals represent observed links in the data set. We also placed circles of common radius around these focal individuals. Network marketing tactics that "follow the links" would use the lines to determine the next potential customers to target. Although this is useful in reaching new clusters, there are many marketing tactics that have nothing to do with following links or word of mouth and instead depend more on understanding which customers can be grouped into more homogeneous segments. Given the interpretation of the latent space as representing similarity, anyone in close proximity (within the circle) to a focal customer should also be a target. Although most observed contacts also occur within a cluster, there are certainly interactions among dissimilar individuals as well. For example, consider a marketer of trendy casual clothing, targeting a college student who interacts with two people: a classmate at the same college who shares similar demographic traits such as age, education, gender, values; and an older relative with whom there is a closer personal relationship, but nothing else in common in terms of purchase patterns. Although the college student might have identical observed interaction patterns with his classmate and with the relative, he shares many more common friends with his classmate than with his relative. Our model places the student closer on the latent space to his classmate than to his relative, and the relative is closer to her own friends and others in her social circle. This is useful for marketers to be aware of because the classmate and the relative represent quite different marketing prospects. If the marketer were to identify prospects based on the observed interactions alone, however, he could be targeting the relative and her friends, who are unlikely to behave in the same way as the focal customer (the student). Targeting these prospects incurs additional costs with little expected return. In addition, there are many individuals within the circle who never talk to our focal customer but still "travel in the same social circles," or who might otherwise be exposed to, or susceptible to, similar marketing activities.</p><p>We can compare the use of targeting based on proximity in latent space with targeting based on geodesic distance. <ref type="bibr">8</ref> In fact, many more customers can be identified for targeting than if one were to use a geodesic-type distance metric represented by observed interactions. We calculate that if one were to follow the first-degree geodesic distance, on average, the marketer would expect to reach eight customers (rounded up from 7.56). If these data were available and the marketer also included in the target set the "second degree," or friends of friends, the marketer then expects to reach, on average, 97 customers. Drawing a circle of radius equal to 0.1 around the customer, the marketer may expect to reach, on average, 232 customers. <ref type="bibr">9</ref> Because homophily implies that Marketing Science 30(3), pp. 513-531, © 2011 INFORMS similar individuals are more likely to interact, then targeting based on latent space means that the customers identified for targeting are more likely to be similar to the focal customer. The geodesic distance in some cases could be connections, which span much of the space, and therefore may lead to leads that are substantially different than the original customer. For example, in Figure <ref type="figure">5</ref>(b), the customer labeled "C" has seven interactions, but two of these interactions are to customers who are at substantially different locations in the latent space. Given the desire for marketers to find customers similar to the focal customer, we assert that it is better to target those customers close to the labeled customers in the network. The latent space model presents an opportunity to refine these targeting methods, and using the Dirichlet process to model the latent space makes the approach computationally feasible for marketing data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Extracting Information from Limited Data</head><p>Another advantage of using our probability modeling approach is that the interpretation of the posterior latent space is only loosely dependent on the kind of data that one uses to estimate it. Of course, larger, richer data sets, collected over longer periods of time, might lead to better posterior distributions, but the data could really be anything, as long as the underlying data-generating process is dyad specific and depends on similarities in a monotonic way (events are more likely if latent distances are small). The data that are available could be limited in terms of time (a censored data set) or by the fact that observed cell phone interactions are only one of many possible means of communication. Interactions occur among customers at heterogeneous rates, and because it is not practical for marketers to wait extended amounts of time to see whether interactions will occur among customers, it may be that some interactions that exist among customers occur at such a rate that they may not be observed in a small observation window. One might be tempted to treat the addition or subtraction of observed interactions as evidence of nonstationarity. The Bayesian approach to data analysis makes it straightforward to update our estimates of the latent space as new data become available, even when the space itself is stationary. Therefore, what <ref type="bibr" target="#b43">Kossinets and Watts (2006)</ref> refer to as an evolving social network may, in effect, be an artifact of the censoring of the data. All that the observed data do are provide some clues from which the true underlying similarities must be inferred.</p><p>Related to censoring, one of the concerns about using data like phone call records is that they do circle of minimal radius gives us the result that more customers are identified for targeting, on average, than the first-degree geodesic. not necessarily represent the universe of interactions among the population. Unless customers reveal all of the people with whom they ever interact with, observed data cannot be an authoritative document of the underlying social network. There may be other modes of communication, such as e-mail or face-toface contact. For example, <ref type="bibr" target="#b2">Ansari et al. (2011)</ref> consider the case of a Swiss music sharing website, where the connection between users could be described alternatively as "friendship," "communication," or "download." So what value does using only a network of cell phone calls have if it is an incomplete representation of all interactions? We can think of any "true" observed interaction network as a population of subnetworks and each observed network (e.g., the cell phone data) as a single draw from that population <ref type="bibr" target="#b25">(Gelman 2007)</ref>. We then treat that observed network as a single data point, and we use it to update our beliefs about the structure of the latent space. If we had observed another mode of communication first, we might get a different posterior latent space, but, in any event, the posterior of the latent space after observing one network becomes the prior before observing the next.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Focus on Diffusion and Word of Mouth</head><p>We see two key contributions of the latent space useful to marketers managing the diffusion of innovation of information through customer networks. The first involves the concept of word of mouth (e.g., <ref type="bibr" target="#b4">Arndt 1967)</ref>. Whereas contagion could occur via nonexplicit advocacy (e.g., fashion can be seen by people who one does not interact with), explicit communication is well regarded as an important source of information for customers. WOM is at the heart of models of information diffusion in networks (e.g., <ref type="bibr" target="#b29">Goldenberg et al. 2001)</ref>. As testimony to the importance of consumer reviews, there are many services and organizations focused on collecting and presenting such information on just about every product or service. Of key interest in the WOM literature is how the network structure affects diffusion patterns. The contribution of our work is in considering that WOM may work via some geodesic distance versus distance measured in latent space. From relations data, only the geodesic distance can be studied, but there is likely considerable value to considering distance in latent space as a channel for WOM.</p><p>The second area where the latent space model could be useful in practice is in identifying influential customers. The concept of a market maven, or opinion leader <ref type="bibr" target="#b41">(Katz and Lazarsfeld 1955</ref><ref type="bibr" target="#b21">, Feick and Price 1987</ref><ref type="bibr" target="#b37">, Iyengar et al. 2011</ref><ref type="bibr" target="#b45">, Kratzer and Lettl 2009</ref>, has frequently been studied in the context of diffusion research. However, recent research challenges the notion that such influentials are the primary reason for "global cascading influence" <ref type="bibr" target="#b66">(Watts and Dodds 2007)</ref>, i.e., the contagious diffusion of innovation or information throughout an entire network. These insights suggest that it is vital for marketers to understand how influence can occur among all customers and that there is more to WOM marketing than focusing attention on just influentials. Observations from practice certainly seem to support this based on the popularity of services such as BzzAgent and Procter &amp; Gamble's Vocalpoint, which are not selective about recruiting only "opinion leaders" but rather would prefer more people in their network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4.">Further Research Opportunities</head><p>The sociological theory of homophily, coupled with the latent space framework, yields a stochastic representation of the relative latent characteristics underlying interactions data. The latent characteristics are represented on a latent space, and we propose a Bayesian nonparametric for the latent space using Dirichlet processes. Latent spaces are well known in social network analysis, and Dirichlet processes and probability models are known in marketing. However, because of the computational obstacle involved in estimating larger networks, the concepts have not yet fully integrated across disciplines. Our research lowers this obstacle and makes probability modeling more accessible to marketing researchers who possess data on customer interactions. This approach maintains the properties of interdependence, heterogeneity, and interpretability, a goal that is harder to accomplish with extant classical or machine learning approaches.</p><p>We readily admit that our interpretation of the latent space, and our suggestions on how to use it, depend on an acceptance of two premises. First, we need to believe that similarities drive interactions, and thus one can use interactions to infer similarities. We use the volumes of research of homophily to support this contention, but we have not tried to test this directly. Second, our recommendation that managers consider using latent distance, rather than observed geodesic distance, to segment and target customers assumes that similar individuals have correlated purchase preferences or behavior. This is a premise that could be tested, and we hope that both researchers and practitioners will undertake that challenge. Unfortunately, the data that we have at our disposal do not allow us to follow that path, but we would like to describe briefly how we think this might work.</p><p>The output of the latent space model is a posterior distribution of configurations on a latent space. Figure <ref type="figure">5</ref> is one such configuration. Although the distances among individuals in a single configuration do not have a physical interpretation, we can still treat them as distances in a statistical sense. Thus we could draw on the methods of hierarchical spatial modeling to infer a correlation structure among individuals, similar to those described in <ref type="bibr" target="#b5">Banerjee et al. (2004)</ref>. An example of this kind of treating a nonphysical distance as a physical one is <ref type="bibr" target="#b70">Yang and Allenby (2003)</ref>, who computed a demographic distance between people based on profiles of personal characteristics. Thus just as they modeled correlations in preferences as functions of observed geographic and demographic distance, we propose modeling these correlations as functions of latent distances. We hypothesize that because observed interactions represent only one possible path for the sharing of information, it is latent distance, rather than geodesic, demographic, or geographic distance, that would best predict these correlations. To conduct a test like this, one would need two types of data for the same set of people: dyadlevel interactions data to infer the latent space and individual-level purchase data to see whether latent distance explains correlations in purchase behavior. As more and more business is conducted through mobile communications devices, we anticipate that data like these will become more available. A corollary to this research stream would be to incorporate individual-level demographics or covariates into the latent space model and to better understand how that information might complement interactions data in understanding purchase behavior.  In Table <ref type="table">A</ref>.1, we present relative estimated LML of the HMCR and Full models, for different values of D, from both the calibration and holdout data sets. Our estimates were generated using cumulant approximations and adjusting for the discrepancy between posterior and prior support, using the methods proposed in <ref type="bibr" target="#b47">Lenk (2009)</ref>. Results are normalized such that the reported estimate for the HMCR model with D = 2 is 0 for each of the calibration and holdout data sets, and it is then scaled by 1,000 for readability.</p><p>In three of the four cases, D = 2 is preferred, and in the remaining one, D = 3 is preferred. Also, we found essentially no difference among values of D in posterior predictive checks. Thus, following <ref type="bibr" target="#b32">Hoff's (2005)</ref> advice, we use the D = 2 models for subsequent analysis.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix B. Model Specification for China Mobile Example</head><p>In this appendix, we derive the data likelihood and hyperprior specifications for our Chongqing Mobile application. Let p ij be the probability that a dyad between i and j is open, and let ij be the rate of contacts between i and j (assuming exponentially distributed intercontact times) if the dyad is open. We also define an auxilliary latent Bernoulli variable s ij that indicates whether a dyad is open (s ij = 1) or closed (s ij = 0). To remain consistent with our general model specification in the text, we use y ij to denote the vector of observed intercontact times and y * ij to denote the count of observed contacts. Also, let T be the duration of the observation period.</p><p>The data likelihood is similar to an "exponential nevertriers" model <ref type="bibr" target="#b20">(Fader et al. 2003)</ref>. There are two ways a dyad could be empty (i.e., y * = 0): the dyad could be closed (s ij = 0), or it could be open but the contact rate ij is sufficiently low that there just happened to be no contacts during the observation period. If we observe any contacts at all, we know the dyad must be open. Therefore, the data likelihood is</p><formula xml:id="formula_4">f y ij ij p ij = 1 − p ij I y * ij = 0 + p ij y * ij ij exp − ij T (B1)</formula><p>We incorporate dyadwise unobserved heterogeneity in ij by using a gamma distribution with dyad-specific shape parameter r ij and dyad-specific scale parameter a ij :</p><formula xml:id="formula_5">f ij r ij a ij = a r ij ij r ij r ij −1 ij exp −a ij ij (B2) After integrating over ij , f y ij p ij r ij a ij = 1 − p ij I y * ij = 0 + p ij r ij + y * ij r ij a ij a ij + T r ij 1 a ij + T y * ij (B3)</formula><p>We will also use the reparameterizations r ij = 2 ij /v and a ij = ij /v, where ij and v are the dyad-specific mean and common variance of the gamma distribution, respectively. Linking back to our general model formulation in §2.1, ij = p ij ij v . The definitions of these parameters are described in §3.1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B.1. Hyperprior Specifics</head><p>For the choice of H 0 , we decompose each latent coordinate into two components: the distance from the origin (a "radius") and the location on the surface of a hypersphere that has that radius. We then choose a H 0 that factors into a prior on these two components. In other words, we think of the elements of z i in terms of their spherical, rather than Cartesian, coordinates. If the Cartesian coordinates of z i (herein suppressing the i subscript) are z 1 z 2 z D , then its polar coordinates are 1</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D−1</head><p>, where is a distance from the origin and the s are angles, expressed in radians such that 0 &lt; 1 &lt; 2 , and 0 &lt; j &lt; for 2 ≤ j ≤ D − 1. We can then factor H 0 as</p><formula xml:id="formula_6">g 0 z = f 1 D−1 = f 1 D−1 f (B4)</formula><p>Conditioning on , we want to place a distribution on = 1 D−1 such that there is a uniform probability of being at any location on a D-dimensional hypersphere with radius . This is achieved by letting f be a multivariate power sine distribution <ref type="bibr">(Johnson 1987, Nachtsheim and</ref><ref type="bibr" target="#b52">Johnson 1988)</ref>, where</p><formula xml:id="formula_7">f ∝ D−1 j=1 sin j−1 j (B5)</formula><p>Thus, 1 has a uniform distribution, f 2 ∝ sin 2 f 3 ∝ sin 2 3 , and so forth. Johnson (1987, Chapter 7) proposes some algorithms for simulating from a multivariate power sine distribution.</p><p>For f , recall that is defined on the positive real line, with E = 1. We also need the ability to trade off tail weight (probability of draws of z being far from the origin) against kurtosis (likelihood of draws of z being clustered around the origin). Beginning with the generalized Laplace distribution <ref type="bibr">(Kotz et al. 2001, §4.4</ref>.2), we center and then fold at zero to get</p><formula xml:id="formula_8">f = 1/ 1 + 1 −1 exp − &gt;0 (B6)</formula><p>where</p><formula xml:id="formula_9">E = 1/ 2/ 1/ (B7) Setting E = 1 = 1/ 2/ 1/ (B8)</formula><p>thus the density of , constrained so E = 1, is</p><formula xml:id="formula_10">f = 2/ 1/ 2 exp − 2/ 1/ (B9)</formula><p>The parameter controls the trade-off between tail weight and kurtosis. If = 1, f reduces to an exponential distribution, and if = 2, f is a half-normal distribution. As becomes large, the mode of becomes less and less peaked, and f converges to a Uniform 0 2 distribution. The "correct" value for is inferred through the estimation process, letting the data drive the trade-off between placing a mode on and bounding the locations such that ≤ 2. Note that this prior using the multivariate power sine distribution and our restricted half-Laplace distribution adds only one additional parameter to the model compared with an independent multivariate normal hyperprior, which adds many more.</p><p>It turns out that f is a special case of a power gamma distribution. To see this, perform a change of variables so that = , = 1/k , and</p><formula xml:id="formula_11">d = 1/ 1/ −1 . Then, f = 2/ 1/ 1/ −1 exp − 2/ 1/ (B10)</formula><p>which is a gamma distribution with shape parameter 1/ and rate parameter 2/ 1/ . This result makes it easy to simulate values of ; just draw from this gamma distribution and transform = 1/ . After simulating values of and , it is often convenient to convert z ij back to its Cartesian coordinates. The elements of z can be expressed as <ref type="bibr">(Johnson 1987, Chapter 7)</ref>:</p><formula xml:id="formula_12">z 1 = cos 1 z j = cos j j−1 l=1 sin l for 2 ≤ j &lt; D z D = D−1 l=1 sin l (B11)</formula><p>We selected the other hyperpriors to balance weak information content against numerical stability. Following <ref type="bibr" target="#b18">Escobar and West (1995)</ref>, we place a weakly informative gamma prior on , with a mean of 4 and a variance of 80. Since and v are all population-level parameters that appear only in the definitions of ij , we can combine them all into a single-parameter vector (log-transforming parameters when necessary), with a multivariate normal prior 0 , centered at the origin, with covariance matrix A = 10I. Note that if = 2, then H 0 is a multivariate normal distribution. Because we were concerned about a mode of H 0 introducing too much prior information, we used a gamma prior with a mean of 3 and a variance of about 5. Experimenting with alternative values led to no substantive effect.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix C. Estimation Algorithm</head><p>In this section, we present the complete MCMC sampling algorithm for the general latent space model. The parameters to be estimated are , , , and z i , i = 1 N . Recall that since H is discrete, at each iteration there are only k possible values that any z i can take.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C.1. Simulate</head><p>• . Let r and a be the parameters of the gamma hyperprior on Using the algorithm proposed by <ref type="bibr" target="#b18">Escobar and West (1995)</ref>, do the following:</p><p>Step 1. Starting with the current value of , draw a temporary variable from a Beta + 1 N distribution.</p><p>Step 2. Draw from a Bernoulli trial with probability r + k − 1 / N a − log + r + k − 1 Step 3. If = 0, draw from a gamma r + k − 1 a − log distribution. If =1, draw from a gamma r +1, a − log distribution.</p><p>C.2. Simulate v • . To simplify notation, we combine and v into a single parameter vector, . The conditional posterior distribution of depends on the data likelihood and the prior. The data likelihood we care about here is the marginal likelihood in §2.2, after integrating over i , multiplied across all dyads (using our assumption of conditional independence across dyads). Note that ij is a function of , z i and z j . The prior on is a multivariate normal with mean 0 and covariance A. Thus, the log conditional posterior (without normalizing constant) for is</p><formula xml:id="formula_13">log f • = N i=1 N j=i+1 log f y ij z i z j − 1 2 − 0 A −1 − 0 (C1)</formula><p>We simulate using a random-walk Metropolis sampler <ref type="bibr" target="#b59">(Rossi et al. 2005</ref>, Chapter 3).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C.3. Simulate</head><p>• . We place a gamma r a prior on . Let 1 k be the radii of the k distinct values of z. Combining the likelihood of the radii in (B9) with the prior, the conditional posterior distribution for is</p><formula xml:id="formula_14">f • ∝ 2/ 1/ 2 k exp − k j=1 j 2/ 1/ −a r −1</formula><p>(C2) There are many different ways to simulate from this univariate density. We chose to use sampling-importance resampling <ref type="bibr" target="#b62">(Smith and Gelfand 1992)</ref>, but one might choose Metropolis, grid-based inverse cdf or slice sampling methods instead.</p><p>C.4. Simulate z • . This step, in which we draw each of the z i vectors from the MDPs, is an adaptation Algorithm 8 in <ref type="bibr" target="#b54">Neal (2000)</ref>. We direct the reader there for an explanation of how and why the algorithm works, but here we present a summary, using our terminology and notation. The distribution of the z i s is discrete, so at each iteration of the estimation algorithm, there are only k possible values that z i can take. Let z * = z * 1 z * k define these k distinct latent coordinates, let z * −i be the distinct mass points when not including person i, and let k −i be the number of distinct mass points in z * −i when not including person i (z * and z * −i , and k and k −i , will differ only if i is a "singleton" who is the only person located at z i ). At the current state of the sampler, each person is "assigned" to one of the z * j , in the sense that there is exactly one j for Marketing Science 30(3), pp. 513-531, © 2011 INFORMS which z i = z * j . Let N j be the number of people assigned to z * j , and let N −i j be the number of people assigned to z * j , when not counting person i.</p><p>The algorithm involves choosing some number of proposal values (determined by a prespecified control parameter m) for each z i . Define f i y i z i z −i as the likelihood contribution for all dyads that involve person i, given the current values of z i assigned to i and of z −i assigned to everyone else. There are two cases that we need to consider. The first is if there is some other person i for which z i = z i (i.e., i is not a singleton). In this case, draw m proposal draws from H 0 , call them z * k+1 z * k+m , and letz = z * 1 z * k z * k+1 z * k+m . Intuitively,z is the union of the set of all latent vectors that are already assigned to someone in the population, with the set of m new proposal vectors. Next, compute f i y i z j z −i for all j = 1 k + m . These are the likelihood contributions for all dyads involving i if z i were set to each of the values inz. These "proposal likelihoods" form a set of weights that we use to draw a new z i for each i. Thus, draw a new value for z i fromz using the following probabilities:</p><formula xml:id="formula_15">Pr z i =z j =        n −i j N −1+ F i y i z j z −i for 1 ≤ j ≤ k /m N −1+ F i y i z j z −i for k+1 ≤ j ≤ k+m</formula><p>where is a normalizing constant (and does not need to be known for the purposes of random sampling). Thus, z i can take on the value of any of the existing elements of z * or one of the m new candidate values. Which value is selected depends on three values: (1) the likelihood of the data for eachz j (values ofz j that yield a high likelihood are more likely to be chosen), (2) the number of other people who also are assigned toz j (coordinates where the prior distribution has more mass are more likely to be chosen), and (3) the DP control parameter , which governs how close the DP prior on z is to H 0 . If i is a singleton, then there are only k −i = k −1 elements in z * . In this case, draw m + 1 candidate values from H 0 , reindex them soz = z * −i z * k z * k+m , and select according to the following probabilities:</p><formula xml:id="formula_16">Pr z i =z j =          N −i j N − 1 + F i y i z j z −i for 1 ≤ j ≤ k − 1 /m N − 1 + F i y i z j z −i for k ≤ j ≤ k + m</formula></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Figure 1Illustration of Realizations from a Mixture of Dirichlet Process with H 0 Being a Standard Normal</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Figure 2Posterior Predictive Checks for Holdout Sample</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>Reported values are posterior means; credible intervals are removed for space and clarity.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>Figure 5Illustration of the Full Latent Space and Connections Among Some Selected Customers</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1</head><label>1</label><figDesc>Descriptive Statistics of China Mobile Data Set</figDesc><table><row><cell>Variable</cell><cell>Calibration</cell><cell>Holdout</cell><cell>Full</cell></row><row><cell>Weeks</cell><cell>26</cell><cell>26</cell><cell>52</cell></row><row><cell>Customers</cell><cell>4 781</cell><cell>4 781</cell><cell>4 781</cell></row><row><cell>Nonempty dyads</cell><cell>12 617</cell><cell>13 020</cell><cell>18 078</cell></row><row><cell>Proportion of empty dyads</cell><cell>0.9989</cell><cell>0.9989</cell><cell>0.9984</cell></row><row><cell>Clustering coefficient</cell><cell>0.128</cell><cell>0.127</cell><cell>0.127</cell></row><row><cell>Mean (SD) degree</cell><cell>5.3 (4.9)</cell><cell>5.4 (5.3)</cell><cell>7.6 (6.7)</cell></row><row><cell>distribution</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Mean (SD) geodesic</cell><cell>5.5 (1.4)</cell><cell>5.3 (1.3)</cell><cell>4.7 (1.1)</cell></row><row><cell>distance</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Mean (SD) calls per</cell><cell>7.5 (18.7)</cell><cell>7.6(18.7)</cell><cell>15.1 (36.0)</cell></row><row><cell>nonempty dyad</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Mean (SD) shared friends in</cell><cell>3.0 (2.7)</cell><cell>3.3 (2.8)</cell><cell>5.7 (2.8)</cell></row><row><cell>nonempty dyad</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2</head><label>2</label><figDesc>Percentage of the Top Q% of the Empty Dyads (in a Calibration Period) Most Likely to Become Nonempty During a Holdout Period That Actually Did Become Nonempty During the Holdout Period</figDesc><table><row><cell></cell><cell>Duration of calibration (holdout) period</cell><cell></cell></row><row><cell>13 (39) weeks</cell><cell>26 (26) weeks</cell><cell>39 (13) weeks</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc>Posterior Means for Number of Mass Points, and Total Likelihood Computations, for Subsampled Networks</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="3">Marketing Science 30(3), pp. 513-531, © 2011 INFORMS</cell></row><row><cell>Figure 4</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="3">Number of mass points</cell><cell></cell><cell cols="3">Total likelihood evaluations</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>= 0.5</cell><cell></cell><cell></cell></row><row><cell>600</cell><cell></cell><cell></cell><cell>200,000</cell><cell></cell><cell>= 20 = 300</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell>150,000</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>400</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Value</cell><cell></cell><cell></cell><cell>100,000</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>200</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell>50,000</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>0</cell><cell></cell><cell></cell><cell>0</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>1,000</cell><cell>2,000</cell><cell>3,000</cell><cell>4,000</cell><cell>1,000</cell><cell>2,000</cell><cell>3,000</cell><cell>4,000</cell></row><row><cell></cell><cell></cell><cell></cell><cell>Size of network</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">using a DP prior is not computationally feasible for a</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">particular data set, the incremental effort likely comes</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">from the inability to aggregate the observed data and</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">not from an inability to aggregate the latent param-</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">eters. Of course, this is no different from scalabil-</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">ity problems faced by Bayesian hierarchical modelers</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="4">who use MCMC to update model parameter estimates</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>from nonnetworked data.</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table A . 1</head><label>A1</label><figDesc>Estimates of LML of Models, by Dimensionality of Latent Space and Model Variant</figDesc><table><row><cell></cell><cell></cell><cell>Calibration</cell><cell>Holdout</cell><cell></cell></row><row><cell>D</cell><cell>HMCR</cell><cell>Full</cell><cell>HMCR</cell><cell>Full</cell></row><row><cell>2</cell><cell>0</cell><cell>−40</cell><cell>0</cell><cell>−337</cell></row><row><cell>3</cell><cell>221</cell><cell>−310</cell><cell>−378</cell><cell>−690</cell></row><row><cell>4</cell><cell>−396</cell><cell>−1 609</cell><cell>−190</cell><cell>−1 792</cell></row><row><cell>5</cell><cell>−1 550</cell><cell>−1 130</cell><cell>−3 183</cell><cell>−1 560</cell></row><row><cell>6</cell><cell>−4 729</cell><cell>−829</cell><cell>−5 069</cell><cell>−1 573</cell></row><row><cell cols="5">Note. Estimates are normalized with respect to the D = 2 HCMR model for</cell></row><row><cell cols="2">each data set.</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1">Latent space methods are, of course, not limited to examining social network data, and they could be used to model similarities between units in two distinct groups<ref type="bibr" target="#b11">(Bradlow and Schmittlein 2000)</ref> or to model the difference in knowledge by individuals<ref type="bibr" target="#b64">(Van Alstyne and Brynjolfsson 2005)</ref>. Further applications are discussed in<ref type="bibr" target="#b63">Toivonen et al. (2009)</ref>.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2">The formal definition of what makes a stochastic distribution a DP is a more technical issue. Essentially, the probabilities of certain events occurring must follow a Dirichlet distribution with parameters that depend on H 0 and . There is an accessible and readable explanation in O'Hagan and Forster (2004, Chapter 13).</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3">This is one way of expressing the MDP (the approach we took in our estimation is known as the "Polya urn" representation). There is another, equally useful approach known as the "stick-breaking" representation<ref type="bibr" target="#b61">(Sethuraman 1994</ref>) that one can also use to build conditional posterior distributions for Gibbs samplers<ref type="bibr" target="#b36">(Ishwaran and James 2001)</ref>.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4">Our intent in using this data set is to demonstrate the effectiveness of our estimation method and to illustrate some of the issues that arise when modeling dyadic data. Therefore, we treat our data set as an entire population of individuals, not as a random sample; our interest is only in contacts made among individuals in this population. If we were to generalize parameter estimates and predictions to a greater population, ignoring out-of-network calls could influence specific parameter estimates. There are an additional 209 silver, gold, or diamond customers in the panel for whom there were no observed calls to other silver, gold, or diamond customers during the observation period.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="5">Here, we are talking about distance between two individuals' coordinates on the latent space. This concept of distance is different from when we talk about geodesic distance, which is the smallest number of observed connections along the shortest path between two individuals.</note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">Marketing Science 30(3), pp.513-531, © 2011 INFORMS   </note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="8">A third perspective is that perhaps one should first follow connections within the clusters, then the similar customers, and then follow the geodesic links outside of some cluster.9  Of course, this depends on the size of the circle, but because customers in the same cluster occupy identical coordinates, even a</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors thank David Dahl, Daria Dzyabura , Pete Fader, Jacob Goldenberg, John Hauser, Barak Libai, Jon McAuliffe, Carl Mela, Adrian Raftery, David Schweidel, and Romain Thibaux for useful suggestions and helpful comments on previous versions of this paper, as well as Rico Bumbaca and Alex Riegler for research assistance and Jeongwen Chiang and China Mobile for providing the data set.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix A. Choosing Dimensionality of the Latent Space</head><p>There are a number of approaches one could take to selecting D, and finding a general method for choosing among different specifications of Bayesian hierarchical models, especially those that incorporate nonparametric priors, remains an area of active research among statisticians. We believe that because of the abstract nature of the latent space, there is no "correct" value of D that one needs to infer from the data. <ref type="bibr" target="#b32">Hoff (2005)</ref> notes that one should choose the smallest value of D that offers a reasonable model fit, erring on the side of parsimony. Adding more dimensions improves model flexibility but can also lead to overfitting. As far as objective measures go, he suggests examining the log marginal likelihoods (LMLs) (we use the holdout LML for the Full model) as well as the PPCs for test statistics that capture important characteristics of the data (we discuss PPCs in §3.2).</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Social distance and social decisions</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Akerlof</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Econometrica</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1005" to="1027" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">E-customization</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ansari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Mela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="131" to="145" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Modeling multiple relationships in social networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ansari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Koenigsberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Stahl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res. Forthcoming</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Mixtures of Dirichlet processes with applications to nonparametric problems</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Antoniak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1152" to="1174" />
+			<date type="published" when="1974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Role of product-related conversations in the diffusion of a new product</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Arndt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="291" to="295" />
+			<date type="published" when="1967" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Hierarchical Modeling and Analysis for Spatial Data</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Banerjee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">P</forename><surname>Carlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Gelfand</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<publisher>CRC Press</publisher>
+			<pubPlace>Boca Raton, FL</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A new product growth for model consumer durables</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Bass</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="215" to="227" />
+			<date type="published" when="1969" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Reference group influence on product and brand purchase decisions</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">O</forename><surname>Bearden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Etzel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="183" to="194" />
+			<date type="published" when="1982" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Neighborhood effects and trial on the Internet: Evidence from online grocery retailing. Quant. Marketing Econom</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Bell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Song</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="361" to="400" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Ferguson distributions via Polya urn schemes</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Blackwell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Macqueen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="353" to="355" />
+			<date type="published" when="1973" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Inequality and Heterogeneity: A Primitive Theory of Social Structure</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Blau</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1977" />
+			<publisher>Free Press</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">The little engines that could: Modeling the performance of World Wide Web search engines</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Bradlow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Schmittlein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="43" to="62" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Modeling the &quot;pseudodeductible&quot; in insurance claims decisions</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Bradlow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kunreuther</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1258" to="1272" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Social ties and word-of-mouth referral behavior</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Reingen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="350" to="362" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Spatiotemporal analysis of imitation behavior across new buyers at an online grocery retailer</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Hui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Bell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="75" to="89" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Social ties and their relevance to churn in mobile telecom networks</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Dasgupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Viswanathan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Chakraborty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mukherjea</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Nanavati</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Joshi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 11th Internat. Conf. Extending Database Tech</title>
+				<meeting>11th Internat. Conf. Extending Database Tech<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="668" to="677" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Inferring friendship network structure by using mobile phone data</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Eagle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pentland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lazer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci. USA</title>
+		<imprint>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="issue">36</biblScope>
+			<biblScope unit="page" from="15274" to="15278" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Estimating normal means with a Dirichlet process prior</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Escobar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">425</biblScope>
+			<biblScope unit="page" from="268" to="277" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Bayesian density estimation and inference using mixtures</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Escobar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>West</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">90</biblScope>
+			<biblScope unit="issue">430</biblScope>
+			<biblScope unit="page" from="577" to="588" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Computing nonparametric hierarchical models</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Escobar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>West</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Practical Nonparametric and Semiparametric Bayesian Statistics</title>
+				<editor>
+			<persName><forename type="first">D</forename><surname>Day</surname></persName>
+			<persName><forename type="first">P</forename><surname>Müller</surname></persName>
+			<persName><forename type="first">D</forename><surname>Sinha</surname></persName>
+		</editor>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="1998" />
+			<biblScope unit="page" from="1" to="22" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Forecasting new product trial in a controlled test market environment</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">G S</forename><surname>Hardie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zeithammer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Forecasting</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="391" to="410" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">The market maven: A diffuser of marketplace information</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">F</forename><surname>Feick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">L</forename><surname>Price</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="83" to="97" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A Bayesian analysis of some nonparametric problems</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Ferguson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="209" to="230" />
+			<date type="published" when="1973" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">A reexamination of group influence on member brand preference</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Ford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">A</forename><surname>Ellis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="125" to="132" />
+			<date type="published" when="1980" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">A propositional inventory for new diffusion research</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gatignon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Robertson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="849" to="867" />
+			<date type="published" when="1985" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Discussion on the paper by Handcock, Raftery and Tantrum</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Roy. Statist. Soc. Ser. A</title>
+		<imprint>
+			<biblScope unit="volume">170</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">337</biblScope>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Posterior predictive assessment of model fitness via realized discrepancies</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X.-L</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Stern</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statistica Sinica</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="733" to="807" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Link mining: A survey</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Diehl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM SIGKDD Explorations Newslett</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="3" to="12" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Firm-created word-of-mouth communication: Evidence from a field test</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Godes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mayzlin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="721" to="739" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Talk of the network: A complex systems look at the underlying process of word-ofmouth</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Goldenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Libai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Muller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Lett</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="211" to="223" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Model-based clustering for social networks</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Handcock</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Raftery</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Tantrum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Roy. Statist. Soc. Ser. A</title>
+		<imprint>
+			<biblScope unit="volume">170</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="301" to="354" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Network-based marketing: Identifying likely adopters via consumer networks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Provost</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Volinsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statist. Sci</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="256" to="276" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Bilinear mixed-effects models for dyadic data</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">D</forename><surname>Hoff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="issue">469</biblScope>
+			<biblScope unit="page" from="286" to="295" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title level="m" type="main">Scalable Inference of Customer Similarities from Interactions Data Using DPs Marketing Science</title>
+		<author>
+			<persName><forename type="first">Bonfrer</forename><surname>Braun</surname></persName>
+		</author>
+		<idno>© 2011 INFORMS 531</idno>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="513" to="531" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Latent space approaches to social network analysis</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">D</forename><surname>Hoff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Raftery</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Handcock</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="issue">460</biblScope>
+			<biblScope unit="page" from="1090" to="1098" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Goodness of fit of social network models</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Hunter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Goodreau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Handcock</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="issue">481</biblScope>
+			<biblScope unit="page" from="248" to="258" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Gibbs sampling methods for stickbreaking priors</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ishwaran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">F</forename><surname>James</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">96</biblScope>
+			<biblScope unit="issue">453</biblScope>
+			<biblScope unit="page" from="161" to="173" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Opinion leadership and social contagion in new product diffusion</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Iyengar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Van Den Bulte</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">W</forename><surname>Valente</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="195" to="212" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Simrank: A measure of structural-context similarity</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Jeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Widom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining</title>
+				<meeting>ACM SIGKDD Internat. Conf. Knowledge Discovery Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="271" to="279" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">Multivariate Statistical Simulation</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Johnson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1987" />
+			<publisher>John Wiley &amp; Sons</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">A new status index derived from sociometric analysis</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Katz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="39" to="43" />
+			<date type="published" when="1953" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+		<author>
+			<persName><forename type="first">E</forename><surname>Katz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Lazarsfeld</surname></persName>
+		</author>
+		<title level="m">Personal Influence: The Part Played by People in the Flow of Mass Communications</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Free Press</publisher>
+			<date type="published" when="1955" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Assessing heterogeneity in discrete choice models using a Dirichlet process prior</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Menzefricke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Feinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Rev. Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Empirical analysis of an evolving social network</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kossinets</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">311</biblScope>
+			<biblScope unit="issue">5757</biblScope>
+			<biblScope unit="page" from="88" to="90" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">The Laplace Distribution and Generalizations: A Revisit with Applications to Communications</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kotz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Kozubowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Podgorski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Economics, Engineering, and Finance</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<publisher>Birkhauser</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Distinctive roles of lead users and opinion leaders in the social networks of schoolchildren</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kratzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lettl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="646" to="659" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Friendship as a social process: A substantitive and methodological analysis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lazarsfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">K</forename><surname>Merton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Modern Society</title>
+				<editor>
+			<persName><forename type="first">M</forename><surname>Berger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Van Nostrand</publisher>
+			<date type="published" when="1954" />
+			<biblScope unit="page" from="18" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Simulation pseudo-bias correction to the harmonic mean estimator of integrated likelihoods</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lenk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comput. Graph. Statist</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="941" to="960" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">The link-prediction problem for social networks</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Soc. Inform. Sci. Tech</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Birds of a feather: Homophily in social networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mcpherson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Smith-Lovin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Cook</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annual Rev. Sociol</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="page" from="415" to="444" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Predicting future random events based on past performance</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Morrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Schmittlein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1006" to="1023" />
+			<date type="published" when="1981" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Generalizing the NBD model for customer purchases: What are the implications and is it worth the effort?</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Morrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Schmittlein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Bus. Econom. Statist</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="145" to="159" />
+			<date type="published" when="1988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">A new family of multivariate distributions with applications to Monte Carlo studies</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Nachtsheim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Johnson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Amer. Statist. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="issue">404</biblScope>
+			<biblScope unit="page" from="984" to="989" />
+			<date type="published" when="1988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">The effect of signal quality and contiguous word of mouth on customer acquisition for a video-on-demand service</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Nam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Manchanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Chintagunta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="690" to="700" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Markov chain sampling methods for Dirichlet process mixture models</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Neal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comput. Graph. Statist</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="249" to="265" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Richness curves for evaluating market segmentation</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Novak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>De Leeuw</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Macevoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="254" to="267" />
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Students and housewives: Differences in susceptibility to reference group infuence</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>O'hagan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Forster</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<editor>Bayesian Inference, 2nd ed. Arnold, London. Park, C. W., V. P. Lessig</editor>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="102" to="110" />
+			<date type="published" when="1977" />
+		</imprint>
+	</monogr>
+	<note>Kendall&apos;s Advanced Theory of Statistics</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Analysis of referral networks in marketing: Methods and illustration</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Reingen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Kernan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="370" to="378" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Brand congruence in interpersonal relations: A social network analysis</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Reingen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">L</forename><surname>Foster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">B</forename><surname>Seidman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="771" to="783" />
+			<date type="published" when="1984" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<monogr>
+		<title level="m" type="main">Bayesian Statistics and Marketing</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Rossi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mcculloch</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<publisher>John Wiley &amp; Sons</publisher>
+			<pubPlace>Chichester, UK</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Bayesianly justifiable and relevant frequency calculations for the applied statistician</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statist</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1151" to="1172" />
+			<date type="published" when="1984" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">A constructive definition of Dirichlet priors</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sethuraman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statistica Sinica</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="639" to="650" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Bayesian statistics without tears: A sampling-resampling perspective</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">F M</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Gelfand</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. Statistician</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="84" to="88" />
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">A comparative study of social network models: Network evolution models and nodal attribute models</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Toivonen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kovanen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kivelä</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J.-P</forename><surname>Onnela</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Saramäki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kaski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc. Networks</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="240" to="254" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Global village or cyber-Balkans? Modeling and measuring the integration of electronic communities</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Alstyne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Brynjolfsson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="851" to="868" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Networks, dynamics and the small-world phenomenon</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. J. Sociol</title>
+		<imprint>
+			<biblScope unit="volume">105</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="493" to="527" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">Influentials, networks and public opinion formation</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Dodds</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Consumer Res</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="441" to="458" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<analytic>
+		<title level="a" type="main">Collective dynamics of &quot;smallworld&quot; networks</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Strogatz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">393</biblScope>
+			<biblScope unit="page" from="440" to="442" />
+			<date type="published" when="1998-06" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<title level="a" type="main">Analyzing brand competition across subcategories</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wedel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="448" to="456" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">Group influence and brand choice congruence</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Witt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Bruce</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="440" to="443" />
+			<date type="published" when="1972" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">Modeling interdependent consumer preferences</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Allenby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="282" to="294" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

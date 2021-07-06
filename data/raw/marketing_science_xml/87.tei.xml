@@ -1,0 +1,1089 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Learning in Online Advertising</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2019-07-08">July 8, 2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">W</forename><forename type="middle">Jason</forename><surname>Choi</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Columbia Business School</orgName>
+								<orgName type="institution">Columbia University</orgName>
+								<address>
+									<postCode>10027</postCode>
+									<settlement>New York</settlement>
+									<region>New York</region>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Amin</forename><surname>Sayedi</surname></persName>
+							<email>aminsa@uw.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Foster School of Business</orgName>
+								<orgName type="institution">University of Washington</orgName>
+								<address>
+									<postCode>98195</postCode>
+									<settlement>Seattle</settlement>
+									<region>Washington</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Learning in Online Advertising</title>
+					</analytic>
+					<monogr>
+						<idno type="ISSN">0732-2399 (print)</idno>
+						<imprint>
+							<date type="published" when="2019-07-08">July 8, 2019</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1287/mksc.2019.1154</idno>
+					<note type="submission">Received: March 15, 2018 Revised: October 17, 2018; January 13, 2019 Accepted: January 17, 2019</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.6.2" ident="GROBID" when="2021-07-06T11:25+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>game theory</term>
+					<term>learning</term>
+					<term>competitive analysis</term>
+					<term>bidding strategy</term>
+					<term>online advertising</term>
+					<term>mechanism design</term>
+					<term>exploration-exploitation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Prior literature on pay-per-click advertising assumes that publishers know advertisers' click-through rates (CTRs). This information, however, is not available when a new advertiser first joins a publisher. The new advertiser's CTR can be learned only if its ad is shown to enough consumers, that is, the advertiser wins enough auctions. Because publishers use CTRs to calculate payments and allocations, the lack of information about a new advertiser can affect the advertisers' bids. Using a game-theory model, we analyze advertisers' strategies, their payoffs, and the publisher's revenue in a learning environment. Our results indicate that a new advertiser always bids higher (sometimes above valuation) in the beginning. The incumbent advertiser's strategy depends on its valuation and CTR. A strong incumbent increases its bid to deter the publisher from learning the new advertiser's CTR, whereas a weak incumbent decreases its bid to facilitate learning. Interestingly, the publisher may benefit from not knowing the new advertiser's CTR because its ignorance could induce advertisers to bid more aggressively. Nonetheless, the publisher's revenue sometimes decreases because of this lack of information. The publisher can mitigate this loss by lowering the reserve price of, offering advertising credit to, or boosting the bids of new advertisers.</p><p>History: Ganesh Iyer served as the senior editor and Zsolt Katona served as associate editor for this article.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Online advertising, with annual spending of more than $100B, has become the largest category of advertising in the United States. <ref type="bibr">1</ref> Online advertising inventory is sold using two pricing models: performancebased and impression-based. In performance-based (e.g., pay-per-click) pricing, an advertiser pays only if a consumer completes a predefined action (e.g., a click). In impression-based pricing, the advertiser pays for its ad being shown to a consumer regardless of whether the impression leads to an action.</p><p>Understanding how an ad performs (e.g., how likely it is that a consumer will take an action after viewing an ad) is crucial for publishers in performancebased pricing and for advertisers in impression-based pricing. For example, in pay-per-click pricing, it is more profitable for a publisher to accept a payment of $1 per click for an ad with a click-through rate (CTR) of 10% for an expected revenue of $0.10 per impression than a payment of $2 per click for an ad with a CTR of 4% for an expected revenue of $0.08 per impression. Similarly, the probability of action affects an advertiser's willingness to pay (WTP) for an impression in impressionbased pricing. The advertiser is willing to pay more per impression if it knows that the impression leads to a desired outcome with a higher probability.</p><p>Previous literature on online advertising primarily assumes that the probability of the predefined action (e.g., CTR) is known to advertisers and publishers <ref type="bibr" target="#b12">(Edelman et al. 2007</ref><ref type="bibr" target="#b23">, Katona and Sarvary 2010</ref>. In practice, however, advertisers and publishers have to learn this probability. For example, when a new advertiser joins the market or when an existing advertiser revamps its ad campaign, the CTRs of its ads are typically unknown to the publisher, other advertisers, and the advertiser itself. They can, at best, have an expectation of the CTR based on a few observable characteristics of the advertiser. <ref type="bibr">2</ref> The actual CTR becomes known only when the ads are displayed to consumers a high enough number of times such that sufficient impression and click data become available. In other words, learning is asymmetric: participating in advertising auctions is not sufficient for the advertiser's CTR to be learned; the advertiser has to win advertising auctions sufficiently many times before the publisher and the advertisers can learn its CTR.</p><p>The learning dynamic can affect advertisers' and publishers' strategies in the market. In particular, winning in an advertising auction has two effects on an advertiser's payoff. First, the advertiser receives an immediate value from showing its ad to a consumer (the direct effect). Second, winning reveals information about the performance of the ad to both the advertiser and the publisher (the indirect effect); this improves the advertiser's and the publisher's estimate of the true CTR of the ad. In performancebased pricing, this ad-performance information is used by the publisher to determine the pricing and allocation of an ad slot, and in impression-based pricing, it is used by the advertiser to determine the advertiser's WTP. Although the previous literature has primarily studied the direct effect of winning in an advertising auction, our paper focuses on the indirect effect.</p><p>These two effects give rise to interesting trade-offs for advertisers when a new advertiser joins the publisher. We illustrate these trade-offs in the following example.</p><p>Example. Suppose an advertiser, A, is the only advertiser bidding on an advertising slot of publisher P. Suppose that the slot is sold in a pay-per-click secondprice auction, A's bid is $1 per click, and its CTR is 15%. Assume that B is a new advertiser that wants to advertise on the same slot. B's bid is also $1 per click, but its CTR is not known to anybody at the time of entry. For the initial auctions, P assigns an average CTR estimate (e.g., based on the performance of advertisers with similar characteristics) of, say, 10%.</p><p>However, P can eventually learn the new advertiser's CTR after sufficient impression and click data for the new advertiser become available. Furthermore, B can facilitate this learning process by bidding aggressively and thereby winning in the early rounds. Doing so allows P to observe more click data for B's ad, which would, in turn, allow P to more accurately estimate B's true CTR.</p><p>Importantly, in pay-per-click pricing, P's estimate of B's CTR directly affects the payment and allocation of the advertisers. This is because publishers use effective bids, computed as advertisers' submitted bids multiplied by their expected CTRs, to calculate payment and allocation. <ref type="bibr">3</ref> Given this, would B prefer to have its CTR learned by P quickly or not?</p><p>If B privately knew its true CTR, then the answer would be evident. For example, if it knew that its true CTR is 20% (i.e., higher than P's estimate), then B would unambiguously prefer P to quickly update its CTR from the 10% estimate to the true 20%. The reason is that updating its CTR to a higher value would not only make B's future effective bid more competitive against the existing advertiser A, but it would also lower B's cost per click when it wins. In particular, with its $1 bid and 20% CTR, B outranks A's effective bid of $1 × 15% and wins the auction for a cost per click of .75; it would have lost the auction to A had its CTR remained at the average of 10% (see Table <ref type="table">1</ref>). Conversely, B's incentive to facilitate P's learning its CTR would diminish if B knew its true CTR is lower than P's prior estimate. In this case, B's long-term payoff would decrease if its low CTR is learned quickly. In sum, B prefers P to update B's CTR estimate more quickly (slowly) if it privately knows that its CTR is higher (lower) than P's prior estimate.</p><p>In reality, however, when B first enters the market, it does not know whether its true CTR is lower or higher than an average advertiser with similar characteristics. Therefore, it is not clear whether the new advertiser B should increase or decrease its bid to accelerate or slow down P's learning process if B wants to maximize its profit.</p><p>Similarly, for the existing advertiser A, P's learning the new advertiser B's CTR can be a double-edged sword. If B's CTR turns out to be higher than the estimated average, then A may lose the ad slot; if it turns out to be lower, A can win the auction at a lower cost per click than when B's CTR is not known to P (from $0.66 to $0.33 in Table <ref type="table">1</ref>). Again, given that the existing advertiser A can facilitate (hinder) P's learning process by decreasing (increasing) its bids when B joins, it is not clear which bidding strategy would maximize its profit.</p><p>In this paper, we study how the learning incentives affect the advertisers' and the publisher's strategies. We use a game-theoretic model to analyze advertisers' and publisher's strategies in a learning environment. To facilitate exposition, in the main body of the paper, we assume the publisher uses performancebased pricing, which currently accounts for 62% of the online advertising market in the United States, <ref type="bibr">4</ref> and use pay-per-click terminology. In the extensions, we show that our results apply to a pay-per-impression Table <ref type="table">1</ref>. When the Publisher Knows vs. Does Not Know New Advertiser's CTR Advertiser B's CTR Not known (CTR = 10%) Known (CTR = 20%) Known (CTR = 5%) B</p><p>Has to bid (and pay) Wins at cost per click Has to bid (and pay) $1 × 15%/10% $1.5 to win $1 × 15%/20% $0.75 $1 × 15%/5% $3 to win A Wins at cost per click Has to bid (and pay) Wins at cost-per-click $1 × 10%/15% $0.66 $1 × 20%/15% $1.33 to win $1 × 5%/15% $0.33</p><p>Choi and Sayedi: Learning in Online Advertising</p><p>Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">, vol. 38, no. 4, pp. 584-608, © 2019</ref> pricing model as well. We are interested in answering the following research questions. 1. Does a new advertiser (entrant) benefit from its CTR being learned by the publisher? How does this affect the entrant's bidding strategy?</p><p>2. Does an existing advertiser (incumbent) benefit from the publisher learning the CTR of the entrant? How does this affect the incumbent's bidding strategy?</p><p>3. How does the lack of information about a new advertiser's CTR affect the publisher's revenue? How do learning incentives affect the publisher's optimal strategy?</p><p>In answering the first set of questions, we show that a new advertiser's expected payoff when its CTR is learned by the publisher is higher than when it is not. The higher payoff incentivizes the new advertiser to bid aggressively to accelerate the learning process. As a result, the entrant should always bid higher (sometimes even above its valuation) in the beginning when its CTR is unknown to the publisher than in the long run after its CTR becomes known. This finding is in line with what industry experts commonly recommend new advertisers regarding starting bids-namely, bid aggressively "into high positions" and "make adjustments after [accumulating] data." Despite the risk of paying a high initial cost, the experts explain that bidding high and thereby attaining top positions early on could help improve the advertisers' long-run profits. <ref type="bibr">5</ref> Our result indicates that, even for advertisers whose long-run equilibrium cost per click is low, the initial cost per click (at the time of joining the market) may be above their valuation. In other words, advertisers should be prepared to lose money in the beginning when they start advertising with a publisher for the first time. Moreover, they should not be discouraged from using that publisher even if the initial costs per click are higher than their WTP.</p><p>In answering the second set of questions, we find that an incumbent's response to an entrant joining the auction depends on the incumbent's CTR. If the incumbent's CTR is high, the incumbent bids aggressively to impede the entrant's CTR from being learned by the publisher. This is because an incumbent with a high CTR does not want to risk earning a low margin (or, worse, losing its ad slot) in the event the entrant's CTR turns out to be high.</p><p>This "preemptive" strategy, however, is too expensive for an incumbent with a low CTR. As we show, an incumbent with a low CTR lowers its bid when an entrant joins so that the entrant's CTR is learned more quickly. Intuitively, competing with an advertiser whose CTR is unknown is too costly for the weak incumbent; by accelerating the learning process, the incumbent hopes that the entrant's CTR will turn out to be lower than the expectation.</p><p>In answering the third set of questions, interestingly, we find that the publisher may benefit from not knowing the new advertiser's CTR. The intuition is that the entrant, and sometimes the incumbent as well, bids more aggressively when the entrant's CTR is not known, which increases the publisher's revenue. Under certain conditions, however, the publisher's ignorance could also hurt its revenue. For instance, if the entrant's CTR is high, the publisher misses clicks (and, hence, opportunities for earning higher revenue) by not displaying the entrant's ad in the beginning. The negative effect becomes more pronounced when the incumbent's CTR is high because a strong incumbent bids aggressively to mask the entrant's CTR. This deters the publisher from learning the entrant's potentially high CTR.</p><p>We find that the publisher can mitigate the loss of not knowing the entrant's CTR by reducing the reserve price of the entrant. By reducing the reserve price, the publisher increases the probability of the entrant winning in the auction, thereby increasing the probability of learning the entrant's CTR. Furthermore, we characterize the optimal mechanism and show that, first, in the presence of learning considerations, a variation of the standard second-price auction with optimal reserve prices is sufficient to achieve the optimal revenue. Second, it is optimal for the publisher to favor the entrant in the beginning before the entrant's CTR is learned. This manifests in a lower optimal reserve price of the entrant when the publisher does not know the entrant's CTR than when it knows.</p><p>In addition, we discuss alternative mechanisms that can help the publisher mitigate its loss of not knowing the entrant's CTR. For example, Google provides a $75 ad credit to new advertisers when they spend $25 on AdWords. <ref type="bibr">6</ref> Facebook also offers ad credit to new accounts that have a sufficiently high audience engagement on their pages. 7 Although these programs have traditionally been viewed as promotions to attract new advertisers, our research reveals new strategic incentives beyond new customer acquisition that motivate publishers to offer ad credit.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1.">Theoretical Contribution</head><p>Although, from a managerial point of view, our work sheds light on advertisers' and publishers' strategies regarding new entries, we also highlight two unique aspects of our model from a theoretical point of view. First, in the context of online advertising, we study the transition of a game from an incomplete-information game to a full-information one. Although the previous literature on online advertising assumes that the game is either always full information (e.g., <ref type="bibr" target="#b12">Edelman et al. 2007)</ref> or always incomplete information (e.g., <ref type="bibr" target="#b11">Edelman and Schwarz 2010)</ref>, in practice, the level of information is constantly changing. Our paper takes a first step toward bridging this gap by analyzing the transition. <ref type="bibr">8</ref> We show that the advertisers' and the publishers' strategies regarding the transition are qualitatively distinct from those in full-and incomplete-information games.</p><p>Second, our analysis demonstrates how some of the standard results from learning theory may be reversed when the subjects of learning are not as "passive" as commonly assumed in the literature (e.g., <ref type="bibr" target="#b13">Gittins and</ref><ref type="bibr" target="#b13">Jones 1979 and</ref><ref type="bibr" target="#b22">Katehakis and</ref><ref type="bibr" target="#b22">Veinott 1987)</ref>. For instance, the exploration-exploitation tradeoff from standard learning theory suggests that knowing less about new advertisers would only hurt the publisher's revenue because the publisher must then learn about new advertisers through costly exploration. In contrast, our model shows that the publisher may be better off knowing less about the new advertiser because of the advertisers' strategic responses during the publisher's learning process. In other words, when the subjects are strategic agents, exploration could be profitable for the learner.</p><p>The rest of this paper is structured as follows. First, we discuss related literature. In Section 2, we present the model. We analyze the model and discuss advertisers' strategies in Section 3. The publisher's optimal strategy is discussed in Section 4. We explore extensions of the main model in Section 5 to establish the robustness of our main results, and conclude in Section 6. All proofs are relegated to the appendix. Proofs for lemmas are found in the online appendix.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2.">Related Literature</head><p>Our work contributes to the vast literature on display advertising. Empirical works in this area have assessed the effectiveness of display advertising in various contexts. <ref type="bibr" target="#b27">Lambrecht and Tucker (2013)</ref> demonstrate that retargeting may not be effective when consumers have not adequately refined their product preferences. <ref type="bibr" target="#b15">Hoban and Bucklin (2015)</ref> find that display advertising increases website visitations for a large segment of consumers along the purchase funnel but not for those who had visited before. <ref type="bibr" target="#b7">Bruce et al. (2017)</ref> examine the dynamic effects of display advertising and show that animated (versus static) ads with price information are the most effective in terms of consumer engagement. On the theoretical front, <ref type="bibr" target="#b35">Sayedi et al. (2018)</ref> study advertisers' bidding strategies when publishers allow advertisers to bid for exclusive placement on the website. <ref type="bibr" target="#b34">Sayedi (2018)</ref> analyzes the interaction between selling ad slots through real-time bidding and selling through reservation contracts. <ref type="bibr" target="#b41">Wilbur 2011 and</ref><ref type="bibr" target="#b16">Hu et al. (2016)</ref> study the trade-offs involved in choosing between "cost-per-click" and "costper-action" contracts. <ref type="bibr" target="#b5">Berman (2018)</ref> explores the effects of advertisers' attribution models on their bidding behavior and their profits. <ref type="bibr" target="#b26">Kuksov et al. (2017)</ref> study firms' incentives in hosting the display ads of their competitors on their websites.</p><p>Within online advertising, the increasing prevalence of search advertising has motivated a growing body of empirical (e.g., <ref type="bibr" target="#b33">Rutz and Bucklin 2011</ref><ref type="bibr" target="#b40">, Yao and Mela 2011</ref><ref type="bibr" target="#b14">, and Haruvy and Jap 2018</ref> and theoretical papers. <ref type="bibr" target="#b23">Katona and Sarvary (2010)</ref> and <ref type="bibr" target="#b20">Jerath et al. (2011)</ref> study advertisers' incentives in obtaining lower versus higher positions in search advertising auctions. <ref type="bibr" target="#b36">Sayedi et al. (2014)</ref> investigate advertisers' poaching behavior on trademarked keywords and their budget allocation across traditional media and search advertising. <ref type="bibr" target="#b10">Desai et al. (2014)</ref> analyze the competition between brand owners and their competitors on brand keywords. <ref type="bibr" target="#b29">Lu et al. (2015)</ref> and <ref type="bibr" target="#b37">Shin (2015)</ref> study budget constraints and budget allocation across keywords. <ref type="bibr" target="#b42">Zia and Rao (2017)</ref> look at the budgetallocation problem across search engines. <ref type="bibr" target="#b39">Wilbur and Zhu (2009)</ref> find the conditions under which it is in a search engine's interest to allow some click fraud. <ref type="bibr" target="#b9">Cao and Ke (2018)</ref> model manufacturer and retailers' cooperation in search advertising and show how it affects intrabrand and interbrand competition. <ref type="bibr" target="#b0">Amaldoss et al. (2015a)</ref> show how a search engine can increase its profits and also improve advertisers' welfare by providing first-page bid estimates. <ref type="bibr" target="#b6">Berman and Katona (2013)</ref> study the impact of search engine optimization, and <ref type="bibr" target="#b1">Amaldoss et al. (2015b)</ref> analyze the effect of keyword management costs on advertisers' strategies. <ref type="bibr" target="#b24">Katona and Zhu (2017)</ref> show how quality scores can incentivize advertisers to invest in their landing pages and to improve their conversion rates.</p><p>Following <ref type="bibr" target="#b12">Edelman et al. (2007)</ref>, by arguing that players learn each others' types after playing the game repeatedly, the vast majority of this literature uses a full-information setup to model search advertising auctions. There are a few papers (e.g., <ref type="bibr">Amaldoss et al. 2015a, b;</ref><ref type="bibr" target="#b11">and Edelman and Schwarz 2010)</ref> that use an incomplete-information setting for modeling search advertising. In these papers, however, the game remains an incomplete information game; that is, players do not learn each others' types. To the best of our knowledge, our paper is the first on online advertising to model the learning process, wherein the game starts as an incomplete-information game and, if a new advertiser's type is learned, transitions to a full-information game.</p><p>Parts of our model may resemble the literature on games with asymmetric information. For instance, in <ref type="bibr" target="#b21">Jiang et al. (2011)</ref>, a seller may want to hide its type from a publisher by pooling with another type. Despite some similarities, our paper differs in that we do not model information asymmetry. Although we allow players take certain actions to facilitate or hinder the revelation of information, those actions do not signal their types. Furthermore, in signaling games, <ref type="bibr" target="#b36">Choi and</ref><ref type="bibr">Sayedi: Learning in Online Advertising Marketing Science, 2019, vol. 38, no. 4, pp. 584-608, © 2019 INFORMS</ref> players mimic other players' strategies to hide or reveal information; in contrast, advertisers in our model interfere with the publisher's learning process to do so.</p><p>There are a few papers in the computer science and operations research literature that address dynamic learning in repeated auctions. <ref type="bibr" target="#b28">Li et al. (2010)</ref> solve for an advertiser's optimal bidding strategy when it is uncertain about its CTR and faces an exogenous distribution of competing bids. <ref type="bibr" target="#b17">Hummel and McAfee (2016)</ref> characterize the search engine's optimal bid on behalf of advertisers under uncertain CTRs in a repeated game, and <ref type="bibr" target="#b2">Balseiro and Gur (2017)</ref> introduce adaptive bidding strategies for budgetconstrained advertisers in repeated auctions of incomplete information.</p><p>Closest to our paper within this stream is <ref type="bibr" target="#b18">Iyer et al. (2014)</ref>, which studies bidding strategies of agents who learn their valuations. Under the assumption that the market size is infinitely large, <ref type="bibr" target="#b18">Iyer et al. (2014)</ref> adopt a mean-field approximation to solve for equilibrium strategies. They report a similar finding that, in a learning environment, an advertiser's bid consists of the present expected value of winning the ad slot and the "marginal future gain from one additional observation regarding [the advertiser's] valuation" (p. 2959). The present paper, however, differs along several important dimensions.</p><p>First, because we use performance-based pricing, the learning agent in our model is the publisher, not the advertiser. The publisher receives new information about a new advertiser who wins and incorporates the information into the rules of the subsequent auctions. Thus, a new advertiser bids strategically not to learn its own type per se, but to influence the publisher's learning process. Second, our paper sheds light on a novel incentive for existing advertisers to deter the publisher from learning the new advertiser's type. This is distinct from the idea of advertisers adopting (symmetric) bidding strategies to learn their own types. The discrepancies in the incentives across advertisers that are highlighted in our paper do not emerge in a meanfield equilibrium wherein all agents behave in a symmetric manner. Finally, our paper analyzes a small, stylized market with a limited number of participants, which allows us to model the fully rational behavior of all players. Our assumption of a small market is motivated by the fact that, because of the fine-grained targeting available in online advertising, most auctions have a small number of participants; as such, advertisers' oneto-one interactions affect their optimal strategies. Papers that employ mean-field equilibrium (e.g., <ref type="bibr" target="#b18">Iyer et al. 2014 and</ref><ref type="bibr" target="#b3">Balseiro et al. 2015)</ref> abstract away from advertisers' one-to-one interactions and characterize an approximate equilibrium wherein agents are assumed to be boundedly rational.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Model</head><p>Our model consists of a publisher and two advertisers, the incumbent and the entrant, indexed by P, I, and E, respectively. The publisher sells one ad slot in a second-price auction with reserve price R. <ref type="bibr">9</ref> Each advertiser has an advertiser-specific CTR-c I for the incumbent and c E for the entrant-that represents the average CTR of the advertiser if placed in the ad slot. In other words, when an ad is displayed to a consumer, the consumer clicks on the incumbent's (entrant's) ad with probability c I (c E ). Parameters c I and c E depend on the advertisers' ad copies, as well as the relevance and strength of their brands with respect to the publisher's web page in display advertising, or consumer's search query in search advertising.</p><p>In our main model, we assume performance-based pricing, which currently accounts for 62% of the online advertising market in the United States, 10 and use payper-click pricing terminology. 11 In Section 5.1, we show that, under some assumptions, our findings apply to impression-based pricing as well. We first assume that both advertisers have the same valuation per click, which we normalize to one. This assumption is not necessary but simplifies the discussion of advertisers' strategies in Section 3. We relax this assumption in Section 4 when analyzing the publisher's strategy. The incumbent (entrant) submits a bid b It (b Et ), where t indexes the game stage. The bids indicate how much the advertisers are willing to pay per click.</p><p>In performance-based pricing, publishers take advertisers' expected performance into account when determining payment and allocation. In pay-per-click pricing, publishers compute advertisers' effective bids as the product of their submitted bids and the estimated CTRs of their ads. 12 Some publishers may also include other parameters in the effective bids, such as landing page experience; however, to focus on the role of CTRs, we only take the submitted bids and the CTRs into account and assume that the two advertisers are the same along other dimensions that a publisher may consider. <ref type="bibr">13</ref> Therefore, the effective bids of the incumbent and the entrant at stage t are c I b It and c E b Et , respectively. The advertiser with the higher effective bid wins the auction, provided its effective bid is greater than or equal to the reserve price, R. The winner pays (per click) the minimum bid required to win the auction; that is, if the incumbent wins, it pays max We assume that c E is drawn from a differentiable cumulative distribution function (c.d.f.) F E . Because the incumbent has been advertising with the publisher for an extended period of time, following <ref type="bibr" target="#b12">Edelman et al. (2007)</ref> (and many other papers in the literature), we assume that its CTR, c I , is common knowledge.</p><p>On the other hand, the entrant's CTR is not known at the time of entry because the entrant has not advertised with the publisher in the past. When the entrant joins, the publisher, the incumbent, and the entrant only know the distribution of the entrant's CTR. <ref type="bibr">14</ref> We assume that c I and μ E , the expected value of c E , are greater than the reserve price so that the incumbent and the entrant can beat the reserve price in expectation.</p><p>Before we proceed, we should elaborate on the meaning of the CTR parameters c I and c E . In our model, these parameters represent the advertiser-specific CTRs, which, as explained above, depend on the advertisers' ad copies and brand strengths among others. Advertiser-specific CTRs are independent of position effects in which higher ad slot position increases the ad's click propensity. Indeed, publishers only take into account advertiser-specific CTRs, controlling for position effects, when computing advertisers' effective bids. <ref type="bibr">15</ref> Position-specific CTRs are incorporated in the multislot extension in Section 5.4.</p><p>Next, we describe the timing of the game, which is depicted in Figure <ref type="figure" target="#fig_2">1</ref>.</p><p>Stage 1: The entrant joins the market. The entrant's CTR is initially unknown and is, therefore, set to its expected value μ E . <ref type="bibr">16</ref> The incumbent and the entrant simultaneously submit their bids To simplify the analysis, we assume that, if the entrant wins a single auction (i.e., the auction in stage 1), then the publisher learns its CTR. In practice, the entrant would have to win sufficiently many times for the publisher to accurately learn its CTR. Stage 1 in our model corresponds to as many auctions as the entrant needs to win for the publisher to learn its CTR. Furthermore, in practice, learning is continuous and gradual such that the publisher's estimate of the entrant's CTR improves incrementally every time the entrant wins. Our model can be viewed as a discrete approximation of this learning process: the publisher either knows or does not know the entrant's CTR.</p><p>Stage 2: The advertisers submit their bids b I2 and b E2 . The incumbent's effective bid is c I b I2 . The entrant's effective bid depends on the outcome of the stage 1 auction. If the entrant had won in stage 1, then its CTR becomes known to the publisher by stage 2, and therefore, its effective bid is c E b E2 . Otherwise, as in stage 1, its CTR is not learned and its effective bid is μ E b E2 . <ref type="bibr">17</ref> We capture the relative weight of stage 2 compared with stage 1 with parameter δ &gt; 0. Note that, because the advertisers' decisions in stage 1 affect their payoffs in stage 2, δ affects how the advertisers trade off short-term revenue (in stage 1) for long-term revenue (in stage 2). <ref type="bibr">18</ref> The incumbent's expected profit is the sum of its firstand second-stage payoffs. That is,</p><formula xml:id="formula_0">E[π I ] π I1 + δE π I2 [ ],</formula><p>where π I1 denotes the incumbent's first-stage payoff and π I2 its second-stage payoff contingent on the realization of c E , over which expectation is taken. Specifically,</p><formula xml:id="formula_1">π I1 c I 1 − max[μ E b E1 , R] c I if c I b I1 ≥ max[μ E b E1 , R], 0 otherwise, ⎧ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎩ π I2 c I 1 − max[c E b E2 , R] c I if c I b I2 ≥ max[c E b E2 , R], 0 otherwise, ⎧ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎩ wherec E is c E if c E is learned (i.e.</formula><p>, entrant won in stage 1) and μ E otherwise. Similarly, the entrant'</p><formula xml:id="formula_2">s expected profit is E[π E ] E π E1 [ ]+ δE π E2 [ ],</formula><p>where Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">, vol. 38, no. 4, pp. 584-608, © 2019</ref> Finally, the publisher's expected profit is</p><formula xml:id="formula_3">π E1 c E 1 − max[c I b I1 , R] μ E if μ E b E1 ≥ max[c I b I1 , R], 0 otherwise, ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩ π E2 c E 1 − max[c I b I2 , R] c E ifc E b E2 ≥ max[c I b I2 , R], 0 otherwise. ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩</formula><formula xml:id="formula_4">E[π P ] E[π P1 ] + δE π P2 [ ],</formula><p>where</p><formula xml:id="formula_5">π P1 max[μ E b E1 , R] if c I b I1 ≥ max[μ E b E1 , R], c E max[c I b I1 , R] μ E if μ E b E1 &gt; max[c I b I1 , R], 0 otherwise, ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩ π P2 max[c E b E2 , R] if c I b I2 ≥ max[c E b E2 , R], c E max[c I b I2 , R] c Ec E b E2 &gt; max[c I b I2 , R], 0 otherwise. ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩</formula><p>We use subgame perfect Nash equilibrium as the solution concept and solve by backward induction. Finally, to ensure the existence of a weakly dominant strategy for the incumbent, we assume that</p><formula xml:id="formula_6">c I + δ (c I − μ E ) + − 1 0 (c I − max[c E , R]) + dF E ) ≥ R, for which a sufficient condition is δ ≤ 1/f E (R) + F E (R)</formula><p>. <ref type="bibr">19</ref> This assumption is only needed to facilitate the exposition in Section 3 and is dropped in Section 4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Advertisers' Strategies</head><p>In this section, we analyze the advertisers' bidding strategies and assume that the publisher's mechanism is exogenous. As a benchmark, in Section 3.1, we analyze the advertisers' strategies in a full-information game. Then, in Section 3.2, we study how learning incentives in an incomplete-information game affect the advertisers' bidding strategies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Full-Information Setting</head><p>As a benchmark, we first consider the case in which the entrant's CTR is common knowledge. This corresponds to what most of the previous theoretical papers in online advertising literature assume. Even though the auction is not a standard second-price auction because advertisers' bids are multiplied by their CTRs, truthful bidding (i.e., bidding the perclick valuation) is still a weakly dominant strategy for both advertisers. The advertisers' equilibrium strategies and their payoffs under full information are summarized in the following proposition.</p><p>Proposition 1 (Bids and Payoffs Under Full Information).</p><p>Under full information, truthful bidding is a weakly dominant strategy for both advertisers. The payoffs of the incumbent, the entrant, and the publisher, respectively, are</p><formula xml:id="formula_7">π F I (1 + δ)(c I − max[c E ,R]) + , π F E (1 + δ)(c E − c I ) + , and π F P (1 + δ) max[min[c I , c E ],R], where x + ≡ max[x,0].</formula><p>Proposition 1 shows that, when the publisher knows the entrant's CTR, both advertisers always bid truthfully. This finding is not new to the literature and is presented here for the sake of completeness. Interestingly, in the next section, we show that truthful bidding is no longer an equilibrium strategy when the publisher does not know the entrant's CTR.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Incomplete-Information Setting</head><p>In practice, there is little information regarding the entrant's CTR that is available to the publisher. Therefore, unlike the case for the incumbent's CTR, the advertisers and the publisher have, at best, only partial information about the entrant's CTR.</p><p>We begin our analysis under incomplete information with the second-stage bids. We focus on dominant strategy equilibrium in which advertisers play weakly dominant strategies. As we show in Lemma 1, the stage 2 auction is straightforward: advertisers bid truthfully. This is because, in the last stage, there are no strategic considerations of future payoffs; thus, the truthfulness property of standard second-price auctions holds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Lemma 1 (Bids in Stage 2 Under Incomplete Information).</head><p>Regardless of the outcome in stage 1, bidding truthfully is a weakly dominant strategy for both advertisers in stage 2.</p><p>In contrast, we find that, in stage 1, the advertisers' bidding strategies are not always truthful. Their bids can be either below or above valuation depending on their expectations of stage 2 payoffs. The following lemma characterizes the advertisers' first-stage equilibrium bids.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Lemma 2 (Bids in Stage 1 Under Incomplete Information).</head><p>In stage 1, it is weakly dominant for the incumbent and the entrant, respectively, to bid b</p><formula xml:id="formula_8">* I1 1 + δ c I c I − μ E + − c I 0 c I − max[c E , R] dF E , (1) b * E1 1 + δ μ E 1 c I c E − c I dF E − μ E − c I + .<label>(2)</label></formula><p>In general, truthful bidding is a weakly dominant strategy in a second-price auction even under incomplete information. Expressions ( <ref type="formula">1</ref>) and ( <ref type="formula" target="#formula_8">2</ref>), however, show that the advertisers' bids are no longer truthful. What drives the change in advertisers' strategies in our model is the advertisers' incentive (or lack thereof) to help the publisher learn the entrant's CTR. The advertisers' stage 1 bids are shaped by their preference to play a stage 2 game in which the entrant's CTR is μ E versus c E , where c E is randomly drawn from F E . For example, if the entrant's expected payoff in stage 2 is higher when its CTR is c E (i.e., its CTR is learned) compared with when it is μ E (i.e., its CTR is not learned), the entrant would raise its stage 1 bid.</p><p>But does the entrant prefer its CTR to be learned by the publisher? We find the answer to be affirmative. For the entrant, the benefits of revealing its CTR are twofold. First, it allows the entrant to outrank the incumbent in stage 2 with some probability even when μ E ≤ c I , a situation in which the entrant would have surely lost in stage 2 if its CTR were unknown and set to μ E by the publisher. Second, it provides an opportunity for the entrant to pay lower cost per click in the event that its CTR turns out to be high compared with the case in which its CTR is assigned the mean estimate μ E . Evidently, there is also the risk of its CTR turning out to be low, in which case the entrant would have been better off being assigned μ E . The reward of a high CTR realization, however, is disproportionately larger than the loss the entrant incurs for a low realization. The reason is that, although the gains for the entrant increase proportionally with high realizations of c E , the loss of a low c E is bounded from below by zero. Therefore, in expectation, the entrant prefers its CTR to be learned by the publisher.</p><p>Table <ref type="table" target="#tab_0">2</ref> shows this more formally for the case in which μ E &gt; c I . The entrant's stage 2 profit when the publisher does not know the entrant's CTR (left-hand side) is integrated over negative values as well (in the range c E ∈ (0, c I )). This integral value is lower than that when the publisher knows c E (right-hand side) and only positive values are integrated. In sum, for any entrant CTR distribution F E , the entrant's stage 2 profit is higher in expectation if the publisher learns its CTR. Therefore, the entrant bids aggressively in stage 1 to facilitate the publisher's learning process.</p><p>The incumbent's bidding strategy is slightly more nuanced: the incumbent underbids for low c I and overbids for high c I . Suppose c E is not learned by the publisher in stage 2. If c I is close to μ E , then the incumbent either loses the stage 2 auction or, even if it wins the auction, receives a low stage 2 payoff because the cost per click μ E /c I is high. In this case, the incumbent is better off shading its stage 1 bid below valuation, thereby helping the entrant win the firststage auction. The intuition is that, by facilitating the revelation of the entrant's CTR, the incumbent foregoes its first-stage payoff but creates an opportunity to reap a large second-stage payoff in the event c E turns out to be low. Thus, a weak incumbent has a strategic incentive to underbid.</p><p>On the other hand, if c I is significantly greater than μ E , then the incumbent's stage 1 strategy switches from underbidding to overbidding. To illustrate, suppose c I is high and compare the incumbent's stage 2 payoff when c E is concealed versus revealed. Had c E been concealed, the incumbent would win in stage 2 at a low cost per click of μ E /c I because c I μ E . Conversely, had c E been revealed, there are two possibilities: if c E turns out to be low, the incumbent pays an even lower cost; if c E turns out to be high, the incumbent pays a high cost (if not loses the ad position). However, the reward of a low c E realization is outweighed by the risk of a high c E realization because the incumbent's potential to reap larger margins for a low c E realization is limited by the reserve price. Therefore, the incumbent has incentive to conceal c E when its CTR is high and, thus, bids above valuation in stage 1. This can also be seen from Table <ref type="table" target="#tab_2">3</ref>, which shows the incumbent's stage 2 profit when c I &gt; μ E . The incumbent's stage 2 profit when the publisher does not know the entrant's CTR (left-hand side) is c I − c E integrated over all values of c E . When c E is known (righthand side), for values of c E ∈ (0, R), we have c I − R integrated; because R &gt; c E , the incumbent is better off when the publisher does not know c E for this integration range. Within the integration range of c E ∈ (R, c I ), the expressions on both sides are equal to c I − c E . Finally, within the range c E ∈ (c I , 1), negative values are integrated on the left-hand side expression, whereas the right-hand side expression is zero. For this integration range, the incumbent is better off when the publisher knows c E . Overall, the negative effect of learning c E on the incumbent's profit (which happens for c E ∈ (0, R)) is constant as c I increases, but the positive effect (which happens for c E ∈ (c I , 1)) shrinks as c I increases. Therefore, a weak incumbent with low c I is better off in stage 2 when c E is learned, whereas a strong incumbent with high c I is better off when c E is not learned. This incentivizes a weak (strong) incumbent to underbid (overbid) in stage 1. We summarize these results in the following proposition.</p><p>Proposition 2 (Advertisers' Strategies in Stage 1 Under Incomplete Information). In stage 1, the entrant always bids above its valuation. The incumbent bids below its valuation if c I is low and bids above its valuation if c I is high. See Figure <ref type="figure" target="#fig_3">2</ref>.</p><p>The advertisers' bidding behavior outlined in Proposition 2 can also be understood from an asymmetric learning perspective. Suppose that the publisher always learns the entrant's CTR in stage 2 regardless of the stage 1 outcome. In this hypothetical scenario, the advertisers' stage 2 payoffs would be  In our model, however, the fact that the publisher's learning is asymmetric-that is, learning occurs if only if the entrant wins in stage 1-creates an important interdependence between the two sequential auctions. This interdependence, which is depicted in Figure <ref type="figure" target="#fig_2">1</ref>, generates strategic incentives for advertisers to deviate from truthful bidding.</p><formula xml:id="formula_9">E[π E2 ] 1 0 c E (1 − c I /μ E ) dF E E[π E2 ] 1 0 c E (1 − c I /c E ) + dF E (1 − c I /μ E ) 1 0 c E dF E (1 − c I /μ E )μ E 1 cI c E (1 − c I /c E ) dF E μ E − c I 1 0 c E − c I dF E 1 cI c E − c I dF E</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Publisher's Revenue</head><p>We turn to the implications of learning incentives on the publisher's revenue. Is the publisher unequivocally better off knowing the entrant's CTR? One may conjecture that being more informed about the bidders can only benefit the publisher as it would allow for more efficient ad slot allocation. Surprisingly, we find that this is not always the case. Under certain conditions, not knowing the entrant's CTR increases the publisher's revenue. <ref type="bibr">20</ref> The intuition revolves around two effects. First, the publisher's ignorance of the entrant's CTR induces the entrant to bid more aggressively in stage 1. As explained above, the incentive to bid higher arises from the fact that the entrant's expected payoff in stage 2 is higher if the publisher learns its CTR. This higher bid increases the incumbent's payment if it wins, which results in higher stage 1 revenue for the publisher.</p><p>The second effect is subtler. Consider the publisher's stage 2 revenue when c I &gt; μ E . Recall that the advertisers bid truthfully in stage 2. If c E is not known, the publisher's expected revenue in stage 2 is (μ E /c I )c I μ E . Using the definition of μ E , this can be rewritten as</p><formula xml:id="formula_10">1 0 c E dF E .</formula><p>(3)</p><p>If c E is known, the publisher's stage 2 revenue depends on the realization of c E and can be written as</p><formula xml:id="formula_11">R 0 R dF E + c I R c E dF E + 1 c I c I dF E .<label>(4)</label></formula><p>Comparing the two integral expressions ( <ref type="formula">3</ref>) and ( <ref type="formula" target="#formula_11">4</ref>), we see that, within the integration range c E ∈ (0, R), expression ( <ref type="formula" target="#formula_11">4</ref>) is larger; within the range c E ∈ (R, c I ), the two expressions are equal, and within the range c E ∈ (c I , 1), expression (3) is larger. Thus, if c I is not too high, then the publisher's revenue when it does not know c E (i.e., expression (3)) is larger than when it does (i.e., expression ( <ref type="formula" target="#formula_11">4</ref>)). Intuitively, because the benefit of a high realization of c E is bounded from above by c I , that is, the publisher cannot fully reap the benefits of a high c E , the publisher's stage 2 revenue may be higher when c E is not known than when it is. Taken together, the publisher's ignorance of the entrant's CTR can be blissful for moderate values of c I . This result is formalized in the following proposition.</p><p>Proposition 3 (Publisher Revenue: Ignorance Is Bliss).</p><p>The publisher's revenue is higher not knowing the entrant's CTR than knowing it if and only if (i) c &lt; c I &lt; c or (ii) c I ≤ μ E and δ &lt; 1, where c and c are defined in the appendix.  </p><formula xml:id="formula_12">E[π I2 ] c I (1 − μ E /c I ) E[π I2 ] 1 0 c I (1 − max[c E , R]/c I ) + dF E c I − μ E R 0 c I (1 − R/c I ) dF E + cI R c I (1 − c E /c I ) dF E 1 0 c I − c E dF E R 0 c I − R dF E + cI R c I − c E dF E</formula><p>Choi and Sayedi: Learning in Online Advertising Proposition 3 suggests that publishers do not always have to be concerned about not knowing the new advertisers' type. In fact, not knowing the new advertisers' CTRs can sometimes increase the publisher's revenue because ignorance induces advertisers to bid aggressively. However, Proposition 3 also reveals conditions under which the publisher's ignorance can be a curse. For instance, if the incumbent is strong (e.g., high c I in Figure <ref type="figure" target="#fig_4">3</ref>), then not knowing the entrant's CTR decreases the publisher's revenue. This is because, when c I is sufficiently high, the entrant, which is the "price setter" in the auction, bids less aggressively. Furthermore, when c I is high, the publisher does not learn the entrant's CTR in equilibrium because of the incumbent's aggressive bidding. As a result, it suffers from suboptimal allocation of the ad slot (i.e., missing out on a potentially high c E ).</p><p>Given that the publisher may incur a revenue loss for not knowing c E , one may wonder what strategies a publisher can deploy to mitigate this loss. In the next section, we characterize the publisher's optimal strategy in a learning environment. We show that, in the presence of learning incentives, it is optimal for the publisher to favor the entrant in stage 1 to increase the probability of the entrant's winning.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Publisher's Strategy</head><p>In the previous section, we assumed that advertisers have the same, commonly known valuation for the ad slot. Moreover, we focused primarily on the advertisers' strategies with the publisher passively implementing an exogenously fixed auction mechanism. In this section, we analyze a setting in which advertisers have stochastic, private valuations, and more importantly, the publisher optimally chooses the mechanism that maximizes its profit. <ref type="bibr">21</ref> We show that, in the presence of learning incentives, the publisher can achieve the optimal revenue using a variation of the standard second-price auction with personalized (advertiserspecific) reserve prices. Additionally, the learning incentives induce the publisher to favor the entrant in stage 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Optimal Mechanism</head><p>Suppose advertiser j's per-click valuation, v j , is drawn from a c.d.f. G j with support [0, v j ] and is private information for j ∈ {I, E}. Following the literature on auction theory (see <ref type="bibr" target="#b25">Krishna 2010)</ref>, we impose the following assumption on G j .</p><p>Assumption 1 (Increasing Hazard Rate). Let g j denote the density of G j . The hazard rate function</p><formula xml:id="formula_13">g j (x) 1−G j (x) is increasing in x for j ∈ {I, E}. 22</formula><p>Prior to stage 1, the publisher sets the ad auction rules. In particular, it decides the allocation rule (who wins the ad slot) and the payment rule (how much each bidder pays). The rest of the game proceeds the same as in Section 3. The following lemma characterizes the publisher's optimal mechanism. <ref type="bibr">23</ref> Lemma 3 (Publisher's Optimal Mechanism). The publisher's optimal mechanism is as follows.</p><p>Stage 1: Compute the incumbent's and entrant's virtual bids, respectively, as</p><formula xml:id="formula_14">ψ I1 (b I1 ) c I b I1 − 1 − H I (b I1 ) h I (b I1 )<label>and</label></formula><formula xml:id="formula_15">ψ E1 (b E1 ) μ E b E1 − 1 − H E (b E1 ) h E (b E1 ) + δΔ P ,<label>(5)</label></formula><p>and set the virtual reserve price to δΔ I . Stage 2: Compute advertiser j's virtual bid as  </p><formula xml:id="formula_16">ψ j2 (b j2 ) c j b j 2 − 1 − G j (b j2 ) g j (b j2 ) for j ∈ {I, E},<label>(6)</label></formula><formula xml:id="formula_17">(b j1 ) G j b j1 − δΔ j c j , Δ I π I2 (μ E ) − 1 0 π I2 (c E ) dF E , Δ E 1 0 π E2 (c E ) dF E − π E2 (μ E ), Δ P 1 0 π P2 (c E ) dF E − π P2 (μ E )</formula><p>, and π j2 (c E ) denotes the stage 2 profit of player j ∈ {I, E, P} under the optimal stage 2 mechanism when the publisher assigns the entrant's CTR as c E . <ref type="bibr">24</ref> Allocate the ad slot to the advertiser with the highest virtual bid provided it exceeds the virtual reserve price. Payment (per click) is equal to the minimum bid required for the winning advertiser to win.</p><p>The details of the proof are provided in the appendix. We briefly discuss here the intuition behind the optimal mechanism. Variables Δ j , j ∈ {I, E, P}, capture the difference in a full-information stage 2 versus an incomplete-information stage 2 in the players' payoffs; that is, Δ E measures the additional stage 2 payoff the entrant gains from having its CTR learned by the publisher, Δ P measures the additional stage 2 payoff the publisher gains from learning the entrant's CTR, and Δ I represents the additional stage 2 payoff the incumbent gains if the entrant's CTR is not learned. Distributions H j , j ∈ {I, E}, are similar to advertisers' valuation distributions G j except that they are shifted to account for the advertisers' incentives to have the entrant's CTR learned or not learned.</p><p>The derivation of the optimal mechanism closely follows <ref type="bibr" target="#b30">Myerson (1981)</ref>. The optimal mechanism in stage 2, in which learning incentives are absent, is a direct application of Myerson's lemma. Intuitively, the virtual bid transformation amounts to sorting advertisers based on the marginal revenue they bring to the publisher <ref type="bibr" target="#b25">(Krishna 2010)</ref>. Thus, allocating the ad slot to the advertiser with the highest virtual bid maximizes the publisher's profit.</p><p>In stage 1, the presence of learning incentives (for both the advertisers and the publisher) distorts the advertiser's virtual bids compared with the standard format in <ref type="bibr" target="#b30">Myerson (1981)</ref>. Specifically, we see from (5) that the publisher additively inflates the entrant's virtual bid by δΔ P . This term represents the additional stage 2 payoff the publisher gains from learning the entrant's CTR and is proven to be always positive. <ref type="bibr">25</ref> Intuitively, because the publisher can only learn the entrant's CTR if the entrant wins in stage 1, the publisher has an incentive to help the entrant win. The publisher accomplishes this by increasing the entrant's virtual bid in stage 1. <ref type="bibr">26</ref> Lemma 3 also sheds light on the nature of the optimal virtual bids. For example, if the advertisers' valuations are uniformly distributed, then it is optimal for the publisher to compute virtual bids by multiplying the advertisers' bids with their expected CTRs (modulo an additive term). This implies that publishers with diffuse priors about advertisers' valuations can achieve near-optimal revenues by ranking advertisers based on CTR × bid. Moreover, the fact that the CTR-multiplier formula is also used in stage 1 in the presence of learning dynamics attests to the robustness of this particular virtual bid format.</p><p>Next, we discuss the advertisers' bidding strategies under the optimal mechanism. Interestingly, we find that the insights from Section 3 regarding bid adjustments carry over to the optimal mechanism setting. As shown in Figure <ref type="figure" target="#fig_5">4</ref>, the entrant overbids in stage 1. Its motivation closely mirrors that of Section 3: its expected payoff in stage 2 is greater if its CTR is learned by the publisher because the downside risk of a low c E draw is bounded.</p><p>A weak incumbent bids below its valuation and helps the entrant reveal its CTR. In contrast to Section 3, however, the heterogeneity in advertisers' valuations necessitates an additional condition for this result to hold. Namely, the valuation distributions G I and G E must be such that the weak incumbent's probability of winning in stage 2 decreases sufficiently slowly in c E . Roughly, this is equivalent to the incumbent's valuation distribution being more concentrated around higher values than is the entrant's valuation distribution. For then, even if the entrant's CTR turns out to be high in stage 2, the incumbent, whose valuation is more heavily concentrated on higher values, would still have a considerable chance of winning. This condition ensures that the weak incumbent, who effectively helps the entrant win in stage 1, feels adequately "insured" against the risk of a high c E draw in stage 2. The weak incumbent then foregoes its stage 1 profit and helps reveal the entrant's CTR as it creates an opportunity to earn higher profits against an entrant with a low CTR draw.</p><p>Finally, a strong incumbent may overbid under the optimal mechanism (see Figure <ref type="figure" target="#fig_5">4</ref>). Again, the intuition mirrors that from Section 3; however, the added necessary condition is that the incumbent's probability of winning in stage 2 decreases steeply in the entrant's CTR draw. In this case, the incumbent deems the risk of revealing the entrant's CTR in stage 2 too high. Therefore, it bids aggressively in stage 1 and deters the publisher from learning the entrant's CTR. We summarize these findings in the following proposition.</p><p>Proposition 4 (Advertisers' Strategies in Stage 1 Under Optimal Mechanism). Suppose the publisher implements the optimal mechanism characterized in Lemma 3. In stage 1, the entrant always bids above its valuation. The incumbent bids below its valuation if c I is low and the valuation distributions G I and G E are such that the probability of the incumbent winning in stage 2 decreases sufficiently slowly in the entrant's CTR draw. The incumbent bids above its valuation if c I is high and G I and G E are such that the incumbent's probability of winning in stage 2 decreases steeply in the entrant's CTR draw. The exact conditions are provided in the proof in Section A.4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Optimal Reserve Prices</head><p>In this section, we delve deeper into a particular aspect of the optimal mechanism, the (effective) reserve prices. We examine how the learning incentives affect the publisher's optimal reserve prices in stage 1. Before we proceed, we should clarify two distinct units of reserve prices. Virtual reserve price is defined in the virtual bids space and measures the minimum virtual bid required for an advertiser to participate. Effective reserve price is defined in the submitted bids space and refers to the minimum submitted bid required for a particular advertiser to participate <ref type="bibr" target="#b32">(Ostrovsky and Schwarz 2016)</ref>. To illustrate, suppose the publisher sets a virtual reserve price of $0.15, and an advertiser bids b. Suppose that the advertiser's virtual bid is set to 0.1 × b by the publisher. The advertiser is considered in the auction if its virtual bid 0.1 × b is greater than or equal to $0.15. Equivalently, the advertiser is considered if its submitted bid b is greater than or equal to the effective reserve price $0.15/0.1 $1.5.</p><p>Although the optimal mechanism uses the same virtual reserve price for all advertisers, because it applies different virtual bid transformations, advertisers face different effective reserve prices. In the following, we consider the effective reserve price as it is a more intuitive concept to discuss advertisers' payments.</p><p>Our analysis shows that the optimal reserve price depends crucially on two countercurrent forces. On the one hand, the entrant's overbidding incentive exerts an upward force on the entrant's reserve price. That is, the higher the value that the entrant gains from the publisher learning its CTR is, the higher it bids in stage 1. The publisher can, thus, extract more from the entrant by setting a higher reserve price. Therefore, the reserve price increases with the entrant's overbidding incentive. The converse is true for the incumbent: the reserve price for the incumbent increases with the incumbent's value of deterring the publisher from learning the entrant's CTR.</p><p>On the other hand, the publisher's learning incentive pushes the entrant's reserve price downward. The higher the value for the publisher if it learns the entrant's CTR is, the greater its incentive to help the entrant win in stage 1. This is accomplished by lowering the entrant's reserve price. Therefore, the reserve price decreases with the publisher's learning incentive.</p><p>Figure <ref type="figure" target="#fig_6">5</ref> illustrates the dynamics of each advertiser's optimal reserve price for particular valuation distributions G I and G E . Interestingly, the entrant's reserve price can be nonmonotonic in the stage 2 weight parameter, δ. When δ is small, the publisher's learning incentive dominates, and as δ increases, the publisher lowers the reserve price to facilitate learning the entrant's CTR. When δ is large, however, the entrant's overbidding incentive dominates. Here, as δ increases, the publisher increases the reserve price to extract more surplus from the entrant.</p><p>So far, we have discussed two countervailing forces that induce the publisher to increase/decrease the entrant's reserve price in a learning environment. But what is the net effect of these forces on the entrant's reserve price? We conclude this section by presenting the conditions under which the publisher sets a lower reserve price for the entrant when it does not know the entrant's CTR than under full information. Although a closed-form characterization of the optimal reserve price with respect to δ is intractable, we can analytically delineate the conditions for when the publisher sets a lower reserve price. In Proposition 5, we show that, for any δ, the publisher sets a lower reserve price for the entrant in a learning environment (compared with full information) if and only if the increment in its stage 2 profit from learning the entrant's CTR is sufficiently high.</p><p>Proposition 5. The publisher sets a lower reserve price for the entrant when the publisher does not know the entrant's CTR than when it does if and only if Δ P &gt; Δ I + μ E ρ δ (where Δ j is as defined in Lemma 3 and ρ &gt; 0 is as defined in the proof); </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Choi and Sayedi: Learning in Online Advertising</head><p>Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">, vol. 38, no. 4, pp. 584-608, © 2019</ref> that is, the publisher's gain in stage 2 from learning the entrant's CTR is sufficiently high.</p><p>The results of Lemma 3 and Proposition 5 show that, when the publisher's learning incentives are sufficiently strong, it is optimal for the publisher to favor the entrant. Favoring the entrant can be implemented by increasing the entrant's virtual bid as in Lemma 3 or decreasing the entrant's reserve price as in Proposition 5. In Section 5.3, we show that other mechanisms that favor the entrant can create a similar effect. For example, giving free advertising credit to new advertisers or artificially inflating the "estimated" CTR of new advertisers can increase the publisher's revenue.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Extensions</head><p>We present four extensions of the main model to assess the robustness of our results. In Section 5.1, we show that our results from the main model continue to hold under impression-based pricing. In the main model, we assumed that the advertisers and the publisher have the same level of information about the CTRs; in Section 5.2, we relax this assumption to establish the robustness of our results. In Section 5.3, we explore other mechanisms that help the publisher increase its revenue in a learning environment. We show that offering free ad credit to new advertisers or artificially inflating the estimated CTR of new advertisers can increase the publisher's revenue. Finally, in Section 5.4, we turn to the context of search advertising and discuss how our results change when there are multiple ad slots.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Impression-Based Pricing</head><p>Suppose the publisher sells a single ad slot through a cost-per-impression (CPM) auction instead of cost per click. Consistent with practice, we assume that the publisher receives the advertisers' per-impression bids and assigns the slot to the highest bidder. <ref type="bibr">27</ref> The winning bidder pays the minimum bid required to win the auction.</p><p>To model a CPM auction, it is important to recognize that the relevant performance metric for advertisers is the consumers' "estimated action rates" per ad impression. Consumer actions can range from clicking a link to watching a video longer than a certain amount of time or performing a certain task on the advertiser's website. For j ∈ {I, E}, let a j ∈ [0, 1] denote the probability of action of a consumer conditional on viewing advertiser j's ad. We normalize the value of a consumer's action to 1 for both advertisers. Put together, a single impression is worth a j to advertiser j.</p><p>In the spirit of the main model, assume that the action probability associated with the entrant's ad, a E , is known only up to its c.d.f.F with meanã E , and the incumbent's action probability, a I , is common knowledge. <ref type="bibr">28</ref> The true value of a E can only be learned if the entrant wins the first-stage auction; only then can the entrant accurately assess the likelihood of a consumer responding to its ad with some predefined action. Similar to Section 3, we assume that the reserve price is exogenously set at R and is less than a I andã E . In addition, as in Section 3, we assume</p><formula xml:id="formula_18">a I + δ (a I −ã E ) + − 1 0 (a I − max[a E ,R]) + dF ≥ R to</formula><p>ensure the existence of weakly dominant strategies. We obtain the following proposition, which echoes the results from the main model. Proposition 6 (Advertisers' Strategies in Stage 1 Under CPM). In stage 1, the entrant always bids above its valuation. The incumbent bids below its valuation if a I , the action probability associated with its ad, is low, and bids above valuation if a I is high. See Figure <ref type="figure" target="#fig_7">6</ref>.</p><p>Proposition 6 shows that advertisers' strategies under impression-based pricing are similar to those under performance-based pricing. However, there is an important difference in the advertisers' incentives </p><formula xml:id="formula_19">G I (v I ) vI 2 3 , G E (v E ) 4vE 3 3 , F E (c) c</formula><p>Choi and Sayedi: Learning in Online Advertising between the two pricing models. Under performancebased pricing, the entrant does not care about learning the CTR itself; it overbids so that the publisher learns the CTR. In contrast, under impression-based pricing, because the CTR determines the entrant's valuation per impression, the entrant overbids so that the entrant itself learns its CTR. Similarly, under performance-based pricing, the incumbent adjusts its bid to affect whether the publisher learns the entrant's CTR or not, whereas under impression-based pricing, the incumbent wants to affect whether the entrant learns its own CTR or not. Despite discrepancies in the advertisers' incentives across these two pricing models, the mathematical expressions that capture the advertisers' payoffs are relatively similar: in performance-based pricing, the publisher includes the advertiser's CTR in the effective bid, whereas in impression-based pricing, the advertiser includes the CTR in its submitted bid. As such, we obtain the same strategic behavior under both pricing models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Information Asymmetry</head><p>In this section, we test the robustness of our results when the information symmetry assumption is relaxed. We examine two distinct cases. In Section 5.2.1, we demonstrate that the qualitative insights of the main model carry over when the entrant is at an informational disadvantage; that is, the entrant only knows the incumbent's CTR up to some distribution, and the incumbent and the publisher know the incumbent's true CTR. In Section 5.2.2, we replicate the incumbent's bidding pattern from the main model in a setting in which the incumbent only knows the distribution of the entrant's CTR up to a distribution, and the entrant and the publisher know the true distribution of c E .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.1.">Entrant Does Not Know the True c I .</head><p>In the main model, we assume that the entrant, incumbent, and publisher possess the same level of information regarding the incumbent's CTR. In reality, it could be argued that the entrant may not be as knowledgeable about c I as the incumbent and the publisher. In this section, we analyze a model that captures this information asymmetry more realistically. Our objective is to show that the entrant's overbidding behavior is robust to the setting in which the entrant is less informed about c I than the incumbent and the publisher.</p><p>To that end, suppose that the entrant does not know the true value of c I but knows that it follows some distribution F I over the support [R, 1]. On the other hand, the publisher and the incumbent both know the true c I . We find that the entrant's overbidding pattern is robust to this information setting. The following proposition summarizes the finding.</p><p>Proposition 7. Suppose the entrant does not know the true CTR of the incumbent but only knows its distribution. In stage 1, the entrant always bids above its valuation.</p><p>We know from Section 3 that the entrant overbids for any given value of c I . Intuitively, when the entrant only knows the distribution of c I , it integrates over all possible values of c I to calculate its optimal bid. Because the optimal strategy for any value of c I is to overbid, the optimal strategy when c I is not known (i.e., the outcome of the integration) is still to overbid.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.2.">Incumbent Does Not Know the True Distribution</head><p>of c E . Another important case to consider is when the incumbent, as opposed to the entrant, is at an informational disadvantage. How would the incumbent having less information about c E than the entrant and the publisher impact its bidding strategy? <ref type="bibr">29</ref> To address this question, we allow for the possibility that the incumbent does not know the true distribution of c E ; that is, the incumbent strategizes based on some prior belief over a range of possible distributions of c E .  The publisher and the entrant, on the other hand, know the true distribution of c E . Suppose the incumbent believes that the true distribution of c E is F x for some x ∈ -. Let P(x) denote the c.d.f. of the incumbent's prior over the class of distributions {F x } x∈-and μ x the mean of F x . In addition, as in Section 3, assume that the condition for the existence of weakly dominant strategies holds:</p><formula xml:id="formula_20">c I + δ x∈-(c I − max[μ x , R]) + − 1 0 (c I − max[c E , R]) + dF x • dP(x) ≥ R.</formula><p>Then there exist CTR thresholds such that a weak incumbent (i.e., with a low CTR) bids below its valuation, whereas a strong incumbent (i.e., with a high CTR) bids above it. We state this as a proposition.</p><p>Proposition 8. Suppose the incumbent does not know the true distribution of the entrant's CTR. There exists a pair of thresholds (c , c ) such that the incumbent bids below its valuation if c I &lt; c and bids above valuation if c I &gt; c .</p><p>The intuition for the result of Proposition 8 is similar to that of Proposition 7. For any distribution F x , we know from Section 3 that a weak incumbent underbids and a strong incumbent overbids. When the incumbent does not know the entrant's distribution, it integrates over all possible distributions to calculate its optimal bid; however, integration preserves the ordering. Therefore, when the incumbent is sufficiently weak, it overbids, and when it is sufficiently strong, it overbids.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Other Mechanisms</head><p>In this section, we discuss two other mechanisms that can help publishers increase their revenue in a learning environment.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.1.">Free Advertising Credit for New Advertisers.</head><p>Publishers run promotions that provide free ad credit to new advertisers. For example, Google offers ad coupons to new advertisers worth up to $75, which can be redeemed within 30 days of spending the first $25 in advertising. <ref type="bibr">30</ref> Similarly, Facebook sends promotional codes to new advertisers that have sufficiently high user engagement on their pages. In this section, we study the implications of offering ad credit on the advertisers' bidding strategies and the publisher's profit.</p><p>Suppose the publisher sets the ad credit α ≥ 0 prior to stage 1, and then the incumbent's CTR is drawn from c.d.f. F I with support [R, 1]. <ref type="bibr">31</ref> The advertisers observe α, and the rest of the game proceeds identically as in the main model. The effect of the publisher's ad credit is to transfer free ad credit α to the entrant if it wins in stage 1. Thus, the entrant's stage 1 payoff when the publisher offers ad credit α is</p><formula xml:id="formula_21">c E 1 − max[c I b I1 ,R] μ E</formula><p>+ α if it wins and zero otherwise.</p><p>Next, we present the advertisers' bidding strategies when the publisher offers free ad credit.</p><p>Proposition 9 (Advertisers' Strategies with Ad Credit). If the publisher offers ad credit α ≥ 0 to the entrant, then, compared with the benchmark bids (1) and (2), the incumbent's first-stage bid remains unchanged, whereas the entrant's bid increases by</p><formula xml:id="formula_22">α μ E to b * E1 (α) 1 + α μ E + δ μ E 1 c I c E − c I dF E − μ E − c I + . (7)</formula><p>The intuition behind advertisers' bidding strategies is straightforward: the incumbent's bidding strategy does not change because α does not affect its underlying payment mechanism. However, the ad credit increases the entrant's payoff when it wins in stage 1 and, thus, incentivizes the entrant to bid more aggressively in the first stage.</p><p>We turn to the impact of ad credit on the publisher's revenue. Given the first stage bids of the incumbent and the entrant in ( <ref type="formula">1</ref>) and ( <ref type="formula">7</ref>), respectively, the publisher's expected revenue as a function of ad credit α is E[π P (α)]</p><formula xml:id="formula_23">1 R Π P (α, c I ) dF I , where Π P (α, c I ) μ E b * E1 (α) + δ min[c I , μ E ] if c I b * I1 ≥ μ E b * E1 (α), max[c I b * I1 , R] − α + δ c I 0 max[c E , R] dF E + (1 − F E (c I ))c I ) if c I b * I1 &lt; μ E b * E1 (α). ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩ (8)</formula><p>Expression ( <ref type="formula">8</ref>) reveals three forces created by the ad credit α. The first is the cost of α that is transferred from the publisher to the entrant when it wins; this has a negative effect on the publisher's revenue and is represented by −α in the second case of expression (8). The two other forces have a positive effect on the publisher's revenue and are more nuanced; we discuss each of these in turn.</p><p>Recall that the entrant's bid increases in proportion to the ad credit α (see Proposition 9). This implies that the incumbent's payment upon winning increases with α. The publisher can, thus, extract additional surplus from the incumbent by inflating its payment. We call this the extraction effect.</p><p>The last effect of ad credit concerns the change in the publisher's stage 2 payoff. To illustrate, suppose the incumbent's CTR is high. In this case, knowing the entrant's CTR leads to higher publisher revenue than that under ignorance (see Proposition 3). This is due to the more efficient allocation of the ad slot as well as a higher expected payment of the winner. Because offering ad credit helps the entrant win, thereby facilitating the publisher learning its CTR, it could increase the publisher's stage 2 revenue. We call this the learning effect.</p><p>These three effects summarize all the pros and cons of offering ad credit in our model. <ref type="bibr">32</ref> Because of space considerations, we relegate the extended discussion to Section OA1 of the online appendix. In the discussion, we (i) delineate the condition under which offering ad credit is profitable for the publisher, (ii) characterize the extraction effect and learning effect more formally, and (iii) discuss the optimal ad credit level that maximizes the publisher's profit.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.2.">Inflating the Bid Multiplier.</head><p>In this section, we analyze how the publisher's profit would change if, instead of offering ad credit (Section 5.3.1), the publisher artificially inflated the entrant's effective bid by a multiplier β ≥ 1. To begin, suppose that the publisher applies a boosting multiplier β such that, for any bid b E of the entrant, the entrant's stage 1 effective bid μ E b E increases to β × μ E b E . The rest of the game proceeds as in the main model.</p><p>We find that the two policies-offering ad credit and multiplicatively boosting the effective bid-have the same qualitative implications for the publisher's profit. The intuition is as follows. In the case of ad credit, the entrant increases its own effective bid by bidding high in anticipation of the ad credit, whereas in the case of a boosting multiplier, the publisher increases the effective bid on behalf of the entrant. Thus, the resultant effective bids across the two policies are the same, and the players' payoffs are identical up to a constant. We formalize this finding in the following proposition.</p><p>Proposition 10. The multiplicative boosting policy is isomorphic to the free ad credit policy in the sense that the publisher can replicate (up to a constant) its profit from one policy using the other.</p><p>In summary, we find that other mechanisms, such as offering free ad credit or inflating the entrant's effective bid can increase the publisher's revenue as they facilitate learning by favoring the entrant. These mechanisms, however, are inefficient in the sense that they do always guarantee the publisher the optimal profit. To see this, note that the optimal mechanism sometimes lowers the payment for both the entrant and the incumbent at the same time (e.g., when the incumbent's CTR is low). Such an outcome cannot be produced by offering ad credit or inflating the entrant's bid because these instruments unilaterally benefit the entrant at the expense of the incumbent.</p><p>Another reason why these alternative mechanisms do not always yield the optimal profit pertains to the virtual bid transformations. Offering ad credit and inflating the entrant's bid do not take into account the advertisers' valuation distributions in the allocation rule. Recall that the optimal mechanism computes the marginal revenue each advertiser generates based on the advertisers' valuation distributions and then allocates the ad slot accordingly. Such efficient allocation cannot always be attained with artificial adjustment of the entrant's effective bid, especially when the valuation distributions are nonuniform.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4.">Multiple Advertising Slots</head><p>Another assumption in the main model is that the publisher offers a single ad slot. In search advertising, however, search engines typically sell more than one ad slot, which are allocated via the generalized second-price (GSP) auction. In this section, we test whether the main insights derived from the base model carry over to the multiple-slot GSP setting.</p><p>We consider a two-slot, three-player game in which two incumbents face an entry from a new advertiser. To simplify the analysis, we assume that the existing advertisers also learn c E if the entrant wins in stage 1. <ref type="bibr">33</ref> As in Section 3, all advertisers share a common perclick valuation of one, and the reserve price R is less than μ E . We normalize the position-specific CTR of the first ad slot to one and denote that of the second slot as θ ∈ (0, 1). We index by i and I the incumbent with the lower and higher CTR, respectively (i.e., c i &lt; c I ) and normalize c I to one. <ref type="bibr">34</ref> Because a weakly dominant strategy equilibrium no longer exists, we use the lowest-revenue envy-free (LREF) Nash equilibrium <ref type="bibr" target="#b12">(Edelman et al. 2007</ref>) for equilibrium selection.</p><p>Our analysis shows that the main results are robust to multiple-slot settings under the GSP auction. In particular, the entrant's overbidding strategy carries over but with the caveat that the reserve price has to be sufficiently high. Moreover, the findings that (i) a weak incumbent prefers to reveal the entrant's CTR and that (ii) a strong incumbent has incentives to mask the entrant's CTR are preserved in the multipleslot extension. The next lemma summarizes the advertisers' incentives in stage 1.</p><p>Lemma 4 (Multiple-Slot GSP Auction). The entrant and the incumbent with the lower CTR are always better off in stage 2 if the entrant's CTR is learned. The incumbent with the higher CTR is better off in stage 2 if the entrant's CTR is learned if and only if (i) μ E &lt; c i and θ &gt;θ or (ii) c i ≤ μ E and θ &gt; 1 2 , whereθ is defined in the appendix. Lemma 4 shows that, if the second ad slot generates very few clicks (i.e., θ is low), then the incumbent with the higher CTR is better off masking the entrant's CTR, thereby securing the top ad position. The intuition resonates with the insights from the main model. Had the search engine learned the entrant's CTR and it turned out to be high, the strong incumbent would risk being "downgraded" to the low-CTR slot below. Conversely, if the second ad slot generates almost as many clicks as the first slot (i.e., high θ), the strong incumbent benefits from the <ref type="bibr" target="#b36">Choi and</ref><ref type="bibr">Sayedi: Learning in Online Advertising Marketing Science, 2019, vol. 38, no. 4, pp. 584-608, © 2019 INFORMS</ref> search engine learning the entrant's CTR. The reason is that the incumbent can capitalize on a potentially low c E realization while its loss from possibly being driven down to the second ad slot against a high c E is mitigated by the high θ.</p><p>Next, we examine the advertisers' bidding strategies in stage 1. Figures <ref type="figure" target="#fig_21">7(a</ref>) and 8(a) depict the entrant's bid with respect to the weak incumbent's CTR, c i . Observe that, for high c i , the entrant's high bid mirrors the pattern from Section 3 (see Figure <ref type="figure" target="#fig_3">2</ref>). Intuitively, if the competing incumbent's CTR is high, then the entrant can earn positive payoffs if and only if (i) its CTR is learned by the search engine in stage 2 and (ii) the realized CTR turns out to be higher than c i . Therefore, when facing a strong incumbent, the entrant bids aggressively in stage 1 to create an opportunity to receive a positive payoff in stage 2.</p><p>When facing a low c i , the entrant's bidding strategy may diverge from the main model. In contrast to the single-slot case, the entrant may lower its bid when the incumbent's CTR is low (see Figure <ref type="figure" target="#fig_21">7</ref>(a)). The intuition revolves around the weak incumbent's incentive to help the search engine learn the entrant's CTR. Figure <ref type="figure" target="#fig_21">7</ref>(b) shows that a weak incumbent shades its bid to help the entrant secure the second slot in stage 1. The search engine can then learn the entrant's CTR, which, in turn, creates an opportunity for the weak incumbent to win in stage 2. And because, in the LREF equilibrium, the advertisers' bids change in proportion to their competitors', the entrant also shades its bid for low c i .</p><p>However, when the search engine sets a sufficiently high reserve price, the weak incumbent bids below the reserve price in the LREF equilibrium (see Figure <ref type="figure">8(b)</ref>). As a result, the entrant's incentive to shade its own bid disappears, and we recover the overbidding pattern from the main model (see Figure <ref type="figure">8</ref>(a)). We formalize this finding in the next proposition.</p><p>Proposition 11. The entrant always bids (weakly) higher in the setting in which the search engine does not know (but can learn) the entrant's CTR compared with the full-information setting if and only if the reserve price is sufficiently high.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Conclusion</head><p>In this paper, we study learning in online advertising. We investigate how a publisher's lack of information about a new advertiser's click-through rate affects the strategies of new and existing advertisers as well as the publisher. Our theoretical analysis offers useful insights for several issues of managerial importance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">Implications for New Advertisers</head><p>We show that, when a new advertiser starts online advertising with a publisher, it should bid aggressively in the beginning, sometimes even above its valuation. The reason is that the new advertiser earns a higher expected future payoff when its CTR is learned by the publisher than when it is not. The fact that the new advertiser's CTR can only be learned when the advertiser wins sufficiently many auctions provides strong incentives for the new advertiser to bid aggressively until its CTR is learned.</p><p>Our results also indicate that a new advertiser should be prepared to, temporarily, pay more than its valuation per click in the beginning. If the advertiser's CTR turns out to be high, the average cost-per-click declines over time. In other words, a new advertiser should not leave the market even if the initial cost of advertising is high.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.">Implications for Existing Advertisers</head><p>The entry of a new advertiser has two negative effects for an existing advertiser. First, if the new advertiser's CTR turns out to be high, the existing advertiser risks losing its ad slot to the new advertiser. Second, because the online advertising slots are sold in auctions, entry of a new advertiser increases the payment of the existing advertiser. We demonstrate that, in response to these entry effects, an existing advertiser with a high CTR-for example, a trademark owner advertising on its branded keywords or a manufacturer advertising on its own product pages on an online retailer-should bid more aggressively to make it harder for the new advertiser to reveal its CTR. On the other hand, an existing advertiser with a low CTR-for example, lowest-slot advertisers-should lower its bid to make the revelation process easier. By doing so, the existing advertiser foregoes its shortterm profit but creates an opportunity to earn a larger long-term profit in the event that the new advertiser's CTR turns out to be low.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3.">Implications for the Publisher</head><p>When a new advertiser enters the market, the publisher does not know its CTR; the CTR can only be learned if the new advertiser's ad is displayed to consumers sufficiently many times. On the surface, it appears that this lack of information about the new advertiser would lead to a suboptimal allocation of the ad slot and, thus, lower the publisher's expected revenue. Surprisingly, our result shows that the ignorance may be a boon to the publisher: its ignorance may incentivize the advertisers to bid more aggressively, which, in turn, may increase the publisher's revenue compared with the full information benchmark.</p><p>The publisher's ignorance, however, is not always blissful. In particular, if the existing advertiser's CTR is high, the lack of information about the new advertiser may hurt the publisher's long-term revenue. We show that the publisher can mitigate this loss by favoring the new advertiser in the auction. For example, by lowering the reserve price of, offering free ad credit to, or artificially inflating the bid of the new advertiser, the publisher can increase the probability that the new advertiser wins. This allows the publisher to learn the new advertiser's CTR more quickly, which, in turn, increases the publisher's long-term revenue. In fact, our results show that the optimal selling mechanism favors the new advertiser in the early rounds of the auction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.4.">Future Research</head><p>Our work is a first step toward understanding how agents strategically respond to a publisher's learning process. Future research could explore other scenarios in which agents and publishers interact in a learning environment. For instance, a publisher may want to learn sellers' qualities of products for ranking purposes or customers' WTP for pricing purposes. In addition, although we allow the transition from an incomplete-to a full-information game, we make several simplifying assumptions in doing so. For example, the transition is discrete and binary in our model. Analyzing the advertisers' strategies in a model with a gradual, continuous learning process could lead to interesting additional insights. Finally, our model assumes that advertisers' CTRs are exogenously given. Although this assumption is realistic for a given ad copy, it does not capture advertisers' constant efforts in improving their ad copies (e.g., through experimenting with new ad copies). Modeling advertisers' experiments in improving their CTRs while the CTRs are being learned by the publisher and the advertisers themselves is another interesting avenue for future research. </p><formula xml:id="formula_24">π I1 (b I1 |b E1 ) c I 1 − max[c E b E1 , R] c I + δπ I2 (b I2 1|b E2 ) if c I b I1 ≥ max[c E b E1 , R], δπ I2 (b I2 1|b E2 ) if c I b I1 &lt; max[c E b E1 , R], ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩</formula><p>where π I2 (b I2 1|b E2 1) denotes the stage 2 payoff. Because the incumbent's stage 2 payoff is the same regardless of the outcome of the stage 1 auction, it is immaterial when the incumbent determines its stage 1 bid. Therefore, by the same reasoning as earlier, we can show that a weakly dominant strategy in stage 1 is also truthful bidding. The weak dominance of the truthful bidding strategy for the entrant can be shown in a similar manner and is omitted. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.2. Proof of Proposition 2</head><p>We state two intermediary results that are used for the proof (see the online appendix for proofs).</p><p>Claim 1. Suppose a differentiable function f (x) is singlepeaked on the interval [a, b] (i.e., there exists some ξ ∈ (a, b) such that f (x) ≥ 0 for all x ≤ ξ and f (x) ≤ 0 for all x ≥ ξ) and f (a) &lt; 0 &lt; f (b). Then there exists a pairx 1 ≤x 2 in (a, b) such that</p><formula xml:id="formula_25">(i) f (x) &lt; 0 for all x ∈ [a,x 1 ), (ii) f (x) 0 for all x ∈ [x 1 ,x 2 ], and (iii) f (x) &gt; 0 for all x ∈ (x 2 , b]. Claim 2. If F E is continuous, then ∂ ∂cI 1 cI 1 − cE cI dF E 1 c 2 I 1</formula><p>cI c E dF E . Proof of Proposition 2. Whether the incumbent's bid is below or above valuation depends on the sign of g(c I ) ≡ 1 −</p><formula xml:id="formula_26">μE cI + − F E (R) 1 − R cI + − 1 R 1 − cE cI + dF E . If 0 ≤ c I ≤ R, then g(c I ) 0, so the incumbent bids truthfully. If R &lt; c I ≤ μ E , then g(c I ) −F E (R) 1 − R cI − cI R 1 − cE cI dF E .</formula><p>And, because 0 &lt; P{c E ≤ R}, we have g(c I ) &lt; 0, which means that the incumbent bids below valuation. Finally, if μ E &lt; c I ≤ 1, then</p><formula xml:id="formula_27">g(c I ) 1 − μ E c I − F E (R) 1 − R c I − cI R 1 − c E c I dF E . (A.1)</formula><p>We show that (A.1) satisfies the properties of claim 1, thereby proving that there exists a pair of thresholdsc 1 ≤c 2 in (μ E , 1) that satisfies the properties stated in the proposition.</p><p>Differentiability:</p><formula xml:id="formula_28">g (c I ) ∂ ∂c I 1 − μ E c I − R 0 1 − R c I dF E − cI R 1 − c E c I dF E − 1 c 2 I 1 0 max[R − c E , 0] dF E + ∂ ∂c I 1 cI 1 − c E c I dF E (qR &lt; c I ) − 1 c 2 I 1 0 max[R − c E , 0] dF E + 1 c 2 I 1 cI c E dF E , (A.2)</formula><p>where the last equality follows from claim 2. Because the derivative is well defined for all c I ∈ (0, 1), we conclude that g(c I ) is differentiable.</p><p>Single-Peakedness: From (A.2), it follows that the sign of g (c I ) is equal to the sign of h(c I ) ≡   </p><formula xml:id="formula_29">1 cI c E dF E − 1 0 max[R − c E , 0] dF E . At c I 0 + , 35 h is positive because 1 cI c E dF E − 1 0 max [R − c E ,0]dF E 1 0 + c E dF E − 1 0 max[R − c E ,0]dF E 1 0 c E − max [R − c E ,0]dF E ≥ 1 0 c E − RdF E μ E − R &gt; 0. At c I 1, h is neg- ative because 1 cI c E dF E − 1 0 max[R − c E ,0]dF E 1 1 c E dF E − 1 0 max[R − c E ,0]dF E − 1 0 max[R − c E ,0]dF E &lt;0. Finally, h(c I ) is nonincreasing because, for any δ&gt;0, h(c I + δ) −h(c I ) 1 cI+δ c E dF E − 1 cI c E dF E − cI +δ cI c E dF E ≤ 0. In total, because h(c I ) is nonincreasing in [0, 1], h(0 + ) ≥</formula><formula xml:id="formula_30">c I − μ E + δ μ E − R − 1 R c E − RdF E ) c I − μ E + δ 1 0 c E − RdF E − 1 R c E − RdF E −(μ E − c I ) − δ R 0 R − c E dF E &lt;0.</formula><formula xml:id="formula_31">D A (μ E ) −δ 1 μE c E − μ E dF E − δ μ E − max[c E , R] + dF E &lt;0 and D A (1) 1 − μ E + δ 1 − μ E − 1 − max[c E ,R]dF E 1 − μ E + δ max[c E , R] − c E</formula><p>dF E &gt; 0, we have, by the IVT, a uniqueĉ ∈ (μ E ,1) such that D A (c I ) &lt; 0 for all c I &lt;ĉ and D A (c I ) &gt; 0 for all c I &gt;ĉ. More generally, combining the results from these intervals yields that the entrant wins the stage 1 bid for all c I &lt;ĉ and the incumbent wins for all c I ≥ĉ.</p><p>Next, we characterize the publisher's expected payoff when it knows the entrant's CTR. If the entrant's CTR is known, then advertisers bid truthfully. Therefore, the publisher's total expected revenue is E[π</p><formula xml:id="formula_32">F P ] (1 + δ) 1 cI c I dF E + cI 0 max[c E , R] dF E ).</formula><p>On the other hand, if c E is a priori unknown, then the publisher's expected revenue is Now, the left-hand side is strictly increasing in c I because ∂ ∂cI LHS F E (c I ) + δ(1 − F E (c I )) &gt; 0. Furthermore, the difference is negative and positive at c I R and c I 1, respectively:</p><formula xml:id="formula_33">E[π P ] μ E b * E1 + δ max[min[c I , μ E ], R] if c I b * I1 ≥ μ E b * E1 , max[c I b * I1 , R] + δ 1 m m dF E + m 0 max[c E , R]I {cI≥max[cE,R]} dF E if c I b * I1 &lt; μ E b * E1 . ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩ (A.3) Next,</formula><formula xml:id="formula_34">D π (R) δ(R − μ E ) &lt; 0 and D π (1) 1 − 1 R c E dF E − R 0 RdF E + δ 1 − μ E − 1 R 1 − c E dF E − R 0 1 − RdF E 1 − 1 0 max [c E ,R]dF E + δ 1 0 max[c E ,R] −c E dF E &gt;0.</formula><p>Therefore, by the IVT, there exists a uniquec 1 ∈ (r,1) such that D π (c I )&lt;0 for all c I ∈ (R,c 1 ) and D π (c I )&gt;0 for all c I ∈ (c 1 ,1). However, the interval in question here is (μ E ,ĉ), so we redefine the threshold as</p><formula xml:id="formula_35">c ≡ max[μ E ,min[ĉ,c 1 ]].</formula><p>Finally, ifĉ ≤ c I ≤ 1, then the incumbent wins the firststage auction, and the difference in payoffs between the uncertain-and full-information cases is</p><formula xml:id="formula_36">D π (c I ) (1 + δ) μ E − R 0 R dF E + cI R c E dF E + 1 cI c I dF E + δ 1 cI c E − c I dF E .</formula><p>Similarly, as earlier, we invoke the IVT to prove the unique existence of a root. We have D π (c</p><formula xml:id="formula_37">I ) −(1 + 2δ)(1− F E (c I )) &lt; 0, D π (μ E ) (1 + δ) μE R μ E − c E dF E + R 0 μ E − R dF E + δ 1 μE c E − μ E dF E &gt; 0, and D π (1) (1 + δ) μ E − 1 R c E dF E − R 0 R dF E (1 + δ) R 0 c E − R dF E &lt; 0.</formula><p>Therefore, by the IVT, there exists a uniquec 2 ∈ (μ E , 1) such that D π (c I ) &gt; 0 for all c I ∈ (μ E ,c 2 ) and D π (c I ) &lt; 0 for all c I ∈ (c 2 , 1). However, the interval in question here is [ĉ, 1], so we bound the threshold as c ≡ max[ĉ,c 2 ]. Putting together all the sets for which D π &gt; 0 yields the result. ∎</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.4. Proof of Proposition 4</head><p>The entrant overbids iff Δ E &gt; 0; that is, the entrant earns a higher stage 2 profit if the publisher learns its CTR. It suffices to show that the entrant's stage 2 profit is convex in its true CTR, for then Jensen's inequality would imply the desired result. To that end, consider the entrant's stage 2 profit when the publisher assigns it its true CTR:</p><formula xml:id="formula_38">π E2 (c E ) vE 0 U E (x E |c E ) dG E vE 0 c E xE 0 q * E2 (t E )g E (t E ) dt E dG E vE 0 c E q * E2 (t E )(1 − G E (t E )) dG E (t E ) vE R * E2 vI 0 c E I {cE &gt; χ(xI ,xE|cI )} (1 − G E (x E ))dG I dG E ,<label>where</label></formula><formula xml:id="formula_39">R * E2 inf b ≥ 0 : b − 1 − G E b ( ) g E b ( ) ≥ 0 ;</formula><p>I {%} is the indicator function, which is equal to one if % is true and zero otherwise; and</p><formula xml:id="formula_40">χ(x I , x E |c I ) c I x I − 1 − G I (x I ) g I (x I ) x E − 1 − G E (x E ) g E (x E1</formula><p>) .</p><p>Choi and Sayedi: Learning in Online Advertising</p><p>Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">, vol. 38, no. 4, pp. 584-608, © 2019</ref> Because χ is independent of c E , we obtain that, for any given x I and x E , c E I {cE &gt; ξ(xI ,xE|cI )} is convex in c E . And, because any linear combination with positive weights of convex functions is also convex, we conclude that π E2 (c E ) is convex in c E . Next, we turn to the incumbent. We work with the following subgradient argument:</p><formula xml:id="formula_41">Claim 3. Let E[X] μ. If a function f (x) that is differentia- ble at x μ satisfies f (x) ≥ f (μ)(x − μ) + f (μ) ≥ f (x) for all x, then E[f (X)] ≥ f E[X] ( ). This follows immediately from E[f (X)] ≥ E[f (μ)(X − μ) + f (μ)] f (μ)E[X − μ] + f (μ) f (μ).</formula><p>The incumbent's stage 2 profit when the publisher assigns c E is π I2 (c E )  for all c E . Therefore, a sufficient condition for (A.4) is that, for all c E ,</p><formula xml:id="formula_42">c I v I v E &lt; c E , h −1 I c E v E c I R * I2 c I (1 − G I (x I1 ))z cI ηI (xI) cE dG I + vI h −1 I c E v E c I c I (1 − G I (x I )) dG I otherwise, ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩ where z(y) G E η −1 E (y) , and η j (x) x − 1−Gj(x) gj(x) for j ∈ {I, E}. Suppose c I &lt; vEμE vI such that π I2 (μ E ) vI R * I2 c I (1 − G I (x I )) • z cIηI (xI ) μE dG I and π I2 (μ E ) vI R * I2 c I (1 − G I (x I ))z cI ηI(xI ) μE − cIηI (xI )</formula><formula xml:id="formula_43">vI R * I2 (1 − G I (x I ))z c I η I (x I ) c E dG I ≥ vI R * I2 (1 − G I (x I )) z c I η I (x I ) μ E − c I η I (x I ) μ 2 E • c E − μ E ) + z c I η I (x I ) μ E dG I . (A.5)</formula><p>Finally, a sufficient condition for (A.5) is that probability that the entrant's valuation draw is such that the incumbent wins in stage 2. This probability can be easily verified to be decreasing in c E . Now, condition (A.6) can be interpreted as this probability being "sufficiently convex" for all x I . This is equivalent to the condition that the rate of decline of the incumbent's winning probability in c E be sufficiently low. Finally, the sufficient condition for overbidding around the neighborhood of c I 1 follows immediately from claim 3 and the continuity of π I2 (c E ) with respect to c I :</p><formula xml:id="formula_44">π I2 (c E ) ≤ π I2 (μ E )(c E − μ E ) + π I2 (μ E ). (A.7)</formula><p>This means that the incumbent's stage 2 profit when c E turns out to be high is considerably low; that is, the risk of revealing the entrant's CTR is high. 36 ∎ A.5. Proof of Proposition 5 Let R F E be the entrant's reserve price under full information.</p><formula xml:id="formula_45">R F E satisfies R F E − 1 − G E (R F E ) g E (R F E ) 0. (A.8)</formula><p>When the publisher does not know the entrant's CTR, the optimal reserve price R </p><formula xml:id="formula_46">E satisfies R E − 1 − G E R E − δΔE μE / g E (R E − δΔE μE ) δ μE (Δ I − Δ P ). Now Assumption 1 implies that, for all R, R − 1 − G E R − δΔE μE / g E (R − δΔE μE )&lt; R − 1 − G E R ( ) ( ) / g E (R). Therefore, the condition R E &lt;R F E is equivalent to δ μ E (Δ I − Δ P ) &lt; R F E − 1 − G E R F E − δΔE μE g E (R F E −</formula><formula xml:id="formula_47">E ã E + δ 1 0 (a E − a I ) + dF− (ã E − a I ) + ).</formula><p>Because (a E − a I ) + is convex in a E , Jensen's inequality implies that 1 0 (a E − a I ) + dF − (ã E − a I ) + ≥ 0; therefore, the entrant bids above its average stage 1 per-impression valuation,ã E . Finally, consider the incumbent's payoff:  </p><formula xml:id="formula_48">π I a I − b E + δ(a I −ã E ) + if b I ≥ max[b E , R], 0 + δ 1 0 (a I − max[a E , R]) + dF if b I &lt; max[b E , R], b E ≥ R, 0 + δ(a I −ã E ) + if b I &lt; max[b E , R], b E &lt; R. ⎧ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎨ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎪ ⎩ (A.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>604</head><p>Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">Science, , vol. 38, no. 4, pp. 584-608, © 2019</ref> </p><formula xml:id="formula_49">INFORMS Finally, b * I &gt; a I at a I 1 because 1 δ (b * I − a I ) is equal to (1− a E )− 1 0 (1−max[a E ,R]) + dF 1 −ã E − R 0 1 − RdF− 1 R 1−a E dF 1− R 0 1+a E −RdF+(1−F(R)) F (R)− R 0 1+a E −RdF ≥F(R) − (1+R−R)F(R) 0. In sum, b *</formula><p>I is less than a I at a I ã E , greater than a I at a I 1, and strictly increasing in a I . Therefore, by the IVT, there exists a unique rootã ∈ (ã E ,1) such that b * I &lt;a I for all a I &lt;ã and b * I &gt;a I for all a I &gt;ã. First, we establish that, from the publisher's profit perspective, offering ad credit α is equivalent to artificially increasing the entrant's effective bid by α.</p><p>Consider the latter mechanism. The stage 2 outcomes are identical for both cases. In stage 1, the advertisers' weakly dominants can be easily verified to be the same as the main model; that is, the entrant bids b * E1 as in (2) and the incumbent bids b * I1 as in (1). Note that this implies that the effective bids are the same as the former mechanism in which the publisher gives free ad credit α if the entrant wins. To see this, under the former mechanism, the entrant's effective bid is μ E b * E1 (α) as in (7). But from (7), we have μ E b * E1 (α) μ E b * E1 + α, which is equivalent to the entrant's effective bid under the artificial additive boosting mechanism. The incumbent's effective bids are trivially the same. Therefore, the mechanisms have the same allocation rule.</p><p>Moreover, the payoffs of the two mechanisms are identical. If the incumbent wins in stage 1, the publisher's stage 1 profit is μ E b * E1 + α in both cases, and if the entrant wins, it is max[c I b * I1 ] − α in both cases. In sum, the two mechanisms yield the same profit for the publisher. Now, consider the boosting multiplier β. For any given additive term α, if the publisher sets β(α) 1 + α μEb *</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>E1</head><p>, then the advertisers' effective bids are the same as in the mechanism wherein the publisher adds α to the entrant's effective bid. Therefore, the two mechanisms have the same allocation rule. Furthermore, note that the advertisers' bids are the same for both mechanisms: the incumbent (entrant) bids b * I1 (b * E1 ). This means that both mechanisms can be cast as a "direct mechanism" in which advertisers bid their true "type." Therefore, by the revenue equivalence principle <ref type="bibr" target="#b30">(Myerson 1981)</ref>, the two mechanisms yield the same expected profit up to a constant. ∎  For this to hold for all δ &gt; 0, we must have R ≥ c i .</p><p>Taken together, we can define the threshold for the reserve price R above which the stated result holds: R equals minR,R + if μ E ≤ c i and equals c i otherwise. ∎ Endnotes 1 See https://content-na1.emarketer.com/us-ad-spending, accessed February 2018.</p><p>2 For instance, in pay-per-click pricing, Google assigns an average quality score to new advertisers based on the performances of other advertisers using the same keyword. See https://searchengineland .com/didnt-know-recent-quality-score-changes-259559, accessed February 2018.</p><p>3 In practice, effective bids can also include other factors, such as landing page experience and advertiser's reputation; however, for the purpose of this example, we only consider the expected CTR and the submitted bid that are the two most important elements of effective bids. 4 See http://totalaccess.emarketer.com/chart.aspx?r=219092, accessed February 2018. 5 See https://searchengineland.com/4-ways-to-determine-your-your -starting-bids-144616, accessed February 2018. 6 See https://www.google.com/ads/adwords-coupon.html, accessed February 2018. 7 See http://www.digitalsitemap.com/free-facebook-ad-coupon/, accessed February 2018. <ref type="bibr">8</ref> In fact, because new advertisers constantly join this market and even existing advertisers frequently revamp their campaigns, change their ad copies and landing pages, or change their ad agencies altogether, one could argue that this market is always in transition. <ref type="bibr">9</ref> We consider a multiple-slot generalized second-price auction in Section 5. 10 See http://totalaccess.emarketer.com/chart.aspx?r=219092, accessed February 2018. 11 Pay-per-click pricing is the most common form of performancebased pricing; nonetheless, our results can be readily applied to other performance-based pricing models, such as pay-per-conversion.</p><p>12 For example, see https://www.facebook.com/business/help/ 430291176997542 and https://searchengineland.com/guide/ppc/how -the-ppc-ad-auction-works, accessed February 2018. <ref type="bibr">13</ref> For a discussion of other parameters in advertisers' effective bids in search advertising; see <ref type="bibr" target="#b24">Katona and Zhu (2017)</ref>.</p><p>14 Note that this model implies two important assumptions on the information structure of the game. First, the assumption that c I is common knowledge implies that the entrant and the publisher have the same level of information about the incumbent. Second, we are implicitly assuming that the incumbent and the publisher have the same level of information about the entrant. In practice, it is possible that large publishers, such as Google and Facebook, can estimate advertisers' CTRs more accurately than other advertisers based on their vast troves of data. We relax both of these assumptions in Section 5.2 and establish the robustness of our results.</p><p>15 See https://support.google.com/google-ads/answer/1659696, accessed February 2018. <ref type="bibr">16</ref> In Google AdWords, new advertisers received an average quality score of six. See https://searchengineland.com/minimum-quality -score-can-save-money-adwords-226757, accessed February 2018. In Section 5.3.2, we consider an extension in which, instead of using μ E , the publisher strategically sets the entrant's CTR. <ref type="bibr">17</ref> If the entrant wins the auction in stage 1, the publisher learns c E ; however, we do not make any assumptions on whether the incumbent also learns c E or not. Specifically, as we show in Lemma 1, the incumbent bids truthfully in stage 2 regardless of the outcome of stage 1. <ref type="bibr">18</ref> One might argue that the publisher eventually learns the entrant's CTR even if the entrant does not win in stage 1. For instance, its CTR may be learned if the entrant's ad is displayed on the second page of the search results for a sufficiently long period of time. In this case, we could assume that the game has a stage 3 in which, regardless of the outcomes of stages 1 and 2, c E becomes learned by the publisher. It is easy to show that both advertisers bid truthfully in stage 3 and that the existence of stage 3 does not affect the advertisers' strategies in stages 1 and 2. In this model, δ could be interpreted as the length of time required for the publisher to learn the entrant's CTR if the entrant does not win in stage 1 (compared with when it wins in stage 1). 19 This is not a restrictive assumption; for example, for F E (c) c, the condition holds for all δ &gt; 0 and c I ≥ R. The sufficient condition derives from the fact that c I + δ (c I − μ E ) + − 1 0 (c I − max[c E , R]) + dF E is equal to R at c I R and then imposing that the former increases in c I . <ref type="bibr">20</ref> To be more precise, the common knowledge that the publisher does not know the entrant's CTR may increase its revenue. <ref type="bibr">21</ref> To characterize the optimal mechanism, we have to assume stochastic private valuations for the advertisers; otherwise, the publisher's optimal strategy is to set the reserve price of stage 2 to one, leaving no surplus for the advertisers. Stochastic private valuation is a standard assumption in mechanism design literature; for example, see <ref type="bibr" target="#b30">Myerson (1981)</ref> for a general setting and <ref type="bibr" target="#b11">Edelman and Schwarz (2010)</ref> for the context of online advertising.</p><p>22 Assumption 1 greatly facilitates the derivation of the optimal mechanism. A large class of distributions satisfies this property; for example, exponential, Weibull, modified extreme value, gamma (with parameters α &gt; 1, λ &gt; 0), and truncated normal (with "commonly accepted [parameters]"). See <ref type="bibr" target="#b4">Barlow and Proschan (1965)</ref> and <ref type="bibr" target="#b8">Brusset (2009)</ref> for details. <ref type="bibr">23</ref> The publisher's optimal mechanism is not unique. In this paper, we choose the mechanism that is consistent with the literature in the sense that the publisher's optimal virtual bid transformation in a learning environment converges to the optimal virtual bid transformation in <ref type="bibr" target="#b30">Myerson (1981)</ref> as the publisher's learning incentive goes to zero.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>[c E b Et , R]/c I , and if the entrant wins, it pays max[c I b It , R]/c E .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>b I1 and b E1 to the publisher. The incumbent's effective bid is c I b I1 , whereas the entrant's is μ E b E1 because the publisher does not know the entrant's CTR yet. If the incumbent wins, it pays (per click) max[μ E b E1 , R]/c I , and if the entrant wins, it pays max[c I b I1 , R]/μ E . If the entrant wins, its CTR becomes known to the publisher by the next stage; otherwise, it remains unknown.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. (Color online) Game Timing</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. (Color online) Stage 1 Equilibrium Bids; R 1 4 , δ 1 2 , F E (c) c</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. (Color online) Publisher Revenue; R 1 4 , δ 1 2 , F E (c) c</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. (Color online) Advertisers' Bid Adjustments Relative to Valuation; G I (x I )</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. (Color online) Optimal Reserve Prices (Not to Scale); G I (v I )</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 6 .</head><label>6</label><figDesc>Figure 6. (Color online) CPM Bidding Strategies; R 1 4 , δ 1 2 ,F(a) a</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 8 .Figure 7 .</head><label>87</label><figDesc>Figure 8. (Color online) Optimal Bids in GSP with Reserve Prices; δ 1, θ 1 2</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head></head><label></label><figDesc>then truthful bidding ensures a positive payoff of c I − max[c E b E2 , R], whereas bidding below valuation yields either the same payoff (if max[c E b E2 , R] ≤ c I b I2 &lt; c I ) or a lower payoff of zero (if c I b I2 &lt; max[c E b E2 , R] &lt; c I ). And both strategies yield zero payoff if c I &lt; max[c E b E2 , R]. Therefore, truthful bidding weakly dominates underbidding. Suppose the incumbent bids above valuation such that c I b I2 &gt; c I . If max[c E b E2 , R] ≤ c I , then both strategies yield the same positive payoff of c I − max[c E b E2 , R], and if c I b I2 &lt; max[c E b E2 , R], then both strategies yield zero payoff as the incumbent loses the auction. On the other hand, if c I &lt; max[c E b E2 , R] ≤ c I b I2 , then truthful bidding yields zero payoff, whereas overbidding yields a negative payoff of c I − max[c E b E2 , R]. Therefore, truthful bidding weakly dominates overbidding. The incumbent's stage 1 payoff is</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head></head><label></label><figDesc>Finally, consider the publisher's revenue. In any stage, the publisher receives c I max[c E , R]/c I ( )if the incumbent wins and c E c I /c E ( )if the entrant wins. The publisher receives nothing if both advertisers' effective bids are below the reserve price. The result follows. ∎</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head></head><label></label><figDesc>0, and h(1) ≤ 0, by the intermediate value theorem (IVT), there exists a ξ ∈ (0, 1) such that h(c I ) ≥ 0 for all c I ≤ ξ and h(c I ) ≤ 0 for all c I ≥ ξ. By the sign equivalence, we have g (c I ) ≥ 0 for all c I ≤ ξ and g (c I ) ≤ 0 for all c I ≥ ξ.End point values:We have g(μ E ) −F E (R) 1 − R μE − μE R 1 − ( cE μE )dF E &lt; 0 and g(1) 1 − μ E − F E (R) c E dF E &gt;0.Therefore, g(c I ) satisfies the properties of claim 1, which implies that there exists a pairc 1 ≤c 2 in (μ E , 1) such that g(c I ) &lt; 0 for all c I ∈ (μ E ,c 1 ), g(c I ) 0 for all c I ∈ [c 1 ,c 2 ], and g(c I ) &gt; 0 for all c I ∈ (c 2 , 1]. This, in turn, implies that the incumbent bids below valuation, truthfully, and above valuation forc I ∈ (μ E ,c 1 ], c I ∈ [c 1 ,c 2 ],and cI ∈ (c 2 , 1], respectively.Second, whether the entrant bids below or above valuation depends on the sign of k(c I ) ≡1 cI c E − c I ( )dF E − μ E − c I + . If μ E ≤ c I , then k(c I ) 1 cI c E − c I dF E ≥ 0. If μ E &gt; c I , then k(c I ) − c I dF E &gt; 0. ∎ A.3. Proof of Proposition 3 Consider the difference in effective bids D A (c I ) ≡ c I b * I1 (c I ) − μ E b * E1 (c I ). If c I ≤ R, then D A (c I )</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head></head><label></label><figDesc>Therefore, the entrant wins the stage 1 auction for all c I ≤ R. Note that the entrant also beats the reserve price because b * E1 (c I ) ≥ 1 (cf. Lemma 2) and μ E &gt;R.If R &lt; c I &lt; μ E , then D A (c I ) c I − μ E − δ 1 cI c E − c I dF E + δ c I − ( μ E − 1 0 c I − max[c E , R] ( ) + dF E ) &lt; 0.Therefore, the entrant wins the first-stage auction in this interval as well.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Finally</head><label></label><figDesc>, if μ E ≤ c I ≤ 1, then D A (c I ) (1 + δ)(c I − μ E )− δ 1 cI c E − c I dF E − δ 1 0 c I − max[c E , R] ( ) + dF E . Thus, D A (c I ) 1+ δ(1 − F E (c I )) + δ 1 − ∂ ∂cI 1 0 c I − max[c E ,R] ( ) + dF E , which simplifies to 1 + δ(1 − F E (c I )) + δ 1 − 1 ( )if c I ≥ max[c E ,R] and 1 + δ(1 − F E (c I )) + δ 1 − 0 ( ), otherwise.In either case, the derivative is positive. Therefore, D A (c I ) is strictly increasing in the interval [μ E , 1]. Combined with the fact that</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head></head><label></label><figDesc>define the difference D π (c I ) ≡ E[π P ] − E[π F P ]. If R &lt; c I ≤ μ E , then D π (c I ) max c I − δ cI 0 c I − max[c E , R] dF E , R − cI 0 max[c E , R] dF E + 1 cI c I dF E , which is positive iff c I − cI R c E dF E − 1 cI c I dF E − R 0 R dF E − δ cI R c I − c E dF E + R 0 c I − R dF E &gt; 0.But the expression on the left-hand side is zero at c I R, and its derivative with respect toc I is (1 − δ)F E (c I ). This implies that, if δ &lt; 1, then D π (c I ) &gt; 0 for all R &lt; c I ≤ μ E , and if δ &gt; 1, then D π (c I ) &lt; 0 for all R &lt; c I ≤ μ E . If μ E &lt; c I &lt;ĉ, then D π (c I ) max c I + δ c I − μ E − cI 0 c I − max[c E , R] dF E ,E , which is positive if and only if c I − cI R c E dF E − 1 cI c I dF E − R 0 R dF E + δ c I − μ E − cI R c I − c E dF E − R 0 c I − R dF E &gt; 0.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head></head><label></label><figDesc>vI 0 U I (x I |c E ,c I )dG I vI 0 c I xI 0 q * I2 (t I )g I (t I )dt I dG I vI 0 c I q * I2 (x I )(1 − G I (x I ))dG I , which simplifies to vI R * I2 c I (1 − G I (x I ))z cIηI (xI ) cE dG I if</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_16"><head></head><label></label><figDesc>By claim 3, it suffices to show thatπ I2 (c E ) ≥ π I2 (μ E )(c E − μ E ) + π I2 (μ E ) for all c E . 1 − G I (x I ))z c I η I (x I ) c E dG I</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_17"><head></head><label></label><figDesc>convex in c E for all c E . The convexity con-G I (x I ))z c I η I (x I ) c E dG I ≥ 0 for all c E . (A.6) Note that z cIηI (xI ) cE P{c E η E (x E ) ≤ c I η I (x I )}, which is the</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_18"><head></head><label></label><figDesc>the right-hand side simplifies to 1− G E (R F E ) / g E (R F E ) − 1 − G E R F E − δΔE μE /g E (R F E − δΔE μE ),which is negative by Assumption 1. Labeling this negative object as −ρ simplifies (A.9) to Δ P &gt; Δ I + μEρ δ . ∎ A.6. Proof of Proposition 6 The entrant's payoff isã E − max[b I , R] + δ 1 aI a E − a I dF if b E &gt; max[b I , R], and δ(ã E − a I ) + otherwise. The entrant's weakly dominant bid is b *</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_19"><head></head><label></label><figDesc>10)Following the reasoning from the proof of Lemma 2 in Section OA2.2, we obtain that the incumbent's weakly dominant bid is b *I a I + δ (a I −ã E ) + − ( 1 0 (a I − max[a E , R]) + dF).First, note that, if a I ≤ã E , then b * I a I − δ 1 0 (a I − max[a E , R]) + dF ≤ a I ; that is, the incumbent underbids for low a I . Second, consider a I &gt;ã E . We have that b * I is strictly increasing in a I in this region because ∂b * I ∂aI ∂ ∂aI a I + δ a I − ( (ã E − 1 0 (a I − max[a E , R]) + dF)) 1 + δ(1 −F(a I )) &gt; 0.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_20"><head>Choi and Sayedi :</head><label>Sayedi</label><figDesc>Learning in Online Advertising</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_21"><head>A. 7 .</head><label>7</label><figDesc>Proof of Proposition 7 The entrant's stage 1 payoff is μ E 1 − max[cI bI,R] − c I dF E ) dF I if μ E b E &gt;c I b I and δ 1 R (μ E − c I ) + dF I otherwise, wherec I ∼ F I . Even if the entrant does not know the realization ofc I , its weakly dominant bid is b * E − c I ) + dF E − (μ E − c I ) + dF I . And, because (c E − c I ) + is convex in c E for all realizations of c I , Jensen's inequality implies that 1 0 (c E − c I ) + dF E − (μ E − c I ) + ≥ 0 for all c I . Hence, b * E ≥ 1; that is, the entrant overbids. A.8. Proof of Proposition 8 Following the argument in the main model, whether the incumbent bids below or above valuation depends on the sign of x∈-(c I − max[μ x , R]) + − 1 0 (c I − max[c E , R]) + dF x ) dP(x). But we have shown in the main model that, for any distribution F x of c E , there exists a pair of thresholds (c 1 (x),c 2 (x)) such that the incumbent underbids for all c I &lt;c 1 (x) and overbids for all c I &gt;c 2 (x) (see proof of Proposition 2 in Section A.2). It follows that the preceding integral is negative for all c I &lt; c ≡ inf x∈-c1 (x) and positive for all c I &gt; c ≡ sup x∈-c 2 (x). This completes the proof. ∎ A.9. Proof of Proposition 9 From (OA1), the entrant's payoff is μ E 1 − max[cI bI1,R] μE + δ 1 cI c E 1 − cI cE dF E + α if b E1 &gt; max[cI bI1,R] μE and δμ E 1 − cI μE + otherwise. Thus, a weakly dominant stage 1 bid is b * E1 (α) 1 + δ μE 1 cI c E − c I dF E − μ E − c I + + α μE . ∎ A.10. Proof of Proposition 10</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_22"><head>A. 11 .</head><label>11</label><figDesc>Proof of Proposition 11From the derivation of the LREF stage 1 bids (see Section OA3 of the online appendix), we see that an important condition that shapes the outcome of the auction isδ E[π l E ] − E[π 0 i ] − E[π l i ] ≤ θ(c i − μ E ). (A.11)We can write this condition in terms of the reserve price R.First, note that E[π l E ] cI ci θ(c E − c i ) dF E + cI ci (c E − c I ) + θ(c I − c i ) dF E is independent of R, and E[π 0 i ] − E[π l i ] c I − μ E − (A.12) is strictly increasing in R, we obtain that (A.11) is equivalent to R ≥R, whereR solvesδ E[π l E ] − E[π 0 i ] − E[π l i ] θ(c i − μ E ). Suppose μ E ≤ c i &lt; c I .Following the derivation of LREF bids in Section OA3.2, if R &gt;R, then the LREF equilibrium is [I, i, e] and the entrant bidsb * E (δ) 1 + δ θμE E[π l E ]. Therefore, b * E (δ) ≥ b * E (0) for all δ &gt; 0. For the weak incumbent, we obtain b * i (δ) 1 − θ + θμE ci b * E (δ); therefore, b * i (δ) &gt; b * i (0). If R &lt;R, then the LREF equilibrium is [I, E, i] and b * E (δ) 1 − θ + θ μE max[c i b * i (δ), R] and b * i (δ) 1 + δ θci E[π 0 i ]− E[π l i ])) + . To determine whether the advertisers bid below or above their learning-free benchmarks, we need to determine the sign ofE[π 0 i ] −E[π l i ]. Because (i) ∂(A.12) ∂R &gt;0, (ii) (A.12) − 1 ci c E − c i dF E &lt;0 at R 0, and (iii) (A.12) c i − μ E &gt;0 at R c i , there exists a uniqueR ∈ (0,c i ) such that E[π 0 i ] −E[π l i ]&lt;0 for all R&lt;R and E[π 0 i ] −E[π l i ]&gt;0 for all R&gt;R. Thus, R&lt;R ⇒ b * E (δ) ≤ b * E (0) and b * i (δ) ≤ b * i (0) for all δ&gt;0 and R&gt;R ⇒ E[π 0 i ] −E[π l i ]&gt;0 so that b * E (δ) ≥ b * E (0) and b * i (δ) ≥ b * i (0) for all δ&gt;0. Suppose c i &lt; μ E ≤ c I . The LREF equilibrium is [I, E, i].The EF conditions for the strong incumbent and the entrant arec I (1 − max[μ E b E , R]/c I ) + δE[π l i ] ≥ θc I (1 − max[c i b i , R]/c I ) + δE[π l i ] ⇐⇒ μ E b E ≤ (1 − θ)c I + θ max[c i b i , R] and μ E (1 − max[μ E b E , R]/μ E ) + δE[π l E ] ≤ θμ E (1 − max[c i b i , R]/μ E ) + δE[π l E ] ⇐⇒ μ E b E ≥ (1 − θ)μ E + θ max[c i b i , R]. Therefore, the entrant's LREF bid is b * E (δ) 1 − θ + θ μE max[c i b * i , R].The EF conditions for the weak incumbent and the entrant areθc i (1 − max[c i b i , R]/c i ) + δE[π 0 i ] ≤ δE[π l i ] ⇐⇒ θc i − δE[π l i ] ≤ θ max[c i b i , R] and θμ E (1 − max[c i b i , R]/μ E ) + δE[π l E ] ≥ δE[π 0 E ] ⇐⇒ θ max[c i b i , R] ≤ θμ E + δ(E[π l E ] − E[π 0 E ]).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_23"><head>Choi and Sayedi :</head><label>Sayedi</label><figDesc>Learning in Online AdvertisingMarketingScience, 2019, vol. 38, no. 4, pp. 584-608, © 2019 Because the LREF bid binds at the lower bound, we have max[c i b * i , R] c i − δ θ E[π l i ]. Thus, R &lt; c i − δ θ E[π l i ] ⇒ b * i (δ) 1 − δ θci E[π l i ] and b * E (δ) 1 − θ + θ μE c i − δ θ E[π l i ] such that b * E (δ) ≤ b * E (0) and b * i (δ) ≤ b * i (0) for all δ &gt; 0. On the other hand, if R ≥ c i − δ θ E[π l i ], then the lowest bid b i that satisfies the EF condition, c i − δ θ E[π l i ] ≤ max[c i b i , R] ≤ μ E + δ θ (E[π l E ] − E[π 0 E ]), is b * i 0.In this case, the LREF bids are b * E (δ) 1 − θ + θ μE R and b * I (δ) 0 such that the bids are the same across environments with and without learning.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 2 .</head><label>2</label><figDesc>Entrant's Stage 2 Profit Publisher does not know c</figDesc><table /><note>E Publisher knows c E</note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>Choi and Sayedi: Learning in Online AdvertisingMarketingScience, 2019, vol. 38, no. 4, pp. 584-608, © 2019 independent of the stage 1 outcome. As a result, neither the incumbent nor the entrant would have incentive to deviate from truthful bidding in stage 1.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Incumbent's Stage 2 Profit When c I &gt; μ E Publisher does not know c E Publisher knows c E</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc><ref type="bibr" target="#b36">Choi and</ref> Sayedi: Learning in Online Advertising   Marketing Science, 2019, vol. 38, no. 4, pp. 584-608, © 2019 INFORMS   and set the virtual reserve price to zero, where H j</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head></head><label></label><figDesc>Choi and Sayedi: Learning in Online Advertising</figDesc><table><row><cell>Marketing Science, 2019, vol. 38, no. 4, pp. 584-608, © 2019 INFORMS</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot">MarketingScience, 2019, vol. 38, no. 4, pp. 584-608, © 2019 </note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="24">We are slightly abusing notation: "c E in stage 2 isc E , which is c E if c E is learned and μ E otherwise.25  To see that Δ P is positive, it suffices to show that πP2 (c E ) max ψ I2 (x I2 |c I ), ψ E2 (x E2 |c E ) + dG is convex in c E .The integrand is convex in c E because it is the maximum of ψ I2 (x I2 |c I ) + , which is independent of c E , and ψ E2 (x E2 |c E ), which is a linear function of c E . And, because any linear combination with positive weights of convex of functions is also convex, we conclude π P2 (c E ) is convex in c E .26  It can be easily verified that the stage 1 virtual bids in (5) reduce to the standard format<ref type="bibr" target="#b30">(Myerson 1981)</ref> when the learning dynamics are muted (e.g., δ 0).27  This contrasts with rankings based on effective bids in CPC auctions, in which publishers multiply the advertiser's bid with its quality score.28  For our analysis, we only need the incumbent's WTP to be common knowledge; this is a standard assumption in papers with a fullinformation setting in online advertising (e.g.,<ref type="bibr" target="#b12">Edelman et al. 2007</ref>).</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>The authors thank Ron Berman, Kinshuk Jerath, Raghunath Rao, Miklos Sarvary, Woochoel Shin, Hema Yoganarasimhan, seminar participants at Yale University, Bocconi University, 2018 UT Dallas Bass FORMS Conference, 2018 Marketing  </p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Dynamics Conference, and 2018 Summer Institute in Competitive Strategy for their valuable comments. The authors are also grateful to the editor-in-chief, associate editor, and two anonymous reviewers for their constructive comments. Marketing <ref type="bibr">Science, 2019</ref><ref type="bibr">Science, , vol. 38, no. 4, pp. 584-608, © 2019</ref> INFORMS unchanged because it is independent of the incumbent's information structure-it depends primarily on the publisher's information structure. 30 https://www.google.com/ads/adwords-coupon.html, accessed February 2018. <ref type="bibr">31</ref> We assume α is set before c I is realized because publishers use the same amount of ad credit across many keywords for which incumbents have different CTRs. That is, in practice, α is not a function of c I . In addition, note that, if α is decided after c I is realized, the truthfulness nature of these second-price auctions breaks down. This is because the incumbent would anticipate the publisher to set α high enough to extract all surplus from the incumbent's bid, creating incentives for the incumbent to shade its bid. Finally, the assumption that the ad credit is only available in stage 1 reflects the fact that these promotions typically expire after a short period of time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix. Proofs</head><p>32 Note that we are not discussing the customer acquisition effect of offering free ad credit. Promotional incentives for attracting new customers have been extensively studied in the literature (e.g., <ref type="bibr" target="#b19">Jedidi et al. 1999</ref><ref type="bibr" target="#b31">, Nijs et al. 2001</ref><ref type="bibr" target="#b38">, and van Heerde et al. 2003</ref>. Instead, we focus on the extraction and learning effects of ad credit that are new to the literature. We show that, even if the free ad credit does not attract new advertisers, the publisher may still benefit from offering it because of these two positive effects. <ref type="bibr">33</ref> This could be justified by the fact that advertisers can estimate the effective bid of the advertisers below them by observing the amount they are charged. <ref type="bibr">34</ref> The normalization can also be interpreted as assuming that the CTR of the average entrant does not exceed that of the strong incumbent. This assumption simplifies expressions but is not necessary. The analysis without this assumption is provided in the appendix. <ref type="bibr">35</ref> We evaluate at the right-limit 0 + because g (c I ) is undefined at c I 0.</p><p>36 Numerical analyses suggest that conditions (A.6) and (A.7) are satisfied for a large class of valuation distributions G j . For instance, if G E (x E ) x E , condition (A.6) holds for any G I , and condition (A.7) holds for G I that is relatively skewed to the left; that is, the incumbent is "strong" in the sense that it is likely to have high valuation (see Figure <ref type="figure">4</ref>). This includes the "power distributions" G I (x I )</p><p>xI vI 3 for all v I ≥ 3/2.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Keyword search advertising and first-page bid estimates: A strategic analysis</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Amaldoss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="507" to="519" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Keyword management costs and &quot;broad match&quot; in sponsored search advertising</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Amaldoss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jerath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sayedi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="259" to="274" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Learning in repeated auctions with budgets: Regret minimization and equilibrium. Working paper</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Balseiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gur</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<pubPlace>New York</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Columbia University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Repeated auctions with budgets in ad exchanges: Approximations and design</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Balseiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Besbes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">Y</forename><surname>Weintraub</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="864" to="884" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Barlow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Proschan</surname></persName>
+		</author>
+		<title level="m">Mathematical Theory of Reliability</title>
+				<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>John Wiley &amp; Sons</publisher>
+			<date type="published" when="1965" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Beyond the last touch: Attribution in online advertising</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Berman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="771" to="792" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">The role of search engine optimization in search marketing</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Berman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Katona</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="644" to="651" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A dynamic model for digital advertising: The effects of creative format, message content, and targeting on engagement</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">I</forename><surname>Bruce</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bps</forename><surname>Murthi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Rao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="202" to="218" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Properties of distributions with increasing failure rate. Working paper</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Brusset</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<pubPlace>ESSCA, Angers, France</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Cooperative search advertising</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">T</forename><surname>Ke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="44" to="67" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The company that you keep: When to buy a competitor&apos;s keyword</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Staelin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="485" to="508" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Optimal auction design and equilibrium selection in sponsored search auctions</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Edelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Schwarz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. Econom. Rev</title>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="597" to="602" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Internet advertising and the generalized second-price auction: Selling billions of dollars worth of keywords</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Edelman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ostrovsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Schwarz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Amer. Econom. Rev</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="242" to="259" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A dynamic allocation index for the discounted multiarmed bandit problem</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gittins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Jones</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika Trust</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="561" to="565" />
+			<date type="published" when="1979" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">The long run impact of organic search on paid search performance. Working paper</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Haruvy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jap</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018" />
+			<pubPlace>University of Texas at Dallas, Richardson</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Effects of internet display advertising in the purchase funnel: Model-based insights from a randomized field experiment</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">R</forename><surname>Hoban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Bucklin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="375" to="393" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Incentive problems in performancebased online advertising pricing: Cost per click vs. cost per action</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">J</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="2022" to="2038" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Machine learning in an auction environment</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hummel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Mcafee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="1" to="37" />
+			<date type="published" when="0197" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Mean field equilibria of dynamic auctions with learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Iyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Johari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sundararajan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Sci</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2949" to="2970" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Managing advertising and promotion for long-run profitability</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jedidi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Mela</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="22" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A &quot;position paradox&quot; in sponsored search auctions</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jerath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y-H</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="612" to="627" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Firm strategies in the &quot;mid tail&quot; of platform-based retailing</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jerath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="757" to="775" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">The multi-armed bandit problem: Decomposition and computation</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Katehakis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Veinott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="262" to="268" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">The race for sponsored links: Bidding patterns for search advertising</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Katona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sarvary</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="199" to="215" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Quality score that makes you invest. Working paper</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Katona</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<pubPlace>Berkeley, Berkeley</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>University of California</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">V</forename><surname>Krishna</surname></persName>
+		</author>
+		<title level="m">Auction Theory</title>
+				<meeting><address><addrLine>San Diego, CA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Academic Press</publisher>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+	<note>2nd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">In-store advertising by competitors</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kuksov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Prasad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="402" to="425" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">When does retargeting work? Information specificity in online advertising</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lambrecht</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tucker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="561" to="576" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Value of learning in sponsored search auctions</title>
+		<author>
+			<persName><forename type="first">S-M</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mahdian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Mcafee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>Amin S, ed. Internat. Workshop Internet Network Econom.</editor>
+		<imprint>
+			<biblScope unit="volume">6484</biblScope>
+			<biblScope unit="page" from="294" to="305" />
+			<date type="published" when="2010" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Position auctions with budget constraints: Implications for advertisers and publishers</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dukes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="897" to="905" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Optimal auction design</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Myerson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="58" to="73" />
+			<date type="published" when="1981" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">The category-demand effects of price promotions</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">R</forename><surname>Nijs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Dekimpe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J-Be</forename><surname>Steenkamps</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Hanssens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="22" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Reserve prices in internet advertising auctions: A field experiment. Working paper</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ostrovsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Schwarz</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<pubPlace>Stanford, CA</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Stanford University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">From generic to branded: A model of spillover in paid search advertising</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">J</forename><surname>Rutz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Bucklin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="87" to="102" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Real-time bidding in online display advertising</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sayedi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="553" to="568" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Exclusive placement in online advertising</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sayedi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jerath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Baghaie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="970" to="986" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Competitive poaching in sponsored search advertising and its strategic impact on traditional advertising</title>
+		<author>
+			<persName><forename type="first">Sayedi ; Informs</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sayedi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jerath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Learning in Online Advertising Marketing Science</title>
+				<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="586" to="608" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Keyword search advertising and limited budgets</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="882" to="896" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Is 75% of the sales promotion bump due to brand switching? No, only 33% is</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">J</forename><surname>Van Heerde</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Wittink</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Marketing Res</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="481" to="491" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Click fraud</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">C</forename><surname>Wilbur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="293" to="308" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">A dynamic model of sponsored search advertising</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Mela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="447" to="468" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Hybrid advertising auctions</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">C</forename><surname>Wilbur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Sci</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="249" to="273" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Search advertising: Budget allocation across search engines. Working paper</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Rao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Sayedi: Learning in Online Advertising</title>
+				<meeting><address><addrLine>Orange, CA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2017" />
+		</imprint>
+		<respStmt>
+			<orgName>Chapman University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
