@@ -23,15 +23,9 @@ import numpy as np
 # show logging when running the dynamic LDA
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-# stack data from all journals
-df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged.gzip')
-df = df.reset_index()
+# read in the limited dataset 
+df_limited = pd.read_parquet('../Data/clean/limited_dataset_sequential_lda.gzip')
 
-# remove 2 missing observations in year
-df = df.dropna(subset = ['year'])
-
-# get limited df for illustrative purposes ; 25 papers
-df_limited = df.sample(25, random_state = 1)
 
 # determine time slices; these follow the following structure: [n papers year 2000, n papers year 2001, ...,]
 df_limited = df_limited.sort_values('year')
