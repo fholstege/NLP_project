@@ -11,10 +11,22 @@ for i, row in df.iterrows():
 
 # keep only articles (Type == NaN)
 df['Type'].value_counts()
-df = df.loc[df['Type'].isna(), 'DOI']
+df = df.loc[df['Type'].isna(), ['DOI', 'body']]
 df.reset_index(drop = True, inplace = True)
 
+# convert to DOI without URL prefix
+base_url_informs = 'https://pubsonline-informs-org.eur.idm.oclc.org/doi/pdf/'
+df['DOI'] = df['DOI'].str.replace(base_url_informs, '')
+
 # merge with scopus data
+scopus_df = pd.read_csv('../data/raw/marketingscience_WoS.csv')
+scopus_df = pd.merge(scopus_df, df, how = 'left', on = 'DOI', sort = False)
+
+# how many missing bodies?
+print(f"There are {sum(scopus_df['body'].isna())} missing bodies")
+
+# save scraped data
+scopus_df.to_parquet("../data/scraped/marketingscience_data_lim.gzip", compression='gzip')
 
 
 
