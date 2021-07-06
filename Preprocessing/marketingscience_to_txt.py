@@ -1,29 +1,25 @@
 import pandas as pd
-import subprocess
-import os
-from tqdm import tqdm
 
 # load csv after manually downloading of papers ('filled')
 df = pd.read_csv('../data/raw/marketingscience_urls_filled.csv', sep=';')
 
-# get list of all downloaded pdfs
-pdf_list = os.listdir('../data/raw/marketing_science_pdf')
-
-# convert all pdfs to txt
-for pdf_file in tqdm(pdf_list):
-    
-    # get number of file
-    no_article = os.path.splitext(pdf_file)[0]
-    
-    # convert to txt and save in new folder
-    cmd = f'pdftotext -f 2 ../data/raw/marketing_science_pdf/{no_article}.pdf ../data/raw/marketing_science_txt/{no_article}.txt'
-    subprocess.call(cmd, shell=True)
+# load xml data for each article
+for i, row in df.iterrows():
+    file_name = '../data/raw/marketing_science_xml/' + str(i+1) + '.tei.xml'
+    with open(file_name, 'r', encoding="utf8") as f:
+            df.loc[i, 'body'] = f.read()
 
 # keep only articles (Type == NaN)
+df['Type'].value_counts()
 df = df.loc[df['Type'].isna(), 'DOI']
+df.reset_index(drop = True, inplace = True)
 
-# save scraped DOIs
-df.to_csv('../data/raw/marketingscience_scraped_DOI.csv')
+# merge with scopus data
+
+
+
+
+
 
 
 
