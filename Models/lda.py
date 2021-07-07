@@ -101,13 +101,17 @@ df_combined_info.to_parquet("../Data/clean/all_journals_merged_topics.gzip", com
 
 
 # # save as blei corpus (lda-c format)
-# bleicorpus.BleiCorpus.serialize('../data/clean/lda_corpus.lda-c', corpus)
+# bleicorpus.BleiCorpus.serialize('../data/clean/lda_corpus.lda-c', corpus, id2word = id2word)
+
+bleicorpus.BleiCorpus.save_corpus('../data/clean/lda_corpus.lda-c', corpus, id2word = id2word)
+
 
 # # save time_slices
-# textfile = open("time_slices.txt", "w")
-# for element in time_slice:
-#     textfile.write(str(element) + "\n")
-# textfile.close()
+textfile = open("../data/clean/time_slices.txt", "w")
+textfile.write(str(len(time_slice)) + "\n")
+for element in time_slice:
+    textfile.write(str(element) + "\n")
+textfile.close()
 
 
 # estimate model
