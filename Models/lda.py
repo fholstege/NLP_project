@@ -19,7 +19,6 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 # stack data from all journals
 df = pd.read_parquet('../Data/clean/all_journals_adject_nouns_merged.gzip')
 df = df.reset_index()
-df.columns
 
 # check articles per journal
 df['journal'].value_counts()
@@ -47,7 +46,8 @@ dictionary.compactify()
 corpus = [dictionary.doc2bow(text) for text in texts_list]
 _ = dictionary[0] # need this line to force-load the data in the kernel
 id2word = dictionary.id2token
-len(id2word)
+
+
 
 # implement cross validation
 K = 4
