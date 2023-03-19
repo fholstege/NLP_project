@@ -1,5 +1,5 @@
 # NLP_project
- Code for our NLP project on the evolution of the academic Marketing literature since xyz.
+ Code for our course 'Natural Language Processing'. Examines the evolution of the academic Marketing literature since 2001.
 
 ## Weeks
 1. Data preprocessing
